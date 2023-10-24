@@ -1,0 +1,7 @@
+---
+title: "Texte precedant le graphiques Wri1"
+author: "Caroline Brule"
+date: "20 oct 2023"
+---
+
+Dans le graphique suivant, les lignes pointillées indique la moyenne pour chaque sexe, ainsi que pour Tous en rouge. La ligne du 100 est en gris à titre de référence.

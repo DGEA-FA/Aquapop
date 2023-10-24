@@ -1,0 +1,22 @@
+---
+title: "AquaPop : Outil d'aide à l'analyse de données d'inventaire ichtyologique"
+output: 
+  word_document: default
+  bookdown::word_document2: default #for cross-references
+params:
+  n: NA
+  typ_pech: NA
+---
+
+```{r}
+# The `params` object is available in the document.
+params$n
+params$typ_pech
+
+```
+
+A plot of `params$n` random points.
+
+```{r}
+plot(rnorm(params$n), rnorm(params$n))
+```

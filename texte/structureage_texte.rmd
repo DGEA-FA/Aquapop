@@ -1,0 +1,9 @@
+---
+title: "Texte precedant les graphiques de frequences de age"
+author: "Caroline Brule"
+date: "18 mai 2023"
+---
+
+L’histogramme de fréquence d'âge permettant de caractériser la structure d'âge de la population est réalisée avec la fonction geom_histogram de la librairie ggplot2 (Chang *et al.* 2021).
+
+Les figures suivantes représentent l’histogramme de fréquences des âges selon différents filtres différentes catégories au besoin (sélection à gauche).
