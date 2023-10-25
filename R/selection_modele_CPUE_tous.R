@@ -49,7 +49,7 @@ selection_modele_CPUE_tous <- function(capture, specimen, espece, station) {
   
   hnp_p <- list()
   
-  for(i in 1:100) {
+  for(i in 1:1) {
     
     hnp_p[[i]] <- hnp(model.p,resid.type="pearson",how.many.out=TRUE,plot.sim=FALSE)
     
@@ -160,7 +160,7 @@ selection_modele_CPUE_tous <- function(capture, specimen, espece, station) {
   
   hnp_nb2 <- list()
   
-  for(i in 1:100) {
+  for(i in 1:1) {
     
     hnp_nb2[[i]] <- hnp(model.nb2, resid.type="pearson", how.many.out=TRUE, plot.sim=FALSE)
     
@@ -179,6 +179,141 @@ selection_modele_CPUE_tous <- function(capture, specimen, espece, station) {
   
 
   
+  
+  # CMP ---------------------------------------------------------------------
+  
+  library(glmmTMB)
+  model.CMP <-  glmmTMB::glmmTMB(CPUE~1, family = glmmTMB::compois(link = "log"), data = temp)#modele glm initial pour le calcul
+  
+  
+  dfun <- function(obj) {residuals(obj,type="pearson")}
+  sfun <- function(n,obj) {simulate(obj)[[1]]}
+  
+  ffun_CMP<-function(response) {
+    fit <- try(glmmTMB(response~1, family = nbinom1, data = temp),
+               silent = TRUE)
+    while(class(fit) == "try-error") {
+      response2 <- sfun(1, m.df_EXT.CMP)
+      fit <- try(glmmTMB(response2~1, family = nbinom1, data = temp),
+                 silent = TRUE)
+    }
+    return(fit)
+  }
+  
+  
+  set.seed(2023) # fonction set.seed(2023) sert à reproduire toujours la même valeur car hnp fonctionne 
+  #à partir de simulations. Utiliser 10 ou 100 simulations pour le même modèle va produire une estimation semblable à
+  #la première, mais différente aussi.
+  
+  hnp_CMP <- list()
+  
+  for(i in 1:1) {
+    hnp_CMP[[i]] <- hnp(model.CMP, 
+                        newclass = TRUE, 
+                        diagfun = dfun,
+                        simfun = sfun, 
+                        fitfun = ffun_CMP,
+                        how.many.out = TRUE,
+                        plot.sim = FALSE) 
+    
+  }
+  
+  summary_hnp_CMP <- sapply(hnp_CMP,function(x) x$out/x$total*100)
+  
+  ajustement.CMP <- mean(summary_hnp_CMP) %>% as.numeric() %>% round(digits = 2)
+  
+  #presentation des resultats
+  newdata <- data.frame(Moyenne=c("moyenne"))
+  method.CMP <- "CMP" 
+  predM.CMP <-  predict(model.CMP,newdata, full = TRUE, se.fit = TRUE, type = "link") 
+  CPUEfinal.CMP <- exp(predM.CMP$fit)  %>% round(digits = 2) #JM dit de pas faire round a lunite (digits=0) pour la moyenne, mais plutot 2
+  CPUEfinal.CMP
+  confint.CMP <- confint(model.CMP) #ON DEVRAIT PRENDRE CA COMME lwr and upr limites ! Ca donne aussi un IC95%
+  commentaires.CMP <- NA
+  if (ajustement.CMP <10) {
+    commentaires.CMP <- "Le modèle CMP s'ajuste bien à vos données."
+  }
+  if (ajustement.CMP > 10) {
+    commentaires.CMP <- "Le modèle CMP ne s'ajuste pas bien à vos données. Vous devriez utiliser un autre modèle."
+  }
+  linf <- (CPUEfinal.CMP - confint.CMP[1]) %>% round(digits = 2)
+  lsup <- (CPUEfinal.CMP + confint.CMP[2]) %>% round(digits = 2)
+  
+  resultCPUE.CMP <- data.frame("Méthode" = method.CMP,
+                               Ajustement = ajustement.CMP,
+                               CPUE = CPUEfinal.CMP,
+                               "IC95" = paste0("(",linf,"-",lsup,")"),
+                               Commentaires = commentaires.CMP)
+  
+  
+  
+  
+  
+  
+  # GP ---------------------------------------------------------------------
+  
+  library(glmmTMB)
+  model.GP <-  glmmTMB::glmmTMB(CPUE~1, family = glmmTMB::genpois(link = "log"), data = temp)#modele glm initial pour le calcul
+  
+  
+  dfun <- function(obj) {residuals(obj,type="pearson")}
+  sfun <- function(n,obj) {simulate(obj)[[1]]}
+  
+  ffun_GP<-function(response) {
+    fit <- try(glmmTMB(response~1, family = nbinom1, data = temp),
+               silent = TRUE)
+    while(class(fit) == "try-error") {
+      response2 <- sfun(1, m.df_EXT.GP)
+      fit <- try(glmmTMB(response2~1, family = nbinom1, data = temp),
+                 silent = TRUE)
+    }
+    return(fit)
+  }
+  
+  
+  set.seed(2023) # fonction set.seed(2023) sert à reproduire toujours la même valeur car hnp fonctionne 
+  #à partir de simulations. Utiliser 10 ou 100 simulations pour le même modèle va produire une estimation semblable à
+  #la première, mais différente aussi.
+  
+  hnp_GP <- list()
+  
+  for(i in 1:1) {
+    hnp_GP[[i]] <- hnp(model.GP, 
+                        newclass = TRUE, 
+                        diagfun = dfun,
+                        simfun = sfun, 
+                        fitfun = ffun_GP,
+                        how.many.out = TRUE,
+                        plot.sim = FALSE) 
+    
+  }
+  
+  summary_hnp_GP <- sapply(hnp_GP,function(x) x$out/x$total*100)
+  
+  ajustement.GP <- mean(summary_hnp_GP) %>% as.numeric() %>% round(digits = 2)
+  
+  #presentation des resultats
+  newdata <- data.frame(Moyenne=c("moyenne"))
+  method.GP <- "GP" 
+  predM.GP <-  predict(model.GP,newdata, full = TRUE, se.fit = TRUE, type = "link") 
+  CPUEfinal.GP <- exp(predM.GP$fit)  %>% round(digits = 2) #JM dit de pas faire round a lunite (digits=0) pour la moyenne, mais plutot 2
+  CPUEfinal.GP
+  confint.GP <- confint(model.GP) #ON DEVRAIT PRENDRE CA COMME lwr and upr limites ! Ca donne aussi un IC95%
+  commentaires.GP <- NA
+  if (ajustement.GP <10) {
+    commentaires.GP <- "Le modèle GP s'ajuste bien à vos données."
+  }
+  if (ajustement.GP > 10) {
+    commentaires.GP <- "Le modèle GP ne s'ajuste pas bien à vos données. Vous devriez utiliser un autre modèle."
+  }
+  linf <- (CPUEfinal.GP - confint.GP[1]) %>% round(digits = 2)
+  lsup <- (CPUEfinal.GP + confint.GP[2]) %>% round(digits = 2)
+  
+  resultCPUE.GP <- data.frame("Méthode" = method.GP,
+                               Ajustement = ajustement.GP,
+                               CPUE = CPUEfinal.GP,
+                               "IC95" = paste0("(",linf,"-",lsup,")"),
+                               Commentaires = commentaires.GP)
   
   
   
@@ -207,7 +342,7 @@ selection_modele_CPUE_tous <- function(capture, specimen, espece, station) {
                                "IC95" = paste0("(",linf,"-",lsup,")"),
                                Commentaires = commentaires.nb2)
   
-  CLEAN <- rbind(resultCPUE.p, resultCPUE.nb2,resultCPUE.NB1)
+  CLEAN <- rbind(resultCPUE.p, resultCPUE.nb2,resultCPUE.NB1,resultCPUE.CMP,resultCPUE.GP)
   
   
   
@@ -219,7 +354,7 @@ selection_modele_CPUE_tous <- function(capture, specimen, espece, station) {
   #COMPROMIS SLMT SI LES 2 modeles sont CHILL. 
   #Donc les bios ont au moins les results des 2 modeles, et compromis en plus si classement de lajustement CHILL 
   
-  if (ajustement.nb2 < 10 && ajustement.p < 10) {
+  if (ajustement.nb2 < 10 && ajustement.p < 10 ) {
     sorti <- model.sel(model.nb2, model.p )
     compromis <- model.avg(sorti , revised.var = TRUE      )
     
