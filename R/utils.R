@@ -82,6 +82,22 @@ kable_wri <- function(data) {
   
 }
 
+kable_abondance <- function(data) {
+  req(data)
+  data %>% 
+    kable( align = c("r","c","c","c","c","r"),
+           caption = "Abondance"
+    ) %>%
+    kable_styling(full_width = FALSE,
+                  #lightable_options = "basic",
+                  font_size = 12,
+                  html_font="sans-serif", 
+                  position="center") %>% 
+  kableExtra::row_spec(1, extra_css = "border-bottom: 0.5px solid") %>%
+    kableExtra::row_spec(4, extra_css = "border-bottom: 0.5px solid")  %>%
+    kableExtra::row_spec(8, extra_css = "border-bottom: 0.5px solid")
+}
+
 
 
 

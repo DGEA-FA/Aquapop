@@ -235,6 +235,52 @@ app_server <- function(input, output, session) {
   
   ## CPUE ------------------------------------------------
   
+  #verification du n de specimen
+  verif_n_data <- reactive({
+    req(specimen(), sp_pen(), capture())
+    verif_n_recolte_specimen(capture = capture(),specimen = specimen(), espece = sp_pen(), station = data_station() ) %>% as.data.frame()
+  })
+  
+  
+  
+  output$verif_ntable <- renderTable(verif_n_data())
+  output$verif_ntexte <- renderText({
+    paste0("Le nombre total ", 
+           if (sp_pen() == "SANA") {
+      paste0("de touladis")
+    } else if (sp_pen() == "SAFO") {
+      paste0("d'ombles de fontaine")
+    } else if (sp_pen() == "SAVI") {
+      paste0("de dorés jaunes")
+    } else {
+      NULL
+    },
+           " selon la base de données des récoltes est de : ",verif_n_data()[1,2],
+    ". Le nombre total ", 
+    if (sp_pen() == "SANA") {
+      paste0("de touladis")
+    } else if (sp_pen() == "SAFO") {
+      paste0("d'ombles de fontaine")
+    } else if (sp_pen() == "SAVI") {
+      paste0("de dorés jaunes")
+    } else {
+      NULL
+    }," selon la base de données des spécimens est de : ",verif_n_data()[2,2],
+    ". La différence absolue du nombre d'individus entre les deux bases de données est de :",
+    abs(as.numeric(verif_n_data()[1,2]) - as.numeric(verif_n_data()[2,2])),
+    ". Cette différence doit être égale à zéro, sinon cela signifie qu'il y a des écarts à corriger entre les deux bases de données.")
+  })
+  
+  
+  
+  
+#  Le nombre total de touladis selon la base de données des récoltes est de : **`r sommeNR`**
+#    Le nombre total de touladis selon la base de données des spécimens est de : **`r sommeNS`**
+# Le différence absolue entre le nombre de capture par station entre les deux bases de données est de : **`r sommeND`**.
+#  Cette différence doit être égale à zéro, sinon cela signifie qu'il y a des écarts à corriger entre les deux bases de données.
+  
+  
+  
   #tous
   selection_modele_CPUE_tous_data <- reactive({
     req(specimen(), sp_pen(), capture(), data_station())
@@ -326,11 +372,24 @@ app_server <- function(input, output, session) {
     temp$CPUE[temp$Groupe=="Tous"] <- CPUE_tous()
     temp$IC95[temp$Groupe=="Tous"] <- CPUEic_tous()
     
-    temp$CPUE[temp$Groupe=="♀ mature"] <- CPUE_Fmature()
-    temp$IC95[temp$Groupe=="♀ mature"] <- CPUEic_Fmature()
-    temp
+    temp$CPUE[temp$Groupe=="Repro. actifs ♀"] <- CPUE_Fmature()
+    temp$IC95[temp$Groupe=="Repro. actifs ♀"] <- CPUEic_Fmature()
+    temp$'Prop. (%)' <- format(round(as.numeric(temp$'Prop. (%)'), digits =0), nsmall = 0)
+    temp <- temp %>% mutate(CPUE = ifelse(is.na(CPUE), "-", CPUE))
+    temp <- temp %>% mutate(IC95 = ifelse(is.na(IC95), "-", IC95))
+    temp <- temp %>% mutate(ratioMF = ifelse(is.na(ratioMF), "-", ratioMF))
+    temp <- temp %>% rename('IC 95%' = IC95,
+                            "Ratio ♂:♀" = ratioMF)
+      temp
+    
+    
   })
-  output$abondance1table <- renderTable(abondance1())
+  
+  #  output$abondance1table <- renderTable(abondance1())
+  output$abondance1table <-  function() {
+    kable_abondance(data = abondance1())
+  }
+  
   
   output$download_abondance1 <- download_data_format_xlsx(givenname = "abondance1", datadown = abondance1())
   

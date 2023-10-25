@@ -1,5 +1,7 @@
 mortalite_selection_modeles <- function(df_EXT) {
-#POISSON  
+
+# Poisson -----------------------------------------------------------------
+
 m.df_EXT.p <- glm(number~age, family = poisson, data = df_EXT) 
 resume.p <- summary(m.df_EXT.p)
 SE.p <- resume.p[["coefficients"]][2,2]
@@ -23,7 +25,8 @@ model_adequacy.p <- mean(summary_hnp.p)
 
 
 
-#NB1
+# nb1 ---------------------------------------------------------------------
+
 library(glmmTMB)
 m.df_EXT.NB1 <- glmmTMB(number~age, family = nbinom1, data = df_EXT) 
 resume.NB1 <- summary(m.df_EXT.NB1)
@@ -63,7 +66,7 @@ model_adequacy.NB1 <- mean(summary_hnp_NB1)
 
 
 
-#NB2
+# nb2 ---------------------------------------------------------------------
 #library(MASS)
 m.df_EXT.NB2 <- glm.nb(number~age, data = df_EXT) 
 resume.NB2 <- summary(m.df_EXT.NB2)
@@ -84,7 +87,8 @@ model_adequacy.NB2 <- mean(summary_hnp.NB2)
 #a completer idem a nb1 quand on en aura discuter avec JM
 
 
-#CMPa
+# CMPa --------------------------------------------------------------------
+
 m.df_EXT.CMPa <- glmmTMB::glmmTMB(number~age, family = glmmTMB::compois(link = "log"), data = df_EXT) 
 resume.CMPa <- summary(m.df_EXT.CMPa)
 SE.CMPa <- resume.CMPa[["coefficients"]]$cond[2,2]
@@ -127,9 +131,8 @@ model_adequacy.CMPa <- mean(summary_hnp_CMPa)
 
 
 
+# GP ----------------------------------------------------------------------
 
-
-#GP
 m.df_EXT.GP <- glmmTMB::glmmTMB(number~age, family = glmmTMB::genpois(link = "log"), data = df_EXT) 
 resume.GP <- summary(m.df_EXT.GP)
 SE.GP <- resume.GP[["coefficients"]]$cond[2,2]

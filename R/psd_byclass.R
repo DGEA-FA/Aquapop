@@ -58,7 +58,7 @@ psd_byclass <- function(data, sp) {
    complet$Classe <- as.factor(complet$Classe)
    complet$Classe <- factor(complet$Classe, levels=Classename)
    complet <- complet %>% arrange(Classe)
-   complet$Freq <- as.numeric(complet$Freq) %>% round(digits = 0)
+  # complet$Freq <- as.numeric(complet$Freq) %>% round(digits = 0)
    
    complet[1,3] <- data %>% filter(sp==sp) %>%  filter(ltm < limInfStock ) %>% summarise(n())
  

@@ -33,6 +33,9 @@ selection_modele_CPUE_tous <- function(capture, specimen, espece, station) {
               Group="Tous")
   
   abondancefix <- sum(temp$CPUE) %>% as.numeric()
+
+# Poisson -----------------------------------------------------------------
+
   
   ## Poisson (p), on teste un premier modele pour CPUElac 
   
@@ -79,10 +82,77 @@ selection_modele_CPUE_tous <- function(capture, specimen, espece, station) {
                              "IC95" = paste0("(",linf,"-",lsup,")"),
                              Commentaires = commentaires.p)
   
+
+# NB1 ---------------------------------------------------------------------
+
+  library(glmmTMB)
+  model.NB1 <-  glmmTMB(CPUE~1, family = nbinom1, data = temp)#modele glm initial pour le calcul
+  
+
+  dfun <- function(obj) {residuals(obj,type="pearson")}
+  sfun <- function(n,obj) {simulate(obj)[[1]]}
+
+  ffun_nb1<-function(response) {
+    fit <- try(glmmTMB(response~1, family = nbinom1, data = temp),
+               silent = TRUE)
+    while(class(fit) == "try-error") {
+      response2 <- sfun(1, m.df_EXT.NB1)
+      fit <- try(glmmTMB(response2~1, family = nbinom1, data = temp),
+                 silent = TRUE)
+    }
+    return(fit)
+  }
+
+  
+  set.seed(2023) # fonction set.seed(2023) sert à reproduire toujours la même valeur car hnp fonctionne 
+  #à partir de simulations. Utiliser 10 ou 100 simulations pour le même modèle va produire une estimation semblable à
+  #la première, mais différente aussi.
+  
+  hnp_NB1 <- list()
+  
+  for(i in 1:1) {
+    hnp_NB1[[i]] <- hnp(model.NB1, 
+                        newclass = TRUE, 
+                        diagfun = dfun,
+                        simfun = sfun, 
+                        fitfun = ffun_nb1,
+                        how.many.out = TRUE,
+                        plot.sim = FALSE) 
+
+  }
+  
+  summary_hnp_NB1 <- sapply(hnp_NB1,function(x) x$out/x$total*100)
+  
+  ajustement.NB1 <- mean(summary_hnp_NB1) %>% as.numeric() %>% round(digits = 2)
+  
+  #presentation des resultats
+  newdata <- data.frame(Moyenne=c("moyenne"))
+  method.NB1 <- "NB1" 
+  predM.NB1 <-  predict(model.NB1,newdata, full = TRUE, se.fit = TRUE, type = "link") 
+  CPUEfinal.NB1 <- exp(predM.NB1$fit)  %>% round(digits = 2) #JM dit de pas faire round a lunite (digits=0) pour la moyenne, mais plutot 2
+  CPUEfinal.NB1
+  confint.NB1 <- confint(model.NB1) #ON DEVRAIT PRENDRE CA COMME lwr and upr limites ! Ca donne aussi un IC95%
+  commentaires.NB1 <- NA
+  if (ajustement.NB1 <10) {
+    commentaires.NB1 <- "Le modèle NB1 s'ajuste bien à vos données."
+  }
+  if (ajustement.NB1 > 10) {
+    commentaires.NB1 <- "Le modèle NB1 ne s'ajuste pas bien à vos données. Vous devriez utiliser un autre modèle."
+  }
+  linf <- (CPUEfinal.NB1 - confint.NB1[1]) %>% round(digits = 2)
+  lsup <- (CPUEfinal.NB1 + confint.NB1[2]) %>% round(digits = 2)
+  
+  resultCPUE.NB1 <- data.frame("Méthode" = method.NB1,
+                             Ajustement = ajustement.NB1,
+                             CPUE = CPUEfinal.NB1,
+                             "IC95" = paste0("(",linf,"-",lsup,")"),
+                             Commentaires = commentaires.NB1)
   
   
-  
-  
+
+# NB2 ---------------------------------------------------------------------
+
+
   
   # NB2 (nb2), on teste un 2e modele
   model.nb2 <-  MASS::glm.nb(CPUE~1, data = temp)
@@ -107,6 +177,19 @@ selection_modele_CPUE_tous <- function(capture, specimen, espece, station) {
     commentaires.nb2 <- "Le modèle de NB2 ne s'ajuste pas bien à vos données. Vous devriez utiliser un autre modèle."
   }
   
+
+  
+  
+  
+  
+  
+  
+  
+# presentation des resultats ----------------------------------------------
+
+  
+  
+  
   #presentation des resultats
   newdata <- data.frame(Moyenne=c("moyenne"))
   method.nb2 <- "NB2" 
@@ -124,7 +207,7 @@ selection_modele_CPUE_tous <- function(capture, specimen, espece, station) {
                                "IC95" = paste0("(",linf,"-",lsup,")"),
                                Commentaires = commentaires.nb2)
   
-  CLEAN <- rbind(resultCPUE.p, resultCPUE.nb2)
+  CLEAN <- rbind(resultCPUE.p, resultCPUE.nb2,resultCPUE.NB1)
   
   
   

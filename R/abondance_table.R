@@ -18,9 +18,9 @@ abondance_table <- function(capture, specimen, espece) {
  alldata <- alldata %>% dplyr::filter(no_station!="") #retirer station NA où oubli d'écrire la station
  alldata$sexe[is.na(alldata$sexe)] <- "IND" #quand sexe=NA, jai mis ind
  
- 
- 
- #TOUS
+
+# tous --------------------------------------------------------------------
+
  temp <- alldata  %>% summarise(Groupe="Tous", 
                                 Abondance =n(), 
                                 Perc = NA, 
@@ -32,7 +32,10 @@ abondance_table <- function(capture, specimen, espece) {
  TOUS <- temp #CLEAN
 
 
-#MFIND
+
+# MFIND -------------------------------------------------------------------
+
+
 temp <- alldata %>%  dplyr::group_by(sexe)  %>% 
   summarise(Abondance =n(), 
             Perc = NA, 
@@ -42,7 +45,7 @@ temp <- alldata %>%  dplyr::group_by(sexe)  %>%
 
 temp <- temp %>% mutate(Perc = round(Abondance*100/abondancefix,digits =0))
 
-temp <- temp %>% mutate(sexe=plyr::mapvalues(sexe, from=c("F","M", "IND"), to=c("Femelle","Mâle", "sexe inconnu")))
+temp <- temp %>% mutate(sexe=plyr::mapvalues(sexe, from=c("F","M", "IND"), to=c("Femelle","Mâle", "Sexe inconnu")))
 temp <- temp %>% rename(Groupe=sexe)
 
 
@@ -52,7 +55,9 @@ temp <- temp %>% dplyr::select(Groupe,Abondance,Perc,CPUE,IC95, ratioMF)
 MFIND <- temp #CLEAN
 
 
-#FMmature
+
+# FMmature ----------------------------------------------------------------
+
 temp <- alldata %>% filter(maturite=="O" & sexe %in% c("M","F")) %>%
   dplyr::group_by(sexe) %>%
   summarise(Abondance =n(), 
@@ -62,45 +67,98 @@ temp <- alldata %>% filter(maturite=="O" & sexe %in% c("M","F")) %>%
             ratioMF = NA)
 
 temp <- temp %>% mutate(Perc = round(Abondance*100/abondancefix,digits =0))
-temp <- temp %>% mutate(sexe=plyr::mapvalues(sexe, from=c("F","M"), to=c("♀ mature","♂ mature")))
+temp <- temp %>% mutate(sexe=plyr::mapvalues(sexe, from=c("F","M"), to=c("Repro. actifs ♀","Repro. actifs ♂")))
 temp <- temp %>% rename(Groupe=sexe)
 temp <- temp %>% dplyr::select(Groupe,Abondance,Perc,CPUE,IC95, ratioMF)
 
 FMmature <- temp #CLEAN
 
-#Immature
+
+# Immature ----------------------------------------------------------------
 
 temp <- alldata %>% filter(maturite=="N") %>%
   dplyr::group_by(maturite) %>%
-  summarise(Groupe="Immature", 
+  summarise(Groupe="Imm. ou reprod. inactifs", 
             Abondance =n(), 
             Perc = NA, 
             CPUE = NA, 
             IC95 = NA,
             ratioMF = NA)
 
+
+nMaleimm <- alldata %>% filter(maturite=="N" & sexe == "M") 
+nMaleimm <- length(unique(nMaleimm$no_specimen)) %>% as.numeric()
+
+nFemaleimm <- alldata %>% filter(maturite=="N" & sexe == "F") 
+nFemaleimm <- length(unique(nFemaleimm$no_specimen)) %>% as.numeric()
+
 temp <- temp %>% dplyr::mutate(Perc = round(Abondance*100/abondancefix,digits =0))
 temp <- temp %>% dplyr::select(-maturite)
+
+temp <- temp %>% dplyr::mutate(ratioMF = paste0(nMaleimm,":",nFemaleimm))
+
+
 temp <- temp %>% dplyr::select(Groupe,Abondance,Perc,CPUE,IC95, ratioMF)
 
 Immature <- temp #CLEAN
 
 
-CLEAN <- rbind(TOUS, MFIND, FMmature, Immature)
+# Statut reproducteur inconnu ----------------------------------------------------------------
+
+temp <- alldata %>% filter(is.na(maturite)) %>%
+  summarise(Groupe="Statut reprod. inconnu", 
+            Abondance =n(), 
+            Perc = NA, 
+            CPUE = NA, 
+            IC95 = NA,
+            ratioMF = NA)
+
+
+nMaleinconnu <- alldata %>% filter(is.na(maturite) & sexe == "M") 
+nMaleinconnu <- length(unique(nMaleinconnu$no_specimen)) %>% as.numeric()
+
+nFemaleinconnu <- alldata %>% filter(is.na(maturite) & sexe == "F") 
+nFemaleinconnu <- length(unique(nFemaleinconnu$no_specimen)) %>% as.numeric()
+
+temp <- temp %>% dplyr::mutate(Perc = round(Abondance*100/abondancefix,digits =0))
+#temp <- temp %>% dplyr::select(-maturite)
+
+temp <- temp %>% dplyr::mutate(ratioMF = paste0(nMaleinconnu,":",nFemaleinconnu))
+
+
+temp <- temp %>% dplyr::select(Groupe,Abondance,Perc,CPUE,IC95, ratioMF)
+
+inconnu <- temp #CLEAN
+
+
+
+CLEAN <- rbind(TOUS, MFIND, FMmature, Immature,inconnu)
 
 #ratio MF
 nbmale <- CLEAN$Abondance[CLEAN$Groupe=="Mâle"] %>% as.numeric()
 nbfemelle <- CLEAN$Abondance[CLEAN$Groupe=="Femelle"] %>% as.numeric()
 
-ratioMF <-  round(as.numeric(nbmale/nbfemelle), digits = 1) 
-CLEAN$ratioMF[CLEAN$Groupe=="Tous"] <- ratioMF
-CLEAN$Groupe <- factor(CLEAN$Groupe, levels=c("Tous", "Femelle", "Mâle", "♀ mature","♂ mature", "Immature", "sexe inconnu"))
+#ratioMF <-  round(as.numeric(nbmale/nbfemelle), digits = 1) 
+ratioMF <-  paste0(nbmale,":",nbfemelle)
 
+CLEAN$ratioMF[CLEAN$Groupe=="Tous"] <- ratioMF
+CLEAN$Perc[CLEAN$Groupe=="Tous"] <- 100
+#CLEAN <- CLEAN %>% dplyr::mutate(Perc = round(as.numeric(Perc),digits =0))
+
+CLEAN$Perc <- format(round(CLEAN$Perc, digits =0), nsmall = 0)
+
+
+CLEAN$Groupe <- factor(CLEAN$Groupe, levels=c("Tous", "Femelle", "Mâle", "Sexe inconnu", "Repro. actifs ♀","Repro. actifs ♂", "Imm. ou reprod. inactifs", "Statut reprod. inconnu"))
+CLEAN <- CLEAN %>% arrange(Groupe)
 #CLEAN <- CLEAN %>% mutate(ID= IDfix)
 #IDfix <- unique(capture$ID) %>% as.character()
 #CLEAN <- CLEAN %>% mutate(ID= paste(IDfix))
 #CLEAN <- CLEAN %>%  dplyr::select(ID, everything()) #Moving the last column to the start
 
-
+CLEAN <- CLEAN %>% rename("Nombre" = Abondance,
+                          "Prop. (%)" = Perc,
+                          #"Ratio M:F" = ratioMF
+                          )
+#colnames(CLEAN)[5] <- 'IC 95%' #renommer la colonne 
 CLEAN
 }

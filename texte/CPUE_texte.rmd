@@ -1,0 +1,7 @@
+---
+title: "CPUE_texte"
+author: "Caroline Brule"
+date: "25 octobre 2023"
+---
+L'abondance est calculée en fonction du N de poissons dans la bases de données Récolte. Il faut cependant noter que Le nombre de poissons de l’espèce visée peut être différent à l’occasion entre les bases de données Récolte et Spécimen. Quand cela arrive, c’est plus souvent le N de captures qui est plus élevé que le N de spécimens : poisson échappé, trop magané pour prendre des mesures, etc. Dans le cas où le N de spécimens est plus élevé que le N de captures, il y a une erreur. Dans le script de Marc, il y avait un code pour vérifier la concordance entre les deux. Tu pourrais l’utiliser pour aviser l’utilisateur? Et on recommande d’utiliser le plus grand N pour les calculs de l’abondance et ce, même si le nombre est plus élevé que pour la BPUE ou les autres indicateurs. Avec un avertissement à l’utilisateur, il sera prévenu. Exemple d’avertissement : « La récolte totale est supérieure (ou inférieure) au nombre de spécimens »
+
