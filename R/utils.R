@@ -99,7 +99,33 @@ kable_abondance <- function(data) {
 }
 
 
+kable_CPUEtous <- function(data) {
+  req(data)
+  data %>% 
+    kable( align = c("r","c","c","c","r"),
+           caption = "Comparaison de modèles CPUE tous", 
+           row.names = FALSE    ) %>%
+    kable_styling(full_width = FALSE,
+                  #lightable_options = "basic",
+                  font_size = 12,
+                  html_font="sans-serif", 
+                  position="center") 
+}
 
+
+
+kable_CPUEFmature <- function(data) {
+  req(data)
+  data %>% 
+    kable( align = c("r","c","c","c","r"),
+           caption = "Comparaison de modèles Reprod. actifs ♀", 
+           row.names = FALSE) %>%
+    kable_styling(full_width = FALSE,
+                  #lightable_options = "basic",
+                  font_size = 12,
+                  html_font="sans-serif", 
+                  position="center") 
+}
 
 
 # Copy report to temporary directory. This is mostly important when

@@ -69,7 +69,7 @@ app_ui <- function() {
                                              withSpinner(tableOutput("selection_modele_CPUE_Fmaturetable"), type = myspinner),
                                              downloadButton("download_selection_modele_CPUE_Fmaturetable", "Téléchargement"), # Button Téléchargement
                                              
-                                             withSpinner(tableOutput("abondance1table"), type = myspinner),
+                                            withSpinner(tableOutput("abondance1table"), type = myspinner),
                                              downloadButton("download_abondance1", "Téléchargement") # Button Téléchargement
                                             
                           ),
@@ -273,20 +273,20 @@ app_ui <- function() {
                        sliderInput("n", "Number of points", 1, 100, 50),
                        downloadButton("report", "Generate report")
       
-                        ),
+                        )#,
               
                ## verification temporaire -------------------------------------------------
                
-               tabPanel("verif_temp",
-                        textOutput("sp_queentexte"),
-                        textOutput("sp_queentextelatin"),
-                        # dataTableOutput("specimentable"),
-                        # dataTableOutput("df_maturitetable"),
-                        #dataTableOutput("df_maturitelongtable"),
-                        #dataTableOutput("df_maturiteagetable"),
-                        verbatimTextOutput("LTMmaturite.model.logit.L_table"),
-                        #dataTableOutput("capturetable")
-               )
+               # tabPanel("verif_temp",
+               #          textOutput("sp_queentexte"),
+               #          textOutput("sp_queentextelatin"),
+               #          # dataTableOutput("specimentable"),
+               #          # dataTableOutput("df_maturitetable"),
+               #          #dataTableOutput("df_maturitelongtable"),
+               #          #dataTableOutput("df_maturiteagetable"),
+               #          verbatimTextOutput("LTMmaturite.model.logit.L_table"),
+               #          #dataTableOutput("capturetable")
+               # )
                
     ))
   

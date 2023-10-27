@@ -286,80 +286,100 @@ app_server <- function(input, output, session) {
     req(specimen(), sp_pen(), capture(), data_station())
     selection_modele_CPUE_tous(capture = capture(),specimen = specimen(), espece = sp_pen(), station = data_station() ) %>% as.data.frame()
   })
-  output$selection_modele_CPUE_toustable <- renderTable(selection_modele_CPUE_tous_data())
   
+  #output$selection_modele_CPUE_toustable <- renderTable(selection_modele_CPUE_tous_data())
+  output$selection_modele_CPUE_toustable <-  function() {
+    kable_CPUEtous(data = selection_modele_CPUE_tous_data())
+  }
   #Downloadable selected dataset 
   output$download_selection_modele_CPUE_toustable <- download_data_format_xlsx(givenname = "selection_modele_CPUE_tous_data", datadown = selection_modele_CPUE_tous_data())
   
   
-  
-  
   CPUE_tous <- reactive({
     req(selection_modele_CPUE_tous_data())
-    if (length(unique(selection_modele_CPUE_tous_data()$"Méthode"))==3) {
-      paste(selection_modele_CPUE_tous_data()[3 , "CPUE"]) #sil y a un CPUE compromis, on prend lui
-    } else if (selection_modele_CPUE_tous_data()[1 , "Ajustement"] > 10 && selection_modele_CPUE_tous_data()[2 , "Ajustement"] > 10) {
-      paste(NA) #si aucun modele a un ajustement chill, on retiens pas de CPUE
-    } else if (selection_modele_CPUE_tous_data()[1 , "Ajustement"] > selection_modele_CPUE_tous_data()[2 , "Ajustement"] ) {
-      paste(selection_modele_CPUE_tous_data()[2 , "CPUE"]) #on prend le modele avec un ajustement le plus petit
-    } else if (selection_modele_CPUE_tous_data()[1 , "Ajustement"] < selection_modele_CPUE_tous_data()[2 , "Ajustement"]) {
-      paste(selection_modele_CPUE_tous_data()[1 , "CPUE"]) #on prend le modele avec un ajustement le plus petit
-    }
+    paste(selection_modele_CPUE_tous_data()[1 , "CPUE"]) #prendre le premier de la liste, car classe par ordre croissant de Ajustement
   } )
   
-
+  # 
+  # CPUE_tous <- reactive({
+  #   req(selection_modele_CPUE_tous_data())
+  #   if (length(unique(selection_modele_CPUE_tous_data()$"Méthode"))==3) {
+  #     paste(selection_modele_CPUE_tous_data()[3 , "CPUE"]) #sil y a un CPUE compromis, on prend lui
+  #   } else if (selection_modele_CPUE_tous_data()[1 , "Ajustement"] > 10 && selection_modele_CPUE_tous_data()[2 , "Ajustement"] > 10) {
+  #     paste(NA) #si aucun modele a un ajustement chill, on retiens pas de CPUE
+  #   } else if (selection_modele_CPUE_tous_data()[1 , "Ajustement"] > selection_modele_CPUE_tous_data()[2 , "Ajustement"] ) {
+  #     paste(selection_modele_CPUE_tous_data()[2 , "CPUE"]) #on prend le modele avec un ajustement le plus petit
+  #   } else if (selection_modele_CPUE_tous_data()[1 , "Ajustement"] < selection_modele_CPUE_tous_data()[2 , "Ajustement"]) {
+  #     paste(selection_modele_CPUE_tous_data()[1 , "CPUE"]) #on prend le modele avec un ajustement le plus petit
+  #   }
+  # } )
+  
   CPUEic_tous <- reactive({
     req(selection_modele_CPUE_tous_data())
-    if (length(unique(selection_modele_CPUE_tous_data()$"Méthode"))==3) {
-      paste(selection_modele_CPUE_tous_data()[3 , "IC95"]) #sil y a un CPUE compromis, on prend lui
-    } else if (selection_modele_CPUE_tous_data()[1 , "Ajustement"] > 10 && selection_modele_CPUE_tous_data()[2 , "Ajustement"] > 10) {
-      paste(NA) #si aucun modele a un ajustement chill, on retiens pas de CPUE
-    } else if (selection_modele_CPUE_tous_data()[1 , "Ajustement"] > selection_modele_CPUE_tous_data()[2 , "Ajustement"] ) {
-      paste(selection_modele_CPUE_tous_data()[2 , "IC95"]) #on prend le modele avec un ajustement le plus petit
-    } else if (selection_modele_CPUE_tous_data()[1 , "Ajustement"] < selection_modele_CPUE_tous_data()[2 , "Ajustement"]) {
-      paste(selection_modele_CPUE_tous_data()[1 , "IC95"]) #on prend le modele avec un ajustement le plus petit
-    }
+    paste(selection_modele_CPUE_tous_data()[1 , "IC95"]) #prendre le premier de la liste, car classe par ordre croissant de Ajustement
   } )
   
+  # CPUEic_tous <- reactive({
+  #   req(selection_modele_CPUE_tous_data())
+  #   if (length(unique(selection_modele_CPUE_tous_data()$"Méthode"))==3) {
+  #     paste(selection_modele_CPUE_tous_data()[3 , "IC95"]) #sil y a un CPUE compromis, on prend lui
+  #   } else if (selection_modele_CPUE_tous_data()[1 , "Ajustement"] > 10 && selection_modele_CPUE_tous_data()[2 , "Ajustement"] > 10) {
+  #     paste(NA) #si aucun modele a un ajustement chill, on retiens pas de CPUE
+  #   } else if (selection_modele_CPUE_tous_data()[1 , "Ajustement"] > selection_modele_CPUE_tous_data()[2 , "Ajustement"] ) {
+  #     paste(selection_modele_CPUE_tous_data()[2 , "IC95"]) #on prend le modele avec un ajustement le plus petit
+  #   } else if (selection_modele_CPUE_tous_data()[1 , "Ajustement"] < selection_modele_CPUE_tous_data()[2 , "Ajustement"]) {
+  #     paste(selection_modele_CPUE_tous_data()[1 , "IC95"]) #on prend le modele avec un ajustement le plus petit
+  #   }
+  # } )
+  # 
   
   #femelle mature
   selection_modele_CPUE_Fmature_data <- reactive({
     req(specimen(), sp_pen(), capture(), data_station())
     selection_modele_CPUE_Fmature(capture = capture(),specimen = specimen(), espece = sp_pen(), station = data_station() ) %>% as.data.frame()
   })
-  output$selection_modele_CPUE_Fmaturetable <- renderTable(selection_modele_CPUE_Fmature_data())
-  
+ # output$selection_modele_CPUE_Fmaturetable <- renderTable(selection_modele_CPUE_Fmature_data())
+  output$selection_modele_CPUE_Fmaturetable <-  function() {
+    kable_CPUEFmature(data = selection_modele_CPUE_Fmature_data())
+  }
   #Downloadable selected dataset 
   output$download_selection_modele_CPUE_Fmaturetable <- download_data_format_xlsx(givenname = "selection_modele_CPUE_Fmature_data", datadown = selection_modele_CPUE_Fmature_data())
   
-  
-  
   CPUE_Fmature <- reactive({
     req(selection_modele_CPUE_Fmature_data())
-    if (length(unique(selection_modele_CPUE_Fmature_data()$"Méthode"))==3) {
-      paste(selection_modele_CPUE_Fmature_data()[3 , "CPUE"]) #sil y a un CPUE compromis, on prend lui
-    } else if (selection_modele_CPUE_Fmature_data()[1 , "Ajustement"] > 10 && selection_modele_CPUE_Fmature_data()[2 , "Ajustement"] > 10) {
-      paste(NA) #si aucun modele a un ajustement chill, on retiens pas de CPUE
-    } else if (selection_modele_CPUE_Fmature_data()[1 , "Ajustement"] > selection_modele_CPUE_Fmature_data()[2 , "Ajustement"] ) {
-      paste(selection_modele_CPUE_Fmature_data()[2 , "CPUE"]) #on prend le modele avec un ajustement le plus petit
-    } else if (selection_modele_CPUE_Fmature_data()[1 , "Ajustement"] < selection_modele_CPUE_Fmature_data()[2 , "Ajustement"]) {
-      paste(selection_modele_CPUE_Fmature_data()[1 , "CPUE"]) #on prend le modele avec un ajustement le plus petit
-    }
+    paste(selection_modele_CPUE_Fmature_data()[1 , "CPUE"]) #prendre le premier de la liste, car classe par ordre croissant de Ajustement
   } )
-  
+  # 
+  # CPUE_Fmature <- reactive({
+  #   req(selection_modele_CPUE_Fmature_data())
+  #   if (length(unique(selection_modele_CPUE_Fmature_data()$"Méthode"))==3) {
+  #     paste(selection_modele_CPUE_Fmature_data()[3 , "CPUE"]) #sil y a un CPUE compromis, on prend lui
+  #   } else if (selection_modele_CPUE_Fmature_data()[1 , "Ajustement"] > 10 && selection_modele_CPUE_Fmature_data()[2 , "Ajustement"] > 10) {
+  #     paste(NA) #si aucun modele a un ajustement chill, on retiens pas de CPUE
+  #   } else if (selection_modele_CPUE_Fmature_data()[1 , "Ajustement"] > selection_modele_CPUE_Fmature_data()[2 , "Ajustement"] ) {
+  #     paste(selection_modele_CPUE_Fmature_data()[2 , "CPUE"]) #on prend le modele avec un ajustement le plus petit
+  #   } else if (selection_modele_CPUE_Fmature_data()[1 , "Ajustement"] < selection_modele_CPUE_Fmature_data()[2 , "Ajustement"]) {
+  #     paste(selection_modele_CPUE_Fmature_data()[1 , "CPUE"]) #on prend le modele avec un ajustement le plus petit
+  #   }
+  # } )
   
   CPUEic_Fmature <- reactive({
     req(selection_modele_CPUE_Fmature_data())
-    if (length(unique(selection_modele_CPUE_Fmature_data()$"Méthode"))==3) {
-      paste(selection_modele_CPUE_Fmature_data()[3 , "IC95"]) #sil y a un CPUE compromis, on prend lui
-    } else if (selection_modele_CPUE_Fmature_data()[1 , "Ajustement"] > 10 && selection_modele_CPUE_Fmature_data()[2 , "Ajustement"] > 10) {
-      paste(NA) #si aucun modele a un ajustement chill, on retiens pas de CPUE
-    } else if (selection_modele_CPUE_Fmature_data()[1 , "Ajustement"] > selection_modele_CPUE_Fmature_data()[2 , "Ajustement"] ) {
-      paste(selection_modele_CPUE_Fmature_data()[2 , "IC95"]) #on prend le modele avec un ajustement le plus petit
-    } else if (selection_modele_CPUE_Fmature_data()[1 , "Ajustement"] < selection_modele_CPUE_Fmature_data()[2 , "Ajustement"]) {
-      paste(selection_modele_CPUE_Fmature_data()[1 , "IC95"]) #on prend le modele avec un ajustement le plus petit
-    }
+    paste(selection_modele_CPUE_Fmature_data()[1 , "IC95"]) #prendre le premier de la liste, car classe par ordre croissant de Ajustement
   } )
+  
+  # CPUEic_Fmature <- reactive({
+  #   req(selection_modele_CPUE_Fmature_data())
+  #   if (length(unique(selection_modele_CPUE_Fmature_data()$"Méthode"))==3) {
+  #     paste(selection_modele_CPUE_Fmature_data()[3 , "IC95"]) #sil y a un CPUE compromis, on prend lui
+  #   } else if (selection_modele_CPUE_Fmature_data()[1 , "Ajustement"] > 10 && selection_modele_CPUE_Fmature_data()[2 , "Ajustement"] > 10) {
+  #     paste(NA) #si aucun modele a un ajustement chill, on retiens pas de CPUE
+  #   } else if (selection_modele_CPUE_Fmature_data()[1 , "Ajustement"] > selection_modele_CPUE_Fmature_data()[2 , "Ajustement"] ) {
+  #     paste(selection_modele_CPUE_Fmature_data()[2 , "IC95"]) #on prend le modele avec un ajustement le plus petit
+  #   } else if (selection_modele_CPUE_Fmature_data()[1 , "Ajustement"] < selection_modele_CPUE_Fmature_data()[2 , "Ajustement"]) {
+  #     paste(selection_modele_CPUE_Fmature_data()[1 , "IC95"]) #on prend le modele avec un ajustement le plus petit
+  #   }
+  # } )
   
 
   
