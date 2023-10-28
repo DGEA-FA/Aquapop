@@ -284,8 +284,11 @@ app_server <- function(input, output, session) {
   #tous
   selection_modele_CPUE_tous_data <- reactive({
     req(specimen(), sp_pen(), capture(), data_station())
-    selection_modele_CPUE_tous(capture = capture(),specimen = specimen(), espece = sp_pen(), station = data_station() ) %>% as.data.frame()
-  })
+   temp <- selection_modele_CPUE_tous(capture = capture(),specimen = specimen(), espece = sp_pen(), station = data_station() ) %>% as.data.frame()
+    temp <- temp %>% rename('IC 95%' = IC95,
+                            "Ajustement (résultat du test HNP)" = Ajustement)
+    temp
+    })
   
   #output$selection_modele_CPUE_toustable <- renderTable(selection_modele_CPUE_tous_data())
   output$selection_modele_CPUE_toustable <-  function() {
@@ -300,44 +303,20 @@ app_server <- function(input, output, session) {
     paste(selection_modele_CPUE_tous_data()[1 , "CPUE"]) #prendre le premier de la liste, car classe par ordre croissant de Ajustement
   } )
   
-  # 
-  # CPUE_tous <- reactive({
-  #   req(selection_modele_CPUE_tous_data())
-  #   if (length(unique(selection_modele_CPUE_tous_data()$"Méthode"))==3) {
-  #     paste(selection_modele_CPUE_tous_data()[3 , "CPUE"]) #sil y a un CPUE compromis, on prend lui
-  #   } else if (selection_modele_CPUE_tous_data()[1 , "Ajustement"] > 10 && selection_modele_CPUE_tous_data()[2 , "Ajustement"] > 10) {
-  #     paste(NA) #si aucun modele a un ajustement chill, on retiens pas de CPUE
-  #   } else if (selection_modele_CPUE_tous_data()[1 , "Ajustement"] > selection_modele_CPUE_tous_data()[2 , "Ajustement"] ) {
-  #     paste(selection_modele_CPUE_tous_data()[2 , "CPUE"]) #on prend le modele avec un ajustement le plus petit
-  #   } else if (selection_modele_CPUE_tous_data()[1 , "Ajustement"] < selection_modele_CPUE_tous_data()[2 , "Ajustement"]) {
-  #     paste(selection_modele_CPUE_tous_data()[1 , "CPUE"]) #on prend le modele avec un ajustement le plus petit
-  #   }
-  # } )
-  
   CPUEic_tous <- reactive({
     req(selection_modele_CPUE_tous_data())
     paste(selection_modele_CPUE_tous_data()[1 , "IC95"]) #prendre le premier de la liste, car classe par ordre croissant de Ajustement
   } )
   
-  # CPUEic_tous <- reactive({
-  #   req(selection_modele_CPUE_tous_data())
-  #   if (length(unique(selection_modele_CPUE_tous_data()$"Méthode"))==3) {
-  #     paste(selection_modele_CPUE_tous_data()[3 , "IC95"]) #sil y a un CPUE compromis, on prend lui
-  #   } else if (selection_modele_CPUE_tous_data()[1 , "Ajustement"] > 10 && selection_modele_CPUE_tous_data()[2 , "Ajustement"] > 10) {
-  #     paste(NA) #si aucun modele a un ajustement chill, on retiens pas de CPUE
-  #   } else if (selection_modele_CPUE_tous_data()[1 , "Ajustement"] > selection_modele_CPUE_tous_data()[2 , "Ajustement"] ) {
-  #     paste(selection_modele_CPUE_tous_data()[2 , "IC95"]) #on prend le modele avec un ajustement le plus petit
-  #   } else if (selection_modele_CPUE_tous_data()[1 , "Ajustement"] < selection_modele_CPUE_tous_data()[2 , "Ajustement"]) {
-  #     paste(selection_modele_CPUE_tous_data()[1 , "IC95"]) #on prend le modele avec un ajustement le plus petit
-  #   }
-  # } )
-  # 
   
   #femelle mature
   selection_modele_CPUE_Fmature_data <- reactive({
     req(specimen(), sp_pen(), capture(), data_station())
-    selection_modele_CPUE_Fmature(capture = capture(),specimen = specimen(), espece = sp_pen(), station = data_station() ) %>% as.data.frame()
-  })
+   temp <- selection_modele_CPUE_Fmature(capture = capture(),specimen = specimen(), espece = sp_pen(), station = data_station() ) %>% as.data.frame()
+    temp <- temp %>% rename('IC 95%' = IC95,
+                            "Ajustement (résultat du test HNP)" = Ajustement)
+    temp
+    })
  # output$selection_modele_CPUE_Fmaturetable <- renderTable(selection_modele_CPUE_Fmature_data())
   output$selection_modele_CPUE_Fmaturetable <-  function() {
     kable_CPUEFmature(data = selection_modele_CPUE_Fmature_data())
@@ -349,38 +328,12 @@ app_server <- function(input, output, session) {
     req(selection_modele_CPUE_Fmature_data())
     paste(selection_modele_CPUE_Fmature_data()[1 , "CPUE"]) #prendre le premier de la liste, car classe par ordre croissant de Ajustement
   } )
-  # 
-  # CPUE_Fmature <- reactive({
-  #   req(selection_modele_CPUE_Fmature_data())
-  #   if (length(unique(selection_modele_CPUE_Fmature_data()$"Méthode"))==3) {
-  #     paste(selection_modele_CPUE_Fmature_data()[3 , "CPUE"]) #sil y a un CPUE compromis, on prend lui
-  #   } else if (selection_modele_CPUE_Fmature_data()[1 , "Ajustement"] > 10 && selection_modele_CPUE_Fmature_data()[2 , "Ajustement"] > 10) {
-  #     paste(NA) #si aucun modele a un ajustement chill, on retiens pas de CPUE
-  #   } else if (selection_modele_CPUE_Fmature_data()[1 , "Ajustement"] > selection_modele_CPUE_Fmature_data()[2 , "Ajustement"] ) {
-  #     paste(selection_modele_CPUE_Fmature_data()[2 , "CPUE"]) #on prend le modele avec un ajustement le plus petit
-  #   } else if (selection_modele_CPUE_Fmature_data()[1 , "Ajustement"] < selection_modele_CPUE_Fmature_data()[2 , "Ajustement"]) {
-  #     paste(selection_modele_CPUE_Fmature_data()[1 , "CPUE"]) #on prend le modele avec un ajustement le plus petit
-  #   }
-  # } )
   
   CPUEic_Fmature <- reactive({
     req(selection_modele_CPUE_Fmature_data())
     paste(selection_modele_CPUE_Fmature_data()[1 , "IC95"]) #prendre le premier de la liste, car classe par ordre croissant de Ajustement
   } )
-  
-  # CPUEic_Fmature <- reactive({
-  #   req(selection_modele_CPUE_Fmature_data())
-  #   if (length(unique(selection_modele_CPUE_Fmature_data()$"Méthode"))==3) {
-  #     paste(selection_modele_CPUE_Fmature_data()[3 , "IC95"]) #sil y a un CPUE compromis, on prend lui
-  #   } else if (selection_modele_CPUE_Fmature_data()[1 , "Ajustement"] > 10 && selection_modele_CPUE_Fmature_data()[2 , "Ajustement"] > 10) {
-  #     paste(NA) #si aucun modele a un ajustement chill, on retiens pas de CPUE
-  #   } else if (selection_modele_CPUE_Fmature_data()[1 , "Ajustement"] > selection_modele_CPUE_Fmature_data()[2 , "Ajustement"] ) {
-  #     paste(selection_modele_CPUE_Fmature_data()[2 , "IC95"]) #on prend le modele avec un ajustement le plus petit
-  #   } else if (selection_modele_CPUE_Fmature_data()[1 , "Ajustement"] < selection_modele_CPUE_Fmature_data()[2 , "Ajustement"]) {
-  #     paste(selection_modele_CPUE_Fmature_data()[1 , "IC95"]) #on prend le modele avec un ajustement le plus petit
-  #   }
-  # } )
-  
+ 
 
   
   
@@ -418,10 +371,18 @@ app_server <- function(input, output, session) {
   
     biomasse1 <- reactive({
     req(specimen(), sp_pen(), capture())
-    biomasse_table(capture = capture(),specimen = specimen(), espece = sp_pen() )
-    
+    temp <- biomasse_table(capture = capture(),specimen = specimen(), espece = sp_pen() )
+    temp <- temp %>% mutate(IC95 = ifelse(is.na(IC95), "-", IC95))
+    temp <- temp %>% rename("Biomasse totale (kg) " = Biomasse,
+                              "Prop. (%)" = Perc,
+                              "IC 95%" = IC95 )
+    temp
   })
-  output$biomasse1table <- renderTable(biomasse1())
+  #output$biomasse1table <- renderTable(biomasse1())
+  output$biomasse1table <-  function() {
+    kable_biomasse(data = biomasse1())
+  }
+  
   
   output$download_biomasse1 <- download_data_format_xlsx(givenname = "biomasse1", datadown = biomasse1())
   
@@ -794,8 +755,7 @@ app_server <- function(input, output, session) {
     )# %>% as.data.frame()
   })
   output$L50_selection_modeles_table <- renderReactable(reactable(L50_selection_modeles_df(), selection = "single",
-                                                                  onClick = "select", fullWidth = FALSE))
-  
+                                                                  onClick = "select", fullWidth = TRUE,defaultSelected = 1))
   #Downloadable selected dataset
   output$download_L50_selection_modeles_table <- download_data_format_xlsx(givenname = "L50_selection_modeles_table", datadown = L50_selection_modeles_df())
 
@@ -1211,7 +1171,8 @@ app_server <- function(input, output, session) {
     )# %>% as.data.frame()
   })
   output$A50_selection_modeles_table <- renderReactable(reactable(A50_selection_modeles_df(), selection = "single",
-                                                                  onClick = "select", fullWidth = FALSE))
+                                                                  onClick = "select", width = "auto",
+                                                                  defaultSelected = 1))
   
   #Downloadable selected dataset
   output$download_A50_selection_modeles_table <- download_data_format_xlsx(givenname = "A50_selection_modeles_table", datadown = A50_selection_modeles_df())

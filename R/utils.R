@@ -45,8 +45,27 @@ peakplus <- function(data) {
 
 kable_ltmpoidsage <- function(data) {
   req(data)
+  colnames(data)[1] <- 'Groupe' #renommer la 1 colonne
+  colnames(data)[2] <- 'N'
+  colnames(data)[3] <- 'Moy.'
+  colnames(data)[4] <- 'ET'
+  colnames(data)[5] <- 'Min'
+  colnames(data)[6] <- 'Max'
+  
+  colnames(data)[7] <- 'N'
+  colnames(data)[8] <- 'Moy.'
+  colnames(data)[9] <- 'ET'
+  colnames(data)[10] <- 'Min'
+  colnames(data)[11] <- 'Max'
+  
+  colnames(data)[12] <- 'N'
+  colnames(data)[13] <- "Moy."
+  colnames(data)[14] <- 'ET'
+  colnames(data)[15] <- 'Min'
+  colnames(data)[16] <- 'Max'
+  
   data %>% 
-    kable( align = c("r","r","c","c","c","c","r"),
+    kable( align = c("r","c","c","c","c","c","c","c","c","c","c","c","c","c","c","r"),
            caption = "Aperçu des données morphologiques"
     ) %>%
     kable_styling(full_width = FALSE,
@@ -54,9 +73,13 @@ kable_ltmpoidsage <- function(data) {
                   font_size = 12,
                   html_font="sans-serif", 
                   position="center") %>% 
-    column_spec(2, #sexe
+    column_spec(1, #sexe
                 border_right = TRUE) %>% 
-    kableExtra::collapse_rows(columns = 1, valign = "top")
+    add_header_above(c(" ", "LTMax (mm)" = 5, "Masse (g)" = 5, "Âge" = 5)) %>%
+    kableExtra::collapse_rows(columns = 1, valign = "top")  %>%
+    kableExtra::row_spec(1, extra_css = "border-bottom: 0.5px solid") %>%
+    kableExtra::row_spec(4, extra_css = "border-bottom: 0.5px solid") %>%
+    kableExtra::row_spec(8, extra_css = "border-bottom: 0.5px solid")
 
 }
 
@@ -94,6 +117,23 @@ kable_abondance <- function(data) {
                   html_font="sans-serif", 
                   position="center") %>% 
   kableExtra::row_spec(1, extra_css = "border-bottom: 0.5px solid") %>%
+    kableExtra::row_spec(4, extra_css = "border-bottom: 0.5px solid")  %>%
+    kableExtra::row_spec(8, extra_css = "border-bottom: 0.5px solid")
+}
+
+kable_biomasse <- function(data) {
+  req(data)
+  data %>% 
+    kable( align = c("r","c","c","c","r"),
+           caption = "Biomasse",
+           row.names = FALSE
+    ) %>%
+    kable_styling(full_width = FALSE,
+                  #lightable_options = "basic",
+                  font_size = 12,
+                  html_font="sans-serif", 
+                  position="center") %>% 
+    kableExtra::row_spec(1, extra_css = "border-bottom: 0.5px solid") %>%
     kableExtra::row_spec(4, extra_css = "border-bottom: 0.5px solid")  %>%
     kableExtra::row_spec(8, extra_css = "border-bottom: 0.5px solid")
 }

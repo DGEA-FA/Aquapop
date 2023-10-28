@@ -26,7 +26,7 @@ minitable  <- rbind(c("L~50~ (mm)",L50, glue::glue("[{LI }-{LS }]")),
 
 colnames(minitable)[1] <- "Paramètre"
 colnames(minitable)[2] <- "Valeur"
-colnames(minitable)[3] <- "[Min-Max]"
+colnames(minitable)[3] <- "IC 95%"
 
 minitable
 }

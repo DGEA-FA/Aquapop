@@ -73,8 +73,11 @@ selection_modele_CPUE_Fmature <- function(capture, specimen, espece, station) {
   if (ajustement.p > 10) {
     commentaires.p <- "Le modèle de Poisson ne s'ajuste pas bien à vos données. Vous devriez utiliser un autre modèle."
   }
-  linf <- (CPUEfinal.p - confint.p[1]) %>% round(digits = 2)
-  lsup <- (CPUEfinal.p + confint.p[2]) %>% round(digits = 2)
+  # linf <- (CPUEfinal.p + confint.p[1]) %>% round(digits = 2)
+  # lsup <- (CPUEfinal.p - confint.p[2]) %>% round(digits = 2)
+  # 
+  linf <-   exp(predM.p$fit-(1.96*predM.p$se.fit)) %>%   round(digits = 2) #JM dit de pas faire round a lunite (digits=0) pour la moyenne, mais plutot 2
+  lsup <-  exp(predM.p$fit+(1.96*predM.p$se.fit)) %>%   round(digits = 2) #JM dit de pas faire round a lunite (digits=0) pour la moyenne, mais plutot 2
   
   resultCPUE.p <- data.frame("Méthode" = method.p,
                              Ajustement = ajustement.p,
@@ -140,8 +143,12 @@ selection_modele_CPUE_Fmature <- function(capture, specimen, espece, station) {
   if (ajustement.NB1 > 10) {
     commentaires.NB1 <- "Le modèle NB1 ne s'ajuste pas bien à vos données. Vous devriez utiliser un autre modèle."
   }
-  linf <- (CPUEfinal.NB1 - confint.NB1[1]) %>% round(digits = 2)
-  lsup <- (CPUEfinal.NB1 + confint.NB1[2]) %>% round(digits = 2)
+  # linf <- (CPUEfinal.NB1 + confint.NB1[1]) %>% round(digits = 2)
+  # lsup <- (CPUEfinal.NB1 - confint.NB1[2]) %>% round(digits = 2)
+  
+  linf <-   exp(predM.NB1$fit-(1.96*predM.NB1$se.fit)) %>%   round(digits = 2) #JM dit de pas faire round a lunite (digits=0) pour la moyenne, mais plutot 2
+  lsup <-  exp(predM.NB1$fit+(1.96*predM.NB1$se.fit)) %>%   round(digits = 2) #JM dit de pas faire round a lunite (digits=0) pour la moyenne, mais plutot 2
+  
   
   resultCPUE.NB1 <- data.frame("Méthode" = method.NB1,
                                Ajustement = ajustement.NB1,
@@ -187,8 +194,10 @@ selection_modele_CPUE_Fmature <- function(capture, specimen, espece, station) {
   CPUEfinal.NB2 <- exp(predM.NB2$fit)  %>% round(digits = 2) #JM dit de pas faire round a lunite (digits=0) pour la moyenne, mais plutot 2
   confint.NB2 <- confint(model.NB2) #ON DEVRAIT PRENDRE CA COMME lwr and upr limites ! Ca donne aussi un IC95%
   
-  linf <- (CPUEfinal.NB2 - confint.NB2[1]) %>% round(digits = 2)
-  lsup <- (CPUEfinal.NB2 + confint.NB2[2]) %>% round(digits = 2)
+  # linf <- (CPUEfinal.NB2 + confint.NB2[1]) %>% round(digits = 2)
+  # lsup <- (CPUEfinal.NB2 - confint.NB2[2]) %>% round(digits = 2)
+  linf <-   exp(predM.NB2$fit-(1.96*predM.NB2$se.fit)) %>%   round(digits = 2) #JM dit de pas faire round a lunite (digits=0) pour la moyenne, mais plutot 2
+  lsup <-  exp(predM.NB2$fit+(1.96*predM.NB2$se.fit)) %>%   round(digits = 2) #JM dit de pas faire round a lunite (digits=0) pour la moyenne, mais plutot 2
   
   
   resultCPUE.NB2 <- data.frame("Méthode" = method.NB2,
@@ -255,8 +264,11 @@ selection_modele_CPUE_Fmature <- function(capture, specimen, espece, station) {
   if (ajustement.CMP > 10) {
     commentaires.CMP <- "Le modèle CMP ne s'ajuste pas bien à vos données. Vous devriez utiliser un autre modèle."
   }
-  linf <- (CPUEfinal.CMP - confint.CMP[1]) %>% round(digits = 2)
-  lsup <- (CPUEfinal.CMP + confint.CMP[2]) %>% round(digits = 2)
+  # linf <- (CPUEfinal.CMP + confint.CMP[1]) %>% round(digits = 2)
+  # lsup <- (CPUEfinal.CMP - confint.CMP[2]) %>% round(digits = 2)
+  # 
+  linf <-   exp(predM.CMP$fit-(1.96*predM.CMP$se.fit)) %>%   round(digits = 2) #JM dit de pas faire round a lunite (digits=0) pour la moyenne, mais plutot 2
+  lsup <-  exp(predM.CMP$fit+(1.96*predM.CMP$se.fit)) %>%   round(digits = 2) #JM dit de pas faire round a lunite (digits=0) pour la moyenne, mais plutot 2
   
   resultCPUE.CMP <- data.frame("Méthode" = method.CMP,
                                Ajustement = ajustement.CMP,
@@ -326,8 +338,13 @@ selection_modele_CPUE_Fmature <- function(capture, specimen, espece, station) {
   if (ajustement.GP > 10) {
     commentaires.GP <- "Le modèle GP ne s'ajuste pas bien à vos données. Vous devriez utiliser un autre modèle."
   }
-  linf <- (CPUEfinal.GP - confint.GP[1]) %>% round(digits = 2)
-  lsup <- (CPUEfinal.GP + confint.GP[2]) %>% round(digits = 2)
+ # linf <- (CPUEfinal.GP + confint.GP[1]) %>% round(digits = 2)
+  #lsup <- (CPUEfinal.GP - confint.GP[2]) %>% round(digits = 2)
+  
+  linf <-   exp(predM.GP$fit-(1.96*predM.GP$se.fit)) %>%   round(digits = 2) #JM dit de pas faire round a lunite (digits=0) pour la moyenne, mais plutot 2
+  lsup <-  exp(predM.GP$fit+(1.96*predM.GP$se.fit)) %>%   round(digits = 2) #JM dit de pas faire round a lunite (digits=0) pour la moyenne, mais plutot 2
+  
+  
   
   resultCPUE.GP <- data.frame("Méthode" = method.GP,
                               Ajustement = ajustement.GP,

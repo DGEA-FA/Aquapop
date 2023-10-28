@@ -61,14 +61,14 @@ app_ui <- function() {
                tabPanel("Abondance et biomasse",
                         tabsetPanel(tabPanel("CPUE",
                                              htmltools::includeMarkdown('./texte/CPUE_texte.rmd'),
-                                             #withSpinner(tableOutput("verif_ntable"), type = myspinner),
+                                            withSpinner(tableOutput("verif_ntable"), type = myspinner),
                                              textOutput("verif_ntexte"),
                                              withSpinner(tableOutput("selection_modele_CPUE_toustable"), type = myspinner),
                                              downloadButton("download_selection_modele_CPUE_toustable", "Téléchargement"), # Button Téléchargement
-                                             
+
                                              withSpinner(tableOutput("selection_modele_CPUE_Fmaturetable"), type = myspinner),
                                              downloadButton("download_selection_modele_CPUE_Fmaturetable", "Téléchargement"), # Button Téléchargement
-                                             
+
                                             withSpinner(tableOutput("abondance1table"), type = myspinner),
                                              downloadButton("download_abondance1", "Téléchargement") # Button Téléchargement
                                             

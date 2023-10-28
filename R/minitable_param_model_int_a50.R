@@ -38,7 +38,7 @@ minitable <- rbind(c("A~50~ Mâle (mm)", A50_M, glue("[{LI_M}-{LS_M}]")),
 
 colnames(minitable)[1] <- "Paramètre"
 colnames(minitable)[2] <- "Valeur"
-colnames(minitable)[3] <- "[Min-Max]"
+colnames(minitable)[3] <- "IC 95%"
 
 minitable
 }
