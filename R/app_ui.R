@@ -115,10 +115,13 @@ app_ui <- function() {
             
             mainPanel(
               htmltools::includeMarkdown(path = './texte/structuretaille_texte.rmd'),
+              
               withSpinner(
                 plotOutput("structuretailleplot", width = 600, height = 400),
                 type = myspinner
-              )
+              ),
+                            textOutput('titrestructuretailleplot') #titre plot
+
               
             )
           ),
@@ -132,6 +135,7 @@ app_ui <- function() {
             withSpinner(tableOutput(outputId = "psd2_table"), type = myspinner),
             downloadButton(outputId = "download_psd2", label = "Téléchargement"),
             plotOutput("psd1plot", width = 600, height = 400),
+            textOutput('titrepsd1plot'), #titre plot
             downloadButton(outputId = "download_psd1plot", label = "Téléchargement")
           ),
           
@@ -160,21 +164,19 @@ app_ui <- function() {
               withSpinner(
                 plotOutput("structureageplot", width = 600, height = 400),
                 type = myspinner
-              )
+              ),            textOutput('titrestructureageplot') #titre plot
             )
           ),
           
           ## relation_masse_longueur_subpanel ---------------------------------------
           tabPanel(
             "Relation masse-longueur",
-            titlePanel("Relation masse-longueur TITRE TBD"),
             htmltools::includeMarkdown(path = './texte/masselongueur_texte.rmd'),
-            
             withSpinner(
               plotly::plotlyOutput(outputId = 'masselongueur_plot', width = 600, height = 400),
               type = myspinner
             ),
-            # withSpinner(plotOutput("masselongueur_plot", width = 600, height = 400), type = myspinner),
+            textOutput('titregraph_relmasselongueur'), #titre plot
             downloadButton(outputId = "download_masselongueur_plot", label = "Téléchargement") 
           )
         )
@@ -188,18 +190,24 @@ app_ui <- function() {
         withSpinner(plotOutput(
           "wri2plot", width = 600, height = 400
         ), type = myspinner),
+        textOutput('titrewri2plot'), #titre plot
+        
         downloadButton(outputId = "download_wri2plot", label = "Téléchargement"),
         
         withSpinner(plotOutput(
           "wri3plot", width = 600, height = 400
         ), type = myspinner),
+        textOutput('titrewri3plot'), #titre plot
+        
         downloadButton(outputId = "download_wri3plot", label = "Téléchargement")
       ),
       # croissance_panel --------------------------------------------------------
       tabPanel(
         "Croissance",
-        #  withSpinner(tableOutput("croissance1_table"), type = myspinner),
+        
         htmltools::includeMarkdown(path = './texte/croissance_texte.rmd'),
+        textOutput('titrecroissance1'), #titre table
+
         withSpinner(reactableOutput(outputId = "croissance1_table"), type = myspinner),
         downloadButton(outputId = "download_croissance1", label = "Téléchargement"),
         
@@ -210,6 +218,8 @@ app_ui <- function() {
               width = 600,
               height = 400
             ),
+            textOutput('titreselectedmodelcroissanceplot'), #titre plot
+            
             downloadButton(outputId = "download_selectedmodelcroissanceplot", label = "Téléchargement"),
             
           )
@@ -250,19 +260,18 @@ app_ui <- function() {
                    
                    htmltools::includeMarkdown(path = './texte/L50_texte.rmd'),
                    br(),
-                   titlePanel(
-                     "Comparaison de modèles visant à schématiser proportion mature en fonction de la longueur TITRE TBD"
-                   ),
+                   textOutput('titreL50_selection_modeles_table'), #titre plot
                    
                    withSpinner(reactableOutput(outputId = "L50_selection_modeles_table"), type = myspinner),
                    downloadButton(outputId = "download_L50_selection_modeles_table", label = "Téléchargement"),
-                   # Button Téléchargement
+              
                    
                    
                    sidebarLayout(
                      sidebarPanel(
                        # textOutput("table_stateLTM"),#c'etait pour verifier que le lien se fait bien entre le table de selection de modeles et le plot
-                       titlePanel("Présentation des parametres de la courbe TITRE TBD"),
+                       textOutput('titreselectedmodelL50minitable'), #titre plot
+                       
                        tableOutput(outputId = "selectedmodelL50minitable"),
                        downloadButton(outputId = "download_minitableselectedmodelL50", label = "Téléchargement") # Button Téléchargement
                      ),
@@ -272,7 +281,8 @@ app_ui <- function() {
                          width = 600,
                          height = 400
                        ),
-                       titlePanel("L50 graphique titre TBD"),
+                       #titlePanel("L50 graphique titre TBD"),
+                       textOutput('titreselectedmodelL50plot'), #titre plot
                        
                        downloadButton(outputId = "download_selectedmodelL50plot", label = "Téléchargement"),
                        # Button Téléchargement
@@ -283,21 +293,18 @@ app_ui <- function() {
                  tabPanel(title = "Âge à maturité",
                    htmltools::includeMarkdown(path = './texte/A50_texte.rmd'),
                    br(),
-                   titlePanel(
-                     "Comparaison de modèles visant à schématiser proportion mature en fonction de l'âge TITRE TBD"
-                   ),
-                   
+                   textOutput('titreA50_selection_modeles_table'), #titre plot
+        
                    withSpinner(reactableOutput(outputId = "A50_selection_modeles_table"), type = myspinner),
                    downloadButton(outputId = "download_A50_selection_modeles_table", label = "Téléchargement"),
-                   # Button Téléchargement
-                   
+
                    
                    sidebarLayout(
                      sidebarPanel(
                        #textOutput("table_stateAGE"), #c'etait pour verifier que le lien se fait bien entre le table de selection de modeles et le plot
-                       tableOutput(outputId = "selectedmodelA50minitable"),
-                       titlePanel("Présentation des parametres de la courbe TITRE TBD"),
+                       textOutput('titreselectedmodelA50minitable'), #titre plot
                        
+                       tableOutput(outputId = "selectedmodelA50minitable"),
                        downloadButton(outputId = "download_minitableselectedmodelA50", label = "Téléchargement") # Button Téléchargement
                      ),
                      mainPanel(
@@ -305,11 +312,10 @@ app_ui <- function() {
                          width = 600,
                          height = 400
                        ),
-                       titlePanel("A50 graphique titre TBD"),
+                       textOutput('titreselectedmodelA50plot'), #titre plot
                        
                        downloadButton(outputId = "download_selectedmodelA50plot", label = "Téléchargement"),
-                       # Button Téléchargement
-                       
+
                      )
                    )
                    

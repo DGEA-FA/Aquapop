@@ -232,6 +232,9 @@ app_server <- function(input, output, session) {
     req(specimen(), sp_pen())
     structure_taille(data = specimen(), espece = sp_pen(), regroupement = input$groupetailleplot)}, res = 96)
   
+  output$titrestructuretailleplot <- renderText("titre de la figure TBD")
+  
+  
   #Downloadable selected ggplot
   output$download_groupetailleplot <- downloadHandler(
     filename = function() { paste("groupetailleplot", '.png', sep='') },
@@ -248,6 +251,9 @@ app_server <- function(input, output, session) {
   output$structureageplot <- renderPlot({
     req(specimen(), sp_pen())
     structure_age(data = specimen(), espece = sp_pen(), regroupement = input$groupeageplot)}, res = 96)
+  
+  output$titrestructureageplot <- renderText("titre de la figure TBD")
+  
   
   #Downloadable selected ggplot
   output$download_groupeageplot <- downloadHandler(
@@ -442,6 +448,9 @@ app_server <- function(input, output, session) {
     req(psd2())
     psd_plot(data = psd2())}, res = 96)
   
+  output$titrepsd1plot <- renderText("titre de la figure TBD")
+  
+  
   #Downloadable selected ggplot
   output$download_psd1plot <- downloadHandler(
     filename = function() { paste("psd1plot", '.png', sep='') },
@@ -466,7 +475,8 @@ app_server <- function(input, output, session) {
   #   req(specimen(), sp_pen())
   #   relation_masse_longueur(data = specimen(), espece = sp_pen())}, res = 96)
   # 
-  #Downloadable selected ggplot
+  output$titregraph_relmasselongueur <- renderText("titre de la figure TBD")
+ 
   output$download_masselongueur_plot <- downloadHandler(
     filename = function() { paste("relation_masse_longueur", '.png', sep='') },
     content = function(file) {
@@ -494,6 +504,9 @@ app_server <- function(input, output, session) {
     req(specimen(), sp_pen())
     fig_wri_tous(data = specimen(), espece = sp_pen())}, res = 96)
   
+  output$titrewri2plot <- renderText("titre de la figure TBD")
+  
+  
   #Downloadable selected ggplot
   output$download_wri2plot <- downloadHandler(
     filename = function() { paste("wri_tous", '.png', sep='') },
@@ -510,6 +523,8 @@ app_server <- function(input, output, session) {
   output$wri3plot <- renderPlot({
     req(specimen(), sp_pen())
     fig_wri_byclass(data = specimen(), espece = sp_pen())}, res = 96)
+  
+  output$titrewri3plot <- renderText("titre de la figure TBD")
   
   #Downloadable selected ggplot
   output$download_wri3plot <- downloadHandler(
@@ -541,6 +556,10 @@ app_server <- function(input, output, session) {
    output$croissance1_table <- renderReactable(reactable(croissance1(), selection = "single",
                                                         onClick = "select", defaultSelected = 1))
   
+   output$titrecroissance1 <- renderText("titre de la figure TBD")
+   
+   
+   
    selectedmodelcroissance <- reactive({
      selected <- getReactableState("croissance1_table", "selected")
      req(selected, croissance1())
@@ -557,6 +576,8 @@ app_server <- function(input, output, session) {
   #   courbe_croissance_JL2003(data = specimen(), espece = sp_pen())
   # }) #ca fonctionne, mais on voulait pas le voir
   # output$croissanceJL2003_text <- renderText(croissanceJL2003())  #ca fonctionne, mais on voulait pas le voir
+ 
+  output$titreselectedmodelcroissanceplot <- renderText("titre de la figure TBD")
   
   
   output$selectedmodelcroissanceplot <- renderPlot({
@@ -612,13 +633,6 @@ app_server <- function(input, output, session) {
       } , device = "png")
     }
   )
-  
-  
-  
-  
-  
-  
-  
   
   ## Mortalite -------------------------------------------------------
   deathdf <- reactive({
@@ -695,6 +709,7 @@ app_server <- function(input, output, session) {
   
   output$df_maturitetable <- renderDataTable(df_maturite(), options = list(pageLength = 10, autoWidth = TRUE, searching = FALSE))
   
+  output$titreL50_selection_modeles_table <- renderText("Comparaison de modèles visant à schématiser proportion mature en fonction de la longueur TITRE TBD")
   
   df_maturiteltm <- reactive({
     req(df_maturite())
@@ -1103,7 +1118,9 @@ app_server <- function(input, output, session) {
  
   
   
+  output$titreselectedmodelL50minitable <- renderText("Présentation des parametres de la courbe TITRE TBD")
   
+  output$titreselectedmodelL50plot <- renderText("L50 graphique titre TBD")
   
   
   
@@ -1518,6 +1535,18 @@ app_server <- function(input, output, session) {
     }
   )
 
+  
+  
+  output$titreA50_selection_modeles_table <- renderText("Comparaison de modèles visant à schématiser proportion mature en fonction de l'âge TITRE TBD")
+  
+  output$titreselectedmodelA50minitable <- renderText("Présentation des parametres de la courbe TITRE TBD")
+  
+  output$titreselectedmodelA50plot <- renderText("A50 graphique titre TBD")
+  
+  
+  
+  
+  
 # Download report ---------------------------------------------------------
 
   
