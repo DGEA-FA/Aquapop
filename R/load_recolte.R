@@ -30,6 +30,6 @@ load_recolte <- function(path, namesheet) {
   recolte$nb_pese <- as.numeric(recolte$nb_pese)#transformer en numeric
   recolte$comments <- as.character(recolte$comments)#transformer en character
   
-  recolte
+  recolte %>% dplyr::distinct()
   
 }

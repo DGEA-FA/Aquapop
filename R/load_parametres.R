@@ -31,6 +31,6 @@ load_parametres <- function(path, namesheet) {
 
   parametres$comments <- as.character(parametres$comments)#transformer en character
   
-  parametres
+  parametres %>% dplyr::distinct()
   
 }

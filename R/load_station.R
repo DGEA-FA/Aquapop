@@ -65,6 +65,6 @@ load_station <- function(path, namesheet) {
   
   station$duration <- difftime(station$leve , station$pose, units = "auto") # revoir les units selon les calculs subsequents
   
-  station
+  station %>% dplyr::distinct()
   
 }

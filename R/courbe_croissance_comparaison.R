@@ -127,9 +127,24 @@ CLEAN <- CLEAN %>% mutate(t0IC=paste0("[",LCI_t0,"-",UCI_t0,"]"))
 CLEAN <- CLEAN %>% dplyr::select(-c("LCI_t0","UCI_t0"))
 
 
-CLEAN <- CLEAN %>% dplyr::select(c("Methode","Linf","LinfIC","K","KIC", "t0", "t0IC", "AICc", "Delta_AICc","AICcWt","converged"))
-CLEAN <- CLEAN %>% dplyr::arrange(AICc)
 
+CLEAN <-
+  CLEAN %>% dplyr::select(
+    c(
+      "Methode",
+      "Linf",
+      "LinfIC",
+      "K",
+      "KIC",
+      "t0",
+      "t0IC",
+      "AICc",
+      "Delta_AICc",
+      "AICcWt",
+      "converged"
+    )
+  )
+CLEAN <- CLEAN %>% dplyr::arrange(AICc)
 
 colnames(CLEAN)[1] <- "Modèles"
 colnames(CLEAN)[2] <- "L∞"

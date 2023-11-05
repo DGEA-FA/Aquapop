@@ -1,46 +1,56 @@
 # SERVER ------------------------------------------------------------------
 
 app_server <- function(input, output, session) {
-  
-  
   ## voir_exemple -----------------------------------------------------------
   
   uploadexampleServer("uploadexample1")
   
   ## Filter ID --------------------------------------------------------------
   
-  data_temp <- eventReactive(input$upload, {load_lac(path = input$upload, namesheet = "Lac")})
+  data_temp <-
+    eventReactive(input$upload, {
+      load_lac(path = input$upload,
+               namesheet = "Lac")
+    })
   
   output$no_lac <- renderUI({
     req(data_temp())
     typ_pech <- unique(data_temp()$typ_pech)
-    checkboxGroupInput("typ_pech","Sélectionner le type de pêche normalisée", choices = typ_pech, selected = NULL)
-    #selectInput(inputId = "no_lac", label = "Sélectionner le numéro de lac",  choices = no_lac)
-    
+    radioButtons(
+      inputId = "typ_pech",
+      label = "Sélectionner le type de pêche normalisée",
+      choices = typ_pech,
+      selected = character(0)
+    )
   })
   
   df_filtered1 <- reactive({
     req(input$typ_pech)
-    filter(data_temp(), typ_pech %in% input$typ_pech)
+    filter(data_temp(), typ_pech %in% input$typ_pech) %>% droplevels()
   })
   
   output$typ_pech <- renderUI({
     req(df_filtered1())
     no_lac <- unique(df_filtered1()$no_lac)
-    #checkboxGroupInput("no_lac", "Sélectionner le numéro de lac", choices = no_lac, selected = NULL)
-    selectInput(inputId = "no_lac", label = "Sélectionner le numéro de lac",  choices = no_lac,  selected = NULL)
-    
+    selectInput(
+      inputId = "no_lac",
+      label = "Sélectionner le numéro de lac",
+      choices = no_lac,
+      selected = NULL
+    )
   })
   
   df_filtered2 <- reactive({
     req(input$no_lac)
-    filter(df_filtered1(), no_lac %in% input$no_lac)
+    filter(df_filtered1(), no_lac %in% input$no_lac) %>% droplevels()
   })
   
   output$annee <- renderUI({
     req(df_filtered2())
-    annee <- unique(df_filtered1()$annee) 
-    checkboxGroupInput("annee", "Sélectionner les années à considérer dans l'inventaire", choices = sort(annee))
+    annee <- unique(df_filtered2()$annee)
+    checkboxGroupInput(inputId = "annee",
+                       label = "Sélectionner les années à considérer dans l'inventaire",
+                       choices = sort(annee))
   })
   
   df_filtered3 <- reactive({
@@ -50,81 +60,94 @@ app_server <- function(input, output, session) {
   
   output$recap_intro_table <- renderTable({
     req(df_filtered3(), capture())
-   table_recap(datalac = df_filtered3(), capture = capture())
-  } )
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  output$visualiser <- renderUI({
-    req(df_filtered3())
-    selectInput(inputId = "controller",
-                label = "Visualiser les données brutes",
-                choices = c("Lac" = "lac",
-                            "Stations" = "station",
-                            "Récolte" = "recolte",
-                            "Spécimens" = "specimen",
-                            "Profil" = "profil",
-                            "Paramètres" = "parametres"),
-                selected = NULL,
-                multiple = FALSE)
+    table_recap(datalac = df_filtered3(), capture = capture())
   })
   
-  observeEvent(input$controller, { 
-    updateTabsetPanel(inputId = "switcher", selected = input$controller)
+  output$visualiser <- renderUI({
+    req(df_filtered3()) #pas necessaire dans les calculs en soit, mais sinon le menu deroulant apparait direct au debut plutot que juste au moment opportun
+    selectInput(
+      inputId = "controller",
+      label = "Visualiser les données brutes",
+      choices = c(
+        "Lac" = "lac",
+        "Stations" = "station",
+        "Récolte" = "recolte",
+        "Spécimens" = "specimen",
+        "Profil" = "profil",
+        "Paramètres" = "parametres"
+      ),
+      selected = NULL,
+      multiple = FALSE
+    )
+  })
+  
+  observeEvent(input$controller, {
+    updateTabsetPanel(inputId = "switcher", 
+                      selected = input$controller)
   })
   
   ## Display brut -----------------------------------------------------------
   
   data_lac <- reactive({
     req(input$upload, input$no_lac, input$typ_pech, input$annee)
-    load_lac(path = input$upload, namesheet = "Lac") %>% 
-      filter(no_lac %in% input$no_lac, typ_pech %in% input$typ_pech, annee %in% input$annee)
+    load_lac(path = input$upload, namesheet = "Lac") %>%
+      filter(no_lac %in% input$no_lac,
+             typ_pech %in% input$typ_pech,
+             annee %in% input$annee) %>% droplevels()
   })
   
   data_station <- reactive({
     req(input$upload, input$no_lac, input$typ_pech, input$annee)
-    load_station(path = input$upload, namesheet = "Stations") %>% 
-      filter(no_lac %in% input$no_lac, typ_pech %in% input$typ_pech, annee %in% input$annee)
+    load_station(path = input$upload, namesheet = "Stations") %>%
+      filter(no_lac %in% input$no_lac,
+             typ_pech %in% input$typ_pech,
+             annee %in% input$annee) %>% droplevels()
   })
   
   data_recolte <- reactive({
     req(input$upload, input$no_lac, input$typ_pech, input$annee)
-    load_recolte(path = input$upload, namesheet = "Recolte") %>% 
-      filter(no_lac %in% input$no_lac, typ_pech %in% input$typ_pech, annee %in% input$annee)
+    load_recolte(path = input$upload, namesheet = "Recolte") %>%
+      filter(no_lac %in% input$no_lac,
+             typ_pech %in% input$typ_pech,
+             annee %in% input$annee) %>% droplevels()
   })
   
   data_specimen <- reactive({
     req(input$upload, input$no_lac, input$typ_pech, input$annee)
-    load_specimen(path = input$upload, namesheet = "Specimens") %>% 
-      filter(no_lac %in% input$no_lac, typ_pech %in% input$typ_pech, annee %in% input$annee)
+    load_specimen(path = input$upload, namesheet = "Specimens") %>%
+      filter(no_lac %in% input$no_lac,
+             typ_pech %in% input$typ_pech,
+             annee %in% input$annee) %>% droplevels()
   })
   
   data_profil <- reactive({
     req(input$upload, input$no_lac, input$typ_pech, input$annee)
-    load_profil(path = input$upload, namesheet = "Profil") %>% 
-      filter(no_lac %in% input$no_lac, typ_pech %in% input$typ_pech, annee %in% input$annee)
+    load_profil(path = input$upload, namesheet = "Profil") %>%
+      filter(no_lac %in% input$no_lac,
+             typ_pech %in% input$typ_pech,
+             annee %in% input$annee) %>% droplevels()
   })
   
   data_parametres <- reactive({
     req(input$upload, input$no_lac, input$typ_pech, input$annee)
-    load_parametres(path = input$upload, namesheet = "Parametres") %>% 
-      filter(no_lac %in% input$no_lac, typ_pech %in% input$typ_pech, annee %in% input$annee)
+    load_parametres(path = input$upload, namesheet = "Parametres") %>%
+      filter(no_lac %in% input$no_lac,
+             typ_pech %in% input$typ_pech,
+             annee %in% input$annee) %>% droplevels()
   })
   
-  output$table_lac <- renderDataTable(data_lac(), options = brut_options)
-  output$table_station <- renderDataTable(data_station(), options = brut_options)
-  output$table_recolte <- renderDataTable(data_recolte(), options = brut_options)
-  output$table_specimen <- renderDataTable(data_specimen(), options = brut_options)
-  output$table_profil <- renderDataTable(data_profil(), options = brut_options)
-  output$table_parametres <- renderDataTable(data_parametres(), options = brut_options)
+  output$table_lac <-
+    renderDataTable(data_lac(), options = brut_options) #brut_options dans utils.R
+  output$table_station <-
+    renderDataTable(data_station(), options = brut_options)
+  output$table_recolte <-
+    renderDataTable(data_recolte(), options = brut_options)
+  output$table_specimen <-
+    renderDataTable(data_specimen(), options = brut_options)
+  output$table_profil <-
+    renderDataTable(data_profil(), options = brut_options)
+  output$table_parametres <-
+    renderDataTable(data_parametres(), options = brut_options)
   
   ## identifier sp d'interet ------------------------------------------------
   
@@ -152,7 +175,7 @@ app_server <- function(input, output, session) {
     } else {
       NULL
     }
-  } )
+  })
   
   output$sp_queentextelatin <- renderText({
     req(sp_pen())
@@ -165,39 +188,43 @@ app_server <- function(input, output, session) {
     } else {
       NULL
     }
-  } )
+  })
   
   ## Creation du df specimen ------------------------------------------------
-  
   specimen <- reactive({
     req(data_specimen(), data_station())
-    inner_join(x=data_specimen(), y=data_station(), 
-               by=c("no_station", "annee", "nom_lac", "no_lac", "typ_pech")) %>% droplevels()
+    inner_join(
+      x = data_specimen(),
+      y = data_station(),
+      by = c("no_station", "annee", "nom_lac", "no_lac", "typ_pech"),
+      relationship = "many-to-many"
+    ) %>% droplevels()  %>% dplyr::distinct()
   })
-  output$specimentable <- renderDataTable(specimen(), options = list(pageLength = 10, autoWidth = TRUE, searching = FALSE))
   
   ## Creation du df capture -------------------------------------------------
-  
   capture <- reactive({
     req(data_recolte(), data_station())
-    inner_join(x=data_recolte(), y=data_station(), 
-               by=c("no_station", "annee", "nom_lac", "no_lac", "typ_pech")) %>% droplevels()
+    inner_join(
+      x = data_recolte(),
+      y = data_station(),
+      by = c("no_station", "annee", "nom_lac", "no_lac", "typ_pech"),
+      relationship = "many-to-many"
+    ) %>% droplevels()  %>% dplyr::distinct()
   })
-  output$capturetable <- renderDataTable(capture(), options = list(pageLength = 10, autoWidth = TRUE, searching = FALSE))
   
-  ## Taille masse age -------------------------------------------------------
+  # Taille masse age -------------------------------------------------------
   
   taillemasseagedata <- reactive({
     req(specimen(), sp_pen())
     taille_masse_age(dataspecimen = specimen(), espece = sp_pen()) %>% as.data.frame()
   })
-
-  #  output$taillemasseagetable <- renderTable(taillemasseagedata())
+  
   output$taillemasseagetable <-  function() {
     kable_ltmpoidsage(data = taillemasseagedata())
-    }
-                                               
-  output$download_taillemasseagetable <- download_data_format_xlsx(givenname = "taille_masse_age_table", datadown = taillemasseagedata())
+  }
+  
+  output$download_taillemasseagetable <-
+    download_data_format_xlsx(givenname = "taille_masse_age_table", datadown = taillemasseagedata())
   
   ## Structure taille ggplot ------------------------------------------------
   
@@ -394,17 +421,19 @@ app_server <- function(input, output, session) {
     req(specimen(), sp_pen())
     psd_indice(data = specimen(), sp = sp_pen()) %>% as.data.frame()
   })
-  output$psd1_table <- renderTable(psd1())
-  
-  #Downloadable selected dataset 
+  #output$psd1_table <- renderTable(psd1())
+  output$psd1_table <-  function() {
+    kable_psd1(data = psd1())
+  }
   output$download_psd1 <- download_data_format_xlsx(givenname = "psd_indice", datadown = psd1())
   
   psd2 <- reactive({
     req(specimen(), sp_pen())
     psd_byclass(data = specimen(), sp = sp_pen()) %>% as.data.frame()
   })
-  output$psd2_table <- renderTable(psd2())
-  
+  output$psd2_table <-  function() {
+    kable_psd2(data = psd2())
+  }
   #Downloadable selected dataset 
   output$download_psd2 <- download_data_format_xlsx(givenname = "psd_byclass", datadown = psd2())
   
@@ -433,12 +462,6 @@ app_server <- function(input, output, session) {
       plotly::ggplotly(tooltip="text")
     })
   
-  # output$masselongueur_plot <- renderPlotly({
-  #   req(specimen(), sp_pen())
-  #   relation_masse_longueur(data = specimen(), espece = sp_pen()) })
-  # 
-  
-  # 
   # output$masselongueur_plot <- renderPlot({
   #   req(specimen(), sp_pen())
   #   relation_masse_longueur(data = specimen(), espece = sp_pen())}, res = 96)
@@ -633,15 +656,19 @@ app_server <- function(input, output, session) {
     mortalite_selection_modeles(df_EXT = df_ext()) %>% as.data.frame()
   })
   
-  output$mortalite1_table <- renderTable(mortalite1())
-  
+ #output$mortalite1_table <- renderTable(mortalite1())
+  output$mortalite1_table <-  function() {
+    kable_mortalite1(data = mortalite1())
+  }
   
   mortalite2 <- reactive({
     req(pp(), agemax_val(),deathdf())
     mortalite_ChapmanRobson(data = deathdf(), pp = pp(),agemax_val = agemax_val()) %>% as.data.frame()
   })
-  output$mortalite2_table <- renderTable(mortalite2())
-  
+ # output$mortalite2_table <- renderTable(mortalite2())
+  output$mortalite2_table <-  function() {
+    kable_mortalite2(data = mortalite2())
+  }
   
   #Downloadable selected dataset 
   output$download_mortalite1 <- download_data_format_xlsx(givenname = "mortalite_selection_modeles", datadown = mortalite1())

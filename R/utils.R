@@ -1,12 +1,3 @@
-instructions_upload <- c("Le fichier doit être en format *.xlsx, conformément à la procédure d'extraction de IFA (fourni par la DEFA).",
-                         "Sans modification de votre part, le fichier excel extrait est déjà formatté pour l'Application",
-                         "Les onglets du classeur excel doivent être dans un ordre précis, soit : Lac, Stations, Recolte, Specimens, Profil, Paramètres.",
-                         "Dans chaque onglet, les colonnes doivent également être dans un ordre précis. Voir les onglets pour un exemple de chaque feuille.", 
-                         "Les variantes de données absentes (i.e. NA, '', ' ', NULL, NaN) seront toutes transformées en NA dans R",
-                         " **dire que les données excel doivent toutes être en format texte à leur sortie de IFA (leur format sera modifié dans R)"
-                        )
-
-
 brut_options <- list(pageLength = 10, autoWidth = TRUE, searching = FALSE)
 
 bienvenue <- "Yo les chumz, on mets le texte d'accueil ici"
@@ -39,6 +30,30 @@ peakplus <- function(data) {
   PP <- PeakPlus()
   PP
   
+}
+kable_psd1 <- function(data) {
+  req(data)
+  data %>% 
+    kable( align = c("c","c"),
+           caption = NULL, 
+           row.names = FALSE) %>%
+    kable_styling(full_width = FALSE,
+                  font_size = 12,
+                  html_font="sans-serif", 
+                  position="left") 
+}
+
+
+kable_psd2 <- function(data) {
+  req(data)
+  data %>% 
+    kable( align = c("r","c","c","r"),
+           caption = "Fréquence relative (%) de chaque classe de taille", 
+           row.names = FALSE) %>%
+    kable_styling(full_width = FALSE,
+                  font_size = 12,
+                  html_font="sans-serif", 
+                  position="left") 
 }
 
 
@@ -160,6 +175,33 @@ kable_CPUEFmature <- function(data) {
     kable( align = c("r","c","c","c","r"),
            caption = "Comparaison de modèles Reprod. actifs ♀", 
            row.names = FALSE) %>%
+    kable_styling(full_width = FALSE,
+                  #lightable_options = "basic",
+                  font_size = 12,
+                  html_font="sans-serif", 
+                  position="center") 
+}
+
+
+kable_mortalite1 <- function(data) {
+  req(data)
+  data %>% 
+    kable( align = c("r","c","c","c","c","c","c","c","c","r"),
+           caption = "Sélection de modèles mortalité TITRE TBD", 
+           row.names = FALSE    ) %>%
+    kable_styling(full_width = FALSE,
+                  #lightable_options = "basic",
+                  font_size = 12,
+                  html_font="sans-serif", 
+                  position="center") 
+}
+
+kable_mortalite2 <- function(data) {
+  req(data)
+  data %>% 
+    kable( align = c("r","c","r"),
+           caption = "Info pour Robson-Chapman TITRE TBD", 
+           row.names = FALSE    ) %>%
     kable_styling(full_width = FALSE,
                   #lightable_options = "basic",
                   font_size = 12,

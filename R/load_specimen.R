@@ -56,5 +56,5 @@ load_specimen <- function(path, namesheet) {
   specimen$age <- as.numeric(specimen$age)#transformer en numeric
   specimen$comments <- as.character(specimen$comments)#transformer en character
   
-  specimen
+  specimen %>% dplyr::distinct()
 }

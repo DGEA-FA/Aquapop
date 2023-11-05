@@ -1,0 +1,13 @@
+---
+title: "Instruction texte"
+author: "Caroline Brule"
+date: "5 nov 2023"
+---
+Le fichier doit être en format *.xlsx, conformément à la procédure d'extraction de IFA (fourni par la DEFA).
+Sans modification de votre part, le fichier excel extrait est déjà formatté pour l'Application.
+Les onglets du classeur excel doivent être dans un ordre précis, soit : Lac, Stations, Recolte, Specimens, Profil, Paramètres.
+Dans chaque onglet, les colonnes doivent également être dans un ordre précis. Voir les onglets pour un exemple de chaque feuille.
+Les variantes de données absentes (i.e. NA, '', ' ', NULL, NaN) seront toutes transformées en NA dans R.
+
+Les données excel doivent toutes être en format texte à leur sortie de IFA (leur format sera modifié dans R).
+                        

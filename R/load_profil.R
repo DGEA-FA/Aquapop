@@ -40,6 +40,6 @@ load_profil <- function(path, namesheet) {
   profil$date <- as.POSIXct(profil$date,format="%Y-%m-%d", optional = TRUE) # convertir en format date
   profil <- profil %>% mutate(annee = format(date, format = "%Y"))# isoler annee
   
-  profil
+  profil %>% dplyr::distinct()
   
 }
