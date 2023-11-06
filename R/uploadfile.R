@@ -1,4 +1,3 @@
-# Module 1, which will allow to select a number
 uploadfile_ui <- function(id) {
   ns <- NS(id)
   tagList(
@@ -6,7 +5,6 @@ uploadfile_ui <- function(id) {
     fileInput(ns("upload"), "Téléchargez vos données (*.xlsx)", buttonLabel = "Téléchargement...", multiple = FALSE, accept = c(".xlsx"))
   )
 }
-
 
 uploadfile_server <- function(id) {
   moduleServer( id, function(input, output, session) {

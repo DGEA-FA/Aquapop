@@ -2,26 +2,19 @@ biomasse_table <- function(capture, specimen, espece) {
   
   datacapt <- capture %>%  dplyr::filter(sp==espece)  %>% droplevels() 
   datacapt <- datacapt %>% dplyr::select("no_station", "nb_capture",  "nb_pese"   )
-  
   dataspec <- specimen %>%  dplyr::filter(sp==espece)  %>% droplevels() 
   alldata <- merge(dataspec, datacapt, all.x = TRUE) #ch ligne 1 specimen ou on a ajoute n total de capture et de poissons peses par station.On part de ca pour tous les autres filtres
-  
   alldata <- alldata %>% dplyr::filter(type_maill %in% c("G",NA))  %>% droplevels() #on veut juste les filets expérimentaux
-  
   # alldata <- alldata %>% dplyr::filter(ST_HASARD=="O") #slmt les stations hasard ?
   #alldata <- alldata %>% dplyr::filter(ST_VALIDE=="O") #slmt les stations valides? 
-  
-  
   alldata <- alldata %>% dplyr::filter(no_station!="") #retirer station NA où oubli d'écrire la station
   alldata$sexe[is.na(alldata$sexe)] <- "IND"
-  
   nstation <- length(unique(capture$no_station)) %>% as.numeric()
-  
-  #Tous
+
+# tous --------------------------------------------------------------------
   temp <- alldata %>%  dplyr::group_by(no_station) %>% 
     summarise(BPUE = sum(masse, na.rm = TRUE),
               Group="Tous")
-  
   biomassefix <- sum(temp$BPUE, na.rm = TRUE) %>% as.numeric()
   biomassefix <- biomassefix/1000
   biomassefix <- biomassefix %>% round(digits=1)
@@ -59,16 +52,13 @@ biomasse_table <- function(capture, specimen, espece) {
   names(resultBPUE)[4] <- "UL"
   names(resultBPUE)[5] <- "methode"
   
-  
   Tous <- as.data.frame(c(
     Biomasse = biomassefix, 
     Perc = NA,
     BPUE = BPUEfinal,
     IC95 = paste0("(",lowerlimBPUE,"-",upperlimBPUE,")")))
   
-  
   colnames(Tous) <- "Tous"
-  
   # MFIND -------------------------------------------------------------------
   temp <- alldata %>%  dplyr::group_by(no_station, sexe) %>% droplevels() %>% 
     summarise(massesum = sum(masse, na.rm = TRUE))
@@ -91,11 +81,9 @@ biomasse_table <- function(capture, specimen, espece) {
   #temp$Femelle <- as.numeric(temp$Femelle)
   MFIND <- temp #CLEAN
   
-  
  # MFIND <- mutate_all(temp, function(x) as.numeric(as.character(x))) #CLEAN
   
   # FMmature ----------------------------------------------------------------
-
   temp <- alldata %>% filter(maturite=="O" & sexe %in% c("M","F")) %>% droplevels() #slmt poissons matures de sexe connu
   temp <- temp %>% dplyr::group_by(no_station, sexe) %>% 
     summarise(massesum = sum(masse, na.rm = TRUE))
@@ -117,9 +105,7 @@ biomasse_table <- function(capture, specimen, espece) {
   #FMmature <- mutate_all(temp, function(x) as.numeric(as.character(x)))  #CLEAN
   FMmature <- temp #CLEAN
   
-  # Immature ----------------------------------------------------------------
-  
-  #Imm. ou reprod. inactifs
+  # Imm. ou reprod. inactifs ----------------------------------------------------------------
   temp <- alldata %>% filter(maturite=="N") %>% droplevels() #slmt poissons Imm. ou reprod. inactifss
   temp <- temp %>% dplyr::group_by(no_station, maturite) %>% 
     summarise(massesum = sum(masse, na.rm = TRUE))
@@ -140,52 +126,28 @@ biomasse_table <- function(capture, specimen, espece) {
   
  # Immature <- mutate_all(temp, function(x) as.numeric(as.character(x)))  #CLEAN
   Immature <- temp #CLEAN
-  
-  
-  
-  
+
   # Statut reproducteur inconnu ----------------------------------------------------------------
   
   temp <- alldata %>% filter(is.na(maturite)) %>% droplevels() 
   temp <- temp %>% dplyr::group_by(no_station) %>% 
     summarise(massesum = sum(masse, na.rm = TRUE))
-  
   temp <- temp %>% summarise(Biomasse = round(sum(massesum, na.rm = TRUE)/1000,digits=1),
                                                             BPUE = round((sum(massesum, na.rm = TRUE)/nstation)/1000,digits =1))
-  
   temp <- temp %>% mutate(Perc = Biomasse*100/biomassefix,
                           IC95 =NA)
   temp <- temp %>% mutate(Perc = round(Perc, digits = 0))
-  
   temp <- temp %>% dplyr::select(c(Biomasse, Perc, BPUE, IC95))
-
   temp <- t(temp) %>% as.data.frame()
   colnames(temp) <- "Statut reprod. inconnu"
-  
   inconnu <- temp #CLEAN
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
   CLEAN <- cbind(Tous, MFIND, FMmature, Immature, inconnu)
-  
-  #IDfix <- unique(capture$ID) %>% as.character()
-  #CLEAN <- CLEAN %>% mutate(ID= paste(IDfix))
-  
   CLEAN <-  CLEAN %>% dplyr::select(c("Tous", "Femelle", "Mâle","Sexe inconnu", "Repro. actifs ♀","Repro. actifs ♂", "Imm. ou reprod. inactifs","Statut reprod. inconnu"))
   CLEAN <- t(CLEAN) %>% as.data.frame()
   CLEAN <- CLEAN %>% mutate(Groupe =c("Tous", "Femelle", "Mâle","Sexe inconnu", "Repro. actifs ♀","Repro. actifs ♂", "Imm. ou reprod. inactifs","Statut reprod. inconnu"))
   CLEAN <- CLEAN %>%  dplyr::select(c(Groupe, everything())) #Moving the last column to the start
   CLEAN$Perc[CLEAN$Groupe=="Tous"] <- 100
   CLEAN$Perc <- format(round(as.numeric(CLEAN$Perc), digits =0), nsmall = 0)
-  
-
-  
   CLEAN
 }

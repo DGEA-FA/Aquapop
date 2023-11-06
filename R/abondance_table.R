@@ -1,12 +1,8 @@
 abondance_table <- function(capture, specimen, espece) {
-
-  
   datacapt <- capture %>%  dplyr::filter(sp==espece)  %>% droplevels() 
   datacapt <- datacapt %>% dplyr::select("no_station", "nb_capture",  "nb_pese"   )
-  
   dataspec <- specimen %>%  dplyr::filter(sp==espece)  %>% droplevels() 
  alldata <- merge(dataspec, datacapt, all.x = TRUE) #ch ligne 1 specimen ou on a ajoute n total de capture et de poissons peses par station.On part de ca pour tous les autres filtres
-
 #alldata <- alldata %>% dplyr::filter(TYPE_MAILL %in% c("G",NA))  %>% droplevels() #on veut juste les filets expérimentaux
   #UPDATE: LES TECHS SPECIFIENT QUEL COTE DU FILET EXP EST SUR LE BORD DE LA RIVE. DONC NON, PAS DE FILTRE POUR LE TYPE DENGIN
  
@@ -17,7 +13,6 @@ abondance_table <- function(capture, specimen, espece) {
  
  alldata <- alldata %>% dplyr::filter(no_station!="") #retirer station NA où oubli d'écrire la station
  alldata$sexe[is.na(alldata$sexe)] <- "IND" #quand sexe=NA, jai mis ind
- 
 
 # tous --------------------------------------------------------------------
 
@@ -140,7 +135,6 @@ nbfemelle <- CLEAN$Abondance[CLEAN$Groupe=="Femelle"] %>% as.numeric()
 
 #ratioMF <-  round(as.numeric(nbmale/nbfemelle), digits = 1) 
 ratioMF <-  paste0(nbmale,":",nbfemelle)
-
 CLEAN$ratioMF[CLEAN$Groupe=="Tous"] <- ratioMF
 CLEAN$Perc[CLEAN$Groupe=="Tous"] <- 100
 #CLEAN <- CLEAN %>% dplyr::mutate(Perc = round(as.numeric(Perc),digits =0))

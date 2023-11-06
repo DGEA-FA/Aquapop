@@ -21,10 +21,8 @@ psd_indice <- function(data, sp) {
       droplevels = TRUE
     ))
   
-  gfreq <-  xtabs( ~ gcat, data = bunch)
-  
+  gfreq <-  xtabs(~ gcat, data = bunch)
   psdtable <- prop.table(gfreq) * 100
-  
   
   psdQ <- FSA::rcumsum(psdtable)
   temp <- length(psdQ) %>% as.numeric()
@@ -72,7 +70,6 @@ psd_indice <- function(data, sp) {
   LCI <- PSDresult[2]
   UCI <- PSDresult[3]
   PSDresult <- PSDresult %>% mutate(IC95 = glue("[{LCI}-{UCI}]"))
-  
   colnames(PSDresult)[1] <- "PSD"
   colnames(PSDresult)[4] <- "IC 95%"
   PSDresult <- PSDresult %>% dplyr::select(1, 4)

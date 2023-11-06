@@ -1,7 +1,7 @@
 ---
-title: "Utah DWQ Lake Profile Dashboard"
-author: "Jake Vander Laan, Utah Division of Water Quality"
-date: "Feb 5 2019"
+title: "user_guide.rmd"
+author: "Caroline Brule"
+date: "6 novembre 2023"
 ---
 
 ## Description de l'outil

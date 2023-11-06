@@ -1,35 +1,22 @@
 brut_options <- list(pageLength = 10, autoWidth = TRUE, searching = FALSE)
-
-bienvenue <- "Yo les chumz, on mets le texte d'accueil ici"
-
 myspinner <- 6
-
 
 agemax <- function(data) {
   age_max <- max(na.omit(data$age)) #Trouver le plus vieil âge et ignorer les NA de votre jeu de données s’il en contient (sinon = erreur)
   age_max
 }
-
-
-
 death <- function(data, espece) {
-  
   death <- data %>%  dplyr::filter(sp == espece)  %>% droplevels() 
-  #death <- death %>% filter(CARCT_ENG == "Exp") %>% droplevels() #on lavait mis dans Nord, aussi le cas ici ? 
-  death <- subset(death, !is.na(age) ) # this data frame needed to be “cleaned”
+  death <- subset(death, !is.na(age) ) 
 }
-
 peakplus <- function(data) {
-  
   #Largement inspiré de Guide de normalisation et manuel JMainguy
   PeakPlus <- function() {
     uniqv <- unique(data$age)
     Peak <- uniqv[which.max(tabulate(match(data$age, uniqv)))] 
     Peak + 1 }     
-  
   PP <- PeakPlus()
   PP
-  
 }
 kable_psd1 <- function(data) {
   req(data)
@@ -42,8 +29,6 @@ kable_psd1 <- function(data) {
                   html_font="sans-serif", 
                   position="left") 
 }
-
-
 kable_psd2 <- function(data) {
   req(data)
   data %>% 
@@ -55,9 +40,6 @@ kable_psd2 <- function(data) {
                   html_font="sans-serif", 
                   position="left") 
 }
-
-
-
 kable_ltmpoidsage <- function(data) {
   req(data)
   colnames(data)[1] <- 'Groupe' #renommer la 1 colonne
@@ -66,25 +48,21 @@ kable_ltmpoidsage <- function(data) {
   colnames(data)[4] <- 'ET'
   colnames(data)[5] <- 'Min'
   colnames(data)[6] <- 'Max'
-  
   colnames(data)[7] <- 'N'
   colnames(data)[8] <- 'Moy.'
   colnames(data)[9] <- 'ET'
   colnames(data)[10] <- 'Min'
   colnames(data)[11] <- 'Max'
-  
   colnames(data)[12] <- 'N'
   colnames(data)[13] <- "Moy."
   colnames(data)[14] <- 'ET'
   colnames(data)[15] <- 'Min'
   colnames(data)[16] <- 'Max'
-  
   data %>% 
     kable( align = c("r","c","c","c","c","c","c","c","c","c","c","c","c","c","c","r"),
            caption = "Aperçu des données morphologiques"
     ) %>%
     kable_styling(full_width = FALSE,
-                  #lightable_options = "basic",
                   font_size = 12,
                   html_font="sans-serif", 
                   position="center") %>% 
@@ -95,7 +73,6 @@ kable_ltmpoidsage <- function(data) {
     kableExtra::row_spec(1, extra_css = "border-bottom: 0.5px solid") %>%
     kableExtra::row_spec(4, extra_css = "border-bottom: 0.5px solid") %>%
     kableExtra::row_spec(8, extra_css = "border-bottom: 0.5px solid")
-
 }
 
 kable_wri <- function(data) {
@@ -105,7 +82,6 @@ kable_wri <- function(data) {
            caption = "Indice de masse relative (Wr)"
     ) %>%
     kable_styling(full_width = FALSE,
-                  #lightable_options = "basic",
                   font_size = 12,
                   html_font="sans-serif", 
                   position="center") %>% 
@@ -114,10 +90,7 @@ kable_wri <- function(data) {
     column_spec(2, #tous
                 border_right = TRUE) %>% 
     column_spec(4, #male
-                border_right = TRUE)  
-  
-  # %>%      kableExtra::collapse_rows(columns = 1, valign = "top")
-  
+                border_right = TRUE)
 }
 
 kable_abondance <- function(data) {
@@ -127,7 +100,6 @@ kable_abondance <- function(data) {
            caption = "Abondance"
     ) %>%
     kable_styling(full_width = FALSE,
-                  #lightable_options = "basic",
                   font_size = 12,
                   html_font="sans-serif", 
                   position="center") %>% 
@@ -144,7 +116,6 @@ kable_biomasse <- function(data) {
            row.names = FALSE
     ) %>%
     kable_styling(full_width = FALSE,
-                  #lightable_options = "basic",
                   font_size = 12,
                   html_font="sans-serif", 
                   position="center") %>% 
@@ -161,13 +132,10 @@ kable_CPUEtous <- function(data) {
            caption = "Comparaison de modèles CPUE tous", 
            row.names = FALSE    ) %>%
     kable_styling(full_width = FALSE,
-                  #lightable_options = "basic",
                   font_size = 12,
                   html_font="sans-serif", 
                   position="center") 
 }
-
-
 
 kable_CPUEFmature <- function(data) {
   req(data)
@@ -176,12 +144,10 @@ kable_CPUEFmature <- function(data) {
            caption = "Comparaison de modèles Reprod. actifs ♀", 
            row.names = FALSE) %>%
     kable_styling(full_width = FALSE,
-                  #lightable_options = "basic",
                   font_size = 12,
                   html_font="sans-serif", 
                   position="center") 
 }
-
 
 kable_mortalite1 <- function(data) {
   req(data)
@@ -190,7 +156,6 @@ kable_mortalite1 <- function(data) {
            caption = "Sélection de modèles mortalité TITRE TBD", 
            row.names = FALSE    ) %>%
     kable_styling(full_width = FALSE,
-                  #lightable_options = "basic",
                   font_size = 12,
                   html_font="sans-serif", 
                   position="center") 
@@ -209,7 +174,6 @@ kable_mortalite2 <- function(data) {
                   position="center") 
 }
 
-
 # Copy report to temporary directory. This is mostly important when
 # deploying the app, since often the working directory won't be writable
 report_path <- tempfile(fileext = ".Rmd")
@@ -222,17 +186,3 @@ render_report <- function(input, output, params) {
                     envir = new.env(parent = globalenv())
   )
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

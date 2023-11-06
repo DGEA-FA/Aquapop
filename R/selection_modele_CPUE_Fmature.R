@@ -49,7 +49,7 @@ selection_modele_CPUE_Fmature <- function(capture, specimen, espece, station) {
   
   hnp_p <- list()
   
-  for(i in 1:2) { #devrait etre 100...
+  for(i in 1:1) { #devrait etre 100...
     
     hnp_p[[i]] <- hnp(model.p,resid.type="pearson",how.many.out=TRUE,plot.sim=FALSE)
     
@@ -114,7 +114,7 @@ selection_modele_CPUE_Fmature <- function(capture, specimen, espece, station) {
   
   hnp_NB1 <- list()
   
-  for(i in 1:2) {
+  for(i in 1:1) {#remettre a 100
     hnp_NB1[[i]] <- hnp(model.NB1, 
                         newclass = TRUE, 
                         diagfun = dfun,
@@ -170,7 +170,7 @@ selection_modele_CPUE_Fmature <- function(capture, specimen, espece, station) {
   
   hnp_NB2 <- list()
   
-  for(i in 1:2) { #devrait etre 100...
+  for(i in 1:1) { #devrait etre 100...
     
     hnp_NB2[[i]] <- hnp(model.NB2, resid.type="pearson", how.many.out=TRUE, plot.sim=FALSE)
     
@@ -235,7 +235,7 @@ selection_modele_CPUE_Fmature <- function(capture, specimen, espece, station) {
   
   hnp_CMP <- list()
   
-  for(i in 1:2) {
+  for(i in 1:1) {#remettre a 100
     hnp_CMP[[i]] <- hnp(model.CMP, 
                         newclass = TRUE, 
                         diagfun = dfun,
@@ -309,7 +309,7 @@ selection_modele_CPUE_Fmature <- function(capture, specimen, espece, station) {
   
   hnp_GP <- list()
   
-  for(i in 1:2) {
+  for(i in 1:1) {#remettre a 100
     hnp_GP[[i]] <- hnp(model.GP, 
                        newclass = TRUE, 
                        diagfun = dfun,

@@ -1,5 +1,5 @@
 ---
-title: "mortalite_texte"
+title: "mortalite_texte.rmd"
 author: "Caroline Brule"
 date: "20 octobre 2023"
 ---

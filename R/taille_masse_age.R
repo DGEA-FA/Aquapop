@@ -1,4 +1,5 @@
 taille_masse_age <- function(dataspecimen, espece) {
+  # longueur ----------------------------------------------------------------
   ltm_MF <-
     dataspecimen %>%  filter(sp == espece) %>%  filter(sexe == c("M", "F", "IND")) %>%
     dplyr::select(ltm, sexe) %>%
@@ -120,8 +121,7 @@ taille_masse_age <- function(dataspecimen, espece) {
   completltm <-
     completltm %>% dplyr::select(c(sexe, ltm_N, ltm_Moyenne, ltm_ET, ltm_Minimum, ltm_Maximum))
   
-  
-  #masse
+  # masse -------------------------------------------------------------------
   masse_MF <-
     dataspecimen %>%  filter(sp == espece) %>%  filter(sexe == c("M", "F", "IND")) %>%
     dplyr::select(masse, sexe) %>%
@@ -250,7 +250,7 @@ taille_masse_age <- function(dataspecimen, espece) {
   ))
   
   
-  #age
+  # age ---------------------------------------------------------------------
   age_MF <-
     dataspecimen %>%  filter(sp == espece) %>%  filter(sexe == c("M", "F", "IND")) %>%
     dplyr::select(age, sexe) %>%

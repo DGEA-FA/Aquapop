@@ -1,5 +1,5 @@
 ---
-title: "Texte precedant les graphiques de frequences de age"
+title: "structureage_texte.rmd"
 author: "Caroline Brule"
 date: "18 mai 2023"
 ---

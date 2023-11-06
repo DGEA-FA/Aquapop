@@ -9,7 +9,7 @@ structure_taille <- function(data, espece, regroupement) {
   df <-
     data %>% filter(sp == espece) %>% droplevels() #sélectionner slmt les sp
   df <-
-    subset(df, !is.na(ltm)) #removing all records where mesures were missing
+    subset(df,!is.na(ltm)) #removing all records where mesures were missing
   max <- max(df$ltm) # définir la plus grande valeur de ltm
   n <- length(df$no_specimen) %>% as.numeric() #nb de specimens
   

@@ -1,7 +1,6 @@
 psd_plot <- function(data) {
   colnames(data)[4] <- "freq"
   data$freq <- as.numeric(data$freq)
-  
   ggpsd1plot  <- ggplot(data,
                         aes(x = Classe, y = freq)) +
     geom_bar(stat = "identity") +
@@ -49,8 +48,5 @@ psd_plot <- function(data) {
         "Trophée"
       )
     )
-  
-  
   ggpsd1plot
-  
 }

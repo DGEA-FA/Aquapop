@@ -1,7 +1,7 @@
 app_ui <- function() {
   fluidPage(
     # app_title --------------------------------------------------------------
-    titlePanel(title = "AquaPop : Outil d'aide à l'analyse de données d'inventaire ichtyologique"), 
+    titlePanel(title = "AquaPop : Outil d'aide à l'analyse de données d'inventaire ichtyologique"),
     navbarPage(
       "",
       # Page d'accueil -------------------------------------------------------------
@@ -23,9 +23,9 @@ app_ui <- function() {
               multiple = FALSE,
               accept = c(".xlsx")
             ),
-            
             ## exemple fichier ----------------------------------------------------------
             uploadexampleUI("uploadexample1"),
+            #dans uploadexample.R
             ## filter_ID -------------------------------------------------------------
             uiOutput(outputId = "no_lac"),
             uiOutput(outputId = "typ_pech"),
@@ -45,11 +45,14 @@ app_ui <- function() {
               tabPanelBody("recolte", dataTableOutput(outputId = "table_recolte")),
               tabPanelBody("specimen", dataTableOutput(outputId = "table_specimen")),
               tabPanelBody("profil", dataTableOutput(outputId = "table_profil")),
-              tabPanelBody("parametres", dataTableOutput(outputId = "table_parametres"))
+              tabPanelBody(
+                "parametres",
+                dataTableOutput(outputId = "table_parametres")
+              )
             )
           )
         )
-      ), 
+      ),
       # abondance_biomasse_panel ------------------------------------------------
       tabPanel(title = "Abondance et biomasse",
                tabsetPanel(
@@ -84,7 +87,6 @@ app_ui <- function() {
                                   label = "Téléchargement")
                  )
                )),
-      
       # structure_population_panel ----------------------------------------------
       tabPanel(
         title = "Structure de population",
@@ -96,9 +98,9 @@ app_ui <- function() {
             withSpinner(tableOutput(outputId = "taillemasseagetable"), type = myspinner),
             downloadButton(outputId = "download_taillemasseagetable", label = "Téléchargement")
           ),
-          
           ## structure de taille -------------------------------------------------
-          tabPanel(title = "Structure de taille",
+          tabPanel(
+            title = "Structure de taille",
             sidebarPanel(
               radioButtons(
                 inputId = "groupetailleplot",
@@ -112,166 +114,139 @@ app_ui <- function() {
               ),
               downloadButton(outputId = "download_groupetailleplot", label = "Téléchargement")
             ),
-            
             mainPanel(
               htmltools::includeMarkdown(path = './texte/structuretaille_texte.rmd'),
-              
               withSpinner(
                 plotOutput("structuretailleplot", width = 600, height = 400),
                 type = myspinner
               ),
-                            textOutput('titrestructuretailleplot') #titre plot
-
-              
+              textOutput(outputId = 'titrestructuretailleplot') #titre plot
             )
           ),
-          
           ## PSD_subpanel -----------------------------------------------------------
-          tabPanel(title = "PSD",
-                   htmltools::includeMarkdown(path = './texte/psd_texte.rmd'),
-                   
+          tabPanel(
+            title = "PSD",
+            htmltools::includeMarkdown(path = './texte/psd_texte.rmd'),
             withSpinner(tableOutput(outputId = "psd1_table"), type = myspinner),
             downloadButton(outputId = "download_psd1", label = "Téléchargement"),
             withSpinner(tableOutput(outputId = "psd2_table"), type = myspinner),
             downloadButton(outputId = "download_psd2", label = "Téléchargement"),
             plotOutput("psd1plot", width = 600, height = 400),
-            textOutput('titrepsd1plot'), #titre plot
+            textOutput(outputId = 'titrepsd1plot'),
+            #titre plot
             downloadButton(outputId = "download_psd1plot", label = "Téléchargement")
           ),
-          
-          
           ## ggplot_age_subpanel ----------------------------------------------------
-          
-          tabPanel(title = "Structure d’âge",
-            
+          tabPanel(
+            title = "Structure d’âge",
             sidebarPanel(
               radioButtons(
-                "groupeageplot",
-                "Filtrer des poissons",
-                c(
+                inputId = "groupeageplot",
+                label = "Filtrer des poissons",
+                choices  = c(
                   "Tous" = "tous",
                   "Origine" = "marquage",
                   "Sexe" = "sexe",
                   "Statut reproducteur" = "maturite"
                 )
               ),
-              
-              downloadButton(outputId = "download_groupeageplot", label = "Téléchargement") 
+              downloadButton(outputId = "download_groupeageplot", label = "Téléchargement")
             ),
-            
             mainPanel(
               htmltools::includeMarkdown(path = './texte/structureage_texte.rmd'),
               withSpinner(
                 plotOutput("structureageplot", width = 600, height = 400),
                 type = myspinner
-              ),            textOutput('titrestructureageplot') #titre plot
+              ),
+              textOutput(outputId = 'titrestructureageplot') #titre plot
             )
           ),
-          
           ## relation_masse_longueur_subpanel ---------------------------------------
           tabPanel(
-            "Relation masse-longueur",
+            title = "Relation masse-longueur",
             htmltools::includeMarkdown(path = './texte/masselongueur_texte.rmd'),
             withSpinner(
-              plotly::plotlyOutput(outputId = 'masselongueur_plot', width = 600, height = 400),
+              plotly::plotlyOutput(
+                outputId = 'masselongueur_plot',
+                width = 600,
+                height = 400
+              ),
               type = myspinner
             ),
-            textOutput('titregraph_relmasselongueur'), #titre plot
-            downloadButton(outputId = "download_masselongueur_plot", label = "Téléchargement") 
+            textOutput(outputId = 'titregraph_relmasselongueur'),
+            #titre plot
+            downloadButton(outputId = "download_masselongueur_plot", label = "Téléchargement")
           )
         )
       ),
       # indice_condition_panel --------------------------------------------------
-      tabPanel(title = "Indice de condition",
+      tabPanel(
+        title = "Indice de condition",
         withSpinner(tableOutput(outputId = "wri1_table"), type = myspinner),
         downloadButton(outputId = "download_wri1", label = "Téléchargement"),
         htmltools::includeMarkdown(path = './texte/wri2_texte.rmd'),
-        
         withSpinner(plotOutput(
           "wri2plot", width = 600, height = 400
         ), type = myspinner),
-        textOutput('titrewri2plot'), #titre plot
-        
+        textOutput(outputId = 'titrewri2plot'),
+        #titre plot
         downloadButton(outputId = "download_wri2plot", label = "Téléchargement"),
-        
         withSpinner(plotOutput(
           "wri3plot", width = 600, height = 400
         ), type = myspinner),
-        textOutput('titrewri3plot'), #titre plot
-        
+        textOutput(outputId = 'titrewri3plot'),
+        #titre plot
         downloadButton(outputId = "download_wri3plot", label = "Téléchargement")
       ),
       # croissance_panel --------------------------------------------------------
       tabPanel(
-        "Croissance",
-        
+        title = "Croissance",
         htmltools::includeMarkdown(path = './texte/croissance_texte.rmd'),
-        textOutput('titrecroissance1'), #titre table
-
+        textOutput(outputId = 'titrecroissance1'),
+        #titre table
         withSpinner(reactableOutput(outputId = "croissance1_table"), type = myspinner),
         downloadButton(outputId = "download_croissance1", label = "Téléchargement"),
-        
         sidebarLayout(
-          sidebarPanel(textOutput(outputId = "table_stateCROISSANCE"), ),
+          sidebarPanel(textOutput(outputId = "table_stateCROISSANCE"),),
           mainPanel(
-            plotOutput(outputId = "selectedmodelcroissanceplot",
+            plotOutput(
+              outputId = "selectedmodelcroissanceplot",
               width = 600,
               height = 400
             ),
-            textOutput('titreselectedmodelcroissanceplot'), #titre plot
-            
+            textOutput(outputId = 'titreselectedmodelcroissanceplot'),
+            #titre plot
             downloadButton(outputId = "download_selectedmodelcroissanceplot", label = "Téléchargement"),
-            
           )
-        )#,  textOutput("croissanceJL2003_text"), #ca fonctionne, mais on voulait pas le voir
-        
-        
+        )
       ),
-      
-      
       # mortalite_panel ---------------------------------------------------------
-      
-      tabPanel(title = "Mortalité",
-               tabsetPanel(
-                 #   tabPanel("Mortalité au RMS"),
-                 tabPanel(
-                   title = "Mortalité observée",
-                   htmltools::includeMarkdown(path = './texte/mortalite_texte.rmd'),
-                   
-                   withSpinner(tableOutput(outputId = "mortalite1_table"), type = myspinner),
-                   downloadButton(outputId = "download_mortalite1", label = "Téléchargement"),
-                   # textOutput("zobs_text"),
-                   
-                   withSpinner(tableOutput(outputId = "mortalite2_table"), type = myspinner),
-                   downloadButton(outputId = "download_mortalite2", label = "Téléchargement"),
-                 )#,
-                 
-                 
-                 #tabPanel(title = "Outil diagnostique"),
-                 #tabPanel(title = "Graphique CPUE au RMS")
-               )),
-      
-      
-      
+      tabPanel(
+        title = "Mortalité",
+        htmltools::includeMarkdown(path = './texte/mortalite_texte.rmd'),
+        withSpinner(tableOutput(outputId = "mortalite1_table"), type = myspinner),
+        downloadButton(outputId = "download_mortalite1", label = "Téléchargement"),
+        withSpinner(tableOutput(outputId = "mortalite2_table"), type = myspinner),
+        downloadButton(outputId = "download_mortalite2", label = "Téléchargement"),
+      ),
       # maturite_sexuelle_panel -------------------------------------------------
       tabPanel(title = "Maturité sexuelle",
                tabsetPanel(
-                 tabPanel(title = "Longueur à maturité",
-                   
+                 tabPanel(
+                   title = "Longueur à maturité",
                    htmltools::includeMarkdown(path = './texte/L50_texte.rmd'),
                    br(),
-                   textOutput('titreL50_selection_modeles_table'), #titre plot
-                   
-                   withSpinner(reactableOutput(outputId = "L50_selection_modeles_table"), type = myspinner),
+                   textOutput(outputId = 'titreL50_selection_modeles_table'),
+                   #titre plot
+                   withSpinner(
+                     reactableOutput(outputId = "L50_selection_modeles_table"),
+                     type = myspinner
+                   ),
                    downloadButton(outputId = "download_L50_selection_modeles_table", label = "Téléchargement"),
-              
-                   
-                   
                    sidebarLayout(
                      sidebarPanel(
-                       # textOutput("table_stateLTM"),#c'etait pour verifier que le lien se fait bien entre le table de selection de modeles et le plot
-                       textOutput('titreselectedmodelL50minitable'), #titre plot
-                       
+                       textOutput(outputId = 'titreselectedmodelL50minitable'),
+                       #titre plot
                        tableOutput(outputId = "selectedmodelL50minitable"),
                        downloadButton(outputId = "download_minitableselectedmodelL50", label = "Téléchargement") # Button Téléchargement
                      ),
@@ -281,74 +256,49 @@ app_ui <- function() {
                          width = 600,
                          height = 400
                        ),
-                       #titlePanel("L50 graphique titre TBD"),
-                       textOutput('titreselectedmodelL50plot'), #titre plot
-                       
+                       textOutput(outputId = 'titreselectedmodelL50plot'),
+                       #titre plot
                        downloadButton(outputId = "download_selectedmodelL50plot", label = "Téléchargement"),
-                       # Button Téléchargement
-                       
                      )
                    )
                  ),
-                 tabPanel(title = "Âge à maturité",
+                 tabPanel(
+                   title = "Âge à maturité",
                    htmltools::includeMarkdown(path = './texte/A50_texte.rmd'),
                    br(),
-                   textOutput('titreA50_selection_modeles_table'), #titre plot
-        
-                   withSpinner(reactableOutput(outputId = "A50_selection_modeles_table"), type = myspinner),
+                   textOutput(outputId = 'titreA50_selection_modeles_table'),
+                   #titre plot
+                   withSpinner(
+                     reactableOutput(outputId = "A50_selection_modeles_table"),
+                     type = myspinner
+                   ),
                    downloadButton(outputId = "download_A50_selection_modeles_table", label = "Téléchargement"),
-
-                   
                    sidebarLayout(
                      sidebarPanel(
-                       #textOutput("table_stateAGE"), #c'etait pour verifier que le lien se fait bien entre le table de selection de modeles et le plot
-                       textOutput('titreselectedmodelA50minitable'), #titre plot
-                       
+                       textOutput(outputId = 'titreselectedmodelA50minitable'),
+                       #titre plot
                        tableOutput(outputId = "selectedmodelA50minitable"),
                        downloadButton(outputId = "download_minitableselectedmodelA50", label = "Téléchargement") # Button Téléchargement
                      ),
                      mainPanel(
-                       plotOutput(outputId = "selectedmodelA50plot",
+                       plotOutput(
+                         outputId = "selectedmodelA50plot",
                          width = 600,
                          height = 400
                        ),
-                       textOutput('titreselectedmodelA50plot'), #titre plot
-                       
+                       textOutput(outputId = 'titreselectedmodelA50plot'),
+                       #titre plot
                        downloadButton(outputId = "download_selectedmodelA50plot", label = "Téléchargement"),
-
                      )
                    )
-                   
                  )
                )),
-      
-      # alimentation_panel ------------------------------------------------------
-      
-      #tabPanel("Alimentation"),
-      
       # Téléchargement panel ------------------------------------------------------
-      
-      tabPanel(title = "Rapport final",
+      tabPanel(
+        title = "Rapport final",
         sliderInput("n", "Number of points", 1, 100, 50),
         downloadButton(outputId = "report", label = "Generate report")
-      )#,
-      
-      # verification temporaire -------------------------------------------------
-      
-      # tabPanel("verif_temp",
-      #          textOutput("sp_queentexte"),
-      #          textOutput("sp_queentextelatin"),
-      #          # renderDataTable("specimentable"),
-      #          # renderDataTable("df_maturitetable"),
-      #          #renderDataTable("df_maturitelongtable"),
-      #          #renderDataTable("df_maturiteagetable"),
-      #          verbatimTextOutput("LTMmaturite.model.logit.L_table"),
-      #          #renderDataTable("capturetable")
-      # )
-      
+      )
     )
   )
-  
-  
-  
 }

@@ -1,5 +1,5 @@
 ---
-title: "psd texte"
+title: "psd_texte.rmd"
 author: "Caroline Brule"
 date: "5 nov 2023"
 ---

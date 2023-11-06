@@ -27,7 +27,9 @@ packages <-
     "hnp",
     "MASS",
     "glmmTMB",
-    "MuMIn"
+    "MuMIn",
+    "plotly",
+    "gapminder"
   )
 
 # Install packages not yet installed
