@@ -150,7 +150,7 @@ CLEAN <- CLEAN %>% arrange(Groupe)
 #CLEAN <- CLEAN %>%  dplyr::select(ID, everything()) #Moving the last column to the start
 
 CLEAN <- CLEAN %>% rename("Nombre" = Abondance,
-                          "Prop. (%)" = Perc,
+                          "Prop. (%)" = Perc#,
                           #"Ratio M:F" = ratioMF
                           )
 #colnames(CLEAN)[5] <- 'IC 95%' #renommer la colonne 

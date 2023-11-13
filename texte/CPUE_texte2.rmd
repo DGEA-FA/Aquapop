@@ -1,0 +1,7 @@
+---
+title: "CPUE_texte.rmd"
+author: "Caroline Brule"
+date: "25 octobre 2023"
+---
+Le nombre d’individus peut parfois différé entre les tables *Récolte* et *Spécimens*. Si la récolte est plus élevé que le nombre de spécimens, il peut s’agir d’un poisson échappé, trop magané pour prendre des mesures, etc. Si le nombre de spécimens est plus élevé que la récolte, il y a erreur à corriger dans la base de donnée.
+

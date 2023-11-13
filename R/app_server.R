@@ -151,6 +151,7 @@ app_server <- function(input, output, session) {
       NULL
     }
   })
+  
   output$sp_queentextelatin <- renderText({
     req(sp_pen())
     if (sp_pen() == "SANA") {
@@ -163,6 +164,12 @@ app_server <- function(input, output, session) {
       NULL
     }
   })
+    
+  output$specimen_verif <- renderDataTable({
+    req(specimen())
+    specimen() %>% as.data.frame()
+  })
+  
   # Creation du df specimen ------------------------------------------------
   specimen <- reactive({
     req(data_specimen(), data_station())
@@ -183,6 +190,12 @@ app_server <- function(input, output, session) {
       relationship = "many-to-many"
     ) %>% droplevels()  %>% dplyr::distinct()
   })
+  
+  output$capture_verif <- renderDataTable({
+    req(capture())
+    capture() %>% as.data.frame()
+  })
+  
   # Taille masse age -------------------------------------------------------
   taillemasseagedata <- reactive({
     req(specimen(), sp_pen())
@@ -203,7 +216,7 @@ app_server <- function(input, output, session) {
     )
   }, res = 96)
   output$titrestructuretailleplot <-
-    renderText("titre de la figure TBD")
+    renderText("Histogramme de fréquence des longueurs")
   output$download_groupetailleplot <- downloadHandler(
     filename = function() {
       paste("groupetailleplot", '.png', sep = '')
@@ -229,7 +242,7 @@ app_server <- function(input, output, session) {
     )
   }, res = 96)
   output$titrestructureageplot <-
-    renderText("titre de la figure TBD")
+    renderText("Histogramme de fréquence d’âge")
   output$download_groupeageplot <- downloadHandler(
     filename = function() {
       paste("groupeageplot", '.png', sep = '')
@@ -252,47 +265,15 @@ app_server <- function(input, output, session) {
     verif_n_recolte_specimen(
       capture = capture(),
       specimen = specimen(),
-      espece = sp_pen(),
-      station = data_station()
+      espece = sp_pen()
     ) %>% as.data.frame()
   })
   output$verif_ntable <- renderTable(verif_n_data())
-  output$verif_ntexte <- renderText({
-    paste0(
-      "Le nombre total ",
-      if (sp_pen() == "SANA") {
-        paste0("de touladis")
-      } else if (sp_pen() == "SAFO") {
-        paste0("d'ombles de fontaine")
-      } else if (sp_pen() == "SAVI") {
-        paste0("de dorés jaunes")
-      } else {
-        NULL
-      },
-      " selon la base de données des récoltes est de : ",
-      verif_n_data()[1, 2],
-      ". Le nombre total ",
-      if (sp_pen() == "SANA") {
-        paste0("de touladis")
-      } else if (sp_pen() == "SAFO") {
-        paste0("d'ombles de fontaine")
-      } else if (sp_pen() == "SAVI") {
-        paste0("de dorés jaunes")
-      } else {
-        NULL
-      },
-      " selon la base de données des spécimens est de : ",
-      verif_n_data()[2, 2],
-      ". La différence absolue du nombre d'individus entre les deux bases de données est de :",
-      abs(as.numeric(verif_n_data()[1, 2]) - as.numeric(verif_n_data()[2, 2])),
-      ". Cette différence doit être égale à zéro, sinon cela signifie qu'il y a des écarts à corriger entre les deux bases de données."
-    )
-  })
+ 
   ## tous --------------------------------------------------------------------
   selection_modele_CPUE_tous_data <- reactive({
     req(specimen(), sp_pen(), capture(), data_station())
-    temp <-
-      selection_modele_CPUE_tous(
+    temp <- selection_modele_CPUE_tous(
         capture = capture(),
         specimen = specimen(),
         espece = sp_pen(),
@@ -313,7 +294,7 @@ app_server <- function(input, output, session) {
   })
   CPUEic_tous <- reactive({
     req(selection_modele_CPUE_tous_data())
-    paste(selection_modele_CPUE_tous_data()[1 , "IC95"]) #prendre le premier de la liste, car classe par ordre croissant de Ajustement
+    paste(selection_modele_CPUE_tous_data()[1 , 'IC 95%']) #prendre le premier de la liste, car classe par ordre croissant de Ajustement
   })
   ## femelle mature ----------------------------------------------------------
   selection_modele_CPUE_Fmature_data <- reactive({
@@ -340,7 +321,7 @@ app_server <- function(input, output, session) {
   })
   CPUEic_Fmature <- reactive({
     req(selection_modele_CPUE_Fmature_data())
-    paste(selection_modele_CPUE_Fmature_data()[1 , "IC95"]) #prendre le premier de la liste, car classe par ordre croissant de Ajustement
+    paste(selection_modele_CPUE_Fmature_data()[1 , 'IC 95%']) #prendre le premier de la liste, car classe par ordre croissant de Ajustement
   })
   ## abondance table ---------------------------------------------------------
   abondance1 <- reactive({
@@ -368,7 +349,7 @@ app_server <- function(input, output, session) {
     temp <-
       temp %>% mutate(ratioMF = ifelse(is.na(ratioMF), "-", ratioMF))
     temp <- temp %>% rename('IC 95%' = IC95,
-                            "Ratio ♂:♀" = ratioMF)
+                            "Ratio ♂:♀" = ratioMF) %>% as.data.frame()
     temp
   })
   output$abondance1table <-  function() {
@@ -419,7 +400,7 @@ app_server <- function(input, output, session) {
     req(psd2())
     psd_plot(data = psd2())
   }, res = 96)
-  output$titrepsd1plot <- renderText("titre de la figure TBD")
+  output$titrepsd1plot <- renderText("Distribution de fréquence de longueurs avec les classes de PSD")
   output$download_psd1plot <- downloadHandler(
     filename = function() {
       paste("psd1plot", '.png', sep = '')
@@ -438,7 +419,7 @@ app_server <- function(input, output, session) {
       plotly::ggplotly(tooltip = "text")
   })
   output$titregraph_relmasselongueur <-
-    renderText("titre de la figure TBD")
+    renderText("Relation masse-longueur")
   output$download_masselongueur_plot <- downloadHandler(
     filename = function() {
       paste("relation_masse_longueur", '.png', sep = '')
@@ -459,7 +440,7 @@ app_server <- function(input, output, session) {
     kable_wri(data = wri1data())
   }
   output$download_wri1 <-
-    download_data_format_xlsx(givenname = "table_wri", datadown = wri1())
+    download_data_format_xlsx(givenname = "table_wri", datadown = wri1data())
   ## Wri tous ggplot ------------------------------------------------
   output$wri2plot <- renderPlot({
     req(specimen(), sp_pen())

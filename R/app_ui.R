@@ -60,8 +60,8 @@ app_ui <- function() {
                    title = "CPUE",
                    htmltools::includeMarkdown(path = './texte/CPUE_texte.rmd'),
                    withSpinner(tableOutput(outputId = "verif_ntable"),
-                               type = myspinner),
-                   textOutput(outputId = "verif_ntexte"),
+                              type = myspinner),
+                   htmltools::includeMarkdown(path = './texte/CPUE_texte2.rmd'),
                    withSpinner(
                      tableOutput(outputId = "selection_modele_CPUE_toustable"),
                      type = myspinner
@@ -71,7 +71,7 @@ app_ui <- function() {
                    withSpinner(
                      tableOutput(outputId = "selection_modele_CPUE_Fmaturetable"),
                      type = myspinner
-                   ),
+                  ),
                    downloadButton(outputId = "download_selection_modele_CPUE_Fmaturetable",
                                   label = "Téléchargement"),
                    withSpinner(tableOutput(outputId = "abondance1table"),
@@ -132,8 +132,8 @@ app_ui <- function() {
             withSpinner(tableOutput(outputId = "psd2_table"), type = myspinner),
             downloadButton(outputId = "download_psd2", label = "Téléchargement"),
             plotOutput("psd1plot", width = 600, height = 400),
-            textOutput(outputId = 'titrepsd1plot'),
-            #titre plot
+            textOutput(outputId = 'titrepsd1plot'),            #titre plot
+
             downloadButton(outputId = "download_psd1plot", label = "Téléchargement")
           ),
           ## ggplot_age_subpanel ----------------------------------------------------
@@ -182,6 +182,7 @@ app_ui <- function() {
       # indice_condition_panel --------------------------------------------------
       tabPanel(
         title = "Indice de condition",
+        htmltools::includeMarkdown(path = './texte/wri1_texte.rmd'),
         withSpinner(tableOutput(outputId = "wri1_table"), type = myspinner),
         downloadButton(outputId = "download_wri1", label = "Téléchargement"),
         htmltools::includeMarkdown(path = './texte/wri2_texte.rmd'),
@@ -191,6 +192,7 @@ app_ui <- function() {
         textOutput(outputId = 'titrewri2plot'),
         #titre plot
         downloadButton(outputId = "download_wri2plot", label = "Téléchargement"),
+        htmltools::includeMarkdown(path = './texte/wri3_texte.rmd'),
         withSpinner(plotOutput(
           "wri3plot", width = 600, height = 400
         ), type = myspinner),
@@ -299,6 +301,16 @@ app_ui <- function() {
         sliderInput("n", "Number of points", 1, 100, 50),
         downloadButton(outputId = "report", label = "Generate report")
       )
+      # ,
+      # 
+      # # Visualisation specimen et recolte ------------------------------------------------------
+      # tabPanel(
+      #   title = "Visualisation BD",
+      #   dataTableOutput(outputId = "specimen_verif"),
+      #   dataTableOutput(outputId = "capture_verif")
+      # )
+      
+      
     )
   )
 }

@@ -1,0 +1,7 @@
+---
+title: "wri2_texte.rmd"
+author: "Caroline Brule"
+date: "20 oct 2023"
+---
+
+Info liées au tableau Indice de masse relative TBD
