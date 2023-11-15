@@ -6,6 +6,36 @@ structure_age <- function(data, espece, regroupement) {
   max <- max(df$age) # définir la plus grande valeur de age
   n <- length(df$no_specimen) %>% as.numeric() #nb de specimens
   
+  df$sexe <-
+    factor(
+      df$sexe,
+      levels = c(
+        "F",
+        "M",
+        "IND"
+      )
+    )
+  df$maturite <-
+    factor(
+      df$maturite,
+      levels = c(
+        "O",
+        "N",
+        "IND"
+      )
+    )
+  
+
+  df$marquage <-
+    factor(
+      df$marquage,
+      levels = c(
+        "MA",
+        "NMA" #ou whatever cest quoi le code que vous voulez
+      )
+    )
+
+
   #pour qu'il n'y ait pas de fautes d'orthographes dans le titre de l'axe y du graphique
   nomsp <-  if (espece == "SANA") {
     paste0("touladis")
@@ -44,7 +74,7 @@ structure_age <- function(data, espece, regroupement) {
         } else if (regroupement == "sexe") {
           c("#084594", "#99CCFF", "#4d4d4d")
         } else if (regroupement == "maturite") {
-          c("#4d4d4d", "#99CCFF", "#084594")
+          c("#084594", "#99CCFF", "#4d4d4d")
         } else if (regroupement == "marquage") {
           c("#084594", "#99CCFF")
         }
@@ -56,7 +86,7 @@ structure_age <- function(data, espece, regroupement) {
         } else if (regroupement == "sexe") {
           c("Femelle", "Mâle", "Indéterminé")
         } else if (regroupement == "maturite") {
-          c("Indéterminé", "Immature", "Mature")
+          c("Mature", "Immature", "Indéterminé")
         } else if (regroupement == "marquage") {
           c("Marqué", "Non marqué")
         }
@@ -69,7 +99,7 @@ structure_age <- function(data, espece, regroupement) {
       } else if (regroupement == "sexe") {
         guide_legend(reverse = FALSE)
       } else if (regroupement == "maturite") {
-        guide_legend(reverse = TRUE)
+        guide_legend(reverse = FALSE)
       } else if (regroupement == "marquage") {
         guide_legend(reverse = FALSE)
       }
@@ -117,7 +147,7 @@ structure_age <- function(data, espece, regroupement) {
                          by = 1
                        )) +
     scale_y_continuous(
-      expand = c(0, 0.5) ,
+      expand = c(0, 0.2) ,
       breaks = function(x)
         unique(floor(pretty(seq(
           0, (max(x) + 10) * 1.1

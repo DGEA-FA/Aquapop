@@ -1,9 +1,28 @@
 taille_masse_age <- function(dataspecimen, espece) {
   # longueur ----------------------------------------------------------------
-  ltm_MF <-
-    dataspecimen %>%  filter(sp == espece) %>%  filter(sexe == c("M", "F", "IND")) %>%
+  dataspecimen$sexe <-
+    factor(
+      dataspecimen$sexe,
+      levels = c(
+        "F",
+        "M",
+        "IND"
+      )
+    )
+  dataspecimen$maturite <-
+    factor(
+      dataspecimen$maturite,
+      levels = c(
+        "O",
+        "N",
+        "IND"
+      )
+    )
+  
+   ltm_MF <-
+    dataspecimen %>%  filter(sp == espece) %>%  filter(sexe %in% c("M", "F", "IND")) %>%
     dplyr::select(ltm, sexe) %>%
-    group_by(sexe) %>%
+    group_by(sexe, .drop = FALSE) %>%
     dplyr::summarise(across(
       where(is.numeric),
       .fns = list(
@@ -29,7 +48,7 @@ taille_masse_age <- function(dataspecimen, espece) {
     )) %>% mutate(sexe = NA)
   
   ltm_Fmature <-
-    dataspecimen %>%  filter(sp == espece, maturite == "O" , sexe == "F")  %>%
+    dataspecimen %>%  filter(sp == espece & maturite == "O" & sexe == "F")  %>%
     dplyr::select(ltm) %>%
     dplyr::summarise(across(
       where(is.numeric),
@@ -125,7 +144,7 @@ taille_masse_age <- function(dataspecimen, espece) {
   masse_MF <-
     dataspecimen %>%  filter(sp == espece) %>%  filter(sexe == c("M", "F", "IND")) %>%
     dplyr::select(masse, sexe) %>%
-    group_by(sexe) %>%
+    group_by(sexe, .drop = FALSE) %>%
     dplyr::summarise(across(
       where(is.numeric),
       .fns = list(
@@ -151,7 +170,7 @@ taille_masse_age <- function(dataspecimen, espece) {
     )) %>% mutate(sexe = NA)
   
   masse_Fmature <-
-    dataspecimen %>%  filter(sp == espece, maturite == "O" , sexe == "F")  %>%
+    dataspecimen %>%  filter(sp == espece & maturite == "O" & sexe == "F")  %>%
     dplyr::select(masse) %>%
     dplyr::summarise(across(
       where(is.numeric),
@@ -254,7 +273,7 @@ taille_masse_age <- function(dataspecimen, espece) {
   age_MF <-
     dataspecimen %>%  filter(sp == espece) %>%  filter(sexe == c("M", "F", "IND")) %>%
     dplyr::select(age, sexe) %>%
-    group_by(sexe) %>%
+    group_by(sexe, .drop = FALSE) %>%
     dplyr::summarise(across(
       where(is.numeric),
       .fns = list(
@@ -280,7 +299,7 @@ taille_masse_age <- function(dataspecimen, espece) {
     )) %>% mutate(sexe = NA)
   
   age_Fmature <-
-    dataspecimen %>%  filter(sp == espece , maturite == "O" , sexe == "F")  %>%
+    dataspecimen %>%  filter(sp == espece & maturite == "O" & sexe == "F")  %>%
     dplyr::select(age) %>%
     dplyr::summarise(across(
       where(is.numeric),

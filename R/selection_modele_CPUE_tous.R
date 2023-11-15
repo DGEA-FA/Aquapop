@@ -78,7 +78,8 @@ selection_modele_CPUE_tous <- function(capture, specimen, espece, station) {
                              Ajustement = ajustement.p,
                              CPUE = CPUEfinal.p,
                              "IC95" = paste0("(",linf,"-",lsup,")"),
-                             Commentaires = commentaires.p)
+                             Commentaires = commentaires.p,
+                             modeltemp = "model.p")
 
 
 # NB1 ---------------------------------------------------------------------
@@ -144,7 +145,8 @@ selection_modele_CPUE_tous <- function(capture, specimen, espece, station) {
                              Ajustement = ajustement.NB1,
                              CPUE = CPUEfinal.NB1,
                              "IC95" = paste0("(",linf,"-",lsup,")"),
-                             Commentaires = commentaires.NB1)
+                             Commentaires = commentaires.NB1,
+                             modeltemp = "model.NB1")
 
 
 
@@ -241,7 +243,8 @@ selection_modele_CPUE_tous <- function(capture, specimen, espece, station) {
                                Ajustement = ajustement.CMP,
                                CPUE = CPUEfinal.CMP,
                                "IC95" = paste0("(",linf,"-",lsup,")"),
-                               Commentaires = commentaires.CMP)
+                               Commentaires = commentaires.CMP,
+                               modeltemp = "model.CMP")
 
 
 
@@ -311,7 +314,8 @@ selection_modele_CPUE_tous <- function(capture, specimen, espece, station) {
                                Ajustement = ajustement.GP,
                                CPUE = CPUEfinal.GP,
                                "IC95" = paste0("(",linf,"-",lsup,")"),
-                               Commentaires = commentaires.GP)
+                               Commentaires = commentaires.GP,
+                              modeltemp = "model.GP")
 
 
 
@@ -338,7 +342,8 @@ selection_modele_CPUE_tous <- function(capture, specimen, espece, station) {
                                Ajustement = ajustement.NB2,
                                CPUE = CPUEfinal.NB2,
                                "IC95" = paste0("(",linf,"-",lsup,")"),
-                               Commentaires = commentaires.NB2)
+                               Commentaires = commentaires.NB2,
+                               modeltemp = "model.NB2")
 
   CLEAN <- rbind(resultCPUE.p, resultCPUE.NB2,resultCPUE.NB1,resultCPUE.CMP,resultCPUE.GP)
 
@@ -355,7 +360,7 @@ selection_modele_CPUE_tous <- function(capture, specimen, espece, station) {
   modeles_egalite <- c(CLEAN[indice,]$modeltemp)
   modeles_egalite_nom <- c(CLEAN[indice,]$'Méthode')
 
-  if (n_indice >= 2) {
+  if (n_indice >= 2 ) {
 
     sorti <- model.sel(mget(modeles_egalite))
     compromis <- model.avg(sorti , revised.var = TRUE      )

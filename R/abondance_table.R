@@ -30,8 +30,8 @@ abondance_table <- function(capture, specimen, espece) {
 
 # MFIND -------------------------------------------------------------------
 
-
-temp <- alldata %>%  dplyr::group_by(sexe)  %>% 
+levels(alldata$sexe) <- c("F","M", "IND")
+temp <- alldata %>%  dplyr::group_by(sexe, .drop = FALSE)  %>% 
   summarise(Abondance =n(), 
             Perc = NA, 
             CPUE = NA, 
