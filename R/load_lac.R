@@ -1,6 +1,6 @@
 load_lac <- function(path, namesheet) {
   lac <- readxl::read_excel(
-    path$datapath,
+    path,
     col_names = TRUE,
     sheet = namesheet,
     na = c("", "NULL", "NA", " "),

@@ -1,6 +1,6 @@
 load_parametres <- function(path, namesheet) {
   parametres <- readxl::read_excel(
-    path$datapath,
+    path,
     col_names = TRUE,
     sheet = namesheet,
     na = c("", "NULL", "NA", " "),

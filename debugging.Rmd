@@ -1,0 +1,33 @@
+---
+title: "Debugging"
+author: "Caroline Brule"
+date: "2023-11-15"
+output: html_document
+---
+
+
+```{r}
+library(readxl)
+main_path <- file.path("C:", "Users", "carol", "OneDrive", "EmploiMFFP", "Hiver2022-2023") #A modifier en changeant dordi!
+databrut <-file.path(main_path, "PENDJ_ShinyR_DUFAY.xlsx") 
+
+#load fonctions
+source(file.path(main_path, "AquapopQC","R", "load_specimen.R"))
+data_specimen <- load_specimen(path = databrut, namesheet = "Specimens")
+
+
+
+data_station <- read_excel(databrut, sheet = "Stations")
+data_lac <- read_excel(databrut, sheet = "Lac")
+data_recolte <- read_excel(databrut, sheet = "Recolte")
+#pas besoin des autres pour le moment
+```
+Création specimen
+```{r}
+
+```
+Creation capture
+```{r}
+
+```
+

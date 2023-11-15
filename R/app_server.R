@@ -4,7 +4,7 @@ app_server <- function(input, output, session) {
   # Filter ID --------------------------------------------------------------
   data_temp <-
     eventReactive(input$upload, {
-      load_lac(path = input$upload,
+      load_lac(path = input$upload$datapath,
                namesheet = "Lac")
     })
   output$no_lac <- renderUI({
@@ -74,42 +74,42 @@ app_server <- function(input, output, session) {
   # Display brut -----------------------------------------------------------
   data_lac <- reactive({
     req(input$upload, input$no_lac, input$typ_pech, input$annee)
-    load_lac(path = input$upload, namesheet = "Lac") %>%
+    load_lac(path = input$upload$datapath, namesheet = "Lac") %>%
       filter(no_lac %in% input$no_lac,
              typ_pech %in% input$typ_pech,
              annee %in% input$annee) %>% droplevels()
   })
   data_station <- reactive({
     req(input$upload, input$no_lac, input$typ_pech, input$annee)
-    load_station(path = input$upload, namesheet = "Stations") %>%
+    load_station(path = input$upload$datapath, namesheet = "Stations") %>%
       filter(no_lac %in% input$no_lac,
              typ_pech %in% input$typ_pech,
              annee %in% input$annee) %>% droplevels()
   })
   data_recolte <- reactive({
     req(input$upload, input$no_lac, input$typ_pech, input$annee)
-    load_recolte(path = input$upload, namesheet = "Recolte") %>%
+    load_recolte(path = input$upload$datapath, namesheet = "Recolte") %>%
       filter(no_lac %in% input$no_lac,
              typ_pech %in% input$typ_pech,
              annee %in% input$annee) %>% droplevels()
   })
   data_specimen <- reactive({
     req(input$upload, input$no_lac, input$typ_pech, input$annee)
-    load_specimen(path = input$upload, namesheet = "Specimens") %>%
+    load_specimen(path = input$upload$datapath, namesheet = "Specimens") %>%
       filter(no_lac %in% input$no_lac,
              typ_pech %in% input$typ_pech,
              annee %in% input$annee) %>% droplevels()
   })
   data_profil <- reactive({
     req(input$upload, input$no_lac, input$typ_pech, input$annee)
-    load_profil(path = input$upload, namesheet = "Profil") %>%
+    load_profil(path = input$upload$datapath, namesheet = "Profil") %>%
       filter(no_lac %in% input$no_lac,
              typ_pech %in% input$typ_pech,
              annee %in% input$annee) %>% droplevels()
   })
   data_parametres <- reactive({
     req(input$upload, input$no_lac, input$typ_pech, input$annee)
-    load_parametres(path = input$upload, namesheet = "Parametres") %>%
+    load_parametres(path = input$upload$datapath, namesheet = "Parametres") %>%
       filter(no_lac %in% input$no_lac,
              typ_pech %in% input$typ_pech,
              annee %in% input$annee) %>% droplevels()
