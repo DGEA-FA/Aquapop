@@ -487,12 +487,12 @@ app_server <- function(input, output, session) {
       subset(x, !is.na(age)) #removing all records where AGE mesures were missing
     x
   })
-  croissance1 <- reactive({
+  croissance1 <- reactive({ #ici pas encore reactable
     req(initcroissance())
     courbe_croissance_comparaison(data = initcroissance()) %>% as.data.frame()
   })
   output$croissance1_table <-
-    renderReactable(
+    renderReactable( #deviens reactable ici
       reactable(
         croissance1(),
         selection = "single",
@@ -500,19 +500,26 @@ app_server <- function(input, output, session) {
         defaultSelected = 1
       )
     )
+  
   output$titrecroissance1 <- renderText("titre de la figure TBD")
-  selectedmodelcroissance <- reactive({
+  
+  selectedmodelcroissance <- reactive({ #selection du modele choisi dans le reactable
     selected <- getReactableState("croissance1_table", "selected")
     req(selected, croissance1())
     details <- croissance1()[selected, 1]
     paste(details)
   })
-  output$table_stateCROISSANCE <-
-    renderText(selectedmodelcroissance())
+  
+  output$table_stateCROISSANCE <- 
+    renderText(selectedmodelcroissance()) #Non nécéssaire, mais sert de flag de vérification durant l'utilisation de l'app pour s'assurer qu'on voit bien le modèle qu'on veut
+  
   output$download_croissance1 <-
     download_data_format_xlsx(givenname = "courbe_croissance_comparaison", datadown = croissance1())
+  
   output$titreselectedmodelcroissanceplot <-
     renderText("titre de la figure TBD")
+  
+  #ici, on fait appel a differentes fxns selon le modele selectionné
   output$selectedmodelcroissanceplot <- renderPlot({
     req(selectedmodelcroissance())
     if (selectedmodelcroissance() == "Von Bertalanffy") {
@@ -526,6 +533,7 @@ app_server <- function(input, output, session) {
       courbe_croissance_ggLOGIST(initcroissance = initcroissance(), tablemodele = croissance1())
     }
   }, res = 96)
+  
   # download_selectedmodelcroissanceplot
   output$download_selectedmodelcroissanceplot <- downloadHandler(
     filename = function() {
@@ -557,6 +565,7 @@ app_server <- function(input, output, session) {
       } , device = "png")
     }
   )
+  
   # Mortalite -------------------------------------------------------
   deathdf <- reactive({
     req(specimen(), sp_pen())
@@ -590,29 +599,36 @@ app_server <- function(input, output, session) {
     req(df_ext())
     mortalite_selection_modeles(df_EXT = df_ext()) %>% as.data.frame()
   })
+  
   output$mortalite1_table <-  function() {
     kable_mortalite1(data = mortalite1())
   }
+  
   mortalite2 <- reactive({
     req(pp(), agemax_val(), deathdf())
     mortalite_ChapmanRobson(data = deathdf(),
                             pp = pp(),
                             agemax_val = agemax_val()) %>% as.data.frame()
   })
+  
   output$mortalite2_table <-  function() {
     kable_mortalite2(data = mortalite2())
   }
-  output$download_mortalite1 <-
+ 
+   output$download_mortalite1 <-
     download_data_format_xlsx(givenname = "mortalite_selection_modeles", datadown = mortalite1())
+  
   output$download_mortalite2 <-
     download_data_format_xlsx(givenname = "mortalite_ChapmanRobson", datadown = mortalite2())
+  
   zobs <- reactive({
     req(pp(), deathdf(), agemax_val())
     get_zobs(PP = pp(),
              death = deathdf(),
              agemax = agemax_val())
   })
-  output$zobs_text <- renderText(zobs())
+ 
+   output$zobs_text <- renderText(zobs())
   # Maturite sexuelle -------------------------------------------------------
   df_maturite <- reactive({
     req(specimen(), sp_pen())
@@ -627,40 +643,47 @@ app_server <- function(input, output, session) {
              ordered = TRUE)
     x
   })
-  output$df_maturitetable <-
-    renderDataTable(df_maturite(),
-                    options = list(
-                      pageLength = 10,
-                      autoWidth = TRUE,
-                      searching = FALSE
-                    ))
+  # output$df_maturitetable <-
+  #   renderDataTable(df_maturite(),
+  #                   options = list(
+  #                     pageLength = 10,
+  #                     autoWidth = TRUE,
+  #                     searching = FALSE
+  #                   ))
   
   output$titreL50_selection_modeles_table <-
     renderText(
       "Comparaison de modèles visant à schématiser proportion mature en fonction de la longueur TITRE TBD"
     )
+  
   df_maturiteltm <- reactive({
     req(df_maturite())
     subset(df_maturite(), !is.na(ltm))# this data frame needed to be "cleaned" by removing all records where mesures were missing
   })
-  output$df_maturitelongtable <-
-    renderDataTable(df_maturiteltm(),
-                    options = list(
-                      pageLength = 10,
-                      autoWidth = TRUE,
-                      searching = FALSE
-                    ))
+  
+  # output$df_maturitelongtable <-
+  #   renderDataTable(df_maturiteltm(),
+  #                   options = list(
+  #                     pageLength = 10,
+  #                     autoWidth = TRUE,
+  #                     searching = FALSE
+  #                   ))
+  
   df_maturiteage <- reactive({
     req(df_maturite())
     subset(df_maturite(), !is.na(age))# this data frame needed to be "cleaned" by removing all records where mesures were missing
   })
-  output$df_maturiteagetable <-
-    renderDataTable(df_maturiteage(),
-                    options = list(
-                      pageLength = 10,
-                      autoWidth = TRUE,
-                      searching = FALSE
-                    ))
+  
+  
+  # output$df_maturiteagetable <-
+  #   renderDataTable(df_maturiteage(),
+  #                   options = list(
+  #                     pageLength = 10,
+  #                     autoWidth = TRUE,
+  #                     searching = FALSE
+  #                   ))
+  
+  
   ## L50 -------------------------------------------------------
   LTMmaturite.model.logit.L <- reactive({
     req(df_maturiteltm())
@@ -668,8 +691,7 @@ app_server <- function(input, output, session) {
         family = binomial(link = "logit"),
         data = df_maturiteltm())
   })
-  output$LTMmaturite.model.logit.L_table <-
-    renderPrint(LTMmaturite.model.logit.L())
+  
   LTMmaturite.model.probit.L <- reactive({
     req(df_maturiteltm())
     glm(maturite ~ ltm,
@@ -804,7 +826,7 @@ app_server <- function(input, output, session) {
     details <- L50_selection_modeles_df()[selected, 1]
     paste(details)
   })
-  output$table_stateLTM <- renderText(selectedmodelL50())
+
   output$selectedmodelL50minitable <- renderTable({
     req(selectedmodelL50())
     if (selectedmodelL50() == "Longueur (lien logit)") {
@@ -1074,10 +1096,13 @@ app_server <- function(input, output, session) {
       } , device = "png")
     }
   )
+  
   output$titreselectedmodelL50minitable <-
     renderText("Présentation des parametres de la courbe TITRE TBD")
+  
   output$titreselectedmodelL50plot <-
     renderText("L50 graphique titre TBD")
+  
   ## A50 -------------------------------------------------------
   AGEmaturite.model.logit.L <- reactive({
     req(df_maturiteage())
@@ -1085,8 +1110,7 @@ app_server <- function(input, output, session) {
         family = binomial(link = "logit"),
         data = df_maturiteage())
   })
-  output$AGEmaturite.model.logit.L_table <-
-    renderPrint(AGEmaturite.model.logit.L())
+ 
   AGEmaturite.model.probit.L <- reactive({
     req(df_maturiteage())
     glm(maturite ~ age,
@@ -1221,7 +1245,7 @@ app_server <- function(input, output, session) {
     details <- A50_selection_modeles_df()[selected, 1]
     paste(details)
   })
-  output$table_stateAGE <- renderText(selectedmodelA50())
+
   output$selectedmodelA50minitable <- renderTable({
     req(selectedmodelA50())
     if (selectedmodelA50() == "Âge (lien logit)") {
@@ -1491,14 +1515,18 @@ app_server <- function(input, output, session) {
       } , device = "png")
     }
   )
+  
   output$titreA50_selection_modeles_table <-
     renderText(
       "Comparaison de modèles visant à schématiser proportion mature en fonction de l'âge TITRE TBD"
     )
+  
   output$titreselectedmodelA50minitable <-
     renderText("Présentation des parametres de la courbe TITRE TBD")
-  output$titreselectedmodelA50plot <-
+ 
+   output$titreselectedmodelA50plot <-
     renderText("A50 graphique titre TBD")
+   
   # Download report ---------------------------------------------------------
   output$report <- downloadHandler(
     filename = "report.docx",
