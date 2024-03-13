@@ -288,7 +288,8 @@ app_server <- function(input, output, session) {
   }
   output$download_selection_modele_CPUE_toustable <-
     download_data_format_xlsx(givenname = "selection_modele_CPUE_tous_data", datadown = selection_modele_CPUE_tous_data())
-  CPUE_tous <- reactive({
+ 
+   CPUE_tous <- reactive({
     req(selection_modele_CPUE_tous_data())
     paste(selection_modele_CPUE_tous_data()[1 , "CPUE"]) #prendre le premier de la liste, car classe par ordre croissant de Ajustement
   })

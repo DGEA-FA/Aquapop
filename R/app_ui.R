@@ -81,6 +81,7 @@ app_ui <- function() {
                  ),
                  tabPanel(
                    title = "BPUE",
+                   htmltools::includeMarkdown(path = './texte/BPUE_texte.rmd'),
                    withSpinner(tableOutput(outputId = "biomasse1table"),
                                type = myspinner),
                    downloadButton(outputId = "download_biomasse1",
