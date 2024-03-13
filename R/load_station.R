@@ -14,7 +14,7 @@ load_station <- function(path, namesheet) {
       "text",
       "text",
       "text",
-      "date",
+      "text", #"date",
       "text",
       "text",
       "text",
@@ -61,21 +61,30 @@ load_station <- function(path, namesheet) {
     'type_maill' #renommer la 17 colonne  "Type mailles en rive"
   colnames(station)[18] <-
     'comments' #renommer la 18 colonne "Commentaires"
+  
+  station$annee <- station$annee %>% as.integer()
+  
+  
   station <- mutate_at(
     station,
     vars(
       no_lac,
       nom_lac,
       typ_pech,
-      annee,
+      # annee,
       st_hasard,
       st_valide,
       type_maill
     ),
     factor
   ) #transformer en factor
-  station$no_station <-
-    as.factor(as.numeric(station$no_station))#transformer en numeric d'abord pour ordre
+ 
+   # station$no_station <- as.factor(as.numeric(station$no_station))#transformer en numeric d'abord pour ordre
+   station$no_station <- as.factor(station$no_station)
+   station <- station[order(station$no_station,decreasing = FALSE),]
+   
+  
+  
   station$lat_dd.dec <-
     as.numeric(station$lat_dd.dec)#transformer en numeric
   station$long_dd.dec <-
@@ -86,50 +95,95 @@ load_station <- function(path, namesheet) {
     as.numeric(station$prof_fin)#transformer en numeric
   station$comments <-
     as.character(station$comments)#transformer en character
-  station$date_leve <-
-    as.POSIXct(station$date_leve, format = "%Y-%m-%d", optional = TRUE) # convertir en format date
-  station$date_pose <-
+  
+  
+  # Convert Date
+  station$date_leve <- station$date_leve %>% as.numeric() %>% as.Date(origin = "1899-12-30") ## Convert Excel serial numbers to proper date format
+
+
+  
+   station$date_pose <-
     station$date_leve - as.difftime(1, unit = "days") # je suppose que pose le jour d'avant UPDATE OUI
-  station$min_pose <-
-    stringr::str_pad(station$min_pose,
-                     2,
-                     side = c("left"),
-                     pad = "0") # ajouter des 0 avant si le nombre est seulement 1 caractere ex: 1 min devient 01 min
-  station$heure_pose <-
-    stringr::str_pad(station$heure_pose,
-                     2,
-                     side = c("left"),
-                     pad = "0") # ajouter des 0 avant si le nombre est seulement 1 caractere ex: 1 min devient 01 min
-  station$heure_leve <-
-    stringr::str_pad(station$heure_leve,
-                     2,
-                     side = c("left"),
-                     pad = "0") # ajouter des 0 avant si le nombre est seulement 1 caractere ex: 1 min devient 01 min
-  station$min_leve <-
-    stringr::str_pad(station$min_leve,
-                     2,
-                     side = c("left"),
-                     pad = "0") # ajouter des 0 avant si le nombre est seulement 1 caractere ex: 1 min devient 01 min
-  station$h_pose <-
-    paste(station$heure_pose , station$min_pose , sep = ":") #construire un format d'heure qui se tient
-  station$h_leve <-
-    paste(station$heure_leve , station$min_leve , sep = ":") #construire un format d'heure qui se tient
-  station$h_pose <-
-    chron::times(paste0(station$h_pose, ":00")) #convertir en format heure et ajouter les secondes
-  station$h_leve <-
-    chron::times(paste0(station$h_leve, ":00"))#convertir en format heure et ajouter les secondes
-  station$pose <-
-    as.POSIXct(
-      paste(station$date_pose, station$h_pose),
-      format = "%Y-%m-%d %H:%M:%S",
-      optional = TRUE
-    ) #merge la date et l'heure en un seul objet (facilite les calculs de difference de temps)
-  station$leve <-
-    as.POSIXct(
-      paste(station$date_leve, station$h_leve),
-      format = "%Y-%m-%d %H:%M:%S",
-      optional = TRUE
-    ) #merge la date et l'heure en un seul objet (facilite les calculs de difference de temps)
+   
+  
+   
+   station$min_pose <- ifelse(!is.na(station$min_pose),
+                              stringr::str_pad(station$min_pose,
+                                               2,
+                                               side = "left",
+                                               pad = "0"), # ajouter des 0 avant si le nombre est seulement 1 caractere ex: 1 min devient 01 min
+                              station$min_pose)
+   
+   station$heure_pose <- ifelse(!is.na(station$heure_pose),
+                              stringr::str_pad(station$heure_pose,
+                                               2,
+                                               side = "left",
+                                               pad = "0"), # ajouter des 0 avant si le nombre est seulement 1 caractere ex: 1 min devient 01 min
+                              station$heure_pose)
+ 
+   station$heure_leve <- ifelse(!is.na(station$heure_leve),
+                                stringr::str_pad(station$heure_leve,
+                                                 2,
+                                                 side = "left",
+                                                 pad = "0"), # ajouter des 0 avant si le nombre est seulement 1 caractere ex: 1 min devient 01 min
+                                station$heure_leve)
+   
+   station$heure_leve <- ifelse(!is.na(station$heure_leve),
+                                stringr::str_pad(station$heure_leve,
+                                                 2,
+                                                 side = "left",
+                                                 pad = "0"), # ajouter des 0 avant si le nombre est seulement 1 caractere ex: 1 min devient 01 min
+                                station$heure_leve)
+   
+   station$min_leve <- ifelse(!is.na(station$min_leve),
+                                stringr::str_pad(station$min_leve,
+                                                 2,
+                                                 side = "left",
+                                                 pad = "0"), # ajouter des 0 avant si le nombre est seulement 1 caractere ex: 1 min devient 01 min
+                                station$min_leve)
+  
+   #construire un format d'heure qui se tient
+   station$h_pose <- ifelse(!is.na(station$heure_pose) & !is.na(station$min_pose),
+                            paste(station$heure_pose, station$min_pose, sep = ":"),
+                            NA)
+   
+   station$h_pose <- ifelse(!is.na(station$h_pose), #ajouter les secondes
+                            paste0(station$h_pose, ":00"),
+                            station$h_pose)
+  
+   
+  
+   #construire un format d'heure qui se tient
+   station$h_leve <- ifelse(!is.na(station$heure_leve) & !is.na(station$min_leve),
+                            paste(station$heure_leve, station$min_leve, sep = ":"),
+                            NA)
+   
+   station$h_leve <- ifelse(!is.na(station$h_leve), #ajouter les secondes
+                            paste0(station$h_leve, ":00"),
+                            station$h_leve)
+   
+
+
+   #merge la date et l'heure en un seul objet (facilite les calculs de difference de temps)
+   # Create a vector to store the results
+   combined_datetime <- paste(station$date_pose, station$h_pose)
+   
+   # Convert to POSIXct, only for non-NA values
+   station$pose <- as.POSIXct(ifelse(!is.na(combined_datetime), 
+                                     combined_datetime, 
+                                     NA),
+                              format = "%Y-%m-%d %H:%M:%S")
+   
+#merge la date et l'heure en un seul objet (facilite les calculs de difference de temps)
+   # Create a vector to store the results
+   combined_datetime <- paste(station$date_leve, station$h_leve)
+   
+   # Convert to POSIXct, only for non-NA values
+   station$leve <- as.POSIXct(ifelse(!is.na(combined_datetime), 
+                                     combined_datetime, 
+                                     NA),
+                              format = "%Y-%m-%d %H:%M:%S")
+   
   station$duration <-
     difftime(station$leve , station$pose, units = "auto") # revoir les units selon les calculs subsequents
   station %>% dplyr::distinct()

@@ -23,11 +23,15 @@ load_recolte <- function(path, namesheet) {
     'nb_pese' #renommer la 8 colonne "Nbre pesé"
   colnames(recolte)[9] <-
     'comments' #renommer la 9 colonne "Commentaires"
+  
+  recolte$annee <- recolte$annee %>% as.integer()
+  
+  
   recolte <- mutate_at(recolte,
                        vars(no_lac,
                             nom_lac,
                             typ_pech,
-                            annee,
+                            # annee,
                             no_station,
                             sp),
                        factor) #transformer en factor

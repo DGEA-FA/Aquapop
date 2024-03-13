@@ -35,6 +35,9 @@ load_lac <- function(path, namesheet) {
     'prof_moy_m' #renommer la 14 colonne "Prof. moy (m)"
   colnames(lac)[15] <-
     'comments' #renommer la 15 colonne "Commentaires généraux"
+  
+  lac$annee <- lac$annee %>% as.integer()
+  
   lac <-
     dplyr::mutate(lac, ID = paste0(nom_lac, " - ", annee, " - ", typ_pech))
   lac <- mutate_at(
@@ -46,8 +49,8 @@ load_lac <- function(path, namesheet) {
       typ_pech,
       sp_pen,
       terr_faun,
-      zon_pech,
-      annee
+      # annee,
+      zon_pech
     ),
     factor
   ) #transformer en factor

@@ -29,17 +29,28 @@ packages <-
     "glmmTMB",
     "MuMIn",
     "plotly",
-    "gapminder"
+    "gapminder",
+    "AER"
   )
 
-# Install packages not yet installed
-installed_packages <- packages %in% rownames(installed.packages())
-if (any(installed_packages == FALSE)) {
-  install.packages(packages[!installed_packages])
+# # Install packages not yet installed
+# installed_packages <- packages %in% rownames(installed.packages())
+# if (any(installed_packages == FALSE)) {
+#   install.packages(packages[!installed_packages])
+# }
+# 
+# # Packages loading
+# invisible(lapply(packages, library, character.only = TRUE))
+
+# Install and load packages
+for (pkg in packages) {
+  if (!requireNamespace(pkg, quietly = TRUE)) {
+    install.packages(pkg, dependencies = TRUE)
+  }
+  suppressMessages(library(pkg, character.only = TRUE))
 }
 
-# Packages loading
-invisible(lapply(packages, library, character.only = TRUE))
+
 
 # to_activate_before_play -------------------------------------------------
 reactlog::reactlog_enable() #to see the reactive graph

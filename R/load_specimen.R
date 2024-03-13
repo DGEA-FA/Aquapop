@@ -51,13 +51,16 @@ load_specimen <- function(path, namesheet) {
     'marquage' #renommer la 22 colonne  "Statut marquage"
   colnames(specimen)[23] <-
     'comments' #renommer la 23 colonne "Commentaires"
+  
+  specimen$annee <- specimen$annee %>% as.integer()
+  
   specimen <- mutate_at(
     specimen,
     vars(
       no_lac,
       nom_lac,
       typ_pech,
-      annee,
+      # annee,
       no_station,
       no_specimen,
       sp,

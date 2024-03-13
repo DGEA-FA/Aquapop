@@ -34,8 +34,10 @@ load_parametres <- function(path, namesheet) {
                           factor) #transformer en factor
   parametres$results <-
     as.numeric(parametres$results)#transformer en numeric
-  parametres <-
-    parametres %>% mutate(annee = format(date, format = "%Y"))# isoler annee
+  
+  
+  
+  parametres <- parametres %>% mutate(annee = format(date, format = "%Y"))# isoler annee
   parametres$comments <-
     as.character(parametres$comments)#transformer en character
   parametres %>% dplyr::distinct()

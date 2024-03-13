@@ -7,7 +7,7 @@ load_profil <- function(path, namesheet) {
     col_types = c(
       "text",
       "text",
-      "date",
+      "text", #"date",
       "text",
       "text",
       "text",
@@ -60,8 +60,13 @@ load_profil <- function(path, namesheet) {
   profil$ph <- as.numeric(profil$ph)#transformer en numeric
   profil$conductivite <-
     as.numeric(profil$conductivite)#transformer en numeric
-  profil$date <-
-    as.POSIXct(profil$date, format = "%Y-%m-%d", optional = TRUE) # convertir en format date
+  
+  
+  # Convert Date
+  profil$date <- profil$date %>% as.numeric() %>% as.Date(origin = "1899-12-30") ## Convert Excel serial numbers to proper date format
+  # profil$date <- as.POSIXct(profil$date, format = "%Y-%m-%d", optional = TRUE) # convertir en format date
+  
+  
   profil <-
     profil %>% mutate(annee = format(date, format = "%Y"))# isoler annee
   profil %>% dplyr::distinct()
