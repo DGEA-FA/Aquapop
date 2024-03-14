@@ -46,10 +46,17 @@ app_server <- function(input, output, session) {
     req(input$annee)
     filter(df_filtered2(), annee %in% input$annee)
   })
+  # output$recap_intro_table <- renderTable({
+  #   req(df_filtered3(), capture())
+  #   table_recap(datalac = df_filtered3(), capture = capture())
+  # })
+  
   output$recap_intro_table <- renderTable({
-    req(df_filtered3(), capture())
-    table_recap(datalac = df_filtered3(), capture = capture())
+    req(df_filtered3(), data_station())
+    table_recap(datalac = df_filtered3(), data_station = data_station())
   })
+  
+  
   output$visualiser <- renderUI({
     req(df_filtered3()) #pas necessaire dans les calculs en soit, mais sinon le menu deroulant apparait direct au debut plutot que juste au moment opportun
     selectInput(
@@ -127,18 +134,14 @@ app_server <- function(input, output, session) {
   output$table_parametres <-
     renderDataTable(data_parametres(), options = brut_options)
   # identifier sp d'interet ------------------------------------------------
+ 
   sp_pen <- reactive({
     req(input$typ_pech)
-    if (input$typ_pech == "PENT") {
-      "SANA"
-    } else if (input$typ_pech == "PENOF") {
-      "SAFO"
-    } else if (input$typ_pech == "PENDJ") {
-      "SAVI"
-    } else {
-      NULL
-    }
+    create_sp_pen(input_typ_pech = input$typ_pech)
   })
+  
+  
+  
   output$sp_queentexte <- renderText({
     req(sp_pen())
     if (sp_pen() == "SANA") {
@@ -170,26 +173,75 @@ app_server <- function(input, output, session) {
     specimen() %>% as.data.frame()
   })
   
+  # Verif dataframes vides ------------------------------------------------
+  # Vérification des dataframes au démarrage de l'application
+  output$status_text_data_station <- renderUI({
+    req(data_station())
+    verifier_dataframe_vide(data_station(), "Stations")
+  })
+  
+  output$status_text_data_recolte <- renderUI({
+    req(data_recolte())
+    verifier_dataframe_vide(data_recolte(), "Récolte")
+  })
+  
+  output$status_text_data_specimen <- renderUI({
+    req(data_specimen())
+    verifier_dataframe_vide(data_specimen(), "Spécimen")
+  })
+  
+  output$status_text_data_lac <- renderUI({
+    req(data_lac())
+    verifier_dataframe_vide(data_lac(), "Lac")
+  })
+  
+  output$status_text_data_parametres <- renderUI({
+    req(data_parametres())
+    verifier_dataframe_vide(data_parametres(), "Paramètres")
+  })
+  
+  output$status_text_data_profil <- renderUI({
+    req(data_profil())
+    verifier_dataframe_vide(data_profil(), "Profil")
+  })
+
+  
+  # Verif doublons data_station_data_recolte ------------------------------------------------
+
+  # Vérification des doublons entre data_station et data_recolte
+  output$doublons_data_station_data_recolte <- renderUI({
+    req(data_station(), data_recolte())
+    verifier_doublons_data_station_data_recolte(data_station(), data_recolte())
+  })
+  
+  
   # Creation du df specimen ------------------------------------------------
   specimen <- reactive({
     req(data_specimen(), data_station())
-    inner_join(
-      x = data_specimen(),
-      y = data_station(),
-      by = c("no_station", "annee", "nom_lac", "no_lac", "typ_pech"),
-      relationship = "many-to-many"
-    ) %>% droplevels()  %>% dplyr::distinct()
+    # Création de la specimen en utilisant la fonction create_specimen
+    create_specimen(data_specimen(), data_station())
   })
-  # Creation du df capture -------------------------------------------------
+  
+  # Affichage du tableau interactif pour specimen
+  output$specimen_table <- DT::renderDT({
+    req(specimen())
+    datatable(specimen())
+  })
+  
+  
+  # Creation du df capture ------------------------------------------------
   capture <- reactive({
     req(data_recolte(), data_station())
-    inner_join(
-      x = data_recolte(),
-      y = data_station(),
-      by = c("no_station", "annee", "nom_lac", "no_lac", "typ_pech"),
-      relationship = "many-to-many"
-    ) %>% droplevels()  %>% dplyr::distinct()
+    # Création de la capture en utilisant la fonction create_capture
+    create_capture(data_station(), data_recolte())
   })
+  
+  # Affichage du tableau interactif pour capture
+  output$capture_table <- DT::renderDT({
+    req(capture())
+    datatable(capture())
+  })
+  
   
   output$capture_verif <- renderDataTable({
     req(capture())

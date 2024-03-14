@@ -4,6 +4,7 @@ packages <-
   c(
     "shiny",
     "car",
+    "DT",
     "kableExtra",
     "reactable",
     "FSA",

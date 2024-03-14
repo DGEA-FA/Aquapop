@@ -54,6 +54,18 @@ load_specimen <- function(path, namesheet) {
   
   specimen$annee <- specimen$annee %>% as.integer()
   
+  # Remplacer les NA par "IND" dans la colonne "maturite"
+  specimen <- specimen %>%
+    mutate(maturite = ifelse(is.na(maturite), "IND", maturite))
+  
+  # Remplacer les NA par "IND" dans la colonne "sexe"
+  specimen <- specimen %>%
+    mutate(sexe = ifelse(is.na(sexe), "IND", sexe))
+  
+  # Remplacer les NA par "NMA" dans la colonne "marquage"
+  specimen <- specimen %>%
+    mutate(marquage = ifelse(is.na(marquage), "NMA", marquage))
+  
   specimen <- mutate_at(
     specimen,
     vars(
@@ -78,6 +90,10 @@ load_specimen <- function(path, namesheet) {
     ),
     factor
   ) #transformer en factor
+  
+  
+  
+  
   specimen$ltm <- as.numeric(specimen$ltm)#transformer en numeric
   specimen$lf <- as.numeric(specimen$lf)#transformer en numeric
   specimen$masse <-
@@ -86,4 +102,6 @@ load_specimen <- function(path, namesheet) {
   specimen$comments <-
     as.character(specimen$comments)#transformer en character
   specimen %>% dplyr::distinct()
+
+  
 }

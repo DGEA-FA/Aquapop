@@ -1,5 +1,7 @@
 app_ui <- function() {
   fluidPage(
+    
+    
     # app_title --------------------------------------------------------------
     titlePanel(title = "AquaPop : Outil d'aide à l'analyse de données d'inventaire ichtyologique"),
     navbarPage(
@@ -35,6 +37,16 @@ app_ui <- function() {
           ),
           ## display_brut ----------------------------------------------------------
           mainPanel(
+            # textOutput("statusText_doublons_data_station_data_recolte"), 
+            uiOutput("doublons_data_station_data_recolte"),
+            
+            uiOutput("status_text_data_station"),
+            uiOutput("status_text_data_recolte"),
+            uiOutput("status_text_data_specimen"),
+            uiOutput("status_text_data_lac"),
+            uiOutput("status_text_data_parametres"),
+            uiOutput("status_text_data_profil"),
+            
             tableOutput(outputId = "recap_intro_table"),
             tabsetPanel(
               id = "switcher",
@@ -53,6 +65,18 @@ app_ui <- function() {
           )
         )
       ),
+      # visualisation panel ------------------------------------------------
+      
+      tabPanel("Visualisation",
+               tabsetPanel(
+                 tabPanel("Capture",
+                          fluidRow(DTOutput("capture_table"))),
+                 tabPanel("Specimen",
+                          fluidRow(DTOutput("specimen_table")))
+               )), 
+    
+      
+      
       # abondance_biomasse_panel ------------------------------------------------
       tabPanel(title = "Abondance et biomasse",
                tabsetPanel(
