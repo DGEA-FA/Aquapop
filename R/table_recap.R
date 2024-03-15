@@ -29,13 +29,8 @@ table_recap <- function(datalac, data_station) {
   temp4 <- data_station %>% filter(st_hasard == "N") %>% reframe("N stations dirigées" = n())
   temp5 <- data_station %>% filter(st_valide == "O") %>% reframe("N stations valides" = n())
   temp6 <- data_station %>% filter(st_valide == "N") %>% reframe("N stations invalides" = n())
+  temp7 <- data_station %>% reframe("N stations total" = n()) # Nombre de stations différentes
   
-  
-  # Nombre de stations différentes
-  temp7 <- data.frame("N.stations.total" = data_station %>% 
-                                       distinct(no_station) %>% 
-                                       nrow())
-  temp7 <- temp7 %>% rename(`N stations total` = N.stations.total)
   
   sp.nice <- unique(datalac$sp_pen)
   clean <- bind_cols(temp1, temp2, temp3, temp4, temp5, temp6, temp7)

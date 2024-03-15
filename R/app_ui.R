@@ -37,8 +37,8 @@ app_ui <- function() {
           ),
           ## display_brut ----------------------------------------------------------
           mainPanel(
-            # textOutput("statusText_doublons_data_station_data_recolte"), 
-            uiOutput("doublons_data_station_data_recolte"),
+            uiOutput("doublons_data_station"),
+            uiOutput("doublons_data_recolte"),
             
             uiOutput("status_text_data_station"),
             uiOutput("status_text_data_recolte"),

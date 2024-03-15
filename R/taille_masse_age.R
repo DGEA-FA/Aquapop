@@ -1,5 +1,6 @@
 taille_masse_age <- function(dataspecimen, espece) {
-  # longueur ----------------------------------------------------------------
+
+  
   dataspecimen$sexe <-
     factor(
       dataspecimen$sexe,
@@ -18,6 +19,10 @@ taille_masse_age <- function(dataspecimen, espece) {
         "IND"
       )
     )
+  
+  
+    # longueur ----------------------------------------------------------------
+
   
    ltm_MF <-
     dataspecimen %>%  filter(sp == espece) %>%  filter(sexe %in% c("M", "F", "IND")) %>%
@@ -91,7 +96,7 @@ taille_masse_age <- function(dataspecimen, espece) {
     )) %>% mutate(sexe = "Imm. ou reprod. inactifs")
   
   ltm_inconnu <-
-    dataspecimen %>%  filter(sp == espece & is.na(maturite))  %>%
+    dataspecimen %>%  filter(sp == espece & maturite == "IND")  %>%
     dplyr::select(ltm) %>%
     dplyr::summarise(across(
       where(is.numeric),
@@ -142,7 +147,7 @@ taille_masse_age <- function(dataspecimen, espece) {
   
   # masse -------------------------------------------------------------------
   masse_MF <-
-    dataspecimen %>%  filter(sp == espece) %>%  filter(sexe == c("M", "F", "IND")) %>%
+    dataspecimen %>%  filter(sp == espece) %>%  filter(sexe %in% c("M", "F", "IND")) %>%
     dplyr::select(masse, sexe) %>%
     group_by(sexe, .drop = FALSE) %>%
     dplyr::summarise(across(
@@ -155,6 +160,8 @@ taille_masse_age <- function(dataspecimen, espece) {
         Maximum = ~ max(.x, na.rm = TRUE) %>% round(digits = 1)
       )
     ))
+  
+
   
   masse_tous <- dataspecimen %>%  filter(sp == espece) %>%
     dplyr::select(masse) %>%
@@ -213,7 +220,7 @@ taille_masse_age <- function(dataspecimen, espece) {
     )) %>% mutate(sexe = "Imm. ou reprod. inactifs")
   
   masse_inconnu <-
-    dataspecimen %>%  filter(sp == espece & is.na(maturite))  %>%
+    dataspecimen %>%  filter(sp == espece & maturite == "IND")  %>%
     dplyr::select(masse) %>%
     dplyr::summarise(across(
       where(is.numeric),
@@ -271,7 +278,7 @@ taille_masse_age <- function(dataspecimen, espece) {
   
   # age ---------------------------------------------------------------------
   age_MF <-
-    dataspecimen %>%  filter(sp == espece) %>%  filter(sexe == c("M", "F", "IND")) %>%
+    dataspecimen %>%  filter(sp == espece) %>%  filter(sexe %in% c("M", "F", "IND")) %>%
     dplyr::select(age, sexe) %>%
     group_by(sexe, .drop = FALSE) %>%
     dplyr::summarise(across(
@@ -343,7 +350,7 @@ taille_masse_age <- function(dataspecimen, espece) {
     )) %>% mutate(sexe = "Imm. ou reprod. inactifs")
   
   age_inconnu <-
-    dataspecimen %>%  filter(sp == espece & is.na(maturite))  %>%
+    dataspecimen %>%  filter(sp == espece & maturite == "IND")  %>%
     dplyr::select(age) %>%
     dplyr::summarise(across(
       where(is.numeric),
@@ -420,44 +427,13 @@ taille_masse_age <- function(dataspecimen, espece) {
       )
     )
   
-  complet <-
-    complet %>% mutate(ltm_Minimum = plyr::mapvalues(
-      ltm_Minimum,
-      from = c("Inf", "-Inf"),
-      to = c("-", "-")
-    ))
-  complet <-
-    complet %>% mutate(ltm_Maximum = plyr::mapvalues(
-      ltm_Maximum,
-      from = c("Inf", "-Inf"),
-      to = c("-", "-")
-    ))
-  
-  complet <-
-    complet %>% mutate(age_Minimum = plyr::mapvalues(
-      age_Minimum,
-      from = c("Inf", "-Inf"),
-      to = c("-", "-")
-    ))
-  complet <-
-    complet %>% mutate(age_Maximum = plyr::mapvalues(
-      age_Maximum,
-      from = c("Inf", "-Inf"),
-      to = c("-", "-")
-    ))
-  
-  complet <-
-    complet %>% mutate(masse_Minimum = plyr::mapvalues(
-      masse_Minimum,
-      from = c("Inf", "-Inf"),
-      to = c("-", "-")
-    ))
-  complet <-
-    complet %>% mutate(masse_Maximum = plyr::mapvalues(
-      masse_Maximum,
-      from = c("Inf", "-Inf"),
-      to = c("-", "-")
-    ))
+  complet <- complet %>%
+    mutate(ltm_Minimum = ifelse(ltm_Minimum %in% c("Inf", "-Inf"), "-", ltm_Minimum),
+           ltm_Maximum = ifelse(ltm_Maximum %in% c("Inf", "-Inf"), "-", ltm_Maximum),
+           age_Minimum = ifelse(age_Minimum %in% c("Inf", "-Inf"), "-", age_Minimum),
+           age_Maximum = ifelse(age_Maximum %in% c("Inf", "-Inf"), "-", age_Maximum),
+           masse_Minimum = ifelse(masse_Minimum %in% c("Inf", "-Inf"), "-", masse_Minimum),
+           masse_Maximum = ifelse(masse_Maximum %in% c("Inf", "-Inf"), "-", masse_Maximum))
   
   complet
 }

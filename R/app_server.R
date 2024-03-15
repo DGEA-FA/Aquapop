@@ -206,14 +206,21 @@ app_server <- function(input, output, session) {
   })
 
   
-  # Verif doublons data_station_data_recolte ------------------------------------------------
+  # Verif doublons data_station et data_recolte ------------------------------------------------
 
-  # Vérification des doublons entre data_station et data_recolte
-  output$doublons_data_station_data_recolte <- renderUI({
-    req(data_station(), data_recolte())
-    verifier_doublons_data_station_data_recolte(data_station(), data_recolte())
+  # Vérification des doublons dans data_station
+  output$doublons_data_station <- renderUI({
+    req(data_station())
+    verifier_doublons_data_station(data_station())
   })
   
+  # Vérification des doublons dans data_recolte
+  output$doublons_data_recolte <- renderUI({
+    req(data_recolte())
+    verifier_doublons_data_recolte(data_recolte())
+  })
+  
+
   
   # Creation du df specimen ------------------------------------------------
   specimen <- reactive({
@@ -261,14 +268,26 @@ app_server <- function(input, output, session) {
   # Structure taille ggplot ------------------------------------------------
   output$structuretailleplot <- renderPlot({
     req(specimen(), sp_pen())
-    structure_taille(
-      data = specimen(),
-      espece = sp_pen(),
-      regroupement = input$groupetailleplot
-    )
-  }, res = 96)
+    if (input$groupetailleplot == "tous") {
+      structure_taille_tous(dfspecimen = specimen(),
+                            espece = sp_pen())
+    } else if (input$groupetailleplot == "marquage") {
+      structure_taille_marquage(dfspecimen = specimen(),
+                            espece = sp_pen())
+    } else if (input$groupetailleplot == "sexe") {
+      structure_taille_sexe(dfspecimen = specimen(),
+                                espece = sp_pen())
+    } else if (input$groupetailleplot == "maturite") {
+      structure_taille_maturite(dfspecimen = specimen(),
+                            espece = sp_pen())
+    } }, res = 96)
+  
+  
+ 
   output$titrestructuretailleplot <-
     renderText("Histogramme de fréquence des longueurs")
+  
+  
   output$download_groupetailleplot <- downloadHandler(
     filename = function() {
       paste("groupetailleplot", '.png', sep = '')
@@ -276,25 +295,44 @@ app_server <- function(input, output, session) {
     content = function(file) {
       ggsave(file, plot = {
         req(specimen(), sp_pen())
-        structure_taille(
-          data = specimen(),
-          espece = sp_pen(),
-          regroupement = input$groupetailleplot
-        )
-      } , device = "png")
+        if (input$groupetailleplot == "tous") {
+          structure_taille_tous(dfspecimen = specimen(),
+                                espece = sp_pen())
+        } else if (input$groupetailleplot == "marquage") {
+          structure_taille_marquage(dfspecimen = specimen(),
+                                    espece = sp_pen())
+        } else if (input$groupetailleplot == "sexe") {
+          structure_taille_sexe(dfspecimen = specimen(),
+                                espece = sp_pen())
+        } else if (input$groupetailleplot == "maturite") {
+          structure_taille_maturite(dfspecimen = specimen(),
+                                    espece = sp_pen())
+        } }, res = 96)
     }
   )
   # Structure age ggplot ------------------------------------------------
   output$structureageplot <- renderPlot({
     req(specimen(), sp_pen())
-    structure_age(
-      data = specimen(),
-      espece = sp_pen(),
-      regroupement = input$groupeageplot
-    )
-  }, res = 96)
+    if (input$groupeageplot == "tous") {
+      structure_age_tous(dfspecimen = specimen(),
+                            espece = sp_pen())
+    } else if (input$groupeageplot == "marquage") {
+      structure_age_marquage(dfspecimen = specimen(),
+                                espece = sp_pen())
+    } else if (input$groupeageplot == "sexe") {
+      structure_age_sexe(dfspecimen = specimen(),
+                            espece = sp_pen())
+    } else if (input$groupeageplot == "maturite") {
+      structure_age_maturite(dfspecimen = specimen(),
+                                espece = sp_pen())
+    } }, res = 96)
+  
+  
+  
   output$titrestructureageplot <-
     renderText("Histogramme de fréquence d’âge")
+  
+  
   output$download_groupeageplot <- downloadHandler(
     filename = function() {
       paste("groupeageplot", '.png', sep = '')
@@ -302,14 +340,49 @@ app_server <- function(input, output, session) {
     content = function(file) {
       ggsave(file, plot = {
         req(specimen(), sp_pen())
-        structure_age(
-          data = specimen(),
-          espece = sp_pen(),
-          regroupement = input$groupeageplot
-        )
-      } , device = "png")
+        if (input$groupeageplot == "tous") {
+          structure_age_tous(dfspecimen = specimen(),
+                                espece = sp_pen())
+        } else if (input$groupeageplot == "marquage") {
+          structure_age_marquage(dfspecimen = specimen(),
+                                    espece = sp_pen())
+        } else if (input$groupeageplot == "sexe") {
+          structure_age_sexe(dfspecimen = specimen(),
+                                espece = sp_pen())
+        } else if (input$groupeageplot == "maturite") {
+          structure_age_maturite(dfspecimen = specimen(),
+                                    espece = sp_pen())
+        } }, res = 96)
     }
   )
+  
+  
+  # Structure age ggplot ------------------------------------------------
+  # output$structureageplot <- renderPlot({
+  #   req(specimen(), sp_pen())
+  #   structure_age(
+  #     data = specimen(),
+  #     espece = sp_pen(),
+  #     regroupement = input$groupeageplot
+  #   )
+  # }, res = 96)
+  # output$titrestructureageplot <-
+  #   renderText("Histogramme de fréquence d’âge")
+  # output$download_groupeageplot <- downloadHandler(
+  #   filename = function() {
+  #     paste("groupeageplot", '.png', sep = '')
+  #   },
+  #   content = function(file) {
+  #     ggsave(file, plot = {
+  #       req(specimen(), sp_pen())
+  #       structure_age(
+  #         data = specimen(),
+  #         espece = sp_pen(),
+  #         regroupement = input$groupeageplot
+  #       )
+  #     } , device = "png")
+  #   }
+  # )
   # CPUE ------------------------------------------------
   ## verification du n de specimen ------------------------------------------------
   verif_n_data <- reactive({

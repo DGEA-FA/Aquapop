@@ -64,6 +64,14 @@ load_station <- function(path, namesheet) {
   
   station$annee <- station$annee %>% as.integer()
   
+  # Remplacer les NA par "O" dans la colonne "st_valide"
+  station <- station %>%
+    mutate(st_valide = ifelse(is.na(st_valide), "O", st_valide))
+  
+  # Remplacer les NA par "O" dans la colonne "st_hasard"
+  station <- station %>%
+    mutate(st_hasard = ifelse(is.na(st_hasard), "O", st_hasard))
+
   
   station <- mutate_at(
     station,
