@@ -12,7 +12,7 @@ mortalite_selection_modeles <- function(df_EXT) {
   hnp_p.p <- list()
   for (i in 1:1) {
     #remettre 100
-    hnp_p.p[[i]] <- hnp(
+    hnp_p.p[[i]] <- hnp::hnp(
       m.df_EXT.p,
       resid.type = "pearson",
       how.many.out = TRUE,
@@ -25,7 +25,7 @@ mortalite_selection_modeles <- function(df_EXT) {
   
   # nb1 ---------------------------------------------------------------------
   m.df_EXT.NB1 <-
-    glmmTMB::glmmTMB(number ~ age, family = nbinom1, data = df_EXT)
+    glmmTMB::glmmTMB(number ~ age, family = glmmTMB::nbinom1(link = "log"), data = df_EXT)
   resume.NB1 <- summary(m.df_EXT.NB1)
   SE.NB1 <- resume.NB1[["coefficients"]]$cond[2, 2]
   
@@ -52,7 +52,7 @@ mortalite_selection_modeles <- function(df_EXT) {
   hnp_nb1 <- list()
   for (i in 1:1) {
     #remettre 100
-    hnp_nb1[[i]] <- hnp(
+    hnp_nb1[[i]] <- hnp::hnp(
       m.df_EXT.NB1,
       newclass = TRUE,
       diagfun = dfun,
@@ -75,7 +75,7 @@ mortalite_selection_modeles <- function(df_EXT) {
   hnp_p.NB2 <- list()
   for (i in 1:1) {
     #remettre 100
-    hnp_p.NB2[[i]] <- hnp(
+    hnp_p.NB2[[i]] <- hnp::hnp(
       m.df_EXT.NB2,
       resid.type = "pearson",
       how.many.out = TRUE,
@@ -96,12 +96,12 @@ mortalite_selection_modeles <- function(df_EXT) {
   SE.CMPa <- resume.CMPa[["coefficients"]]$cond[2, 2]
   
   ffun_CMPa <- function(response) {
-    fit <- try(glmmTMB(response ~ age, family = nbinom1, data = df_EXT),
+    fit <- try(glmmTMB(response ~ age, family = glmmTMB::nbinom1(link = "log"), data = df_EXT),
                silent = TRUE)
     while (class(fit) == "try-error") {
       response2 <- sfun(1, m.df_EXT.CMPa)
       fit <-
-        try(glmmTMB(response2 ~ age, family = nbinom1, data = df_EXT),
+        try(glmmTMB(response2 ~ age, family = glmmTMB::nbinom1(link = "log"), data = df_EXT),
             silent = TRUE)
     }
     return(fit)
@@ -111,7 +111,7 @@ mortalite_selection_modeles <- function(df_EXT) {
   hnp_CMPa <- list()
   for (i in 1:1) {
     #remettre 100 for(i in 1:100)
-    hnp_CMPa[[i]] <- hnp(
+    hnp_CMPa[[i]] <- hnp::hnp(
       m.df_EXT.CMPa,
       newclass = TRUE,
       diagfun = dfun,
@@ -134,12 +134,12 @@ mortalite_selection_modeles <- function(df_EXT) {
   SE.GP <- resume.GP[["coefficients"]]$cond[2, 2]
   
   ffun_GP <- function(response) {
-    fit <- try(glmmTMB(response ~ age, family = nbinom1, data = df_EXT),
+    fit <- try(glmmTMB(response ~ age, family = glmmTMB::nbinom1(link = "log"), data = df_EXT),
                silent = TRUE)
     while (class(fit) == "try-error") {
       response2 <- sfun(1, m.df_EXT.GP)
       fit <-
-        try(glmmTMB(response2 ~ age, family = nbinom1, data = df_EXT),
+        try(glmmTMB(response2 ~ age, family = glmmTMB::nbinom1(link = "log"), data = df_EXT),
             silent = TRUE)
     }
     return(fit)
@@ -149,7 +149,7 @@ mortalite_selection_modeles <- function(df_EXT) {
   hnp_GP <- list()
   for (i in 1:1) {
     #remettre 100
-    hnp_GP[[i]] <- hnp(
+    hnp_GP[[i]] <- hnp::hnp(
       m.df_EXT.GP,
       newclass = TRUE,
       diagfun = dfun,
@@ -167,7 +167,7 @@ mortalite_selection_modeles <- function(df_EXT) {
   #distribution de Poisson permettra d’identifier laquelle parmi celles testées offre la meilleure capacité à
   #estimer non seulement Z, mais aussi et surtout la variance associée (SE).
   
-  CLEAN <- model.sel(m.df_EXT.p,
+  CLEAN <- MuMIn::model.sel(m.df_EXT.p,
                      m.df_EXT.NB1,
                      m.df_EXT.NB2,
                      m.df_EXT.CMPa,
@@ -217,6 +217,12 @@ mortalite_selection_modeles <- function(df_EXT) {
     )
   )
   
+  
+  CLEAN2 <- CLEAN2 %>%
+    mutate(commentaires = ifelse(Modeladequacy < 10, "Le modèle s'ajuste bien à vos données.",
+                                   "Le modèle ne s'ajuste pas bien à vos données. Vous devriez utiliser un autre modèle."))
+  
+  
   CLEAN2$delta <- round(CLEAN2$delta, digits = 2)
   CLEAN2$AICc <- round(CLEAN2$AICc, digits = 1)
   CLEAN2$weight <- round(CLEAN2$weight, digits = 3)
@@ -224,22 +230,54 @@ mortalite_selection_modeles <- function(df_EXT) {
   CLEAN2$Z <- round(CLEAN2$Z, digits = 4)
   CLEAN2$SE <- round(CLEAN2$SE, digits = 4)
   CLEAN2$Modeladequacy <- round(CLEAN2$Modeladequacy, digits = 2)
-  CLEAN2 <-
-    CLEAN2 %>% dplyr::select(GLM, Modeladequacy, df, AICc, delta, weight, Z, SE)
-  CLEAN2 <-
-    CLEAN2 %>% rename("Ajustement (résultat du test HNP)" = Modeladequacy)
-  CLEAN2 <- CLEAN2 %>% rename("Poids d'Akaike" = weight)
-  CLEAN2 <- CLEAN2 %>% rename("Δ AICc" = delta)
-  CLEAN2 <- CLEAN2 %>% rename("Méthode" = GLM)
+
+  CLEAN2 <- CLEAN2 %>% dplyr::arrange(AICc)
+  
+  
+  # calcul.A.IClow <- function(model) {IClow.Z <- abs(confint(model)[2,2]) 
+  # IClow.A <- 1 - (exp(-IClow.Z)) 
+  # return(IClow.A)}
+  # calcul.A.ICup <- function(model) {ICup.Z <- abs(confint(model)[2,1]) 
+  # ICup.A <- 1 - (exp(-ICup.Z))  
+  # return(ICup.A)
+  # }
+  # IClow.A <- calcul.A.IClow(model)
+  # IClow.A <- calcul.A.ICup(model)
+  # 
+  # 
+  # 
+  
+  
   CLEAN2 <-
     CLEAN2 %>% mutate("A" = round((1 - exp(-Z)) * 100, digits = 1))
   CLEAN2 <- CLEAN2 %>% mutate("lowerZ" = Z - SE,
                               "highZ" = Z + SE)
   CLEAN2 <-
     CLEAN2 %>% mutate("lowerA" = round((1 - exp(-lowerZ)) * 100, digits = 1),
-                      "Ahigh" = round((1 + exp(-highZ)) * 100, digits = 1))
+                      "Ahigh" = round((1 - exp(-highZ)) * 100, digits = 1))
+  
+  
   CLEAN2 <- CLEAN2 %>% mutate("IC 95%" = glue("[{lowerA}-{Ahigh}]"))
   CLEAN2 <-
     CLEAN2 %>% dplyr::select(-c("lowerA", "Ahigh", "lowerZ", "highZ"))
-  CLEAN2
+  
+  
+  CLEAN2 <-
+    CLEAN2 %>% dplyr::select(GLM, Modeladequacy, df, AICc, delta, weight, Z, SE,A,"IC 95%",commentaires)
+  
+ 
+  
+  CLEAN2 <-
+    CLEAN2 %>% rename("Ajustement (résultat du test HNP)" = Modeladequacy)
+  CLEAN2 <- CLEAN2 %>% rename("Poids d'Akaike" = weight)
+  CLEAN2 <- CLEAN2 %>% rename("Commentaires" = commentaires)
+  
+  CLEAN2 <- CLEAN2 %>% rename("Δ AICc" = delta)
+  CLEAN2 <- CLEAN2 %>% rename("Méthode" = GLM)
+  
+    CLEAN2
+
+  
+
+  
 }

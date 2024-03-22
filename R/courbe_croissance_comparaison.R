@@ -8,7 +8,7 @@ courbe_croissance_comparaison <- function(data) {
   
   
   init <- data
-  pi <- vbStarts(ltm ~ age, data = init) #Les pi pour Linf, K et t0 peuvent être obtenus grâce à la fonction vbStarts() du package FSA.
+  pi <- FSA::vbStarts(ltm ~ age, data = init) #Les pi pour Linf, K et t0 peuvent être obtenus grâce à la fonction vbStarts() du package FSA.
   
   #chercher growth dans help si necessaire
   result <- fishmethods::growth(

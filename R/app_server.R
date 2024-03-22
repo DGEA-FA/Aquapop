@@ -522,7 +522,8 @@ app_server <- function(input, output, session) {
   }
   output$download_psd2 <-
     download_data_format_xlsx(givenname = "psd_byclass", datadown = psd2())
-  output$psd1plot <- renderPlot({
+
+    output$psd1plot <- renderPlot({
     req(psd2())
     psd_plot(data = psd2())
   }, res = 96)
@@ -741,7 +742,7 @@ app_server <- function(input, output, session) {
   df_ext <- reactive({
     req(df_corr(), newPP(), agemax_val())
     creation_df_EXT(data = df_corr(),
-                    peakplus = pp(),
+                    peakplus = newPP(),
                     agemax = agemax_val()) %>% as.data.frame()
   })
   dispersion_result <- reactive({
@@ -796,13 +797,6 @@ app_server <- function(input, output, session) {
              ordered = TRUE)
     x
   })
-  # output$df_maturitetable <-
-  #   renderDataTable(df_maturite(),
-  #                   options = list(
-  #                     pageLength = 10,
-  #                     autoWidth = TRUE,
-  #                     searching = FALSE
-  #                   ))
   
   output$titreL50_selection_modeles_table <-
     renderText(
@@ -814,27 +808,11 @@ app_server <- function(input, output, session) {
     subset(df_maturite(), !is.na(ltm))# this data frame needed to be "cleaned" by removing all records where mesures were missing
   })
   
-  # output$df_maturitelongtable <-
-  #   renderDataTable(df_maturiteltm(),
-  #                   options = list(
-  #                     pageLength = 10,
-  #                     autoWidth = TRUE,
-  #                     searching = FALSE
-  #                   ))
   
   df_maturiteage <- reactive({
     req(df_maturite())
     subset(df_maturite(), !is.na(age))# this data frame needed to be "cleaned" by removing all records where mesures were missing
   })
-  
-  
-  # output$df_maturiteagetable <-
-  #   renderDataTable(df_maturiteage(),
-  #                   options = list(
-  #                     pageLength = 10,
-  #                     autoWidth = TRUE,
-  #                     searching = FALSE
-  #                   ))
   
   
   ## L50 -------------------------------------------------------

@@ -85,12 +85,10 @@ psd_byclass <- function(data, sp) {
         "650-799",
         "800-999",
         ">=1000")
-  } else if (unique(bunch$sp %>% droplevels()) %>% as.character() ==
-             "SAFO") {
+  } else if (sp == "SAFO") {
     virgin$range <-
       c("<150", "150-249", "250-324", "325-399", "400-499", ">=500")
-  } else if (unique(bunch$sp %>% droplevels()) %>% as.character() ==
-             "SAVI") {
+  } else if (sp == "SAVI") {
     virgin$range <-
       c("<250", "250-379", "380-509", "510-629", "630-759", ">=760")
   }

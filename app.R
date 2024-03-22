@@ -32,7 +32,12 @@ packages <-
     "MuMIn",
     "plotly",
     "gapminder",
-    "AER"
+    "AER",
+    "pROC",
+    "DescTools",
+    "emdbook",
+    "AICcmodavg",
+    "investr"
   )
 
 # # Install packages not yet installed
