@@ -31,11 +31,11 @@ taille_masse_age <- function(dataspecimen, espece) {
     dplyr::summarise(across(
       where(is.numeric),
       .fns = list(
-        N =  ~ length(.x[!is.na(.x)]),
-        Moyenne = ~ mean(.x, na.rm = TRUE) %>% round(digits = 1),
-        ET = ~ sd(.x, na.rm = TRUE) %>% round(digits = 1),
-        Minimum = ~ min(.x, na.rm = TRUE) %>% round(digits = 1),
-        Maximum = ~ max(.x, na.rm = TRUE) %>% round(digits = 1)
+        N =  ~ sum(!is.na(.x)),
+        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
+        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
       )
     ))
   
@@ -44,11 +44,11 @@ taille_masse_age <- function(dataspecimen, espece) {
     dplyr::summarise(across(
       where(is.numeric),
       .fns = list(
-        N =  ~ length(.x[!is.na(.x)]),
-        Moyenne = ~ mean(.x, na.rm = TRUE) %>% round(digits = 1),
-        ET = ~ sd(.x, na.rm = TRUE) %>% round(digits = 1),
-        Minimum = ~ min(.x, na.rm = TRUE) %>% round(digits = 1),
-        Maximum = ~ max(.x, na.rm = TRUE) %>% round(digits = 1)
+        N =  ~ sum(!is.na(.x)),
+        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
+        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
       )
     )) %>% mutate(sexe = NA)
   
@@ -58,11 +58,11 @@ taille_masse_age <- function(dataspecimen, espece) {
     dplyr::summarise(across(
       where(is.numeric),
       .fns = list(
-        N =  ~ length(.x[!is.na(.x)]),
-        Moyenne = ~ mean(.x, na.rm = TRUE) %>% round(digits = 1),
-        ET = ~ sd(.x, na.rm = TRUE) %>% round(digits = 1),
-        Minimum = ~ min(.x, na.rm = TRUE) %>% round(digits = 1),
-        Maximum = ~ max(.x, na.rm = TRUE) %>% round(digits = 1)
+        N =  ~ sum(!is.na(.x)),
+        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
+        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
       )
     )) %>% mutate(sexe = "Reprod. actifs ♀")
   
@@ -73,11 +73,11 @@ taille_masse_age <- function(dataspecimen, espece) {
     dplyr::summarise(across(
       where(is.numeric),
       .fns = list(
-        N =  ~ length(.x[!is.na(.x)]),
-        Moyenne = ~ mean(.x, na.rm = TRUE) %>% round(digits = 1),
-        ET = ~ sd(.x, na.rm = TRUE) %>% round(digits = 1),
-        Minimum = ~ min(.x, na.rm = TRUE) %>% round(digits = 1),
-        Maximum = ~ max(.x, na.rm = TRUE) %>% round(digits = 1)
+        N =  ~ sum(!is.na(.x)),
+        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
+        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
       )
     )) %>% mutate(sexe = "Reprod. actifs ♂")
   
@@ -87,11 +87,11 @@ taille_masse_age <- function(dataspecimen, espece) {
     dplyr::summarise(across(
       where(is.numeric),
       .fns = list(
-        N =  ~ length(.x[!is.na(.x)]),
-        Moyenne = ~ mean(.x, na.rm = TRUE) %>% round(digits = 1),
-        ET = ~ sd(.x, na.rm = TRUE) %>% round(digits = 1),
-        Minimum = ~ min(.x, na.rm = TRUE) %>% round(digits = 1),
-        Maximum = ~ max(.x, na.rm = TRUE) %>% round(digits = 1)
+        N =  ~ sum(!is.na(.x)),
+        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
+        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
       )
     )) %>% mutate(sexe = "Imm. ou reprod. inactifs")
   
@@ -101,11 +101,16 @@ taille_masse_age <- function(dataspecimen, espece) {
     dplyr::summarise(across(
       where(is.numeric),
       .fns = list(
-        N =  ~ length(.x[!is.na(.x)]),
-        Moyenne = ~ mean(.x, na.rm = TRUE) %>% round(digits = 1),
-        ET = ~ sd(.x, na.rm = TRUE) %>% round(digits = 1),
-        Minimum = ~ min(.x, na.rm = TRUE) %>% round(digits = 1),
-        Maximum = ~ max(.x, na.rm = TRUE) %>% round(digits = 1)
+        # N =  ~ length(.x[!is.na(.x)]),
+        N =  ~ sum(!is.na(.x)),
+        # Moyenne = ~ mean(.x, na.rm = TRUE) %>% round(digits = 1),
+        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
+        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
+        # ET = ~ sd(.x, na.rm = TRUE) %>% round(digits = 1),
+        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
+        # Minimum = ~ min(.x, na.rm = TRUE) %>% round(digits = 1),
+        # Maximum = ~ max(.x, na.rm = TRUE) %>% round(digits = 1)
       )
     )) %>% mutate(sexe = "Statut reprod. inconnu")
   
@@ -153,11 +158,11 @@ taille_masse_age <- function(dataspecimen, espece) {
     dplyr::summarise(across(
       where(is.numeric),
       .fns = list(
-        N =  ~ length(.x[!is.na(.x)]),
-        Moyenne = ~ mean(.x, na.rm = TRUE) %>% round(digits = 1),
-        ET = ~ sd(.x, na.rm = TRUE) %>% round(digits = 1),
-        Minimum = ~ min(.x, na.rm = TRUE) %>% round(digits = 1),
-        Maximum = ~ max(.x, na.rm = TRUE) %>% round(digits = 1)
+        N =  ~ sum(!is.na(.x)),
+        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
+        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
       )
     ))
   
@@ -168,11 +173,11 @@ taille_masse_age <- function(dataspecimen, espece) {
     dplyr::summarise(across(
       where(is.numeric),
       .fns = list(
-        N =  ~ length(.x[!is.na(.x)]),
-        Moyenne = ~ mean(.x, na.rm = TRUE) %>% round(digits = 1),
-        ET = ~ sd(.x, na.rm = TRUE) %>% round(digits = 1),
-        Minimum = ~ min(.x, na.rm = TRUE) %>% round(digits = 1),
-        Maximum = ~ max(.x, na.rm = TRUE) %>% round(digits = 1)
+        N =  ~ sum(!is.na(.x)),
+        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
+        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
       )
     )) %>% mutate(sexe = NA)
   
@@ -182,11 +187,11 @@ taille_masse_age <- function(dataspecimen, espece) {
     dplyr::summarise(across(
       where(is.numeric),
       .fns = list(
-        N =  ~ length(.x[!is.na(.x)]),
-        Moyenne = ~ mean(.x, na.rm = TRUE) %>% round(digits = 1),
-        ET = ~ sd(.x, na.rm = TRUE) %>% round(digits = 1),
-        Minimum = ~ min(.x, na.rm = TRUE) %>% round(digits = 1),
-        Maximum = ~ max(.x, na.rm = TRUE) %>% round(digits = 1)
+        N =  ~ sum(!is.na(.x)),
+        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
+        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
       )
     )) %>% mutate(sexe = "Reprod. actifs ♀")
   
@@ -197,11 +202,11 @@ taille_masse_age <- function(dataspecimen, espece) {
     dplyr::summarise(across(
       where(is.numeric),
       .fns = list(
-        N =  ~ length(.x[!is.na(.x)]),
-        Moyenne = ~ mean(.x, na.rm = TRUE) %>% round(digits = 1),
-        ET = ~ sd(.x, na.rm = TRUE) %>% round(digits = 1),
-        Minimum = ~ min(.x, na.rm = TRUE) %>% round(digits = 1),
-        Maximum = ~ max(.x, na.rm = TRUE) %>% round(digits = 1)
+        N =  ~ sum(!is.na(.x)),
+        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
+        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
       )
     )) %>% mutate(sexe = "Reprod. actifs ♂")
   
@@ -211,11 +216,11 @@ taille_masse_age <- function(dataspecimen, espece) {
     dplyr::summarise(across(
       where(is.numeric),
       .fns = list(
-        N =  ~ length(.x[!is.na(.x)]),
-        Moyenne = ~ mean(.x, na.rm = TRUE) %>% round(digits = 1),
-        ET = ~ sd(.x, na.rm = TRUE) %>% round(digits = 1),
-        Minimum = ~ min(.x, na.rm = TRUE) %>% round(digits = 1),
-        Maximum = ~ max(.x, na.rm = TRUE) %>% round(digits = 1)
+        N =  ~ sum(!is.na(.x)),
+        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
+        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
       )
     )) %>% mutate(sexe = "Imm. ou reprod. inactifs")
   
@@ -225,11 +230,11 @@ taille_masse_age <- function(dataspecimen, espece) {
     dplyr::summarise(across(
       where(is.numeric),
       .fns = list(
-        N =  ~ length(.x[!is.na(.x)]),
-        Moyenne = ~ mean(.x, na.rm = TRUE) %>% round(digits = 1),
-        ET = ~ sd(.x, na.rm = TRUE) %>% round(digits = 1),
-        Minimum = ~ min(.x, na.rm = TRUE) %>% round(digits = 1),
-        Maximum = ~ max(.x, na.rm = TRUE) %>% round(digits = 1)
+        N =  ~ sum(!is.na(.x)),
+        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
+        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
       )
     )) %>% mutate(sexe = "Statut reprod. inconnu")
   
@@ -284,11 +289,11 @@ taille_masse_age <- function(dataspecimen, espece) {
     dplyr::summarise(across(
       where(is.numeric),
       .fns = list(
-        N =  ~ length(.x[!is.na(.x)]),
-        Moyenne = ~ mean(.x, na.rm = TRUE) %>% round(digits = 1),
-        ET = ~ sd(.x, na.rm = TRUE) %>% round(digits = 1),
-        Minimum = ~ min(.x, na.rm = TRUE) %>% round(digits = 1),
-        Maximum = ~ max(.x, na.rm = TRUE) %>% round(digits = 1)
+        N =  ~ sum(!is.na(.x)),
+        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
+        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
       )
     ))
   
@@ -297,11 +302,11 @@ taille_masse_age <- function(dataspecimen, espece) {
     dplyr::summarise(across(
       where(is.numeric),
       .fns = list(
-        N =  ~ length(.x[!is.na(.x)]),
-        Moyenne = ~ mean(.x, na.rm = TRUE) %>% round(digits = 1),
-        ET = ~ sd(.x, na.rm = TRUE) %>% round(digits = 1),
-        Minimum = ~ min(.x, na.rm = TRUE) %>% round(digits = 1),
-        Maximum = ~ max(.x, na.rm = TRUE) %>% round(digits = 1)
+        N =  ~ sum(!is.na(.x)),
+        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
+        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
       )
     )) %>% mutate(sexe = NA)
   
@@ -311,11 +316,11 @@ taille_masse_age <- function(dataspecimen, espece) {
     dplyr::summarise(across(
       where(is.numeric),
       .fns = list(
-        N =  ~ length(.x[!is.na(.x)]),
-        Moyenne = ~ mean(.x, na.rm = TRUE) %>% round(digits = 1),
-        ET = ~ sd(.x, na.rm = TRUE) %>% round(digits = 1),
-        Minimum = ~ min(.x, na.rm = TRUE) %>% round(digits = 1),
-        Maximum = ~ max(.x, na.rm = TRUE) %>% round(digits = 1)
+        N =  ~ sum(!is.na(.x)),
+        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
+        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
       )
     )) %>% mutate(sexe = "Reprod. actifs ♀")
   
@@ -327,11 +332,11 @@ taille_masse_age <- function(dataspecimen, espece) {
     dplyr::summarise(across(
       where(is.numeric),
       .fns = list(
-        N =  ~ length(.x[!is.na(.x)]),
-        Moyenne = ~ mean(.x, na.rm = TRUE) %>% round(digits = 1),
-        ET = ~ sd(.x, na.rm = TRUE) %>% round(digits = 1),
-        Minimum = ~ min(.x, na.rm = TRUE) %>% round(digits = 1),
-        Maximum = ~ max(.x, na.rm = TRUE) %>% round(digits = 1)
+        N =  ~ sum(!is.na(.x)),
+        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
+        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
       )
     )) %>% mutate(sexe = "Reprod. actifs ♂")
   
@@ -341,11 +346,11 @@ taille_masse_age <- function(dataspecimen, espece) {
     dplyr::summarise(across(
       where(is.numeric),
       .fns = list(
-        N =  ~ length(.x[!is.na(.x)]),
-        Moyenne = ~ mean(.x, na.rm = TRUE) %>% round(digits = 1),
-        ET = ~ sd(.x, na.rm = TRUE) %>% round(digits = 1),
-        Minimum = ~ min(.x, na.rm = TRUE) %>% round(digits = 1),
-        Maximum = ~ max(.x, na.rm = TRUE) %>% round(digits = 1)
+        N =  ~ sum(!is.na(.x)),
+        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
+        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
       )
     )) %>% mutate(sexe = "Imm. ou reprod. inactifs")
   
@@ -355,11 +360,11 @@ taille_masse_age <- function(dataspecimen, espece) {
     dplyr::summarise(across(
       where(is.numeric),
       .fns = list(
-        N =  ~ length(.x[!is.na(.x)]),
-        Moyenne = ~ mean(.x, na.rm = TRUE) %>% round(digits = 1),
-        ET = ~ sd(.x, na.rm = TRUE) %>% round(digits = 1),
-        Minimum = ~ min(.x, na.rm = TRUE) %>% round(digits = 1),
-        Maximum = ~ max(.x, na.rm = TRUE) %>% round(digits = 1)
+        N =  ~ sum(!is.na(.x)),
+        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
+        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
+        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
       )
     )) %>% mutate(sexe = "Statut reprod. inconnu")
   
@@ -428,12 +433,18 @@ taille_masse_age <- function(dataspecimen, espece) {
     )
   
   complet <- complet %>%
-    mutate(ltm_Minimum = ifelse(ltm_Minimum %in% c("Inf", "-Inf"), "-", ltm_Minimum),
-           ltm_Maximum = ifelse(ltm_Maximum %in% c("Inf", "-Inf"), "-", ltm_Maximum),
-           age_Minimum = ifelse(age_Minimum %in% c("Inf", "-Inf"), "-", age_Minimum),
-           age_Maximum = ifelse(age_Maximum %in% c("Inf", "-Inf"), "-", age_Maximum),
-           masse_Minimum = ifelse(masse_Minimum %in% c("Inf", "-Inf"), "-", masse_Minimum),
-           masse_Maximum = ifelse(masse_Maximum %in% c("Inf", "-Inf"), "-", masse_Maximum))
+    mutate(ltm_Minimum = ifelse(ltm_Minimum %in% c("Inf", "-Inf") | is.na(ltm_Minimum), "-", ltm_Minimum),
+           ltm_Maximum = ifelse(ltm_Maximum %in% c("Inf", "-Inf") | is.na(ltm_Maximum), "-", ltm_Maximum),
+           ltm_Moyenne = ifelse(is.na(ltm_Moyenne), "-", ltm_Moyenne),
+           ltm_ET = ifelse(is.na(ltm_ET), "-", ltm_ET),
+           age_Minimum = ifelse(age_Minimum %in% c("Inf", "-Inf") | is.na(age_Minimum), "-", age_Minimum),
+           age_Maximum = ifelse(age_Maximum %in% c("Inf", "-Inf") | is.na(age_Maximum), "-", age_Maximum),
+           age_Moyenne = ifelse(is.na(age_Moyenne), "-", age_Moyenne),
+           age_ET = ifelse(is.na(age_ET), "-", age_ET),
+           masse_Minimum = ifelse(masse_Minimum %in% c("Inf", "-Inf") | is.na(masse_Minimum), "-", masse_Minimum),
+           masse_Maximum = ifelse(masse_Maximum %in% c("Inf", "-Inf") | is.na(masse_Maximum), "-", masse_Maximum),
+           masse_Moyenne = ifelse(is.na(masse_Moyenne), "-", masse_Moyenne),
+           masse_ET = ifelse(is.na(masse_ET), "-", masse_ET))
   
   complet
 }

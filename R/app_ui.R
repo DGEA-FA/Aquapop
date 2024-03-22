@@ -250,9 +250,30 @@ app_ui <- function() {
       # mortalite_panel ---------------------------------------------------------
       tabPanel(
         title = "Mortalité",
+        p("Voici un rappel du graphique de la structure d'âge, avec Peak Plus mis en évidence.Peak Plus représente l'âge à partir duquel les indicateurs de mortalité devraient être estimés.'Comme on souhaite avoir la meilleure représentation possible des
+        classes d’âges pour estimer Z, il est [...] préférable d’utiliser la classe d’âge suivant le Peak observé' (Mainguy, 2022), 
+        soit le Peak Plus."),
+        
+        plotOutput("structureageplot4death", width = 300, height = 200),
+        
+
+        verbatimTextOutput("pp_og"), #modifier ca pour que ce soit plus cute dans la mise en page
+
+        p("Pour lancer les estimations de mortalité, inscrivez ce nombre (ou celui que vous préférez) dans la boîte de texte ci-dessous."),
+        
+        numericInput("newPPtext", "Âge à partir duquel sera calculée la mortalité:", min = 0, max = 100, value = NA),
+        br(),
+        
+        actionButton("goButton", "C'est parti!"),
+        p("Cliquez sur le bouton pour mettre à jour l'âge à partir duquel sera calculée la mortalité."),
+        # verbatimTextOutput("newPP_veriftext"), #pour verifier, mais live ca fonctionne. a supprimer plus tard si tout est beau
         htmltools::includeMarkdown(path = './texte/mortalite_texte.rmd'),
+        
         withSpinner(tableOutput(outputId = "mortalite1_table"), type = myspinner),
         downloadButton(outputId = "download_mortalite1", label = "Téléchargement"),
+        p("Le modèle XYZ décrit le mieux la mortalité de la population de touladi (plus faible AICc).  La mortalité annuelle s’élève à XX% (libellé TBD)."),
+        br(),
+        p("Le modèle Chapman-Robson est également présenté à des fins comparatives."),
         withSpinner(tableOutput(outputId = "mortalite2_table"), type = myspinner),
         downloadButton(outputId = "download_mortalite2", label = "Téléchargement"),
       ),

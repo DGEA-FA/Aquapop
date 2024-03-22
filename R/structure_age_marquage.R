@@ -1,6 +1,13 @@
 structure_age_marquage <- function(dfspecimen, espece) {
   
   df <- dfspecimen %>% filter(sp == espece) %>% droplevels() #sélectionner slmt les sp
+  
+  # Check if all ages are NA
+  if(all(is.na(df$age))) {
+    return(NULL)  # Return nothing and exit the function
+  }
+  
+  
   df <- subset(df, !is.na(age))  #removing all records where mesures were missing
   max_age <- max(df$age) # définir la plus grande valeur de age
   

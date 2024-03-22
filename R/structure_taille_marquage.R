@@ -7,6 +7,12 @@ structure_taille_marquage <- function(dfspecimen, espece) {
   }
   
   df <- dfspecimen %>% filter(sp == espece) %>% droplevels() #sélectionner slmt les sp
+  
+  # Check if all ltm are NA
+  if(all(is.na(df$ltm))) {
+    return(NULL)  # Return nothing and exit the function
+  }
+  
   df <- subset(df, !is.na(ltm))  #removing all records where mesures were missing
   max_ltm <- max(df$ltm) # définir la plus grande valeur de ltm
 

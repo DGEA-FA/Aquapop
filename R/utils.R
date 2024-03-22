@@ -22,6 +22,12 @@ peakplus <- function(data) {
   PP <- PeakPlus()
   PP
 }
+
+
+
+
+
+
 kable_psd1 <- function(data) {
   req(data)
   data %>% 

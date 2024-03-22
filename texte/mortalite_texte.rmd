@@ -4,8 +4,5 @@ author: "Caroline Brule"
 date: "20 octobre 2023"
 ---
 
-Le modèle XYZ décrit le mieux la mortalité de la population de touladi (plus faible AICc).  La mortalité annuelle s’élève à XX% (libellé TBD).
-
 Boîte de texte qui explique quel est le meilleur modèle (libellé TBD)
 
-Le modèle Chapman-Robson est également présenté à des fins comparatives. 

@@ -10,6 +10,7 @@ packages <-
     "FSA",
     "nlstools",
     "shinyBS",
+    "gghighlight",
     "htmltools",
     "markdown",
     "readxl",
@@ -58,7 +59,7 @@ reactlog::reactlog_enable() #to see the reactive graph
 Sys.setlocale("LC_TIME", "French")  #https://stackoverflow.com/questions/39340185/how-to-set-the-default-language-of-date-in-r
 # on utilise https://style.tidyverse.org/index.html
 options(knitr.kable.NA = '-')
-
+options(shiny.maxRequestSize = 10 * 1024^2)
 
 
 shinyApp(app_ui, app_server)

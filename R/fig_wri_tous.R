@@ -1,4 +1,17 @@
 fig_wri_tous <- function(data, espece) {
+  #TableWeightRef
+  t <- FSA::wsVal("Lake Trout") #obtenir les valeurs de reference pour cette espece selon la liste de Ogle
+  a <- FSA::wsVal("Brook Trout") #obtenir les valeurs de reference pour cette espece selon la liste de Ogle
+  b <- FSA::wsVal("Walleye") #obtenir les valeurs de reference pour cette espece selon la liste de Ogle
+  TableWeightRef <- rbind(t,a,b)
+  
+  rm(list= c( "t", "a", "b"))
+  library(dplyr)
+  TableWeightRef <- TableWeightRef %>% mutate(sp= c("SANA", "SAFO", "SAVI"))
+  
+  
+  
+  
   init <-
     data %>% filter(sp == espece)# selectionner slmt le data necessaire
   init <-
@@ -30,7 +43,7 @@ fig_wri_tous <- function(data, espece) {
     init  %>% summarise(moytous = mean(Wri)) %>% as.numeric()
   
   
-  ggplot(data = init, aes(x = ltm, y = Wri, color = sexe)) +
+  ggplot2::ggplot(data = init, aes(x = ltm, y = Wri, color = sexe)) +
     geom_point() +
     scale_color_manual(
       values = c(

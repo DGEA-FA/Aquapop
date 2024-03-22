@@ -701,18 +701,45 @@ app_server <- function(input, output, session) {
     req(deathdf())
     peakplus(data = deathdf())
   })
+  
+  output$pp_og <- renderText({
+    pp()
+  })
+  
+  output$structureageplot4death <- renderPlot({
+    req(specimen(), sp_pen(), pp())
+      structure_age_tous(dfspecimen = specimen(),
+                         espece = sp_pen()) + 
+        theme( legend.position = "none") +
+        gghighlight::gghighlight(age == pp(), use_group_by = FALSE, label_key= espece)
+    } )
+  
+  
+  # builds a reactive expression that only invalidates 
+  # when the value of input$goButton becomes out of date 
+  # (i.e., when the button is pressed)
+  newPP <- eventReactive(input$goButton, {
+    input$newPPtext
+  })
+  
+  output$newPP_veriftext <- renderText({
+    newPP()
+  })
+  
+ 
   agemax_val <- reactive({
     req(deathdf())
     agemax(data = deathdf())
   })
+  
   df_corr <- reactive({
-    req(deathdf(), pp(), agemax_val())
+    req(deathdf(), newPP(), agemax_val())
     creation_df_CORR(data = deathdf(),
-                     peakplus = pp(),
+                     peakplus = newPP(),
                      agemax = agemax_val()) %>% as.data.frame()
   })
   df_ext <- reactive({
-    req(df_corr(), pp(), agemax_val())
+    req(df_corr(), newPP(), agemax_val())
     creation_df_EXT(data = df_corr(),
                     peakplus = pp(),
                     agemax = agemax_val()) %>% as.data.frame()
@@ -731,9 +758,9 @@ app_server <- function(input, output, session) {
   }
   
   mortalite2 <- reactive({
-    req(pp(), agemax_val(), deathdf())
+    req(newPP(), agemax_val(), deathdf())
     mortalite_ChapmanRobson(data = deathdf(),
-                            pp = pp(),
+                            pp = newPP(),
                             agemax_val = agemax_val()) %>% as.data.frame()
   })
   
@@ -748,8 +775,8 @@ app_server <- function(input, output, session) {
     download_data_format_xlsx(givenname = "mortalite_ChapmanRobson", datadown = mortalite2())
   
   zobs <- reactive({
-    req(pp(), deathdf(), agemax_val())
-    get_zobs(PP = pp(),
+    req(newPP(), deathdf(), agemax_val())
+    get_zobs(PP = newPP(),
              death = deathdf(),
              agemax = agemax_val())
   })

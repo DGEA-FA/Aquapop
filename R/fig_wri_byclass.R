@@ -1,4 +1,19 @@
 fig_wri_byclass <- function(data, espece) {
+  #TableWeightRef
+  t <- FSA::wsVal("Lake Trout") #obtenir les valeurs de reference pour cette espece selon la liste de Ogle
+  a <- FSA::wsVal("Brook Trout") #obtenir les valeurs de reference pour cette espece selon la liste de Ogle
+  b <- FSA::wsVal("Walleye") #obtenir les valeurs de reference pour cette espece selon la liste de Ogle
+  TableWeightRef <- rbind(t,a,b)
+  
+  rm(list= c( "t", "a", "b"))
+  library(dplyr)
+  TableWeightRef <- TableWeightRef %>% mutate(sp= c("SANA", "SAFO", "SAVI"))
+  
+  
+  
+  
+  
+  
   #aide reference Ogle IFAR 2016 p.113
   init <-
     data %>% filter(sp == espece)# selectionner slmt le data necessaire
@@ -25,13 +40,14 @@ fig_wri_byclass <- function(data, espece) {
   
   #tous selon le guide de normalisation tome 2
   
-  if (unique(init$sp %>% droplevels()) %>% as.character() == "SANA") {
+  if (espece == "SANA") {
     breakClass <- c(0, 300, 500, 650, 800, 1000)
-  } else if (unique(init$sp %>% droplevels()) %>% as.character() == "SAFO") {
+  } else if (espece == "SAFO") {
     breakClass <- c(0, 150, 250, 325, 400, 500)
-  } else if (unique(init$sp %>% droplevels()) %>% as.character() == "SAVI") {
+  } else if (espece == "SAVI") {
     breakClass <- c(0, 250, 380, 510, 630, 760)
   }
+  
   
   Classename <-
     c("Sous-stock",
@@ -41,7 +57,7 @@ fig_wri_byclass <- function(data, espece) {
       "Mémorable",
       "Trophée")
   init  <-
-    mutate(init, gcat = lencat(ltm, breaks = breakClass, as.fact = TRUE)) #classe de taille, voir p.30 de Ogle 2016 si questions
+    mutate(init, gcat = FSA::lencat(ltm, breaks = breakClass, as.fact = TRUE)) #classe de taille, voir p.30 de Ogle 2016 si questions
   init <-
     mutate(init,
            Classe = plyr::mapvalues(gcat, from = breakClass, to = Classename)) #classe de taille format texte
