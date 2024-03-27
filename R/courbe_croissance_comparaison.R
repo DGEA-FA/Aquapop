@@ -7,7 +7,13 @@ courbe_croissance_comparaison <- function(data) {
   #library(nlstools)
   
   
-  init <- data
+  init <- data %>% select(c(ltm, age))
+  
+  # Rename the row names sequentially from 1 to the total number of rows
+  rownames(init) <- seq(nrow(init))
+
+  
+  
   pi <- FSA::vbStarts(ltm ~ age, data = init) #Les pi pour Linf, K et t0 peuvent être obtenus grâce à la fonction vbStarts() du package FSA.
   
   #chercher growth dans help si necessaire
@@ -30,7 +36,13 @@ courbe_croissance_comparaison <- function(data) {
     )
   )
   
-
+  # Define a function to handle error cases
+  handle_error <- function(e) {
+    return(conditionMessage(e))
+  }
+  
+  
+  
   tableresult <- data.frame(
     Methode = c("Von Bertalanffy",
                 "Gompertz" ,
@@ -41,50 +53,51 @@ courbe_croissance_comparaison <- function(data) {
       environment(result[["lout"]][["m"]][["deviance"]])[["env"]][["Sinf"]]
     ),
     K = c(
-      environment(result[["vout"]][["m"]][["deviance"]])[["env"]][["K"]],
-      environment(result[["gout"]][["m"]][["deviance"]])[["env"]][["K"]],
-      environment(result[["lout"]][["m"]][["deviance"]])[["env"]][["K"]]
+      tryCatch(stats::confint(result[["vout"]], level = 0.95)[2, 1], error = handle_error),
+      tryCatch(stats::confint(result[["gout"]], level = 0.95)[2, 1], error = handle_error),
+      tryCatch(stats::confint(result[["lout"]], level = 0.95)[2, 1], error = handle_error)
     ),
     t0 = c(
-      environment(result[["vout"]][["m"]][["deviance"]])[["env"]][["t0"]],
-      environment(result[["gout"]][["m"]][["deviance"]])[["env"]][["t0"]],
-      environment(result[["lout"]][["m"]][["deviance"]])[["env"]][["t0"]]
+      tryCatch(stats::confint(result[["vout"]], level = 0.95)[3, 1], error = handle_error),
+      tryCatch(stats::confint(result[["gout"]], level = 0.95)[3, 1], error = handle_error),
+      tryCatch(stats::confint(result[["lout"]], level = 0.95)[3, 1], error = handle_error)
     ),
     LCI_linf = c(
-      stats::confint(result[["vout"]], level = 0.95)[1, 1],
-      stats::confint(result[["gout"]], level = 0.95)[1, 1],
-      stats::confint(result[["lout"]], level = 0.95)[1, 1]
+      tryCatch(stats::confint(result[["vout"]], level = 0.95)[1, 1], error = handle_error),
+      tryCatch(stats::confint(result[["gout"]], level = 0.95)[1, 1], error = handle_error),
+      tryCatch(stats::confint(result[["lout"]], level = 0.95)[1, 1], error = handle_error)
     ),
     UCI_linf = c(
-      stats::confint(result[["vout"]], level = 0.95)[1, 2],
-      stats::confint(result[["gout"]], level = 0.95)[1, 2],
-      stats::confint(result[["lout"]], level = 0.95)[1, 2]
+      tryCatch(stats::confint(result[["vout"]], level = 0.95)[1, 2], error = handle_error),
+      tryCatch(stats::confint(result[["gout"]], level = 0.95)[1, 2], error = handle_error),
+      tryCatch(stats::confint(result[["lout"]], level = 0.95)[1, 2], error = handle_error)
     ),
     LCI_K = c(
-      stats::confint(result[["vout"]], level = 0.95)[2, 1],
-      stats::confint(result[["gout"]], level = 0.95)[2, 1],
-      stats::confint(result[["lout"]], level = 0.95)[2, 1]
+      tryCatch(stats::confint(result[["vout"]], level = 0.95)[2, 1], error = handle_error),
+      tryCatch(stats::confint(result[["gout"]], level = 0.95)[2, 1], error = handle_error),
+      tryCatch(stats::confint(result[["lout"]], level = 0.95)[2, 1], error = handle_error)
     ),
     UCI_K = c(
-      stats::confint(result[["vout"]], level = 0.95)[2, 2],
-      stats::confint(result[["gout"]], level = 0.95)[2, 2],
-      stats::confint(result[["lout"]], level = 0.95)[2, 2]
+      tryCatch(stats::confint(result[["vout"]], level = 0.95)[2, 2], error = handle_error),
+      tryCatch(stats::confint(result[["gout"]], level = 0.95)[2, 2], error = handle_error),
+      tryCatch(stats::confint(result[["lout"]], level = 0.95)[2, 2], error = handle_error)
     ),
     LCI_t0 = c(
-      stats::confint(result[["vout"]], level = 0.95)[3, 1],
-      stats::confint(result[["gout"]], level = 0.95)[3, 1],
-      stats::confint(result[["lout"]], level = 0.95)[3, 1]
+      tryCatch(stats::confint(result[["vout"]], level = 0.95)[3, 1], error = handle_error),
+      tryCatch(stats::confint(result[["gout"]], level = 0.95)[3, 1], error = handle_error),
+      tryCatch(stats::confint(result[["lout"]], level = 0.95)[3, 1], error = handle_error)
     ),
     UCI_t0 = c(
-      stats::confint(result[["vout"]], level = 0.95)[3, 2],
-      stats::confint(result[["gout"]], level = 0.95)[3, 2],
-      stats::confint(result[["lout"]], level = 0.95)[3, 2]
+      tryCatch(stats::confint(result[["vout"]], level = 0.95)[3, 2], error = handle_error),
+      tryCatch(stats::confint(result[["gout"]], level = 0.95)[3, 2], error = handle_error),
+      tryCatch(stats::confint(result[["lout"]], level = 0.95)[3, 2], error = handle_error)
     ),
     
     converged = c(result[["vout"]][["convInfo"]][["stopMessage"]],
                   result[["gout"]][["convInfo"]][["stopMessage"]],
                   result[["lout"]][["convInfo"]][["stopMessage"]])
   )
+  
   
 
   #Pour obtenir les AIC
@@ -107,26 +120,73 @@ courbe_croissance_comparaison <- function(data) {
   
   
   CLEAN$Linf <- round(CLEAN$Linf, digits = 0)
-  CLEAN$K <- round(CLEAN$K, digits = 3)
-  CLEAN$t0 <- round(CLEAN$t0, digits = 3)
+  
+  if(is.numeric(CLEAN$K)) {
+    CLEAN$K <- round(CLEAN$K, digits = 3)
+  }
+  
+  if(is.numeric(CLEAN$t0)) {
+    CLEAN$t0 <- round(CLEAN$t0, digits = 3)
+  }
+  
   CLEAN$AICc <- round(CLEAN$AICc, digits = 2)
   CLEAN$Delta_AICc <- round(CLEAN$Delta_AICc, digits = 2)
   CLEAN$AICcWt <- round(CLEAN$AICcWt, digits = 2)
   
-  CLEAN$UCI_linf <- round(CLEAN$UCI_linf, digits = 0)
-  CLEAN$LCI_linf <- round(CLEAN$LCI_linf, digits = 0)
-  CLEAN <-
-    CLEAN %>% mutate(LinfIC = paste0("[", LCI_linf, "-", UCI_linf, "]"))
+  if(is.numeric(CLEAN$UCI_linf)) {
+    CLEAN$UCI_linf <- round(CLEAN$UCI_linf, digits = 0)
+  }
+  
+
+  if(is.numeric(CLEAN$LCI_linf)) {
+    CLEAN$LCI_linf <- round(CLEAN$LCI_linf, digits = 0)
+  }
+  
+
+  if(is.numeric(CLEAN$LCI_linf) & is.numeric(CLEAN$UCI_linf)) {
+    CLEAN <- CLEAN %>% mutate(LinfIC = paste0("[", LCI_linf, "-", UCI_linf, "]"))
+  } else {
+    CLEAN <- CLEAN %>% mutate(LinfIC = "")
+  }
+  
+
   CLEAN <- CLEAN %>% dplyr::select(-c("LCI_linf", "UCI_linf"))
   
-  CLEAN$UCI_K <- round(CLEAN$UCI_K, digits = 3)
-  CLEAN$LCI_K <- round(CLEAN$LCI_K, digits = 3)
-  CLEAN <- CLEAN %>% mutate(KIC = paste0("[", LCI_K, "-", UCI_K, "]"))
+  if(is.numeric(CLEAN$UCI_K)) {
+    CLEAN$UCI_K <- round(CLEAN$UCI_K, digits = 3)
+  }
+  
+  if(is.numeric(CLEAN$LCI_K)) {
+    CLEAN$LCI_K <- round(CLEAN$LCI_K, digits = 3)
+  }
+  
+
+  
+  if(is.numeric(CLEAN$LCI_K) & is.numeric(CLEAN$UCI_K)) {
+    CLEAN <- CLEAN %>% mutate(KIC = paste0("[", LCI_K, "-", UCI_K, "]"))
+  }else {
+    CLEAN <- CLEAN %>% mutate(KIC = "")
+  }
+  
   CLEAN <- CLEAN %>% dplyr::select(-c("LCI_K", "UCI_K"))
   
-  CLEAN$UCI_t0 <- round(CLEAN$UCI_t0, digits = 3)
-  CLEAN$LCI_t0 <- round(CLEAN$LCI_t0, digits = 3)
-  CLEAN <- CLEAN %>% mutate(t0IC = paste0("[", LCI_t0, "-", UCI_t0, "]"))
+  
+  if(is.numeric(CLEAN$UCI_t0)) {
+    CLEAN$UCI_t0 <- round(CLEAN$UCI_t0, digits = 3)
+  }
+  
+  
+  if(is.numeric(CLEAN$LCI_t0)) {
+    CLEAN$LCI_t0 <- round(CLEAN$LCI_t0, digits = 3)
+  }
+  
+  
+  if(is.numeric(CLEAN$LCI_t0) & is.numeric(CLEAN$UCI_t0)) {
+    CLEAN <- CLEAN %>% mutate(t0IC = paste0("[", LCI_t0, "-", UCI_t0, "]"))
+  } else {
+    CLEAN <- CLEAN %>% mutate(t0IC = "")
+    }
+  
   CLEAN <- CLEAN %>% dplyr::select(-c("LCI_t0", "UCI_t0"))
   
   
