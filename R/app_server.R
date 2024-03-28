@@ -606,14 +606,10 @@ app_server <- function(input, output, session) {
   initcroissance <- reactive({
     #selectionner slmt le data necessaire
     req(specimen(), sp_pen())
-    x <-
-      specimen() %>% filter(sp == sp_pen()) #prendre slmt l'sp PEN
-    x <-
-      subset(x, !is.na(ltm)) #removing all records where LTM mesures were missing
-    x <-
-      subset(x, !is.na(age)) #removing all records where AGE mesures were missing
-    x
+    temp <- create_initcroissance(specimen(), sp_pen())
+    temp
   })
+  
   croissance1 <- reactive({ #ici pas encore reactable
     req(initcroissance())
     courbe_croissance_comparaison(data = initcroissance()) %>% as.data.frame()
@@ -648,15 +644,12 @@ app_server <- function(input, output, session) {
   
   #ici, on fait appel a differentes fxns selon le modele selectionné
   output$selectedmodelcroissanceplot <- renderPlot({
-    req(selectedmodelcroissance())
+    req(selectedmodelcroissance(), initcroissance(), croissance1())
     if (selectedmodelcroissance() == "Von Bertalanffy") {
-      req(initcroissance(), croissance1())
       courbe_croissance_ggVONBERT(initcroissance = initcroissance(), tablemodele = croissance1())
     } else if (selectedmodelcroissance() == "Gompertz") {
-      req(initcroissance(), croissance1())
       courbe_croissance_ggGOMP(initcroissance = initcroissance(), tablemodele = croissance1())
     } else if (selectedmodelcroissance() == "Logistique") {
-      req(initcroissance(), croissance1())
       courbe_croissance_ggLOGIST(initcroissance = initcroissance(), tablemodele = croissance1())
     }
   }, res = 96)

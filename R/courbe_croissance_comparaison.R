@@ -6,13 +6,8 @@ courbe_croissance_comparaison <- function(data) {
   # library(FSA)
   #library(nlstools)
   
-  
-  init <- data %>% select(c(ltm, age))
-  
-  # Rename the row names sequentially from 1 to the total number of rows
-  rownames(init) <- seq(nrow(init))
 
-  
+  init <- data 
   
   pi <- FSA::vbStarts(ltm ~ age, data = init) #Les pi pour Linf, K et t0 peuvent être obtenus grâce à la fonction vbStarts() du package FSA.
   
