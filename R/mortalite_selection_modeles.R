@@ -1,4 +1,21 @@
 mortalite_selection_modeles <- function(df_EXT) {
+  
+  
+  calcul.A.IClow <- function(model) {IClow.Z <- abs(confint(model )[2,2]) 
+  IClow.A <- 1 - (exp(-IClow.Z)) 
+  return(IClow.A)}
+  
+  calcul.A.ICup <- function(model) {ICup.Z <- abs(confint(model)[2,1]) 
+  ICup.A <- 1 - (exp(-ICup.Z))  
+  return(ICup.A)
+  }
+  
+  # IClow.A <- calcul.A.IClow(model)
+  # IClow.A <- calcul.A.ICup(model)
+  
+  
+  
+  
   # Poisson -----------------------------------------------------------------
   m.df_EXT.p <- glm(number ~ age, family = poisson, data = df_EXT)
   resume.p <- summary(m.df_EXT.p)
@@ -10,7 +27,7 @@ mortalite_selection_modeles <- function(df_EXT) {
   
   set.seed(2021)
   hnp_p.p <- list()
-  for (i in 1:1) {
+  for (i in 1:2) {
     #remettre 100
     hnp_p.p[[i]] <- hnp::hnp(
       m.df_EXT.p,
@@ -22,6 +39,12 @@ mortalite_selection_modeles <- function(df_EXT) {
   summary_hnp.p <- sapply(hnp_p.p, function(x)
     x$out / x$total * 100)
   model_adequacy.p <- mean(summary_hnp.p)
+  
+  IClowA.p <- calcul.A.IClow(m.df_EXT.p)
+  ICupA.p <- calcul.A.ICup(m.df_EXT.p)
+  
+  
+  
   
   # nb1 ---------------------------------------------------------------------
   m.df_EXT.NB1 <-
@@ -50,7 +73,7 @@ mortalite_selection_modeles <- function(df_EXT) {
   
   set.seed(2021)
   hnp_nb1 <- list()
-  for (i in 1:1) {
+  for (i in 1:2) {
     #remettre 100
     hnp_nb1[[i]] <- hnp::hnp(
       m.df_EXT.NB1,
@@ -62,9 +85,15 @@ mortalite_selection_modeles <- function(df_EXT) {
       plot.sim = FALSE
     )
   }
+
   summary_hnp_NB1 <- sapply(hnp_nb1, function(x)
     x$out / x$total * 100)
   model_adequacy.NB1 <- mean(summary_hnp_NB1)
+  
+  
+  IClowA.nb1 <- calcul.A.IClow(m.df_EXT.NB1)
+  ICupA.nb1 <- calcul.A.ICup(m.df_EXT.NB1)
+  
   
   # nb2 ---------------------------------------------------------------------
   m.df_EXT.NB2 <- glm.nb(number ~ age, data = df_EXT)
@@ -73,7 +102,7 @@ mortalite_selection_modeles <- function(df_EXT) {
   
   set.seed(2021)
   hnp_p.NB2 <- list()
-  for (i in 1:1) {
+  for (i in 1:2) {
     #remettre 100
     hnp_p.NB2[[i]] <- hnp::hnp(
       m.df_EXT.NB2,
@@ -86,6 +115,11 @@ mortalite_selection_modeles <- function(df_EXT) {
     sapply(hnp_p.NB2, function(x)
       x$out / x$total * 100)
   model_adequacy.NB2 <- mean(summary_hnp.NB2)
+  
+  IClowA.nb2 <- calcul.A.IClow(m.df_EXT.NB2)
+  ICupA.nb2 <- calcul.A.ICup(m.df_EXT.NB2)
+  
+  
   
   # CMPa --------------------------------------------------------------------
   m.df_EXT.CMPa <-
@@ -109,7 +143,7 @@ mortalite_selection_modeles <- function(df_EXT) {
   #
   set.seed(2021)
   hnp_CMPa <- list()
-  for (i in 1:1) {
+  for (i in 1:2) {
     #remettre 100 for(i in 1:100)
     hnp_CMPa[[i]] <- hnp::hnp(
       m.df_EXT.CMPa,
@@ -124,6 +158,10 @@ mortalite_selection_modeles <- function(df_EXT) {
   summary_hnp_CMPa <- sapply(hnp_CMPa, function(x)
     x$out / x$total * 100)
   model_adequacy.CMPa <- mean(summary_hnp_CMPa)
+  
+  
+  IClowA.CMPa <- calcul.A.IClow(m.df_EXT.CMPa)
+  ICupA.CMPa <- calcul.A.ICup(m.df_EXT.CMPa)
   
   # GP ----------------------------------------------------------------------
   m.df_EXT.GP <-
@@ -147,7 +185,7 @@ mortalite_selection_modeles <- function(df_EXT) {
   
   set.seed(2021)
   hnp_GP <- list()
-  for (i in 1:1) {
+  for (i in 1:2) {
     #remettre 100
     hnp_GP[[i]] <- hnp::hnp(
       m.df_EXT.GP,
@@ -163,6 +201,12 @@ mortalite_selection_modeles <- function(df_EXT) {
     x$out / x$total * 100)
   model_adequacy.GP <- mean(summary_hnp_GP)
   
+  IClowA.GP <- calcul.A.IClow(m.df_EXT.GP)
+  ICupA.GP <- calcul.A.ICup(m.df_EXT.GP)
+  
+
+# CLEAN -------------------------------------------------------------------
+
   #La comparaison de modèles ayant recours à différentes extensions de la
   #distribution de Poisson permettra d’identifier laquelle parmi celles testées offre la meilleure capacité à
   #estimer non seulement Z, mais aussi et surtout la variance associée (SE).
@@ -206,8 +250,11 @@ mortalite_selection_modeles <- function(df_EXT) {
   
   CLEAN2 <- cbind(
     CLEAN,
-    SE = c(SE.p,
-           SE.NB1, SE.NB2, SE.CMPa, SE.GP),
+    SE = c(SE.p, SE.NB1, SE.NB2, SE.CMPa, SE.GP),
+    
+    lowerA = c(IClowA.p, IClowA.nb1, IClowA.nb2, IClowA.CMPa, IClowA.GP),
+    
+    Ahigh = c(ICupA.p, ICupA.nb1, ICupA.nb2, ICupA.CMPa, ICupA.GP),
     Modeladequacy = c(
       model_adequacy.p,
       model_adequacy.NB1,
@@ -234,28 +281,17 @@ mortalite_selection_modeles <- function(df_EXT) {
   CLEAN2 <- CLEAN2 %>% dplyr::arrange(AICc)
   
   
-  # calcul.A.IClow <- function(model) {IClow.Z <- abs(confint(model)[2,2]) 
-  # IClow.A <- 1 - (exp(-IClow.Z)) 
-  # return(IClow.A)}
-  # calcul.A.ICup <- function(model) {ICup.Z <- abs(confint(model)[2,1]) 
-  # ICup.A <- 1 - (exp(-ICup.Z))  
-  # return(ICup.A)
-  # }
-  # IClow.A <- calcul.A.IClow(model)
-  # IClow.A <- calcul.A.ICup(model)
-  # 
-  # 
-  # 
-  
-  
   CLEAN2 <-
     CLEAN2 %>% mutate("A" = round((1 - exp(-Z)) * 100, digits = 1))
   CLEAN2 <- CLEAN2 %>% mutate("lowerZ" = Z - SE,
                               "highZ" = Z + SE)
-  CLEAN2 <-
-    CLEAN2 %>% mutate("lowerA" = round((1 - exp(-lowerZ)) * 100, digits = 1),
-                      "Ahigh" = round((1 - exp(-highZ)) * 100, digits = 1))
+  # CLEAN2 <-
+  #   CLEAN2 %>% mutate("lowerA" = round((1 - exp(-lowerZ)) * 100, digits = 1),
+  #                     "Ahigh" = round((1 - exp(-highZ)) * 100, digits = 1))
   
+  CLEAN2 <-
+    CLEAN2 %>% mutate("lowerA" = round(lowerA, digits = 1),
+                      "Ahigh" = round(Ahigh, digits = 1))
   
   CLEAN2 <- CLEAN2 %>% mutate("IC 95%" = glue("[{lowerA}-{Ahigh}]"))
   CLEAN2 <-
