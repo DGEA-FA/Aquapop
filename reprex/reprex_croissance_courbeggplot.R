@@ -2,6 +2,8 @@
 
 library(dplyr)
 library(ggplot2)
+library(FSA)
+
 
 #Deux references utiles
 #https://fishr-core-team.github.io/fishR/blog/posts/2019-12-31_vonB_plots_1/

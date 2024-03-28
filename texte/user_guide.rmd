@@ -25,6 +25,7 @@ AquaPop est une application conçue pour soutenir les professionnels du MELCCFP 
 * Neumann RM, Guy CS et Willis DW. 2012. Length, weight ans associated indices. Dans : Zale AV, et al. éds. Fisheries Techniques. American Fisheries Society, Bethesda, MD, p. 637-676.
 * Ogle D, Doll J, Wheeler P et Dinno A. 2021. FSA.
 * Ogle DH. 2016. Introductory fisheries analyses with R. Chapman and Hall, CRC Press, Ashland, Winconsin, USA, 317 p.
+Ogle DH, TO Brenden and JL McCormick (2017). Chapter 12 Growth estimation : growth models and statistical inference. Dans MC Quist and DA Isermann (Éds.), Age and growth of fishes, principles and techniques (pp. 265-359). American Fisheries Society, Bethesa, Maryland. 
 * Quist MC, Bonvechio KI et Allen MS. 2009. Statistical analysis and data management. Dans : Society AF éd. Standard methods for sampling North American freshwater fishes. Bonar, S.A., Hubert, W.A.,Willis, D.W., Bethesda, Maryland, p. 171-194.
 * R Core Team. 2022a. stats.
 * R Core Team. 2022b. The R Base Package. p. Base R functions.

@@ -1,31 +1,6 @@
 brut_options <- list(pageLength = 10, autoWidth = TRUE, searching = FALSE)
 myspinner <- 6
 
-agemax <- function(data) {
-  age_max <-
-    max(na.omit(data$age)) #Trouver le plus vieil âge et ignorer les NA de votre jeu de données s’il en contient (sinon = erreur)
-  age_max
-}
-
-death <- function(data, espece) {
-  death <- data %>%  dplyr::filter(sp == espece)  %>% droplevels()
-  death <- subset(death,!is.na(age))
-}
-
-peakplus <- function(data) {
-  #Largement inspiré de Guide de normalisation et manuel JMainguy
-  PeakPlus <- function() {
-    uniqv <- unique(data$age)
-    Peak <- uniqv[which.max(tabulate(match(data$age, uniqv)))]
-    Peak + 1
-  }
-  PP <- PeakPlus()
-  PP
-}
-
-
-
-
 
 
 kable_psd1 <- function(data) {

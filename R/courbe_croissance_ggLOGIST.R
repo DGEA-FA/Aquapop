@@ -6,7 +6,7 @@ courbe_croissance_ggLOGIST <- function(initcroissance, tablemodele) {
   
   #pour avoir les ranges dages
   dfbase <-
-    Summarize(ltm ~ age, data = init)  #truc de FSA pour avoir la ltm moy par age
+    FSA::Summarize(ltm ~ age, data = init)  #truc de FSA pour avoir la ltm moy par age
   agemin <- min(dfbase$age) #age minimum
   agemax <- max(dfbase$age)
   ages <- c(agemin:agemax)
@@ -15,8 +15,8 @@ courbe_croissance_ggLOGIST <- function(initcroissance, tablemodele) {
   ageGRAPHmax <- ageGRAPH[2]
   ageGRAPHbreak <- c(ageGRAPHmin:ageGRAPHmax)
   
-  vb <- vbFuns(param = "Typical")
-  (sv0 <- vbStarts(ltm ~ age, data = init))
+  vb <- FSA::vbFuns(param = "Typical")
+  (sv0 <- FSA::vbStarts(ltm ~ age, data = init))
   
   sv0$Linf <- model$'L∞'
   sv0$K <- model$K

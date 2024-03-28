@@ -72,10 +72,15 @@ fig_wri_tous(data = specimen, espece = sp_pen)
 source("R/fig_wri_byclass.R")
 # fig_wri_byclass(data = specimen, espece = sp_pen)
 
-source("R/utils.R")
+# source("R/utils.R")
+source("R/death.R")
 deathdf <- death(data = specimen, espece = sp_pen)
+
+source("R/peakplus.R")
 pp <- peakplus(data = deathdf)
 newPP <- pp #on le change ici si on veut autre chose
+
+source("R/agemax.R")
 agemax_val <- agemax(data = deathdf)
 
 source("R/creation_df_CORR.R")
@@ -118,10 +123,10 @@ source("R/courbe_croissance_comparaison.R")
 croissance1 <- courbe_croissance_comparaison(data = initcroissance)
 
 source("R/courbe_croissance_ggVONBERT.R")
-# courbe_croissance_ggVONBERT(initcroissance = initcroissance, tablemodele = croissance1)
+courbe_croissance_ggVONBERT(initcroissance = initcroissance, tablemodele = croissance1)
 
 source("R/courbe_croissance_ggGOMP.R")
-# courbe_croissance_ggGOMP(initcroissance = initcroissance, tablemodele = croissance1)
+courbe_croissance_ggGOMP(initcroissance = initcroissance, tablemodele = croissance1)
 
 source("R/courbe_croissance_ggLOGIST.R")
-# courbe_croissance_ggLOGIST(initcroissance = initcroissance, tablemodele = croissance1)
+courbe_croissance_ggLOGIST(initcroissance = initcroissance, tablemodele = croissance1)

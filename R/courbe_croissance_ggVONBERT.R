@@ -7,7 +7,7 @@ courbe_croissance_ggVONBERT <-
     
     #pour avoir les ranges d'ages
     dfbase <-
-      Summarize(ltm ~ age, data = init)  #truc de FSA pour avoir la ltm moy par age
+      FSA::Summarize(ltm ~ age, data = init)  #truc de FSA pour avoir la ltm moy par age
     agemin <- min(dfbase$age) #age minimum
     agemax <- max(dfbase$age)
     ages <- c(agemin:agemax)
@@ -16,7 +16,7 @@ courbe_croissance_ggVONBERT <-
     ageGRAPHmax <- ageGRAPH[2]
     ageGRAPHbreak <- c(ageGRAPHmin:ageGRAPHmax)
     
-    sv0 <- vbStarts(ltm ~ age, data = init)
+    sv0 <- FSA::vbStarts(ltm ~ age, data = init)
     
     sv0$Linf <- model$'L∞'
     sv0$K <- model$K
