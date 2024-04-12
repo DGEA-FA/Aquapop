@@ -265,7 +265,10 @@ app_server <- function(input, output, session) {
   }
   output$download_taillemasseagetable <-
     download_data_format_xlsx(givenname = "taille_masse_age_table", datadown = taillemasseagedata())
-  # Structure taille ggplot ------------------------------------------------
+ 
+  
+  
+   # Structure taille ggplot ------------------------------------------------
   output$structuretailleplot <- renderPlot({
     req(specimen(), sp_pen())
     if (input$groupetailleplot == "tous") {
@@ -310,6 +313,32 @@ app_server <- function(input, output, session) {
         } }, res = 96)
     }
   )
+  
+
+  
+  data4plot_taille <- reactive({
+    req(specimen(), sp_pen())
+    if (input$groupetailleplot == "tous") {
+      structure_taille_tous(dfspecimen = specimen(),
+                            espece = sp_pen()) %>% get_df_from_plot_tous()
+    } else if (input$groupetailleplot == "marquage") {
+      structure_taille_marquage(dfspecimen = specimen(),
+                                espece = sp_pen())  %>% get_df_from_plot_marquage()
+    } else if (input$groupetailleplot == "sexe") {
+      structure_taille_sexe(dfspecimen = specimen(),
+                            espece = sp_pen())  %>% get_df_from_plot_sexe()
+    } else if (input$groupetailleplot == "maturite") {
+      structure_taille_maturite(dfspecimen = specimen(),
+                                espece = sp_pen()) %>% get_df_from_plot_maturite()
+    } })
+  
+  
+  
+  output$download_data4plot_taille <-
+    download_data_format_xlsx(givenname = paste0("data4plot_taille_",input$groupetailleplot), datadown = data4plot_taille())
+  
+  
+  
   # Structure age ggplot ------------------------------------------------
   output$structureageplot <- renderPlot({
     req(specimen(), sp_pen())
@@ -355,6 +384,28 @@ app_server <- function(input, output, session) {
         } }, res = 96)
     }
   )
+  
+  data4plot_age <- reactive({
+    req(specimen(), sp_pen())
+    if (input$groupeageplot == "tous") {
+      structure_age_tous(dfspecimen = specimen(),
+                            espece = sp_pen()) %>% get_df_from_plot_tous()
+    } else if (input$groupeageplot == "marquage") {
+      structure_age_marquage(dfspecimen = specimen(),
+                                espece = sp_pen())  %>% get_df_from_plot_marquage()
+    } else if (input$groupeageplot == "sexe") {
+      structure_age_sexe(dfspecimen = specimen(),
+                            espece = sp_pen())  %>% get_df_from_plot_sexe()
+    } else if (input$groupeageplot == "maturite") {
+      structure_age_maturite(dfspecimen = specimen(),
+                                espece = sp_pen()) %>% get_df_from_plot_maturite()
+    } })
+  
+  
+  
+  output$download_data4plot_age <-
+    download_data_format_xlsx(givenname = paste0("data4plot_age_",input$groupeageplot), datadown = data4plot_age())
+  
   
   
   # Structure age ggplot ------------------------------------------------

@@ -137,7 +137,7 @@ app_ui <- function() {
                   "Statut reproducteur" = "maturite"
                 )
               ),
-              downloadButton(outputId = "download_groupetailleplot", label = "Téléchargement")
+              downloadButton(outputId = "download_groupetailleplot", label = "Téléchargement du graphique")
             ),
             mainPanel(
               htmltools::includeMarkdown(path = './texte/structuretaille_texte.rmd'),
@@ -145,7 +145,9 @@ app_ui <- function() {
                 plotOutput("structuretailleplot", width = 600, height = 400),
                 type = myspinner
               ),
-              textOutput(outputId = 'titrestructuretailleplot') #titre plot
+              textOutput(outputId = 'titrestructuretailleplot'), #titre plot
+              downloadButton(outputId = "download_data4plot_taille", label = "Téléchargement des données du graphique")
+              
             )
           ),
           ## PSD_subpanel -----------------------------------------------------------
@@ -159,7 +161,7 @@ app_ui <- function() {
             plotOutput("psd1plot", width = 600, height = 400),
             textOutput(outputId = 'titrepsd1plot'),            #titre plot
 
-            downloadButton(outputId = "download_psd1plot", label = "Téléchargement")
+            downloadButton(outputId = "download_psd1plot", label = "Téléchargement du graphique")
           ),
           ## ggplot_age_subpanel ----------------------------------------------------
           tabPanel(
@@ -175,7 +177,7 @@ app_ui <- function() {
                   "Statut reproducteur" = "maturite"
                 )
               ),
-              downloadButton(outputId = "download_groupeageplot", label = "Téléchargement")
+              downloadButton(outputId = "download_groupeageplot", label = "Téléchargement du graphique")
             ),
             mainPanel(
               htmltools::includeMarkdown(path = './texte/structureage_texte.rmd'),
@@ -183,7 +185,8 @@ app_ui <- function() {
                 plotOutput("structureageplot", width = 600, height = 400),
                 type = myspinner
               ),
-              textOutput(outputId = 'titrestructureageplot') #titre plot
+              textOutput(outputId = 'titrestructureageplot'), #titre plot
+              downloadButton(outputId = "download_data4plot_age", label = "Téléchargement des données du graphique")
             )
           ),
           ## relation_masse_longueur_subpanel ---------------------------------------

@@ -19,7 +19,15 @@ fig_wri_tous <- function(data, espece) {
              !is.na(ltm)) # removing all records where mesures of either length or weight were missing
   init <-
     init  %>% dplyr::select(no_specimen, sp, ltm, masse, age, sexe, maturite)
-  
+  init$sexe <-
+    factor(
+      init$sexe,
+      levels = c(
+        "F",
+        "M",
+        "IND"
+      )
+    )
   
   slope <-
     TableWeightRef$slope[TableWeightRef$sp == espece] %>% as.numeric() #isoler la valeur de la pente

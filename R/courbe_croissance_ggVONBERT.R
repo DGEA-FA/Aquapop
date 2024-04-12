@@ -22,9 +22,8 @@ courbe_croissance_ggVONBERT <-
     sv0$K <- model$K
     sv0$t0 <- model$t0
     
-    fit0 <-
-      nls(ltm ~ Linf * (1 - exp(-K * (age - t0))), data = init, start = sv0) #####cette ligne fait quon predict avec une equation de vonB meme si je mets les param des 2 autres
-    #CHANGÉ PAR ROX, SINON NE TROUVE PAS LA FONCTION vb DANS SHINY
+    # fit0 <- nls(ltm ~ Linf * (1 - exp(-K * (age - t0))), data = init, start = sv0) #####cette ligne fait quon predict avec une equation de vonB meme si je mets les param des 2 autres
+    fit0 <- nls(ltm~vBert(age,Linf,K,t0),data=init,start=sv0)
     
     preds <- data.frame(age = ageGRAPHbreak,
                         investr::predFit(fit0, data.frame(age = ageGRAPHbreak),

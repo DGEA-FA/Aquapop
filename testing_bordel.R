@@ -36,8 +36,14 @@ capture <- create_capture(data_station,data_recolte )
 
 source("R/structure_taille_tous.R")
 structure_taille_tous(dfspecimen = specimen, espece = sp_pen)
+
 source("R/structure_taille_sexe.R")
-structure_taille_sexe(dfspecimen = specimen, espece = sp_pen)
+structuretailleplot <- structure_taille_sexe(dfspecimen = specimen, espece = sp_pen)
+
+
+source("R/get_df_from_plot_sexe.R")
+dddf <- get_df_from_plot_sexe(structuretailleplot)
+
 source("R/structure_taille_maturite.R")
 structure_taille_maturite(dfspecimen = specimen, espece = sp_pen)
 source("R/structure_taille_marquage.R")

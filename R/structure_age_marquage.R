@@ -98,7 +98,7 @@ structure_age_marquage <- function(dfspecimen, espece) {
       axis.text.y.left = element_text(color = "black"),
       axis.text.x = element_text(
         color = "black",
-        angle = 90,
+        angle = 0,
         vjust = 0.5,
         hjust = 1
       ),

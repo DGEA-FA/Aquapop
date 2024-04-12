@@ -290,8 +290,8 @@ mortalite_selection_modeles <- function(df_EXT) {
   #                     "Ahigh" = round((1 - exp(-highZ)) * 100, digits = 1))
   
   CLEAN2 <-
-    CLEAN2 %>% mutate("lowerA" = round(lowerA, digits = 1),
-                      "Ahigh" = round(Ahigh, digits = 1))
+    CLEAN2 %>% mutate("lowerA" = round(A - lowerA, digits = 1),
+                      "Ahigh" = round(A + Ahigh, digits = 1))
   
   CLEAN2 <- CLEAN2 %>% mutate("IC 95%" = glue("[{lowerA}-{Ahigh}]"))
   CLEAN2 <-
