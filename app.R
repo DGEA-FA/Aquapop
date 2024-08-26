@@ -1,70 +1,49 @@
 # librairies --------------------------------------------------------------
-# Package names
-packages <-
-  c(
-    "shiny",
-    "car",
-    "DT",
-    "kableExtra",
-    "reactable",
-    "FSA",
-    "nlstools",
-    "shinyBS",
-    "gghighlight",
-    "htmltools",
-    "markdown",
-    "readxl",
-    "ggplot2",
-    "scales",
-    "dplyr",
-    "patchwork",
-    "reactlog",
-    "stringr",
-    "chron",
-    "purrr",
-    "writexl",
-    "shinycssloaders",
-    "glue",
-    "fishmethods",
-    "hnp",
-    "MASS",
-    "glmmTMB",
-    "MuMIn",
-    "plotly",
-    "gapminder",
-    "AER",
-    "pROC",
-    "DescTools",
-    "emdbook",
-    "AICcmodavg",
-    "investr"
-  )
-
-# # Install packages not yet installed
-# installed_packages <- packages %in% rownames(installed.packages())
-# if (any(installed_packages == FALSE)) {
-#   install.packages(packages[!installed_packages])
-# }
-# 
-# # Packages loading
-# invisible(lapply(packages, library, character.only = TRUE))
-
-# Install and load packages
-for (pkg in packages) {
-  if (!requireNamespace(pkg, quietly = TRUE)) {
-    install.packages(pkg, dependencies = TRUE)
-  }
-  suppressMessages(library(pkg, character.only = TRUE))
-}
-
-
+library(shiny)
+library(car)
+library(DT)
+library(kableExtra)
+library(reactable)
+library(FSA)
+library(nlstools)
+library(shinyBS)
+library(gghighlight)
+library(htmltools)
+library(markdown)
+library(readxl)
+library(ggplot2)
+library(scales)
+library(dplyr)
+library(patchwork)
+library(reactlog)
+library(stringr)
+library(chron)
+library(purrr)
+library(writexl)
+library(shinycssloaders)
+library(glue)
+library(fishmethods)
+library(hnp)
+library(MASS)
+library(glmmTMB)
+library(MuMIn)
+library(plotly)
+library(gapminder)
+library(AER)
+library(pROC)
+library(DescTools)
+library(emdbook)
+library(AICcmodavg)
+library(investr)
 
 # to_activate_before_play -------------------------------------------------
-reactlog::reactlog_enable() #to see the reactive graph
-Sys.setlocale("LC_TIME", "French")  #https://stackoverflow.com/questions/39340185/how-to-set-the-default-language-of-date-in-r
-# on utilise https://style.tidyverse.org/index.html
-options(knitr.kable.NA = '-')
-options(shiny.maxRequestSize = 10 * 1024^2)
+reactlog::reactlog_enable() # Pour voir le graphe des réactifs
+Sys.setlocale("LC_TIME", "French")  # Pour définir le format de la date en français
+options(knitr.kable.NA = '-')  # Options pour la fonction kable de knitr
+options(shiny.maxRequestSize = 10 * 1024^2)  # Limite de la taille des fichiers uploadés
 
-
-shinyApp(app_ui, app_server)
+# Votre application Shiny commence ici
+shinyApp(
+  ui = app_ui,
+  server = app_server
+)

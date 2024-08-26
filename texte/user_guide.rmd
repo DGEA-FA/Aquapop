@@ -1,44 +1,24 @@
 ---
-title: "user_guide.rmd"
-author: "Caroline Brule"
-date: "6 novembre 2023"
+title: ""
+bibliography: references.bib
+nocite: '@*'
 ---
 
-## Description de l'outil
-AquaPop est une application conçue pour soutenir les professionnels du MELCCFP dans les analyses les plus couramment utilisées pour décrire une population de poissons. Il s’applique facilement aux données des pêches expérimentales normalisées au touladi (PENT), au doré jaune (PENDJ) et à l’omble de fontaine (PENOF) structurées selon la base de donnée IFA (classeur AquaPop). Les comparaisons spatiales et temporelles ne sont pas abordées dans cette version de l’outil. Les analyses respectent les recommandations du Tome II du Guide de normalisation des inventaires en eaux intérieures (publication à venir) et du Guide pour la réalisation d’analyses statistiques en faune aquatique à l’aide du logiciel R (Mainguy 2023, version 1.3).
+# Description de l'outil
 
-## Références
-* Anderson RO et Neumann RM. 1996. Length, weight, and associated structural indices. Dans : Murphy BR et Willis DW éds. Fisheries techniques. American Fisheries Society, Bethesda, Maryland, p. 447-482.
-* Barton K. 2020. MuMIn.
-* Baty F, Delignette-Muller M-L, Charles S, Flandrois J-P, Ritz C et Siberchicot A. 2021. nlstools.
-* Blackwell BG, Brown ML et Willis DW. 2010. Relative Weight (Wr) Status and Current Use in Fisheries Assessment and Management. Reviews in Fisheries Science, 8 : 1-44.
-* Boisclair D et Leggett WC. 1989a. Among-population variability of fish growth. 1.Influence of the quantity of food consumed. Canadian Journal of Fisheries and Aquatic Sciences, 46 : 457-467.
-* Boisclair D et Leggett WC. 1989b. Among-population variability of fish growth. 2.Influence of prey type. Canadian Journal of Fisheries and Aquatic Sciences, 46 : 468-482.
-* Boisclair D et Leggett WC. 1989c. Among-population variability of fish growth. 3.Influence of fish community. Canadian Journal of Fisheries and Aquatic Sciences, 46 : 1539-1550.
-* Brown ML et Murphy BR. 1991. Standard Weights (Ws) for Striped Bass, White Bass, and Hybrid Striped Bass. North American Journal of Fisheries Management, 11 : 451-467.
-* Chang W, Henry L, Pedersen LT, Takahashi K, Wilke C, Woo K, Yutani H et Dunnington D. 2021. ggplot2. RStudio Team.
-* Devries DR et Frie RV. 1996. Determination of age and growth. Dans : Murphy BR et Willis DW éds. Fisheries Techniques. American Fisheries Society, Bethesda, Maryland, p. 483-512.
-* Direction de la faune aquatique. 2012. Guide de normalisation des méthodes d’inventaire ichtyologique en eaux intérieures, Tome II, Analyse et interprétation des données. Ministère des Ressources naturelles et de la Faune, Québec, 98 p.
-* Gustafsson KA. 1988. Management briefs: approximating confidence intervals for indices of fish population size structure. North American Journal of Fisheries Management, 8 : 139-141.
-* Mainguy J et Moral RdA. 2021. An improved method for the estimation and comparison of mortality rates in fish from catch‐curve data. North American Journal of Fisheries Management, 41 : 1436-1453.
-* Ministère des Forêts de la Faune et des Parcs. 2018. Protocole d’échantillonnage en milieu nordique, pêche expérimentale normalisée des communautés de poissons en lac. 34 p.
-* Neumann RM, Guy CS et Willis DW. 2012. Length, weight ans associated indices. Dans : Zale AV, et al. éds. Fisheries Techniques. American Fisheries Society, Bethesda, MD, p. 637-676.
-* Ogle D, Doll J, Wheeler P et Dinno A. 2021. FSA.
-* Ogle DH. 2016. Introductory fisheries analyses with R. Chapman and Hall, CRC Press, Ashland, Winconsin, USA, 317 p.
-Ogle DH, TO Brenden and JL McCormick (2017). Chapter 12 Growth estimation : growth models and statistical inference. Dans MC Quist and DA Isermann (Éds.), Age and growth of fishes, principles and techniques (pp. 265-359). American Fisheries Society, Bethesa, Maryland. 
-* Quist MC, Bonvechio KI et Allen MS. 2009. Statistical analysis and data management. Dans : Society AF éd. Standard methods for sampling North American freshwater fishes. Bonar, S.A., Hubert, W.A.,Willis, D.W., Bethesda, Maryland, p. 171-194.
-* R Core Team. 2022a. stats.
-* R Core Team. 2022b. The R Base Package. p. Base R functions.
-* R Studio Team. 2022. RStudio: Integrated Development for R. RStudio, PBC, Boston, MA.
-* Ripley B, Venables B, Bates DM, Hornik K, Gebhardt A et Firth D. 2020. MASS.
-* Service de la faune aquatique. 2011. Guide de normalisation des méthodes d’inventaire ichtyologique en eaux intérieures - Acquisition de données. ministère des Ressources naturelles et de la Faune, Québec.
-* Willis DW, Murphy BR et Guy CS. 2008. Stock density indices: Development, use, and limitations. Reviews in Fisheries Science, 1 : 203-222.
+AquaPop est une application conçue pour soutenir les professionnels du MELCCFP dans les analyses les plus couramment utilisées pour décrire une population de poissons. Il s'applique facilement aux données des pêches expérimentales normalisées au touladi (PENT), au doré jaune (PENDJ) et à l'omble de fontaine (PENOF) structurées selon la base de donnée IFA (classeur AquaPop). Les comparaisons spatiales et temporelles ne sont pas abordées dans cette version de l'outil. Les analyses respectent les recommandations du Tome II du Guide de normalisation des inventaires en eaux intérieures (publication à venir) et du Guide pour la réalisation d'analyses statistiques en faune aquatique à l'aide du logiciel R (Mainguy 2023, version 1.3).
 
-## Conception et réalisation
+# Conception et réalisation
+
 Caroline Brûlé
 
-## Aide, question et soutien
-Geneviève Ouellet-Cauchon
-Direction de l’expertise sur la faune aquatique
-Service de la gestion des espèces aquatiques
-Genevieve.Ouellet-Cauchon@mffp.gouv.qc.ca
+# Aide, question et soutien
+
+Geneviève Ouellet-Cauchon\
+Direction de l'expertise sur la faune aquatique \
+Service de la gestion des espèces aquatiques \
+[Genevieve.Ouellet-Cauchon\@mffp.gouv.qc.ca](mailto:Genevieve.Ouellet-Cauchon@mffp.gouv.qc.ca){.email}
+
+# Références
+
+\bibliography{texte/references.bib}
