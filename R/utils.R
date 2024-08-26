@@ -7,7 +7,7 @@ kable_psd1 <- function(data) {
   req(data)
   data %>% 
     kable( align = c("c","c"),
-           caption = NULL, 
+           caption = "Nombre et fréquence relative (%) des classes de taille du PSD", 
            row.names = FALSE) %>%
     kable_styling(full_width = FALSE,
                   font_size = 12,

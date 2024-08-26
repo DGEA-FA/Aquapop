@@ -7,9 +7,7 @@ abondance_table <- function(capture, specimen, espece) {
     specimen %>%  dplyr::filter(sp == espece)  %>% droplevels()
   alldata <-
     merge(dataspec, datacapt, all.x = TRUE) #ch ligne 1 specimen ou on a ajoute n total de capture et de poissons peses par station.On part de ca pour tous les autres filtres
-  #alldata <- alldata %>% dplyr::filter(TYPE_MAILL %in% c("G",NA))  %>% droplevels() #on veut juste les filets expérimentaux
-  #UPDATE: LES TECHS SPECIFIENT QUEL COTE DU FILET EXP EST SUR LE BORD DE LA RIVE. DONC NON, PAS DE FILTRE POUR LE TYPE DENGIN
-  
+ 
   alldata <-
     alldata %>% dplyr::filter(st_hasard == "O") #slmt les stations hasard  tirage aleatoire
   alldata <-

@@ -17,6 +17,10 @@ app_ui <- function() {
         icon = icon("upload"),
         sidebarLayout(
           sidebarPanel(
+            tabPanel(
+              "Instructions",
+              htmltools::includeMarkdown(path = './texte/instruction_texte.rmd')
+            ),
             ## upload ----------------------------------------------------------------
             fileInput(
               inputId = "upload",
@@ -85,7 +89,7 @@ app_ui <- function() {
                    htmltools::includeMarkdown(path = './texte/CPUE_texte.rmd'),
                    withSpinner(tableOutput(outputId = "verif_ntable"),
                               type = myspinner),
-                   htmltools::includeMarkdown(path = './texte/CPUE_texte2.rmd'),
+                   # htmltools::includeMarkdown(path = './texte/CPUE_texte2.rmd'),
                    withSpinner(
                      tableOutput(outputId = "selection_modele_CPUE_toustable"),
                      type = myspinner

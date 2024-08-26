@@ -66,6 +66,6 @@ load_lac <- function(path, namesheet) {
     as.numeric(lac$prof_max_m)#transformer en numeric
   lac$prof_moy_m <-
     as.numeric(lac$prof_moy_m)#transformer en numeric
-  lac$comments <- as.character(lac$comments)#transformer en numeric
+  lac$comments <- as.character(lac$comments)#transformer en character
   lac %>% dplyr::distinct()
 }
