@@ -126,7 +126,7 @@ biomasse_table <- function(capture, specimen, espece) {
     temp %>% mutate(sexe = plyr::mapvalues(
       sexe,
       from = c("F", "M"),
-      to = c("Repro. actifs ♀", "Repro. actifs ♂")
+      to = c("Repro. actifs femelles", "Repro. actifs mâles")
     ))
   temp <- temp %>% dplyr::select(c(sexe, Biomasse, Perc, BPUE, IC95))
   
@@ -184,8 +184,8 @@ biomasse_table <- function(capture, specimen, espece) {
         "Femelle",
         "Mâle",
         "Sexe inconnu",
-        "Repro. actifs ♀",
-        "Repro. actifs ♂",
+        "Repro. actifs femelles",
+        "Repro. actifs mâles",
         "Imm. ou reprod. inactifs",
         "Statut reprod. inconnu"
       )
@@ -198,8 +198,8 @@ biomasse_table <- function(capture, specimen, espece) {
         "Femelle",
         "Mâle",
         "Sexe inconnu",
-        "Repro. actifs ♀",
-        "Repro. actifs ♂",
+        "Repro. actifs femelles",
+        "Repro. actifs mâles",
         "Imm. ou reprod. inactifs",
         "Statut reprod. inconnu"
       )

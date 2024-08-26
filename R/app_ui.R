@@ -71,15 +71,15 @@ app_ui <- function() {
       ),
       # visualisation panel ------------------------------------------------
       
-      tabPanel("Visualisation",
-               tabsetPanel(
-                 tabPanel("Capture",
-                          fluidRow(DTOutput("capture_table"))),
-                 tabPanel("Specimen",
-                          fluidRow(DTOutput("specimen_table")))
-               )), 
-    
-      
+      # tabPanel("Visualisation",
+      #          tabsetPanel(
+      #            tabPanel("Capture",
+      #                     fluidRow(DTOutput("capture_table"))),
+      #            tabPanel("Specimen",
+      #                     fluidRow(DTOutput("specimen_table")))
+      #          )), 
+      # 
+      # 
       
       # abondance_biomasse_panel ------------------------------------------------
       tabPanel(title = "Abondance et biomasse",
@@ -136,7 +136,7 @@ app_ui <- function() {
                 label = "Filtrer des poissons",
                 choices  = c(
                   "Tous" = "tous",
-                  "Origine" = "marquage",
+                  "Origine (marqué ou non-marqué)" = "marquage",
                   "Sexe" = "sexe",
                   "Statut reproducteur" = "maturite"
                 )
@@ -176,7 +176,7 @@ app_ui <- function() {
                 label = "Filtrer des poissons",
                 choices  = c(
                   "Tous" = "tous",
-                  "Origine" = "marquage",
+                  "Origine (marqué ou non-marqué)" = "marquage",
                   "Sexe" = "sexe",
                   "Statut reproducteur" = "maturite"
                 )

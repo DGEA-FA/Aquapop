@@ -46,11 +46,7 @@ app_server <- function(input, output, session) {
     req(input$annee)
     filter(df_filtered2(), annee %in% input$annee)
   })
-  # output$recap_intro_table <- renderTable({
-  #   req(df_filtered3(), capture())
-  #   table_recap(datalac = df_filtered3(), capture = capture())
-  # })
-  
+ 
   output$recap_intro_table <- renderTable({
     req(df_filtered3(), data_station())
     table_recap(datalac = df_filtered3(), data_station = data_station())
@@ -66,9 +62,9 @@ app_server <- function(input, output, session) {
         "Lac" = "lac",
         "Stations" = "station",
         "Récolte" = "recolte",
-        "Spécimens" = "specimen",
-        "Profil" = "profil",
-        "Paramètres" = "parametres"
+        "Spécimens" = "specimen"#, #je les garde pcq seront utilises dans la version 2 de lappli
+        # "Profil" = "profil",
+        # "Paramètres" = "parametres"
       ),
       selected = NULL,
       multiple = FALSE

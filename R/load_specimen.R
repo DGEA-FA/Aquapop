@@ -101,7 +101,14 @@ load_specimen <- function(path, namesheet) {
   specimen$age <- as.numeric(specimen$age)#transformer en numeric
   specimen$comments <-
     as.character(specimen$comments)#transformer en character
-  specimen %>% dplyr::distinct()
-
+  # Trier par no_specimen en ordre croissant tout en gardant le format factor
+  specimen <- specimen %>%
+    mutate(no_specimen_numeric = as.numeric(as.character(no_specimen))) %>%
+    arrange(no_specimen_numeric) %>%
+    select(-no_specimen_numeric)
+  
+  specimen <- specimen %>% dplyr::distinct()
+  
+  return(specimen)
   
 }

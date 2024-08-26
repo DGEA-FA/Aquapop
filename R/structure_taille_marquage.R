@@ -56,8 +56,8 @@ structure_taille_marquage <- function(dfspecimen, espece) {
     NULL
   }
   
-  axeY <- paste0("N des ", nomsp, " échantillonnés")
- 
+  axeY <- paste0("Nb. ", nomsp, " échantillonnés")
+  
   # Création de la couche geom_histogram sans aes() pour obtenir les informations sur les bins
   hist_data <- ggplot(df, aes(x = ltm)) +
     geom_histogram(binwidth = binwidth) +

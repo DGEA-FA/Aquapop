@@ -118,7 +118,7 @@ kable_CPUEtous <- function(data) {
   req(data)
   data %>% 
     kable( align = c("r","c","c","c","r"),
-           caption = "Comparaison de modèles CPUE tous", 
+           caption = "Comparaison des modèles : tous les spécimens ", 
            row.names = FALSE    ) %>%
     kable_styling(full_width = FALSE,
                   font_size = 12,
@@ -130,7 +130,7 @@ kable_CPUEFmature <- function(data) {
   req(data)
   data %>% 
     kable( align = c("r","c","c","c","r"),
-           caption = "Comparaison de modèles Reprod. actifs ♀", 
+           caption = "Comparaison des modèles : femelles reproductrices actives ", 
            row.names = FALSE) %>%
     kable_styling(full_width = FALSE,
                   font_size = 12,
@@ -142,7 +142,7 @@ kable_mortalite1 <- function(data) {
   req(data)
   data %>% 
     kable( align = c("r","c","c","c","c","c","c","c","c","r"),
-           caption = "Sélection de modèles mortalité TITRE TBD", 
+           caption = "Table de sélection des modèles de l’estimation de la mortalité", 
            row.names = FALSE    ) %>%
     kable_styling(full_width = FALSE,
                   font_size = 12,
@@ -154,7 +154,7 @@ kable_mortalite2 <- function(data) {
   req(data)
   data %>% 
     kable( align = c("r","c","r"),
-           caption = "Info pour Robson-Chapman TITRE TBD", 
+           caption = "Estimations obtenues à partir du modèle de Robson-Chapman (à titre comparatif seulement)", 
            row.names = FALSE    ) %>%
     kable_styling(full_width = FALSE,
                   #lightable_options = "basic",

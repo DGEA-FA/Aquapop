@@ -1,44 +1,45 @@
 load_parametres <- function(path, namesheet) {
+  # Charger les données à partir du fichier Excel
   parametres <- readxl::read_excel(
     path,
     col_names = TRUE,
     sheet = namesheet,
     na = c("", "NULL", "NA", " "),
-    col_types = c("text",
-                  "text", "date", "text", "text", "text",
-                  "text", "text")
+    col_types = c("text", "text", "date", "text", "text", "text", "text", "text")
   ) %>%
     as.data.frame()
-  colnames(parametres)[1] <-
-    'no_lac' #renommer la 1 colonne "No plan d'eau fusionné"
-  colnames(parametres)[2] <-
-    'nom_lac' #renommer la 2 colonne "Nom plan d'eau fusionné"
-  colnames(parametres)[3] <-
-    'date' #renommer la 3 colonne "date"
-  colnames(parametres)[4] <-
-    'typ_pech' #renommer la 4 colonne "Type de pêche"
-  colnames(parametres)[5] <-
-    'no_station' #renommer la 5 colonne "No station"
-  colnames(parametres)[6] <-
-    'nom_param' #renommer la 6 colonne "Nom paramètre"
-  colnames(parametres)[7] <-
-    'results' #renommer la 7 volonne "Résultat"
-  colnames(parametres)[8] <-
-    'comments' #renommer la 8 colonne  "Commentaires"
-  parametres <- mutate_at(parametres,
-                          vars(no_lac,
-                               nom_lac,
-                               typ_pech,
-                               no_station,
-                               nom_param),
-                          factor) #transformer en factor
-  parametres$results <-
-    as.numeric(parametres$results)#transformer en numeric
   
+  # Renommer les colonnes
+  colnames(parametres) <- c(
+    'no_lac',     # 1ère colonne : No plan d'eau fusionné
+    'nom_lac',    # 2ème colonne : Nom plan d'eau fusionné
+    'date',       # 3ème colonne : Date
+    'typ_pech',   # 4ème colonne : Type de pêche
+    'no_station', # 5ème colonne : No station
+    'nom_param',  # 6ème colonne : Nom paramètre
+    'resultats',    # 7ème colonne : Résultat
+    'commentaires'    # 8ème colonne : Commentaires
+  )
   
+  # Transformer certaines colonnes en facteurs
+  parametres <- parametres %>%
+    mutate_at(vars(no_lac, nom_lac, typ_pech, no_station, nom_param), factor)
   
-  parametres <- parametres %>% mutate(annee = format(date, format = "%Y"))# isoler annee
-  parametres$comments <-
-    as.character(parametres$comments)#transformer en character
-  parametres %>% dplyr::distinct()
+  # Transformer la colonne 'resultats' en numérique
+  parametres <- parametres %>%
+    mutate(resultats = as.numeric(resultats))
+  
+  # Isoler l'année à partir de la date
+  parametres <- parametres %>%
+    mutate(annee = format(date, format = "%Y"))
+  
+  # Transformer la colonne 'commentaires' en caractère
+  parametres <- parametres %>%
+    mutate(commentaires = as.character(commentaires))
+  
+  # Supprimer les doublons
+  parametres <- parametres %>%
+    dplyr::distinct()
+  
+  return(parametres)
 }

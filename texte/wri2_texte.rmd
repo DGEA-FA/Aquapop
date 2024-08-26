@@ -1,7 +1,5 @@
 ---
 title: "wri2_texte.rmd"
-author: "Caroline Brule"
-date: "20 oct 2023"
 ---
 
-Dans le graphique suivant, les lignes pointillées indique la moyenne pour chaque sexe, ainsi que pour Tous en rouge. La ligne du 100 est en gris à titre de référence.
+Le graphique suivant illustre, pour chaque spécimen capturé, l’indice de condition en fonction de la longueur totale maximale et du sexe. La valeur moyenne est indiquée par une ligne pointillée en rouge (tous), en bleu foncé (femelles) et en bleu pâle. La ligne en gris représente la référence standard pour l’espèce selon Hyatt & Hubert 2011 (SAFO), Murphy et al. 1990 (SAVI) et Piccolo et al. 1993 (SANA). 

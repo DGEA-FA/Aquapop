@@ -1,7 +1,5 @@
 ---
 title: "taillemasseage_texte.rmd"
-author: "Caroline Brule"
-date: "6 novembre 2023"
 ---
 
-Le tableau suivant reprend les statistiques descriptives de la longueur totale maximale, de la masse et de l’âge des poissons.
+Le tableau suivant reprend les statistiques descriptives, soit le nombre de spécimens mesurés/pesés/âgés (N) ainsi que la moyenne (Moy.), l’écart-type (ET), les valeurs minimale (Min) et maximale (Max) de la longueur totale maximale (LTMax), de la masse et de l’âge des poissons pour différents groupes. 
