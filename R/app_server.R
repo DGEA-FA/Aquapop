@@ -191,9 +191,19 @@ app_server <- function(input, output, session) {
   
   # Verif dataframes vides ------------------------------------------------
   # Vérification des dataframes au démarrage de l'application
+
+  
+  
+  # Vérifier les dataframes
   output$status_text_data_station <- renderUI({
-    req(data_station())
-    verifier_dataframe_vide(data_station(), "Stations")
+    validate(
+      need(data_station(), "Les données de stations sont manquantes.")
+    )
+    message <- verifier_dataframes(data_station(), "Stations")
+    if (!is.null(message)) {
+      return(tags$p(message, style = "color: red;"))
+    }
+    return(NULL)
   })
   
   output$status_text_data_recolte <- renderUI({
@@ -201,41 +211,83 @@ app_server <- function(input, output, session) {
     verifier_dataframe_vide(data_recolte(), "Récolte")
   })
   
+  output$status_text_data_recolte <- renderUI({
+    validate(
+      need(data_recolte(), "Les données de récolte sont manquantes.")
+    )
+    message <- verifier_dataframes(data_recolte(), "Récolte")
+    if (!is.null(message)) {
+      return(tags$p(message, style = "color: red;"))
+    }
+    return(NULL)
+  })
+  
   output$status_text_data_specimen <- renderUI({
-    req(data_specimen())
-    verifier_dataframe_vide(data_specimen(), "Spécimen")
+    validate(
+      need(data_specimen(), "Les données de spécimen sont manquantes.")
+    )
+    message <- verifier_dataframes(data_specimen(), "Spécimen")
+    if (!is.null(message)) {
+      return(tags$p(message, style = "color: red;"))
+    }
+    return(NULL)
   })
   
   output$status_text_data_lac <- renderUI({
-    req(data_lac())
-    verifier_dataframe_vide(data_lac(), "Lac")
+    validate(
+      need(data_lac(), "Les données de lac sont manquantes.")
+    )
+    message <- verifier_dataframes(data_lac(), "Lac")
+    if (!is.null(message)) {
+      return(tags$p(message, style = "color: red;"))
+    }
+    return(NULL)
   })
   
   output$status_text_data_parametres <- renderUI({
-    req(data_parametres())
-    verifier_dataframe_vide(data_parametres(), "Paramètres")
+    validate(
+      need(data_parametres(), "Les données de paramètres sont manquantes.")
+    )
+    message <- verifier_dataframes(data_parametres(), "Paramètres")
+    if (!is.null(message)) {
+      return(tags$p(message, style = "color: red;"))
+    }
+    return(NULL)
   })
   
   output$status_text_data_profil <- renderUI({
-    req(data_profil())
-    verifier_dataframe_vide(data_profil(), "Profil")
+    validate(
+      need(data_profil(), "Les données de profil sont manquantes.")
+    )
+    message <- verifier_dataframes(data_profil(), "Profil")
+    if (!is.null(message)) {
+      return(tags$p(message, style = "color: red;"))
+    }
+    return(NULL)
   })
-
   
-  # Verif doublons data_station et data_recolte ------------------------------------------------
-
-  # Vérification des doublons dans data_station
+  # Vérifier les doublons
   output$doublons_data_station <- renderUI({
-    req(data_station())
-    verifier_doublons_data_station(data_station())
+    validate(
+      need(data_station(), "Les données de stations sont manquantes.")
+    )
+    message <- verifier_doublons(data_station(), "Stations")
+    if (!is.null(message)) {
+      return(tags$p(message, style = "color: red;"))
+    }
+    return(NULL)
   })
   
-  # Vérification des doublons dans data_recolte
   output$doublons_data_recolte <- renderUI({
-    req(data_recolte())
-    verifier_doublons_data_recolte(data_recolte())
+    validate(
+      need(data_recolte(), "Les données de récolte sont manquantes.")
+    )
+    message <- verifier_doublons(data_recolte(), "Récolte")
+    if (!is.null(message)) {
+      return(tags$p(message, style = "color: red;"))
+    }
+    return(NULL)
   })
-  
 
   
   # Creation du df specimen ------------------------------------------------
@@ -281,18 +333,9 @@ app_server <- function(input, output, session) {
     gt_ltmpoidsage(data = taillemasseagedata())
   })
   
-  output$download_taillemasseagetable <- download_data_format_docx(
-    givenname = "taille_masse_age_table",
-    ft_table = flextable_ltmpoidsage(data = taillemasseagedata())
-  )
-  
-  
-    # output$taillemasseagetable <-  function() {
-  #   kable_ltmpoidsage(data = taillemasseagedata())
-  # }
-  # output$download_taillemasseagetable <-
-    # download_data_format_xlsx(givenname = "taille_masse_age_table", datadown = taillemasseagedata())
- 
+  output$download_taillemasseagetable <-
+  download_data_format_xlsx(givenname = "taille_masse_age_table", datadown = taillemasseagedata())
+
 
   
    # Structure taille ggplot ------------------------------------------------
@@ -528,6 +571,34 @@ app_server <- function(input, output, session) {
     paste(selection_modele_CPUE_Fmature_data()[1 , 'IC 95%']) #prendre le premier de la liste, car classe par ordre croissant de Ajustement
   })
   ## abondance table ---------------------------------------------------------
+  # abondance1 <- reactive({
+  #   req(
+  #     specimen(),
+  #     sp_pen(),
+  #     capture(),
+  #     CPUE_tous(),
+  #     CPUEic_tous(),
+  #     CPUE_Fmature(),
+  #     CPUEic_Fmature()
+  #   )
+  #   temp <-
+  #     abondance_table(capture = capture(),
+  #                     specimen = specimen(),
+  #                     espece = sp_pen()) %>% as.data.frame()
+  #   temp$CPUE[temp$Groupe == "Tous"] <- CPUE_tous()
+  #   temp$IC95[temp$Groupe == "Tous"] <- CPUEic_tous()
+  #   temp$CPUE[temp$Groupe == "Repro. actifs ♀"] <- CPUE_Fmature()
+  #   temp$IC95[temp$Groupe == "Repro. actifs ♀"] <- CPUEic_Fmature()
+  #   temp$'Prop. (%)' <-
+  #     format(round(as.numeric(temp$'Prop. (%)'), digits = 0), nsmall = 0)
+  #   temp <- temp %>% mutate(CPUE = ifelse(is.na(CPUE), "-", CPUE))
+  #   temp <- temp %>% mutate(IC95 = ifelse(is.na(IC95), "-", IC95))
+  #   temp <-
+  #     temp %>% mutate(ratioMF = ifelse(is.na(ratioMF), "-", ratioMF))
+  #   temp <- temp %>% rename('IC 95%' = IC95,
+  #                           "Ratio ♂:♀" = ratioMF) %>% as.data.frame()
+  #   temp
+  # })
   abondance1 <- reactive({
     req(
       specimen(),
@@ -538,27 +609,33 @@ app_server <- function(input, output, session) {
       CPUE_Fmature(),
       CPUEic_Fmature()
     )
-    temp <-
-      abondance_table(capture = capture(),
-                      specimen = specimen(),
-                      espece = sp_pen()) %>% as.data.frame()
-    temp$CPUE[temp$Groupe == "Tous"] <- CPUE_tous()
-    temp$IC95[temp$Groupe == "Tous"] <- CPUEic_tous()
-    temp$CPUE[temp$Groupe == "Repro. actifs ♀"] <- CPUE_Fmature()
-    temp$IC95[temp$Groupe == "Repro. actifs ♀"] <- CPUEic_Fmature()
-    temp$'Prop. (%)' <-
-      format(round(as.numeric(temp$'Prop. (%)'), digits = 0), nsmall = 0)
-    temp <- temp %>% mutate(CPUE = ifelse(is.na(CPUE), "-", CPUE))
-    temp <- temp %>% mutate(IC95 = ifelse(is.na(IC95), "-", IC95))
-    temp <-
-      temp %>% mutate(ratioMF = ifelse(is.na(ratioMF), "-", ratioMF))
-    temp <- temp %>% rename('IC 95%' = IC95,
-                            "Ratio ♂:♀" = ratioMF) %>% as.data.frame()
-    temp
+    
+    # Générer la table d'abondance de base
+    base_table <- abondance_table(
+      capture_data = capture(),
+      specimen_data = specimen(),
+      species = sp_pen()
+    )
+    
+    # Préparer la table pour la mise en page
+    final_abondance_table <- prepare_abondance_table(
+      abundance_table = base_table,
+      CPUE_tous = CPUE_tous(),
+      CPUEic_tous = CPUEic_tous(),
+      CPUE_Fmature = CPUE_Fmature(),
+      CPUEic_Fmature = CPUEic_Fmature()
+    )
+    
+    return(final_abondance_table)
   })
-  output$abondance1table <-  function() {
-    kable_abondance(data = abondance1())
-  }
+  
+  output$abondance1table <- render_gt({
+    gt_abondance(data = abondance1())
+  })
+  
+  # output$abondance1table <-  function() {
+  #   kable_abondance(data = abondance1())
+  # }
   output$download_abondance1 <-
     download_data_format_xlsx(givenname = "abondance1", datadown = abondance1())
   # BPUE ------------------------------------------------

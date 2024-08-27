@@ -19,12 +19,6 @@ data_station <- data_station %>% filter(typ_pech==typ_pechvar & no_lac==no_lac_v
 data_recolte <- data_recolte %>% filter(typ_pech==typ_pechvar & no_lac==no_lac_var & annee==annee_var)
 data_specimen <- data_specimen %>% filter(typ_pech==typ_pechvar & no_lac==no_lac_var & annee==annee_var)
 
-source("R/verifier_doublons_data_recolte.R")
-verifier_doublons_data_recolte(data_recolte)
-
-source("R/verifier_doublons_data_station.R")
-verifier_doublons_data_station(data_station)
-
 source("R/create_sp_pen.R")
 sp_pen <- create_sp_pen(input_typ_pech = typ_pechvar)
 
@@ -32,6 +26,13 @@ source("R/create_specimen.R")
 specimen <- create_specimen(data_specimen,data_station )
 source("R/create_capture.R")
 capture <- create_capture(data_station,data_recolte )
+
+source("R/abondance_table.R")
+
+abondance_table <- abondance_table(capture,
+                specimen,
+                sp_pen) %>% as.data.frame()
+
 
 
 source("R/structure_taille_tous.R")

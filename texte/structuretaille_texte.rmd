@@ -1,8 +1,7 @@
 ---
 title: "structuretaille_texte.rmd"
-author: "Caroline Brule"
-date: "18 mai 2023"
 ---
-L’histogramme de fréquence des longueurs permettant de caractériser la structure de taille de la population est réalisée avec la fonction geom_histogram de la librairie ggplot2 (Chang *et al.* 2021). La sélection des intervalles de classes de taille est basée sur les recommandations de Anderson et Neumann (1996) et Neumann *et al.* (2012). Ainsi, des intervalles de 20 mm sont utilisés pour le doré jaune et l’omble de fontaine, alors qu’ils sont de 50 mm pour le touladi.
 
-La figure ci-dessous représente l’histogramme de fréquence des longueurs selon le filtre sélectionné à gauche.
+L’histogramme de fréquence des longueurs permettant de caractériser la structure de taille de la population est réalisée avec la fonction geom_histogram de la librairie ggplot2 (Chang et al. 2021). La sélection des intervalles pour les classes de taille est basée sur les recommandations de Anderson et Neumann (1996) et Neumann et al. (2012).    Ainsi, des intervalles de 20 mm sont utilisés pour l’omble de fontaine, alors qu’ils sont de 50 mm pour le doré jaune touladi.
+
+La figure ci-dessous représente l’histogramme de fréquence des longueurs selon le filtre sélectionné à gauche. La valeur de la classe inscrite sur l’axe des abscisses indique la borne inférieure (ou supérieure ?) de la casse de longueur. 

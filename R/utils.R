@@ -97,20 +97,45 @@ kable_wri <- function(data) {
                 border_right = TRUE)
 }
 
-kable_abondance <- function(data) {
-  req(data)
+# kable_abondance <- function(data) {
+#   req(data)
+#   data %>%
+#     kable(align = c("r", "c", "c", "c", "c", "r"),
+#           caption = "Abondance") %>%
+#     kable_styling(
+#       full_width = FALSE,
+#       font_size = 12,
+#       html_font = "sans-serif",
+#       position = "center"
+#     ) 
+# }
+
+gt_abondance <- function(data) {
   data %>%
-    kable(align = c("r", "c", "c", "c", "c", "r"),
-          caption = "Abondance") %>%
-    kable_styling(
-      full_width = FALSE,
-      font_size = 12,
-      html_font = "sans-serif",
-      position = "center"
-    ) # %>%
-    # kableExtra::row_spec(1, extra_css = "border-bottom: 0.5px solid") %>%
-    # kableExtra::row_spec(4, extra_css = "border-bottom: 0.5px solid")  %>%
-    # kableExtra::row_spec(8, extra_css = "border-bottom: 0.5px solid")
+    gt() %>%
+    tab_header(
+      title = md("**Tableau d'abondance**")
+    ) %>%
+    cols_label(
+      group = "Groupe",
+      abundance = "Nombre",
+      proportion = "Proportion (%)",
+      cpue = "CPUE",
+      `IC 95%` = "IC 95%",
+      `Ratio ♂:♀` = "Ratio M:F"
+    ) %>%
+    cols_align(
+      align = "center",
+      columns = everything()
+    ) %>%
+    fmt_number(
+      columns = c(proportion, cpue),
+      decimals = 2
+    ) %>%
+    tab_options(
+      table.width = pct(100),
+      table.font.size = px(12)
+    )
 }
 
 kable_biomasse <- function(data) {
@@ -221,4 +246,20 @@ generate_report <- function(data_brut, output_file, data_comment = NULL, result_
     params = params_list,
     envir = new.env(parent = globalenv())
   )
+}
+
+
+verifier_dataframes <- function(dataframe, nom_dataframe) {
+  if (nrow(dataframe) == 0) {
+    return(paste(nom_dataframe, "est vide."))
+  }
+  return(NULL)
+}
+
+verifier_doublons <- function(dataframe, nom_dataframe) {
+  doublons <- dataframe[duplicated(dataframe), ]
+  if (nrow(doublons) > 0) {
+    return(paste("Doublons trouvés dans", nom_dataframe))
+  }
+  return(NULL)
 }

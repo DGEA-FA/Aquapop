@@ -1,16 +1,19 @@
-# Fonction pour télécharger le tableau formaté en tant que document Word
-download_data_format_docx <- function(givenname, ft_table) {
+download_data_format_docx <- function(givenname, datadown) {
   downloadHandler(
     filename = function() {
       paste(givenname, ".docx", sep = "")
     },
     content = function(file) {
-      # Créer un document Word et ajouter le tableau flextable
-      doc <- read_docx() %>%
-        body_add_flextable(ft_table) %>%
-        body_add_par(" ", style = "Normal")  # Ajouter un espace après le tableau
+      # Crée un document Word vide
+      doc <- officer::read_docx()
       
-      # Sauvegarder le document Word
+      # Convertit le dataframe en une flextable
+      ft <- flextable::qflextable(datadown)
+      
+      # Ajoute le tableau flextable au document
+      doc <- flextable::body_add_flextable(doc, value = ft)
+      
+      # Sauvegarde le document Word au fichier spécifié
       print(doc, target = file)
     }
   )

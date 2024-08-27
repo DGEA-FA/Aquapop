@@ -42,15 +42,18 @@ app_ui <- function() {
           ),
           ## display_brut ----------------------------------------------------------
           mainPanel(
-            uiOutput("doublons_data_station"),
-            uiOutput("doublons_data_recolte"),
             
+            # Affichage des messages de statut pour les dataframes
             uiOutput("status_text_data_station"),
             uiOutput("status_text_data_recolte"),
             uiOutput("status_text_data_specimen"),
             uiOutput("status_text_data_lac"),
             uiOutput("status_text_data_parametres"),
             uiOutput("status_text_data_profil"),
+            
+            # Affichage des messages de doublons
+            uiOutput("doublons_data_station"),
+            uiOutput("doublons_data_recolte"),
             
             tableOutput(outputId = "recap_intro_table"),
             tabsetPanel(

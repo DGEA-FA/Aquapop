@@ -1,206 +1,117 @@
-abondance_table <- function(capture, specimen, espece) {
-  datacapt <-
-    capture %>%  dplyr::filter(sp == espece)  %>% droplevels()
-  datacapt <-
-    datacapt %>% dplyr::select("no_station", "nb_capture",  "nb_pese")
-  dataspec <-
-    specimen %>%  dplyr::filter(sp == espece)  %>% droplevels()
-  alldata <-
-    merge(dataspec, datacapt, all.x = TRUE) #ch ligne 1 specimen ou on a ajoute n total de capture et de poissons peses par station.On part de ca pour tous les autres filtres
- 
-  alldata <-
-    alldata %>% dplyr::filter(st_hasard == "O") #slmt les stations hasard  tirage aleatoire
-  alldata <-
-    alldata %>% dplyr::filter(st_valide %in% c("O", NA)) #slmt les stations valides. Filet entortillés par ex.
-  #Pourrait etre valide mais hasard non, et tout les combinaisons donc imp les 2 oui.
-  #Parfois NA partout donc on selectionne oui, sauf si explicitement N
+abondance_table <- function(capture_data, specimen_data, species) {
   
-  alldata <-
-    alldata %>% dplyr::filter(no_station != "") #retirer station NA où oubli d'écrire la station
-  alldata$sexe[is.na(alldata$sexe)] <-
-    "IND" #quand sexe=NA, jai mis ind
+  # Étape 1 : Filtrage des données de capture pour l'espèce ciblée
+  capture_filtered <- capture_data %>%
+    filter(sp == species, st_hasard == "O", st_valide %in% c("O", NA)) %>%
+    select(no_station, nb_capture, nb_pese) %>%
+    droplevels()
   
-# tous --------------------------------------------------------------------
-
-  temp <- alldata  %>% summarise(
-    Groupe = "Tous",
-    Abondance = n(),
-    Perc = NA,
-    CPUE = NA,
-    IC95 = NA,
-    ratioMF = NA
-  )
-  abondancefix <- temp$Abondance %>% as.numeric()
+  # Filtrage des données de spécimen pour l'espèce ciblée
+  specimen_filtered <- specimen_data %>%
+    filter(sp == species, st_hasard == "O", st_valide %in% c("O", NA)) %>%
+    droplevels()
   
-  TOUS <- temp #CLEAN
+  # Étape 2 : Fusionner les données de capture et de spécimen
+  combined_data <- left_join(specimen_filtered, capture_filtered, by = "no_station")
   
-
-
-# MFIND -------------------------------------------------------------------
-
-  levels(alldata$sexe) <- c("F", "M", "IND")
-  temp <- alldata %>%  dplyr::group_by(sexe, .drop = FALSE)  %>%
+  # Remplacer les valeurs manquantes dans la colonne "sexe" par "IND"
+  combined_data <- combined_data %>%
+    mutate(sexe = forcats::fct_explicit_na(sexe, na_level = "IND"))
+  
+  # Calcul du nombre total de spécimens après la fusion des données
+  total_abundance <- nrow(combined_data)
+  
+  # Étape 3 : Calcul des différents groupes
+  
+  # Groupe "Tous"
+  all_group <- combined_data %>%
     summarise(
-      Abondance = n(),
-      Perc = NA,
-      CPUE = NA,
-      IC95 = NA,
-      ratioMF = NA
+      group = "Tous",
+      abundance = total_abundance,
+      proportion = round(abundance * 100 / total_abundance, 0),
+      cpue = NA,
+      ic95 = NA,
+      mf_ratio = NA
     )
   
-  temp <-
-    temp %>% mutate(Perc = round(Abondance * 100 / abondancefix, digits =
-                                   0))
-  
-  temp <-
-    temp %>% mutate(sexe = plyr::mapvalues(
-      sexe,
-      from = c("F", "M", "IND"),
-      to = c("Femelle", "Mâle", "Sexe inconnu")
-    ))
-  temp <- temp %>% rename(Groupe = sexe)
-  
-  
-  temp <-
-    temp %>% dplyr::select(Groupe, Abondance, Perc, CPUE, IC95, ratioMF)
-  
-  
-  MFIND <- temp #CLEAN
-  
-
-
-# FMmature ----------------------------------------------------------------
-
-  temp <- alldata %>% filter(maturite == "O" &
-                               sexe %in% c("M", "F")) %>%
-    dplyr::group_by(sexe) %>%
+  # Groupes par sexe : Femelle, Mâle, Sexe inconnu
+  sex_group <- combined_data %>%
+    group_by(sexe) %>%
     summarise(
-      Abondance = n(),
-      Perc = NA,
-      CPUE = NA,
-      IC95 = NA,
-      ratioMF = NA
-    )
+      abundance = n(),
+      proportion = round(abundance * 100 / total_abundance, 0),
+      cpue = NA,
+      ic95 = NA,
+      mf_ratio = NA
+    ) %>%
+    mutate(group = recode_factor(sexe, "F" = "Femelle", "M" = "Mâle", "IND" = "Sexe inconnu")) %>%
+    select(-sexe)
   
-  temp <-
-    temp %>% mutate(Perc = round(Abondance * 100 / abondancefix, digits =
-                                   0))
-  temp <-
-    temp %>% mutate(sexe = plyr::mapvalues(
-      sexe,
-      from = c("F", "M"),
-      to = c("Repro. actifs ♀", "Repro. actifs ♂")
-    ))
-  temp <- temp %>% rename(Groupe = sexe)
-  temp <-
-    temp %>% dplyr::select(Groupe, Abondance, Perc, CPUE, IC95, ratioMF)
-  
-  FMmature <- temp #CLEAN
-  
-
-# Immature ----------------------------------------------------------------
-
-  temp <- alldata %>% filter(maturite == "N") %>%
-    dplyr::group_by(maturite) %>%
+  # Groupes des reproducteurs matures : Repro. actifs femelles, Repro. actifs mâles
+  mature_group <- combined_data %>%
+    filter(maturite == "O" & sexe %in% c("M", "F")) %>%
+    group_by(sexe) %>%
     summarise(
-      Groupe = "Imm. ou reprod. inactifs",
-      Abondance = n(),
-      Perc = NA,
-      CPUE = NA,
-      IC95 = NA,
-      ratioMF = NA
-    )
+      abundance = n(),
+      proportion = round(abundance * 100 / total_abundance, 0),
+      cpue = NA,
+      ic95 = NA,
+      mf_ratio = NA
+    ) %>%
+    mutate(group = recode_factor(sexe, "F" = "Repro. actifs femelles", "M" = "Repro. actifs mâles")) %>%
+    select(-sexe)
   
-  
-  nMaleimm <- alldata %>% filter(maturite == "N" & sexe == "M")
-  nMaleimm <- length(unique(nMaleimm$no_specimen)) %>% as.numeric()
-  
-  nFemaleimm <- alldata %>% filter(maturite == "N" & sexe == "F")
-  nFemaleimm <-
-    length(unique(nFemaleimm$no_specimen)) %>% as.numeric()
-  
-  temp <-
-    temp %>% dplyr::mutate(Perc = round(Abondance * 100 / abondancefix, digits =
-                                          0))
-  temp <- temp %>% dplyr::select(-maturite)
-  
-  temp <-
-    temp %>% dplyr::mutate(ratioMF = paste0(nMaleimm, ":", nFemaleimm))
-  
-  
-  temp <-
-    temp %>% dplyr::select(Groupe, Abondance, Perc, CPUE, IC95, ratioMF)
-  
-  Immature <- temp #CLEAN
-  
-
-# Statut reproducteur inconnu ----------------------------------------------------------------
-
-  temp <- alldata %>% filter(is.na(maturite)) %>%
+  # Groupe des immatures ou reproducteurs inactifs
+  immature_group <- combined_data %>%
+    filter(maturite == "N") %>%
     summarise(
-      Groupe = "Statut reprod. inconnu",
-      Abondance = n(),
-      Perc = NA,
-      CPUE = NA,
-      IC95 = NA,
-      ratioMF = NA
+      group = "Immatures ou reprod. inactifs",
+      abundance = n(),
+      proportion = round(abundance * 100 / total_abundance, 0),
+      cpue = NA,
+      ic95 = NA,
+      mf_ratio = paste0(sum(sexe == "M"), ":", sum(sexe == "F"))
     )
   
-  
-  nMaleinconnu <- alldata %>% filter(is.na(maturite) & sexe == "M")
-  nMaleinconnu <-
-    length(unique(nMaleinconnu$no_specimen)) %>% as.numeric()
-  
-  nFemaleinconnu <- alldata %>% filter(is.na(maturite) & sexe == "F")
-  nFemaleinconnu <-
-    length(unique(nFemaleinconnu$no_specimen)) %>% as.numeric()
-  
-  temp <-
-    temp %>% dplyr::mutate(Perc = round(Abondance * 100 / abondancefix, digits =
-                                          0))
-  #temp <- temp %>% dplyr::select(-maturite)
-  
-  temp <-
-    temp %>% dplyr::mutate(ratioMF = paste0(nMaleinconnu, ":", nFemaleinconnu))
-  
-  
-  temp <-
-    temp %>% dplyr::select(Groupe, Abondance, Perc, CPUE, IC95, ratioMF)
-  
-  inconnu <- temp #CLEAN
-  
-  
-  
-  CLEAN <- rbind(TOUS, MFIND, FMmature, Immature, inconnu)
-  
-  #ratio MF
-  nbmale <- CLEAN$Abondance[CLEAN$Groupe == "Mâle"] %>% as.numeric()
-  nbfemelle <-
-    CLEAN$Abondance[CLEAN$Groupe == "Femelle"] %>% as.numeric()
-  
-  ratioMF <-  paste0(nbmale, ":", nbfemelle)
-  CLEAN$ratioMF[CLEAN$Groupe == "Tous"] <- ratioMF
-  CLEAN$Perc[CLEAN$Groupe == "Tous"] <- 100
-
-  CLEAN$Perc <- format(round(CLEAN$Perc, digits = 0), nsmall = 0)
-  
-  CLEAN$Groupe <-
-    factor(
-      CLEAN$Groupe,
-      levels = c(
-        "Tous",
-        "Femelle",
-        "Mâle",
-        "Sexe inconnu",
-        "Repro. actifs ♀",
-        "Repro. actifs ♂",
-        "Imm. ou reprod. inactifs",
-        "Statut reprod. inconnu"
-      )
+  # Groupe des spécimens avec statut reproducteur inconnu
+  unknown_repro_group <- combined_data %>%
+    filter(is.na(maturite)) %>%
+    summarise(
+      group = "Statut reprod. inconnu",
+      abundance = n(),
+      proportion = round(abundance * 100 / total_abundance, 0),
+      cpue = NA,
+      ic95 = NA,
+      mf_ratio = paste0(sum(sexe == "M"), ":", sum(sexe == "F"))
     )
-  CLEAN <- CLEAN %>% arrange(Groupe)
   
-  CLEAN <- CLEAN %>% rename("Nombre" = Abondance,
-                            "Prop. (%)" = Perc)
-  CLEAN
+  # Étape 4 : Combiner tous les groupes dans une seule table finale
+  final_table <- bind_rows(all_group, sex_group, mature_group, immature_group, unknown_repro_group)
+  
+  # Reclasser les groupes pour assurer un ordre cohérent dans la table finale
+  final_table <- final_table %>%
+    mutate(group = factor(group, levels = c(
+      "Tous",
+      "Femelle",
+      "Mâle",
+      "Sexe inconnu",
+      "Repro. actifs femelles",
+      "Repro. actifs mâles",
+      "Immatures ou reprod. inactifs",
+      "Statut reprod. inconnu"
+    ))) %>%
+    arrange(group)
+  
+  # Ajouter les labels aux colonnes pour une meilleure compréhension lors de l'affichage
+  final_table <- final_table %>%
+    labelled::set_variable_labels(
+      group = "Groupe",
+      abundance = "Nombre",
+      proportion = "Proportion (%)",
+      cpue = "CPUE",
+      ic95 = "IC 95%",
+      mf_ratio = "Ratio M:F"
+    )
+  
+  return(final_table)
 }
