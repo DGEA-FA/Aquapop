@@ -36,6 +36,11 @@ library(emdbook)
 library(AICcmodavg)
 library(investr)
 
+library(gt)
+library(officer)
+library(flextable)
+
+
 # to_activate_before_play -------------------------------------------------
 reactlog::reactlog_enable() # Pour voir le graphe des réactifs
 Sys.setlocale("LC_TIME", "French")  # Pour définir le format de la date en français

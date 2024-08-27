@@ -1,10 +1,10 @@
 library(dplyr)
 library(ggplot2)
-path <- "C:/Users/carol/OneDrive/EmploiMFFP/Hiver2022-2023/Jeu de données.xlsx"
-
+# path <- "C:/Users/carol/OneDrive/EmploiMFFP/Hiver2022-2023/Jeu de données.xlsx"
+path <- "data/exempledata.xlsx"
 typ_pechvar <- "PENT" 
 no_lac_var <- "01480" 
-annee_var <- 1994   
+annee_var <- 2020   
 
 
 source("R/load_station.R")

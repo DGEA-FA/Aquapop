@@ -23,11 +23,21 @@ app_server <- function(input, output, session) {
   })
   output$typ_pech <- renderUI({
     req(df_filtered1())
+    
+    # Extraire les numéros de lac
     no_lac <- unique(df_filtered1()$no_lac)
+    
+    # Extraire la partie numérique des numéros de lac pour effectuer le tri
+    numeric_part <- as.numeric(gsub("[^0-9]", "", no_lac))
+    
+    # Trier les numéros de lac en fonction de la partie numérique
+    no_lac_sorted <- no_lac[order(numeric_part)]
+    
+    # Créer l'élément UI avec les choix triés
     selectInput(
       inputId = "no_lac",
       label = "Sélectionner le numéro de lac",
-      choices = no_lac,
+      choices = no_lac_sorted,
       selected = NULL
     )
   })
@@ -37,10 +47,20 @@ app_server <- function(input, output, session) {
   })
   output$annee <- renderUI({
     req(df_filtered2())
+    
     annee <- unique(df_filtered2()$annee)
-    checkboxGroupInput(inputId = "annee",
-                       label = "Sélectionner les années à considérer dans l'inventaire",
-                       choices = sort(annee))
+    
+    tagList(
+      checkboxGroupInput(
+        inputId = "annee",
+        label = "Sélectionner les années à considérer dans l'inventaire",
+        choices = sort(annee)
+      ),
+      p(
+        "Si plus d’une année d’inventaire est sélectionnée, les données seront combinées comme si elles ne constituaient qu’un seul inventaire.",
+        style = "font-size: 85%; color: #555;"
+      )
+    )
   })
   df_filtered3 <- reactive({
     req(input$annee)
@@ -256,13 +276,24 @@ app_server <- function(input, output, session) {
     req(specimen(), sp_pen())
     taille_masse_age(dataspecimen = specimen(), espece = sp_pen()) %>% as.data.frame()
   })
-  output$taillemasseagetable <-  function() {
-    kable_ltmpoidsage(data = taillemasseagedata())
-  }
-  output$download_taillemasseagetable <-
-    download_data_format_xlsx(givenname = "taille_masse_age_table", datadown = taillemasseagedata())
- 
   
+  output$taillemasseagetable <- render_gt({
+    gt_ltmpoidsage(data = taillemasseagedata())
+  })
+  
+  output$download_taillemasseagetable <- download_data_format_docx(
+    givenname = "taille_masse_age_table",
+    ft_table = flextable_ltmpoidsage(data = taillemasseagedata())
+  )
+  
+  
+    # output$taillemasseagetable <-  function() {
+  #   kable_ltmpoidsage(data = taillemasseagedata())
+  # }
+  # output$download_taillemasseagetable <-
+    # download_data_format_xlsx(givenname = "taille_masse_age_table", datadown = taillemasseagedata())
+ 
+
   
    # Structure taille ggplot ------------------------------------------------
   output$structuretailleplot <- renderPlot({
@@ -1699,17 +1730,29 @@ app_server <- function(input, output, session) {
     renderText("A50 graphique titre TBD")
    
   # Download report ---------------------------------------------------------
-  output$report <- downloadHandler(
-    filename = "report.docx",
-    content = function(file) {
-      params <- list(n = input$n,
-                     typ_pech = input$typ_pech)
-      callr::r(render_report,
-               list(
-                 input = report_path,
-                 output = file,
-                 params = params
-               ))
-    }
-  )
+  # output$report <- downloadHandler(
+  #   filename = "report.docx",
+  #   content = function(file) {
+  #     params <- list(n = input$n,
+  #                    typ_pech = input$typ_pech)
+  #     callr::r(render_report,
+  #              list(
+  #                input = report_path,
+  #                output = file,
+  #                params = params
+  #              ))
+  #   }
+  # )
+   
+   output$report <- downloadHandler(
+     filename = function() {
+       paste("rapport_analyse_", Sys.Date(), ".docx", sep = "")
+     },
+     content = function(file) {
+       generate_report(
+         data_brut = taillemasseagedata(),   # Données brutes réactives
+         output_file = file                  # Chemin du fichier de sortie
+       )
+     }
+   )
 }

@@ -17,9 +17,10 @@ app_ui <- function() {
         icon = icon("upload"),
         sidebarLayout(
           sidebarPanel(
-            tabPanel(
-              "Instructions",
-              htmltools::includeMarkdown(path = './texte/instruction_texte.rmd')
+            # Inclure le texte d'instructions avec une taille réduite
+            tags$div(
+              htmltools::includeMarkdown(path = './texte/instruction_texte.rmd'),
+              style = "font-size: 85%; color: #555;"
             ),
             ## upload ----------------------------------------------------------------
             fileInput(

@@ -1,0 +1,49 @@
+---
+title: "Rapport d'Analyse"
+output: word_document
+params:
+  data_brut: !r NULL
+
+---
+
+```{r setup, include=FALSE}
+# Chargement des bibliothèques nécessaires
+library(gt)
+library(dplyr)
+
+# Charger les fonctions depuis utils.R
+source("R/utils.R")
+```
+
+# Données Brutes
+
+
+```{r, echo=FALSE}
+library(gt)
+if (!is.null(params$data_brut)) {
+  gt_data_brut <- gt_ltmpoidsage(params$data_brut)
+  gt_data_brut
+} else {
+  "Aucune donnée brute disponible."
+}
+```
+
+Notes Complémentaires
+```{r}
+if (!is.null(params$data_comment)) {
+  gt_data_comment <- gt(params$data_comment)
+  gt_data_comment
+} else {
+  "Aucun commentaire disponible."
+}
+```
+
+```{r}
+if (!is.null(params$result_table)) {
+  gt_result_table <- gt(params$result_table)
+  gt_result_table
+} else {
+  "Aucun résultat disponible."
+}
+```
+

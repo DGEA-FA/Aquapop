@@ -25,39 +25,58 @@ kable_psd2 <- function(data) {
                   html_font="sans-serif", 
                   position="left") 
 }
-kable_ltmpoidsage <- function(data) {
-  req(data)
-  colnames(data)[1] <- 'Groupe' #renommer la 1 colonne
-  colnames(data)[2] <- 'N'
-  colnames(data)[3] <- 'Moy.'
-  colnames(data)[4] <- 'ET'
-  colnames(data)[5] <- 'Min'
-  colnames(data)[6] <- 'Max'
-  colnames(data)[7] <- 'N'
-  colnames(data)[8] <- 'Moy.'
-  colnames(data)[9] <- 'ET'
-  colnames(data)[10] <- 'Min'
-  colnames(data)[11] <- 'Max'
-  colnames(data)[12] <- 'N'
-  colnames(data)[13] <- "Moy."
-  colnames(data)[14] <- 'ET'
-  colnames(data)[15] <- 'Min'
-  colnames(data)[16] <- 'Max'
-  data %>% 
-    kable( align = c("r","c","c","c","c","c","c","c","c","c","c","c","c","c","c","r"),
-           caption = "Aperçu des données morphologiques"
+
+
+gt_ltmpoidsage <- function(data) {
+  data %>%
+    gt() %>%
+    tab_header(
+      title = md("**Aperçu des données morphologiques**")
     ) %>%
-    kable_styling(full_width = FALSE,
-                  font_size = 12,
-                  html_font="sans-serif", 
-                  position="center") %>% 
-    column_spec(1, #sexe
-                border_right = TRUE) %>% 
-    add_header_above(c(" ", "LTMax (mm)" = 5, "Masse (g)" = 5, "Âge" = 5)) %>%
-    kableExtra::collapse_rows(columns = 1, valign = "top")  %>%
-    kableExtra::row_spec(1, extra_css = "border-bottom: 0.5px solid") %>%
-    kableExtra::row_spec(4, extra_css = "border-bottom: 0.5px solid") %>%
-    kableExtra::row_spec(8, extra_css = "border-bottom: 0.5px solid")
+    cols_label(
+      Sexe = "Groupe",
+      ltm_N = "N",
+      ltm_Moyenne = "Moy.",
+      ltm_ET = "ET",
+      ltm_Minimum = "Min",
+      ltm_Maximum = "Max",
+      masse_N = "N",
+      masse_Moyenne = "Moy.",
+      masse_ET = "ET",
+      masse_Minimum = "Min",
+      masse_Maximum = "Max",
+      age_N = "N",
+      age_Moyenne = "Moy.",
+      age_ET = "ET",
+      age_Minimum = "Min",
+      age_Maximum = "Max"
+    ) %>%
+    tab_spanner(
+      label = "LTMax (mm)",
+      columns = c(ltm_N, ltm_Moyenne, ltm_ET, ltm_Minimum, ltm_Maximum)
+    ) %>%
+    tab_spanner(
+      label = "Masse (g)",
+      columns = c(masse_N, masse_Moyenne, masse_ET, masse_Minimum, masse_Maximum)
+    ) %>%
+    tab_spanner(
+      label = "Âge",
+      columns = c(age_N, age_Moyenne, age_ET, age_Minimum, age_Maximum)
+    ) %>%
+    cols_align(
+      align = "center",
+      columns = everything()
+    ) %>%
+    fmt_number(
+      columns = c(ltm_Moyenne, ltm_ET, ltm_Minimum, ltm_Maximum, 
+                  masse_Moyenne, masse_ET, masse_Minimum, masse_Maximum,
+                  age_Moyenne, age_ET, age_Minimum, age_Maximum),
+      decimals = 2
+    ) %>%
+    tab_options(
+      table.width = pct(100),
+      table.font.size = px(12)
+    )
 }
 
 kable_wri <- function(data) {
@@ -173,5 +192,33 @@ render_report <- function(input, output, params) {
                     output_file = output,
                     params = params,
                     envir = new.env(parent = globalenv())
+  )
+}
+
+
+# Fonction pour générer le rapport Word
+generate_report <- function(data_brut, output_file, data_comment = NULL, result_table = NULL) {
+  
+  # Créer une liste de paramètres pour le rapport
+  params_list <- list(
+    data_brut = data_brut   # Données brutes
+  )
+  
+  # Ajouter les commentaires s'ils sont fournis
+  if (!is.null(data_comment)) {
+    params_list$data_comment <- data_comment
+  }
+  
+  # Ajouter le tableau des résultats s'il est fourni
+  if (!is.null(result_table)) {
+    params_list$result_table <- result_table
+  }
+  
+  # Générer le rapport Word
+  rmarkdown::render(
+    input = "report_template.Rmd",  # Chemin vers le fichier R Markdown
+    output_file = output_file,
+    params = params_list,
+    envir = new.env(parent = globalenv())
   )
 }
