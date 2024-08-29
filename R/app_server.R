@@ -425,28 +425,14 @@ app_server <- function(input, output, session) {
   output$structureageplot <- renderPlot({
     req(specimen(), sp_pen(), nomsp_reactive())
     
-    if (input$groupeageplot == "tous") {
-      structure_age_tous(dfspecimen = specimen(),
-                         espece = sp_pen(),
-                         nomsp = nomsp_reactive())
-    } else if (input$groupeageplot == "marquage") {
-      structure_age_marquage(dfspecimen = specimen(),
-                             espece = sp_pen(),
-                             nomsp = nomsp_reactive())
-    } else if (input$groupeageplot == "sexe") {
-      structure_age_sexe(dfspecimen = specimen(),
-                         espece = sp_pen(),
-                         nomsp = nomsp_reactive())
-    } else if (input$groupeageplot == "maturite") {
-      structure_age_maturite(dfspecimen = specimen(),
-                             espece = sp_pen(),
-                             nomsp = nomsp_reactive())
-    }
+    structure_age(dfspecimen = specimen(),
+                  espece = sp_pen(),
+                  nomsp = nomsp_reactive(),
+                  groupement = input$groupeageplot)
   }, res = 96)
   
   
-  output$titrestructureageplot <-
-    renderText("Histogramme de fréquence d’âge")
+  output$titrestructureageplot <- renderText("Histogramme de fréquence d’âge")
   
   
   output$download_groupeageplot <- downloadHandler(
@@ -457,54 +443,35 @@ app_server <- function(input, output, session) {
       ggsave(file, plot = {
         req(specimen(), sp_pen(), nomsp_reactive())
         
-        if (input$groupeageplot == "tous") {
-          structure_age_tous(dfspecimen = specimen(),
-                             espece = sp_pen(),
-                             nomsp = nomsp_reactive())
-        } else if (input$groupeageplot == "marquage") {
-          structure_age_marquage(dfspecimen = specimen(),
-                                 espece = sp_pen(),
-                                 nomsp = nomsp_reactive())
-        } else if (input$groupeageplot == "sexe") {
-          structure_age_sexe(dfspecimen = specimen(),
-                             espece = sp_pen(),
-                             nomsp = nomsp_reactive())
-        } else if (input$groupeageplot == "maturite") {
-          structure_age_maturite(dfspecimen = specimen(),
-                                 espece = sp_pen(),
-                                 nomsp = nomsp_reactive())
-        }
-      }, res = 96)
-    }
+        structure_age(dfspecimen = specimen(),
+                      espece = sp_pen(),
+                      nomsp = nomsp_reactive(),
+                      groupement = input$groupeageplot)
+      }, width = 10, height = 7, dpi = 300)  # Specify width, height, and dpi if needed
+    },
+    contentType = 'image/png'
   )
+  
   
   
   data4plot_age <- reactive({
     req(specimen(), sp_pen(), nomsp_reactive())
     
-    if (input$groupeageplot == "tous") {
-      structure_age_tous(dfspecimen = specimen(),
-                         espece = sp_pen(),
-                         nomsp = nomsp_reactive()) %>% get_df_from_plot_tous()
-    } else if (input$groupeageplot == "marquage") {
-      structure_age_marquage(dfspecimen = specimen(),
-                             espece = sp_pen(),
-                             nomsp = nomsp_reactive()) %>% get_df_from_plot_marquage()
-    } else if (input$groupeageplot == "sexe") {
-      structure_age_sexe(dfspecimen = specimen(),
-                         espece = sp_pen(),
-                         nomsp = nomsp_reactive()) %>% get_df_from_plot_sexe()
-    } else if (input$groupeageplot == "maturite") {
-      structure_age_maturite(dfspecimen = specimen(),
-                             espece = sp_pen(),
-                             nomsp = nomsp_reactive()) %>% get_df_from_plot_maturite()
-    }
+    plot <- structure_age(dfspecimen = specimen(),
+                          espece = sp_pen(),
+                          nomsp = nomsp_reactive(),
+                          groupement = input$groupeageplot)
+    
+    get_df_from_plot(plot, groupement = input$groupeageplot)
   })
   
   
   
-  output$download_data4plot_age <-
-    download_data_format_xlsx(givenname = paste0("data4plot_age_",input$groupeageplot), datadown = data4plot_age())
+  
+  output$download_data4plot_age <- download_data_format_xlsx(
+    givenname = paste0("data4plot_age_", input$groupeageplot),
+    datadown = data4plot_age()
+  )
   
   
   # CPUE ------------------------------------------------
