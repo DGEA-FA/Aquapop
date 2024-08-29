@@ -1,4 +1,4 @@
-structure_age_tous <- function(dfspecimen, espece) {
+structure_age_tous <- function(dfspecimen, espece, nomsp) {
   
  
   
@@ -14,17 +14,7 @@ structure_age_tous <- function(dfspecimen, espece) {
   max_age <- max(df$age) # définir la plus grande valeur de age
   
   df <- df %>% select(age, sp)
-  
-  #pour qu'il n'y ait pas de fautes d'orthographes dans le titre de l'axe y du graphique
-  nomsp <-  if (espece == "SANA") {
-    paste0("touladis")
-  } else if (espece == "SAFO") {
-    paste0("ombles de fontaine")
-  } else if (espece == "SAVI") {
-    paste0("dorés jaunes")
-  } else {
-    NULL
-  }
+
   
   axeY <- paste0("Nb. ", nomsp, " échantillonnés")
   

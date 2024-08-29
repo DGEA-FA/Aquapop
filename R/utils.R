@@ -274,3 +274,26 @@ calculate_mf_ratio <- function(male_count, female_count) {
   ratio <- MASS::fractions(c(male_count, female_count))
   return(paste0(ratio[1], ":", ratio[2]))
 }
+
+
+get_binwidth <- function(espece) {
+  if (espece == "SANA") {
+    return(50)
+  } else if (espece %in% c("SAFO", "SAVI")) {
+    return(20)
+  } else {
+    return(NULL)
+  }
+}
+
+get_nomsp <- function(espece) {
+  if (espece == "SANA") {
+    return("touladis")
+  } else if (espece == "SAFO") {
+    return("ombles de fontaine")
+  } else if (espece == "SAVI") {
+    return("dorés jaunes")
+  } else {
+    return(NULL)
+  }
+}

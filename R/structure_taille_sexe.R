@@ -1,12 +1,6 @@
-structure_taille_sexe <- function(dfspecimen, espece) {
+structure_taille_sexe <- function(dfspecimen, espece, binwidth, nomsp) {
 
-    #largeur des ticks de l'axe x
-  if (espece == "SANA") {
-    binwidth <- 50
-  } else if (espece == "SAFO" || espece == "SAVI") {
-    binwidth <- 20
-  }
-  
+ 
   df <- dfspecimen %>% filter(sp == espece) %>% droplevels() #sélectionner slmt les sp
   
   # Check if all ltm are NA
@@ -52,18 +46,6 @@ structure_taille_sexe <- function(dfspecimen, espece) {
    # Ajout des nouvelles lignes au dataframe
    dfnew <- rbind(df, new_row_F, new_row_M, new_row_IND)
    
-   
-  #pour qu'il n'y ait pas de fautes d'orthographes dans le titre de l'axe y du graphique
-  nomsp <-  if (espece == "SANA") {
-    paste0("touladis")
-  } else if (espece == "SAFO") {
-    paste0("ombles de fontaine")
-  } else if (espece == "SAVI") {
-    paste0("dorés jaunes")
-  } else {
-    NULL
-  }
-  
  
   
   axeY <- paste0("Nb. ", nomsp, " échantillonnés")

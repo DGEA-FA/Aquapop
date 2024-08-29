@@ -1,14 +1,4 @@
-structure_taille_tous <- function(dfspecimen, espece) {
-
-    #largeur des ticks de l'axe x
-  if (espece == "SANA") {
-    binwidth <- 50
-  } else if (espece == "SAFO" || espece == "SAVI") {
-    binwidth <- 20
-  }
-  
-
-  
+structure_taille_tous <- function(dfspecimen, espece, binwidth, nomsp) {
 
   df <- dfspecimen %>% filter(sp == espece) %>% droplevels() #sélectionner slmt les sp
   
@@ -22,17 +12,7 @@ structure_taille_tous <- function(dfspecimen, espece) {
   max_ltm <- max(df$ltm) # définir la plus grande valeur de ltm
 
   df <- df %>% select(ltm, sp)
-  
-  #pour qu'il n'y ait pas de fautes d'orthographes dans le titre de l'axe y du graphique
-  nomsp <-  if (espece == "SANA") {
-    paste0("touladis")
-  } else if (espece == "SAFO") {
-    paste0("ombles de fontaine")
-  } else if (espece == "SAVI") {
-    paste0("dorés jaunes")
-  } else {
-    NULL
-  }
+
   
   axeY <- paste0("Nb. ", nomsp, " échantillonnés")
   
