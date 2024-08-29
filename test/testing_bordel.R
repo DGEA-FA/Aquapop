@@ -14,6 +14,7 @@ data_recolte <- load_recolte(path, namesheet= "Recolte")
 source("R/load_specimen.R")
 data_specimen <- load_specimen(path, namesheet= "Specimens")
 
+source("R/utils.R")
 
 data_station <- data_station %>% filter(typ_pech==typ_pechvar & no_lac==no_lac_var & annee==annee_var)
 data_recolte <- data_recolte %>% filter(typ_pech==typ_pechvar & no_lac==no_lac_var & annee==annee_var)

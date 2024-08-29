@@ -97,32 +97,25 @@ kable_wri <- function(data) {
                 border_right = TRUE)
 }
 
-# kable_abondance <- function(data) {
-#   req(data)
-#   data %>%
-#     kable(align = c("r", "c", "c", "c", "c", "r"),
-#           caption = "Abondance") %>%
-#     kable_styling(
-#       full_width = FALSE,
-#       font_size = 12,
-#       html_font = "sans-serif",
-#       position = "center"
-#     ) 
-# }
+
 
 gt_abondance <- function(data) {
+  # Extraire les labels des colonnes
+  column_labels <- sapply(data, function(col) attr(col, "label"))
+  
   data %>%
     gt() %>%
     tab_header(
       title = md("**Tableau d'abondance**")
     ) %>%
+    # Utiliser les labels extraits dans cols_label
     cols_label(
-      group = "Groupe",
-      abundance = "Nombre",
-      proportion = "Proportion (%)",
-      cpue = "CPUE",
-      `IC 95%` = "IC 95%",
-      `Ratio ♂:♀` = "Ratio M:F"
+      group = column_labels["group"],
+      abundance = column_labels["abundance"],
+      proportion = column_labels["proportion"],
+      cpue = column_labels["cpue"],
+      ic95 = column_labels["ic95"],
+      mf_ratio = column_labels["mf_ratio"]
     ) %>%
     cols_align(
       align = "center",
@@ -133,7 +126,7 @@ gt_abondance <- function(data) {
       decimals = 2
     ) %>%
     tab_options(
-      table.width = pct(100),
+      table.width = "auto",  # Ajuster automatiquement la largeur du tableau
       table.font.size = px(12)
     )
 }
@@ -262,4 +255,14 @@ verifier_doublons <- function(dataframe, nom_dataframe) {
     return(paste("Doublons trouvés dans", nom_dataframe))
   }
   return(NULL)
+}
+
+
+calculate_mf_ratio <- function(male_count, female_count) {
+  if (male_count == 0 && female_count == 0) {
+    return(NA)  # Si les deux comptages sont 0, retourner NA
+  }
+  # Simplifier le ratio
+  ratio <- MASS::fractions(c(male_count, female_count))
+  return(paste0(ratio[1], ":", ratio[2]))
 }

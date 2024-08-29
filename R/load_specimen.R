@@ -1,112 +1,79 @@
 load_specimen <- function(path, namesheet) {
+  # Charger les données à partir du fichier Excel
   specimen <- readxl::read_excel(
     path,
     col_names = TRUE,
     sheet = namesheet,
-    na = c("", "NULL", "NA", " "),
-    col_types = "text"
+    na = c("", "NULL", "NA", " "), # Considérer ces valeurs comme NA
+    col_types = "text"  # Toutes les colonnes en tant que texte
   ) %>%
-    as.data.frame()
-  colnames(specimen)[1] <-
-    'no_lac' #renommer la 1 colonne "No plan d'eau fusionné"
-  colnames(specimen)[2] <-
-    'nom_lac' #renommer la 2 colonne "Nom plan d'eau fusionné"
-  colnames(specimen)[3] <-
-    'typ_pech' #renommer la 3 colonne "Type de pêche"
-  colnames(specimen)[4] <-
-    'annee' #renommer la 4 colonne "Anné début inventaire"
-  colnames(specimen)[5] <-
-    'no_station' #renommer la 5 colonne "No station"
-  colnames(specimen)[6] <-
-    'no_specimen' #renommer la 6 colonne "No spécimen"
-  colnames(specimen)[7] <- 'sp' #renommer la 7 colonne "Espèce code"
-  colnames(specimen)[8] <-
-    'ltm' #renommer la 8 colonne  "Long. totale max (mm)"
-  colnames(specimen)[9] <-
-    'lf' #renommer la 9 colonne  "Longueur à la fourche (mm)"
-  colnames(specimen)[10] <-
-    'masse' #renommer la 10 colonne  "masse (g)"
-  colnames(specimen)[11] <-
-    'sexe' #renommer la 11 colonne  "sexe"
-  colnames(specimen)[12] <-
-    'maturite' #renommer la 12 colonne  "Maturité sexuelle"
-  colnames(specimen)[13] <- 'age' #renommer la 13 colonne  "Âge 1"
-  colnames(specimen)[14] <-
-    'ind_insec' #renommer la 14 colonne  "Ind. insecte"
-  colnames(specimen)[15] <-
-    'ind_benth' #renommer la 15 colonne  "Ind. benthos"
-  colnames(specimen)[16] <-
-    'ind_planc' #renommer la 16 colonne  "Ind. plancton"
-  colnames(specimen)[17] <-
-    'ind_chyme' #renommer la 17 colonne  "Ind. chyme"
-  colnames(specimen)[18] <-
-    'ind_vide' #renommer la 18 colonne "Ind. vide"
-  colnames(specimen)[19] <-
-    'ind_poiss' #renommer la 19 colonne  "Ind. poisson"
-  colnames(specimen)[20] <-
-    'poiss1' #renommer la 20 colonne  "Contenu - Poisson 1"
-  colnames(specimen)[21] <-
-    'poiss2' #renommer la 21 colonne  "Contenu - Poisson 2"
-  colnames(specimen)[22] <-
-    'marquage' #renommer la 22 colonne  "Statut marquage"
-  colnames(specimen)[23] <-
-    'comments' #renommer la 23 colonne "Commentaires"
+    as.data.frame() # Convertir en data.frame pour une manipulation plus facile
   
-  specimen$annee <- specimen$annee %>% as.integer()
+  # Renommer les colonnes
+  colnames(specimen) <- c(
+    'no_lac',        # 1ère colonne : No plan d'eau fusionné
+    'nom_lac',       # 2ème colonne : Nom plan d'eau fusionné
+    'typ_pech',      # 3ème colonne : Type de pêche
+    'annee',         # 4ème colonne : Année début inventaire
+    'no_station',    # 5ème colonne : No station
+    'no_specimen',   # 6ème colonne : No spécimen
+    'sp',            # 7ème colonne : Espèce code
+    'ltm',           # 8ème colonne : Long. totale max (mm)
+    'lf',            # 9ème colonne : Longueur à la fourche (mm)
+    'masse',         # 10ème colonne : Masse (g)
+    'sexe',          # 11ème colonne : Sexe
+    'maturite',      # 12ème colonne : Maturité sexuelle
+    'age',           # 13ème colonne : Âge 1
+    'ind_insec',     # 14ème colonne : Ind. insecte
+    'ind_benth',     # 15ème colonne : Ind. benthos
+    'ind_planc',     # 16ème colonne : Ind. plancton
+    'ind_chyme',     # 17ème colonne : Ind. chyme
+    'ind_vide',      # 18ème colonne : Ind. vide
+    'ind_poiss',     # 19ème colonne : Ind. poisson
+    'poiss1',        # 20ème colonne : Contenu - Poisson 1
+    'poiss2',        # 21ème colonne : Contenu - Poisson 2
+    'marquage',      # 22ème colonne : Statut marquage
+    'comments'       # 23ème colonne : Commentaires
+  )
   
-  # Remplacer les NA par "IND" dans la colonne "maturite"
+  
+  # Convertir les colonnes appropriées en facteurs, numériques ou caractères
   specimen <- specimen %>%
-    mutate(maturite = ifelse(is.na(maturite), "IND", maturite))
+    mutate_at(
+      vars(
+        no_lac,
+        nom_lac,
+        typ_pech,
+        no_station,
+        no_specimen,
+        sp,
+        ind_insec,
+        ind_benth,
+        ind_planc,
+        ind_chyme,
+        ind_vide,
+        ind_poiss,
+        poiss1,
+        poiss2
+      ),
+      factor
+    ) %>%
+    mutate(
+      annee = as.integer(annee),
+      ltm = as.numeric(ltm),
+      lf = as.numeric(lf),
+      masse = as.numeric(masse),
+      age = as.numeric(age),
+      comments = as.character(comments)
+    )
   
-  # Remplacer les NA par "IND" dans la colonne "sexe"
-  specimen <- specimen %>%
-    mutate(sexe = ifelse(is.na(sexe), "IND", sexe))
-  
-  # Remplacer les NA par "NMA" dans la colonne "marquage"
-  specimen <- specimen %>%
-    mutate(marquage = ifelse(is.na(marquage), "NMA", marquage))
-  
-  specimen <- mutate_at(
-    specimen,
-    vars(
-      no_lac,
-      nom_lac,
-      typ_pech,
-      # annee,
-      no_station,
-      no_specimen,
-      sp,
-      sexe,
-      maturite,
-      ind_insec,
-      ind_benth,
-      ind_planc,
-      ind_chyme,
-      ind_vide,
-      ind_poiss,
-      poiss1,
-      poiss2,
-      marquage
-    ),
-    factor
-  ) #transformer en factor
-  
-  
-  
-  
-  specimen$ltm <- as.numeric(specimen$ltm)#transformer en numeric
-  specimen$lf <- as.numeric(specimen$lf)#transformer en numeric
-  specimen$masse <-
-    as.numeric(specimen$masse)#transformer en numeric
-  specimen$age <- as.numeric(specimen$age)#transformer en numeric
-  specimen$comments <-
-    as.character(specimen$comments)#transformer en character
   # Trier par no_specimen en ordre croissant tout en gardant le format factor
   specimen <- specimen %>%
     mutate(no_specimen_numeric = as.numeric(as.character(no_specimen))) %>%
     arrange(no_specimen_numeric) %>%
     select(-no_specimen_numeric)
-  
+
+  # Supprimer les doublons
   specimen <- specimen %>% dplyr::distinct()
   
   return(specimen)

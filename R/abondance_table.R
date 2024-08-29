@@ -16,7 +16,7 @@ abondance_table <- function(capture_data, specimen_data, species) {
   
   # Remplacer les valeurs manquantes dans la colonne "sexe" par "IND"
   combined_data <- combined_data %>%
-    mutate(sexe = forcats::fct_explicit_na(sexe, na_level = "IND"))
+    mutate(sexe = forcats::fct_na_value_to_level(sexe, level = "IND"))
   
   # Calcul du nombre total de spécimens après la fusion des données
   total_abundance <- nrow(combined_data)
@@ -31,7 +31,7 @@ abondance_table <- function(capture_data, specimen_data, species) {
       proportion = round(abundance * 100 / total_abundance, 0),
       cpue = NA,
       ic95 = NA,
-      mf_ratio = NA
+      mf_ratio = calculate_mf_ratio(sum(sexe == "M"), sum(sexe == "F"))  # Utilisation de la fonction pour calculer le ratio simplifié
     )
   
   # Groupes par sexe : Femelle, Mâle, Sexe inconnu
@@ -70,7 +70,7 @@ abondance_table <- function(capture_data, specimen_data, species) {
       proportion = round(abundance * 100 / total_abundance, 0),
       cpue = NA,
       ic95 = NA,
-      mf_ratio = paste0(sum(sexe == "M"), ":", sum(sexe == "F"))
+      mf_ratio = calculate_mf_ratio(sum(sexe == "M"), sum(sexe == "F"))  # Utilisation de la fonction pour calculer le ratio simplifié
     )
   
   # Groupe des spécimens avec statut reproducteur inconnu
@@ -82,7 +82,7 @@ abondance_table <- function(capture_data, specimen_data, species) {
       proportion = round(abundance * 100 / total_abundance, 0),
       cpue = NA,
       ic95 = NA,
-      mf_ratio = paste0(sum(sexe == "M"), ":", sum(sexe == "F"))
+      mf_ratio = calculate_mf_ratio(sum(sexe == "M"), sum(sexe == "F"))  # Utilisation de la fonction pour calculer le ratio simplifié
     )
   
   # Étape 4 : Combiner tous les groupes dans une seule table finale

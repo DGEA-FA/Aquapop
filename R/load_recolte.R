@@ -1,45 +1,43 @@
 load_recolte <- function(path, namesheet) {
+  # Charger les données à partir du fichier Excel
   recolte <- readxl::read_excel(
     path,
     col_names = TRUE,
     sheet = namesheet,
-    na = c("", "NULL", "NA", " "),
-    col_types = "text"
+    na = c("", "NULL", "NA", " "), # Considérer ces valeurs comme NA
+    col_types = "text" # Toutes les colonnes en tant que texte
   ) %>%
-    as.data.frame()
-  colnames(recolte)[1] <-
-    'no_lac' #renommer la 1 colonne "No plan d'eau"
-  colnames(recolte)[2] <-
-    'nom_lac' #renommer la 2 colonne "Nom plan d'eau"
-  colnames(recolte)[3] <-
-    'typ_pech' #renommer la 3 colonne "Type de pêche"
-  colnames(recolte)[4] <- 'annee' #renommer la 4 colonne "Année"
-  colnames(recolte)[5] <-
-    'no_station' #renommer la 5 colonne "No station"
-  colnames(recolte)[6] <- 'sp' #renommer la 6 colonne  "Espèce"
-  colnames(recolte)[7] <-
-    'nb_capture' #renommer la 7 colonne "Nbre capturé"
-  colnames(recolte)[8] <-
-    'nb_pese' #renommer la 8 colonne "Nbre pesé"
-  colnames(recolte)[9] <-
-    'comments' #renommer la 9 colonne "Commentaires"
+    as.data.frame() # Convertir en data.frame pour une manipulation plus facile
   
-  recolte$annee <- recolte$annee %>% as.integer()
+  # Renommer les colonnes
+  colnames(recolte) <- c(
+    'no_lac',        # 1ère colonne : No plan d'eau
+    'nom_lac',       # 2ème colonne : Nom plan d'eau
+    'typ_pech',      # 3ème colonne : Type de pêche
+    'annee',         # 4ème colonne : Année
+    'no_station',    # 5ème colonne : No station
+    'sp',            # 6ème colonne : Espèce
+    'nb_capture',    # 7ème colonne : Nbre capturé
+    'nb_pese',       # 8ème colonne : Nbre pesé
+    'comments'       # 9ème colonne : Commentaires
+  )
   
+  # Convertir les colonnes appropriées en facteurs, numériques ou caractères
+  recolte <- recolte %>%
+    mutate(
+      annee = as.integer(annee),
+      no_lac = as.factor(no_lac),
+      nom_lac = as.factor(nom_lac),
+      typ_pech = as.factor(typ_pech),
+      no_station = as.factor(no_station),
+      sp = as.factor(sp),
+      nb_capture = as.numeric(nb_capture),
+      nb_pese = as.numeric(nb_pese),
+      comments = as.character(comments)
+    )
   
-  recolte <- mutate_at(recolte,
-                       vars(no_lac,
-                            nom_lac,
-                            typ_pech,
-                            # annee,
-                            no_station,
-                            sp),
-                       factor) #transformer en factor
-  recolte$nb_capture <-
-    as.numeric(recolte$nb_capture)#transformer en numeric
-  recolte$nb_pese <-
-    as.numeric(recolte$nb_pese)#transformer en numeric
-  recolte$comments <-
-    as.character(recolte$comments)#transformer en character
-  recolte %>% dplyr::distinct()
+  # Supprimer les doublons
+  recolte <- recolte %>% dplyr::distinct()
+  
+  return(recolte)
 }

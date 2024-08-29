@@ -24,12 +24,17 @@ prepare_abondance_table <- function(abundance_table, CPUE_tous, CPUEic_tous, CPU
       mf_ratio = ifelse(is.na(mf_ratio), "-", mf_ratio)
     )
   
-  # Renommer les colonnes pour l'affichage final
+  # Ajouter les labels aux colonnes pour une meilleure compréhension lors de l'affichage
   abundance_table <- abundance_table %>%
-    rename(
-      `IC 95%` = ic95,
-      `Ratio ♂:♀` = mf_ratio
-    ) %>% as.data.frame()
+    labelled::set_variable_labels(
+      group = "Groupe",
+      abundance = "Nombre",
+      proportion = "Proportion (%)",
+      cpue = "CPUE",
+      ic95 = "IC 95%",
+      mf_ratio = "Ratio M:F"
+    )
+
   
   return(abundance_table)
 }
