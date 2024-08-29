@@ -359,9 +359,6 @@ app_server <- function(input, output, session) {
   }, res = 96)
   
   
- 
-  output$titrestructuretailleplot <-
-    renderText("Histogramme de fréquence des longueurs")
   
   output$download_groupetailleplot <- downloadHandler(
     filename = function() {
@@ -431,9 +428,7 @@ app_server <- function(input, output, session) {
                   groupement = input$groupeageplot)
   }, res = 96)
   
-  
-  output$titrestructureageplot <- renderText("Histogramme de fréquence d’âge")
-  
+
   
   output$download_groupeageplot <- downloadHandler(
     filename = function() {
@@ -617,7 +612,6 @@ app_server <- function(input, output, session) {
     req(psd2())
     psd_plot(data = psd2())
   }, res = 96)
-  output$titrepsd1plot <- renderText("Distribution de fréquence de longueurs avec les classes de PSD")
   output$download_psd1plot <- downloadHandler(
     filename = function() {
       paste("psd1plot", '.png', sep = '')
@@ -635,8 +629,7 @@ app_server <- function(input, output, session) {
     relation_masse_longueur(data = specimen(), espece = sp_pen()) %>%
       plotly::ggplotly(tooltip = "text")
   })
-  output$titregraph_relmasselongueur <-
-    renderText("Relation masse-longueur")
+ 
   output$download_masselongueur_plot <- downloadHandler(
     filename = function() {
       paste("relation_masse_longueur", '.png', sep = '')
@@ -663,7 +656,6 @@ app_server <- function(input, output, session) {
     req(specimen(), sp_pen())
     fig_wri_tous(data = specimen(), espece = sp_pen())
   }, res = 96)
-  output$titrewri2plot <- renderText("titre de la figure TBD")
   output$download_wri2plot <- downloadHandler(
     filename = function() {
       paste("wri_tous", '.png', sep = '')
@@ -680,7 +672,6 @@ app_server <- function(input, output, session) {
     req(specimen(), sp_pen())
     fig_wri_byclass(data = specimen(), espece = sp_pen())
   }, res = 96)
-  output$titrewri3plot <- renderText("titre de la figure TBD")
   output$download_wri3plot <- downloadHandler(
     filename = function() {
       paste("wri_byclass", '.png', sep = '')
@@ -714,8 +705,7 @@ app_server <- function(input, output, session) {
       )
     )
   
-  output$titrecroissance1 <- renderText("titre de la figure TBD")
-  
+
   selectedmodelcroissance <- reactive({ #selection du modele choisi dans le reactable
     selected <- getReactableState("croissance1_table", "selected")
     req(selected, croissance1())
@@ -729,8 +719,7 @@ app_server <- function(input, output, session) {
   output$download_croissance1 <-
     download_data_format_xlsx(givenname = "courbe_croissance_comparaison", datadown = croissance1())
   
-  output$titreselectedmodelcroissanceplot <-
-    renderText("titre de la figure TBD")
+  
   
   #ici, on fait appel a differentes fxns selon le modele selectionné
   output$selectedmodelcroissanceplot <- renderPlot({
@@ -881,10 +870,6 @@ app_server <- function(input, output, session) {
     x
   })
   
-  output$titreL50_selection_modeles_table <-
-    renderText(
-      "Comparaison de modèles visant à schématiser proportion mature en fonction de la longueur TITRE TBD"
-    )
   
   df_maturiteltm <- reactive({
     req(df_maturite())
@@ -1311,12 +1296,7 @@ app_server <- function(input, output, session) {
     }
   )
   
-  output$titreselectedmodelL50minitable <-
-    renderText("Présentation des parametres de la courbe TITRE TBD")
-  
-  output$titreselectedmodelL50plot <-
-    renderText("L50 graphique titre TBD")
-  
+ 
   ## A50 -------------------------------------------------------
   AGEmaturite.model.logit.L <- reactive({
     req(df_maturiteage())
@@ -1730,17 +1710,7 @@ app_server <- function(input, output, session) {
     }
   )
   
-  output$titreA50_selection_modeles_table <-
-    renderText(
-      "Comparaison de modèles visant à schématiser proportion mature en fonction de l'âge TITRE TBD"
-    )
   
-  output$titreselectedmodelA50minitable <-
-    renderText("Présentation des parametres de la courbe TITRE TBD")
- 
-   output$titreselectedmodelA50plot <-
-    renderText("A50 graphique titre TBD")
-   
   # Download report ---------------------------------------------------------
   # output$report <- downloadHandler(
   #   filename = "report.docx",

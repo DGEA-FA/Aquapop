@@ -1,4 +1,6 @@
 app_ui <- function() {
+  # Source the text elements
+  source("texte/text_elements.R", local = TRUE)
   fluidPage(
     
     
@@ -143,7 +145,9 @@ app_ui <- function() {
                 plotOutput("structuretailleplot", width = 600, height = 400),
                 type = myspinner
               ),
-              textOutput(outputId = 'titrestructuretailleplot'), #titre plot
+              h3(text_elements$titrestructuretailleplot),
+              
+              # textOutput(outputId = 'titrestructuretailleplot'), #titre plot
               downloadButton(outputId = "download_data4plot_taille", label = "Téléchargement des données du graphique")
               
             )
@@ -157,8 +161,8 @@ app_ui <- function() {
             withSpinner(tableOutput(outputId = "psd2_table"), type = myspinner),
             downloadButton(outputId = "download_psd2", label = "Téléchargement"),
             plotOutput("psd1plot", width = 600, height = 400),
-            textOutput(outputId = 'titrepsd1plot'),            #titre plot
-
+            h3(text_elements$titrepsd1plot),
+            
             downloadButton(outputId = "download_psd1plot", label = "Téléchargement du graphique")
           ),
           ## ggplot_age_subpanel ----------------------------------------------------
@@ -183,7 +187,8 @@ app_ui <- function() {
                 plotOutput("structureageplot", width = 600, height = 400),
                 type = myspinner
               ),
-              textOutput(outputId = 'titrestructureageplot'), #titre plot
+              
+              h3(text_elements$titrestructureageplot),
               downloadButton(outputId = "download_data4plot_age", label = "Téléchargement des données du graphique")
             )
           ),
@@ -199,8 +204,7 @@ app_ui <- function() {
               ),
               type = myspinner
             ),
-            textOutput(outputId = 'titregraph_relmasselongueur'),
-            #titre plot
+            h3(text_elements$titregraph_relmasselongueur),
             downloadButton(outputId = "download_masselongueur_plot", label = "Téléchargement")
           )
         )
@@ -215,23 +219,23 @@ app_ui <- function() {
         withSpinner(plotOutput(
           "wri2plot", width = 600, height = 400
         ), type = myspinner),
-        textOutput(outputId = 'titrewri2plot'),
-        #titre plot
+        h3(text_elements$titrewri2plot),
+        
         downloadButton(outputId = "download_wri2plot", label = "Téléchargement"),
         htmltools::includeMarkdown(path = './texte/wri3_texte.rmd'),
         withSpinner(plotOutput(
           "wri3plot", width = 600, height = 400
         ), type = myspinner),
-        textOutput(outputId = 'titrewri3plot'),
-        #titre plot
+        h3(text_elements$titrewri3plot),
+        
         downloadButton(outputId = "download_wri3plot", label = "Téléchargement")
       ),
       # croissance_panel --------------------------------------------------------
       tabPanel(
         title = "Croissance",
         htmltools::includeMarkdown(path = './texte/croissance_texte.rmd'),
-        textOutput(outputId = 'titrecroissance1'),
-        #titre table
+        h3(text_elements$titrecroissance1),
+        
         withSpinner(reactableOutput(outputId = "croissance1_table"), type = myspinner),
         downloadButton(outputId = "download_croissance1", label = "Téléchargement"),
         sidebarLayout(
@@ -242,8 +246,9 @@ app_ui <- function() {
               width = 600,
               height = 400
             ),
-            textOutput(outputId = 'titreselectedmodelcroissanceplot'),
-            #titre plot
+            h3(text_elements$titreselectedmodelcroissanceplot),
+            
+           
             downloadButton(outputId = "download_selectedmodelcroissanceplot", label = "Téléchargement"),
           )
         )
@@ -267,7 +272,6 @@ app_ui <- function() {
         
         actionButton("goButton", "C'est parti!"),
         p("Cliquez sur le bouton pour mettre à jour l'âge à partir duquel sera calculée la mortalité."),
-        # verbatimTextOutput("newPP_veriftext"), #pour verifier, mais live ca fonctionne. a supprimer plus tard si tout est beau
         htmltools::includeMarkdown(path = './texte/mortalite_texte.rmd'),
         
         withSpinner(tableOutput(outputId = "mortalite1_table"), type = myspinner),
@@ -285,8 +289,8 @@ app_ui <- function() {
                    title = "Longueur à maturité",
                    htmltools::includeMarkdown(path = './texte/L50_texte.rmd'),
                    br(),
-                   textOutput(outputId = 'titreL50_selection_modeles_table'),
-                   #titre plot
+                   h3(text_elements$titreL50_selection_modeles_table),
+                   
                    withSpinner(
                      reactableOutput(outputId = "L50_selection_modeles_table"),
                      type = myspinner
@@ -294,8 +298,7 @@ app_ui <- function() {
                    downloadButton(outputId = "download_L50_selection_modeles_table", label = "Téléchargement"),
                    sidebarLayout(
                      sidebarPanel(
-                       textOutput(outputId = 'titreselectedmodelL50minitable'),
-                       #titre plot
+                       h3(text_elements$titreselectedmodelL50minitable),
                        tableOutput(outputId = "selectedmodelL50minitable"),
                        downloadButton(outputId = "download_minitableselectedmodelL50", label = "Téléchargement") # Button Téléchargement
                      ),
@@ -305,8 +308,8 @@ app_ui <- function() {
                          width = 600,
                          height = 400
                        ),
-                       textOutput(outputId = 'titreselectedmodelL50plot'),
-                       #titre plot
+                       h3(text_elements$titreselectedmodelL50plot),
+                       
                        downloadButton(outputId = "download_selectedmodelL50plot", label = "Téléchargement"),
                      )
                    )
@@ -315,7 +318,8 @@ app_ui <- function() {
                    title = "Âge à maturité",
                    htmltools::includeMarkdown(path = './texte/A50_texte.rmd'),
                    br(),
-                   textOutput(outputId = 'titreA50_selection_modeles_table'),
+                   h3(text_elements$titreA50_selection_modeles_table),
+                   
                    #titre plot
                    withSpinner(
                      reactableOutput(outputId = "A50_selection_modeles_table"),
@@ -324,8 +328,8 @@ app_ui <- function() {
                    downloadButton(outputId = "download_A50_selection_modeles_table", label = "Téléchargement"),
                    sidebarLayout(
                      sidebarPanel(
-                       textOutput(outputId = 'titreselectedmodelA50minitable'),
-                       #titre plot
+                       h3(text_elements$titreselectedmodelA50minitable),
+                       
                        tableOutput(outputId = "selectedmodelA50minitable"),
                        downloadButton(outputId = "download_minitableselectedmodelA50", label = "Téléchargement") # Button Téléchargement
                      ),
@@ -335,8 +339,7 @@ app_ui <- function() {
                          width = 600,
                          height = 400
                        ),
-                       textOutput(outputId = 'titreselectedmodelA50plot'),
-                       #titre plot
+                       h3(text_elements$titreselectedmodelA50plot),
                        downloadButton(outputId = "download_selectedmodelA50plot", label = "Téléchargement"),
                      )
                    )
@@ -345,17 +348,9 @@ app_ui <- function() {
       # Téléchargement panel ------------------------------------------------------
       tabPanel(
         title = "Rapport final",
-        sliderInput("n", "Number of points", 1, 100, 50),
         downloadButton(outputId = "report", label = "Generate report")
       )
-      # ,
-      # 
-      # # Visualisation specimen et recolte ------------------------------------------------------
-      # tabPanel(
-      #   title = "Visualisation BD",
-      #   dataTableOutput(outputId = "specimen_verif"),
-      #   dataTableOutput(outputId = "capture_verif")
-      # )
+    
       
       
     )
