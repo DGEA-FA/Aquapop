@@ -30,11 +30,12 @@ capture <- create_capture(data_station,data_recolte )
 
 source("R/abondance_table.R")
 
-abondance_table <- abondance_table(capture,
+abondance_table <- abondance_table(
                 specimen,
                 sp_pen) %>% as.data.frame()
 
-
+source("R/biomasse_table.R")
+biomasse_table <- biomasse_table(specimen, sp_pen,data_station) %>% as.data.frame()
 
 source("R/structure_taille_tous.R")
 structure_taille_tous(dfspecimen = specimen, espece = sp_pen)

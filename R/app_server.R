@@ -571,39 +571,11 @@ app_server <- function(input, output, session) {
     paste(selection_modele_CPUE_Fmature_data()[1 , 'IC 95%']) #prendre le premier de la liste, car classe par ordre croissant de Ajustement
   })
   ## abondance table ---------------------------------------------------------
-  # abondance1 <- reactive({
-  #   req(
-  #     specimen(),
-  #     sp_pen(),
-  #     capture(),
-  #     CPUE_tous(),
-  #     CPUEic_tous(),
-  #     CPUE_Fmature(),
-  #     CPUEic_Fmature()
-  #   )
-  #   temp <-
-  #     abondance_table(capture = capture(),
-  #                     specimen = specimen(),
-  #                     espece = sp_pen()) %>% as.data.frame()
-  #   temp$CPUE[temp$Groupe == "Tous"] <- CPUE_tous()
-  #   temp$IC95[temp$Groupe == "Tous"] <- CPUEic_tous()
-  #   temp$CPUE[temp$Groupe == "Repro. actifs ♀"] <- CPUE_Fmature()
-  #   temp$IC95[temp$Groupe == "Repro. actifs ♀"] <- CPUEic_Fmature()
-  #   temp$'Prop. (%)' <-
-  #     format(round(as.numeric(temp$'Prop. (%)'), digits = 0), nsmall = 0)
-  #   temp <- temp %>% mutate(CPUE = ifelse(is.na(CPUE), "-", CPUE))
-  #   temp <- temp %>% mutate(IC95 = ifelse(is.na(IC95), "-", IC95))
-  #   temp <-
-  #     temp %>% mutate(ratioMF = ifelse(is.na(ratioMF), "-", ratioMF))
-  #   temp <- temp %>% rename('IC 95%' = IC95,
-  #                           "Ratio ♂:♀" = ratioMF) %>% as.data.frame()
-  #   temp
-  # })
+ 
   abondance1 <- reactive({
     req(
       specimen(),
       sp_pen(),
-      capture(),
       CPUE_tous(),
       CPUEic_tous(),
       CPUE_Fmature(),
@@ -612,9 +584,8 @@ app_server <- function(input, output, session) {
     
     # Générer la table d'abondance de base
     base_table <- abondance_table(
-      capture_data = capture(),
       specimen_data = specimen(),
-      species = sp_pen()
+      espece = sp_pen()
     )
     
     # Préparer la table pour la mise en page
@@ -633,29 +604,23 @@ app_server <- function(input, output, session) {
     gt_abondance(data = abondance1())
   })
   
-  # output$abondance1table <-  function() {
-  #   kable_abondance(data = abondance1())
-  # }
+ 
   output$download_abondance1 <-
     download_data_format_xlsx(givenname = "abondance1", datadown = abondance1())
   # BPUE ------------------------------------------------
   biomasse1 <- reactive({
-    req(specimen(), sp_pen(), capture())
-    temp <-
-      biomasse_table(capture = capture(),
-                     specimen = specimen(),
-                     espece = sp_pen())
-    temp <- temp %>% mutate(IC95 = ifelse(is.na(IC95), "-", IC95))
-    temp <- temp %>% rename(
-      "Biomasse totale (kg) " = Biomasse,
-      "Prop. (%)" = Perc,
-      "IC 95%" = IC95
+    req(specimen(), sp_pen(), data_station())
+    
+    # Appel de la fonction biomasse_table
+    biomasse_table(
+      specimen = specimen(),
+      sp_pen = sp_pen(),
+      data_station = data_station()
     )
-    temp
   })
-  output$biomasse1table <-  function() {
-    kable_biomasse(data = biomasse1())
-  }
+  output$biomasse1table <- render_gt({
+    gt_biomasse(data = biomasse1())
+  })
   output$download_biomasse1 <-
     download_data_format_xlsx(givenname = "biomasse1", datadown = biomasse1())
   # PSD -------------------------------------------------------

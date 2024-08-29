@@ -38,6 +38,9 @@ create_specimen <- function(data_specimen, data_station) {
   specimen <- specimen %>%
     filter(st_valide == "O", st_hasard == "O")
 
+  # Filtrer pour ne retenir que les filets experimentaux ?
+  # alldata <- alldata %>% dplyr::filter(type_maill %in% c("G", NA)) %>% droplevels() 
+  
     return(specimen)
   
   

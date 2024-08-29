@@ -131,23 +131,31 @@ gt_abondance <- function(data) {
     )
 }
 
-kable_biomasse <- function(data) {
-  req(data)
+gt_biomasse <- function(data) {
+  # Extraire les labels des colonnes
+  column_labels <- sapply(data, function(col) attr(col, "label"))
+  
   data %>%
-    kable(
-      align = c("r", "c", "c", "c", "r"),
-      caption = "Biomasse",
-      row.names = FALSE
+    gt() %>%
+    tab_header(
+      title = md("**Tableau de biomasse**")
     ) %>%
-    kable_styling(
-      full_width = FALSE,
-      font_size = 12,
-      html_font = "sans-serif",
-      position = "center"
+    # Utiliser les labels extraits dans cols_label
+    cols_label(
+      groupe = column_labels["groupe"],
+      biomasse = column_labels["biomasse"],
+      percent = column_labels["percent"],
+      bpue = column_labels["bpue"],
+      ic95 = column_labels["ic95"]
     ) %>%
-    kableExtra::row_spec(1, extra_css = "border-bottom: 0.5px solid") %>%
-    kableExtra::row_spec(4, extra_css = "border-bottom: 0.5px solid")  %>%
-    kableExtra::row_spec(8, extra_css = "border-bottom: 0.5px solid")
+    cols_align(
+      align = "center",
+      columns = everything()
+    ) %>%
+    tab_options(
+      table.width = "auto",  # Ajuster automatiquement la largeur du tableau
+      table.font.size = px(12)
+    )
 }
 
 
