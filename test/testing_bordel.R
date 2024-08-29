@@ -1,41 +1,103 @@
-library(dplyr)
+library(shiny)
+library(car)
+library(DT)
+library(kableExtra)
+library(reactable)
+library(FSA)
+library(nlstools)
+library(shinyBS)
+library(gghighlight)
+library(htmltools)
+library(markdown)
+library(readxl)
 library(ggplot2)
-# path <- "C:/Users/carol/OneDrive/EmploiMFFP/Hiver2022-2023/Jeu de données.xlsx"
+library(scales)
+library(dplyr)
+library(patchwork)
+library(reactlog)
+library(stringr)
+library(chron)
+library(purrr)
+library(writexl)
+library(shinycssloaders)
+library(glue)
+library(fishmethods)
+library(hnp)
+library(MASS)
+library(glmmTMB)
+library(MuMIn)
+library(plotly)
+library(gapminder)
+library(AER)
+library(pROC)
+library(DescTools)
+library(emdbook)
+library(AICcmodavg)
+library(investr)
+
+library(gt)
+library(officer)
+library(flextable)
+library(forcats)
+library(labelled)
+# Set path to your data
 path <- "data/exempledata.xlsx"
+
+# Set the variables for filtering
 typ_pechvar <- "PENT" 
 no_lac_var <- "01480" 
 annee_var <- 2020   
 
-
+# Load your custom functions
 source("R/load_station.R")
-data_station <- load_station(path, namesheet= "Stations")
 source("R/load_recolte.R")
-data_recolte <- load_recolte(path, namesheet= "Recolte")
 source("R/load_specimen.R")
+source("R/utils.R")
+source("R/create_sp_pen.R")
+source("R/create_specimen.R")
+source("R/create_capture.R")
+source("R/abondance_table.R")
+source("R/biomasse_table.R")
+source("R/structure_taille.R")  # Assuming you refactor all structure_taille_* functions into structure_taille
+
+# Load datasets
+data_station <- load_station(path, namesheet= "Stations")
+data_recolte <- load_recolte(path, namesheet= "Recolte")
 data_specimen <- load_specimen(path, namesheet= "Specimens")
 
-source("R/utils.R")
+# Filter data based on specified variables
+data_station <- data_station %>% filter(typ_pech == typ_pechvar & no_lac == no_lac_var & annee == annee_var)
+data_recolte <- data_recolte %>% filter(typ_pech == typ_pechvar & no_lac == no_lac_var & annee == annee_var)
+data_specimen <- data_specimen %>% filter(typ_pech == typ_pechvar & no_lac == no_lac_var & annee == annee_var)
 
-data_station <- data_station %>% filter(typ_pech==typ_pechvar & no_lac==no_lac_var & annee==annee_var)
-data_recolte <- data_recolte %>% filter(typ_pech==typ_pechvar & no_lac==no_lac_var & annee==annee_var)
-data_specimen <- data_specimen %>% filter(typ_pech==typ_pechvar & no_lac==no_lac_var & annee==annee_var)
-
-source("R/create_sp_pen.R")
+# Create derived variables
 sp_pen <- create_sp_pen(input_typ_pech = typ_pechvar)
+specimen <- create_specimen(data_specimen, data_station)
+capture <- create_capture(data_station, data_recolte)
 
-source("R/create_specimen.R")
-specimen <- create_specimen(data_specimen,data_station )
-source("R/create_capture.R")
-capture <- create_capture(data_station,data_recolte )
+# Test abundance and biomass tables
+abondance_table <- abondance_table(specimen, sp_pen) %>% as.data.frame()
+biomasse_table <- biomasse_table(specimen, sp_pen, data_station) %>% as.data.frame()
 
-source("R/abondance_table.R")
+# Use the functions to define binwidth and nomsp
+binwidth <- get_binwidth(sp_pen)
+nomsp <- get_nomsp(sp_pen)
 
-abondance_table <- abondance_table(
-                specimen,
-                sp_pen) %>% as.data.frame()
+# Test with 'tous' groupement
+plot_tous <- structure_taille(dfspecimen = specimen, espece = sp_pen, binwidth = binwidth, nomsp = nomsp, groupement = "tous")
+print(plot_tous)
 
-source("R/biomasse_table.R")
-biomasse_table <- biomasse_table(specimen, sp_pen,data_station) %>% as.data.frame()
+# Test with 'sexe' groupement
+plot_sexe <- structure_taille(dfspecimen = specimen, espece = sp_pen, binwidth = binwidth, nomsp = nomsp, groupement = "sexe")
+print(plot_sexe)
+
+# Test with 'maturite' groupement
+plot_maturite <- structure_taille(dfspecimen = specimen, espece = sp_pen, binwidth = binwidth, nomsp = nomsp, groupement = "maturite")
+print(plot_maturite)
+
+# Test with 'marquage' groupement
+plot_marquage <- structure_taille(dfspecimen = specimen, espece = sp_pen, binwidth = binwidth, nomsp = nomsp, groupement = "marquage")
+print(plot_marquage)
 
 source("R/structure_taille_tous.R")
 structure_taille_tous(dfspecimen = specimen, espece = sp_pen)

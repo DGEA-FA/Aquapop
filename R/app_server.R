@@ -349,32 +349,15 @@ app_server <- function(input, output, session) {
   download_data_format_xlsx(givenname = "taille_masse_age_table", datadown = taillemasseagedata())
 
 
-  
-   # Structure taille ggplot ------------------------------------------------
   output$structuretailleplot <- renderPlot({
-    req(specimen(), sp_pen(), binwidth_reactive(), nomsp_reactive())
-    if (input$groupetailleplot == "tous") {
-      structure_taille_tous(dfspecimen = specimen(),
-                            espece = sp_pen(),
-                            binwidth = binwidth_reactive(),
-                            nomsp = nomsp_reactive())
-    } else if (input$groupetailleplot == "marquage") {
-      structure_taille_marquage(dfspecimen = specimen(),
-                                espece = sp_pen(),
-                                binwidth = binwidth_reactive(),
-                                nomsp = nomsp_reactive())
-    } else if (input$groupetailleplot == "sexe") {
-      structure_taille_sexe(dfspecimen = specimen(),
-                            espece = sp_pen(),
-                            binwidth = binwidth_reactive(),
-                            nomsp = nomsp_reactive())
-    } else if (input$groupetailleplot == "maturite") {
-      structure_taille_maturite(dfspecimen = specimen(),
-                                espece = sp_pen(),
-                                binwidth = binwidth_reactive(),
-                                nomsp = nomsp_reactive())
-    }
+    req(specimen(), sp_pen(), nomsp_reactive(), binwidth_reactive())
+    structure_taille(dfspecimen = specimen(),
+                     espece = sp_pen(),
+                     binwidth = binwidth_reactive(),
+                     nomsp = nomsp_reactive(),
+                     groupement = input$groupetailleplot)
   }, res = 96)
+  
   
  
   output$titrestructuretailleplot <-
@@ -388,54 +371,46 @@ app_server <- function(input, output, session) {
       ggsave(file, plot = {
         req(specimen(), sp_pen(), binwidth_reactive(), nomsp_reactive())
         if (input$groupetailleplot == "tous") {
-          structure_taille_tous(dfspecimen = specimen(),
-                                espece = sp_pen(),
-                                binwidth = binwidth_reactive(),
-                                nomsp = nomsp_reactive())
+          structure_taille(dfspecimen = specimen(),
+                           espece = sp_pen(),
+                           binwidth = binwidth_reactive(),
+                           nomsp = nomsp_reactive(),
+                           groupement = "tous")
         } else if (input$groupetailleplot == "marquage") {
-          structure_taille_marquage(dfspecimen = specimen(),
-                                    espece = sp_pen(),
-                                    binwidth = binwidth_reactive(),
-                                    nomsp = nomsp_reactive())
+          structure_taille(dfspecimen = specimen(),
+                           espece = sp_pen(),
+                           binwidth = binwidth_reactive(),
+                           nomsp = nomsp_reactive(),
+                           groupement = "marquage")
         } else if (input$groupetailleplot == "sexe") {
-          structure_taille_sexe(dfspecimen = specimen(),
-                                espece = sp_pen(),
-                                binwidth = binwidth_reactive(),
-                                nomsp = nomsp_reactive())
+          structure_taille(dfspecimen = specimen(),
+                           espece = sp_pen(),
+                           binwidth = binwidth_reactive(),
+                           nomsp = nomsp_reactive(),
+                           groupement = "sexe")
         } else if (input$groupetailleplot == "maturite") {
-          structure_taille_maturite(dfspecimen = specimen(),
-                                    espece = sp_pen(),
-                                    binwidth = binwidth_reactive(),
-                                    nomsp = nomsp_reactive())
+          structure_taille(dfspecimen = specimen(),
+                           espece = sp_pen(),
+                           binwidth = binwidth_reactive(),
+                           nomsp = nomsp_reactive(),
+                           groupement = "maturite")
         }
-      }, res = 96)
-    }
+      }, width = 10, height = 7, dpi = 300)  # Specify width, height, and dpi if needed
+    },
+    contentType = 'image/png'  # Ensure the content type is set correctly for PNG files
   )
-
   
+
   data4plot_taille <- reactive({
     req(specimen(), sp_pen(), binwidth_reactive(), nomsp_reactive())
-    if (input$groupetailleplot == "tous") {
-      structure_taille_tous(dfspecimen = specimen(),
-                            espece = sp_pen(),
-                            binwidth = binwidth_reactive(),
-                            nomsp = nomsp_reactive()) %>% get_df_from_plot_tous()
-    } else if (input$groupetailleplot == "marquage") {
-      structure_taille_marquage(dfspecimen = specimen(),
-                                espece = sp_pen(),
-                                binwidth = binwidth_reactive(),
-                                nomsp = nomsp_reactive())  %>% get_df_from_plot_marquage()
-    } else if (input$groupetailleplot == "sexe") {
-      structure_taille_sexe(dfspecimen = specimen(),
-                            espece = sp_pen(),
-                            binwidth = binwidth_reactive(),
-                            nomsp = nomsp_reactive())  %>% get_df_from_plot_sexe()
-    } else if (input$groupetailleplot == "maturite") {
-      structure_taille_maturite(dfspecimen = specimen(),
-                                espece = sp_pen(),
-                                binwidth = binwidth_reactive(),
-                                nomsp = nomsp_reactive()) %>% get_df_from_plot_maturite()
-    }
+    
+    plot <- structure_taille(dfspecimen = specimen(),
+                             espece = sp_pen(),
+                             binwidth = binwidth_reactive(),
+                             nomsp = nomsp_reactive(),
+                             groupement = input$groupetailleplot)
+    
+    get_df_from_plot(plot, groupement = input$groupetailleplot)
   })
   
   

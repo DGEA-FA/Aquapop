@@ -11,7 +11,7 @@ biomasse_table <- function(specimen, sp_pen, data_station) {
   
   # Calculs pour le groupe "Tous" --------------------------------------------------
   # Agréger les données pour obtenir la biomasse totale par station
-  temp <- alldata %>% dplyr::group_by(no_station) %>%
+  temp <- dataspec %>% dplyr::group_by(no_station) %>%
     summarise(bpue = sum(masse, na.rm = TRUE), Group = "Tous", .groups = "drop")
   
   # Calculer la biomasse totale pour toutes les stations en kg
@@ -72,7 +72,7 @@ biomasse_table <- function(specimen, sp_pen, data_station) {
   colnames(Tous) <- "Tous"
   
   # Calculs pour les groupes par sexe (m_f_ind) --------------------------------------------------
-  temp_sexe <- alldata %>% dplyr::group_by(no_station, sexe) %>%
+  temp_sexe <- dataspec %>% dplyr::group_by(no_station, sexe) %>%
     summarise(massesum = sum(masse, na.rm = TRUE), .groups = "drop")
   
   # Agréger les données pour chaque sexe et calculer la biomasse 
@@ -109,7 +109,7 @@ biomasse_table <- function(specimen, sp_pen, data_station) {
   
   
   # Calculs pour les mâles matures (m_mature) --------------------------------------------------
-  temp_males <- alldata %>% filter(maturite == "O" & sexe == "M") %>% droplevels()
+  temp_males <- dataspec %>% filter(maturite == "O" & sexe == "M") %>% droplevels()
   
   # Agréger les données pour les mâles matures et calculer la biomasse et bpue
   temp_males <- temp_males %>% dplyr::group_by(no_station) %>%
@@ -134,7 +134,7 @@ biomasse_table <- function(specimen, sp_pen, data_station) {
   colnames(m_mature) <- "Repro. actifs mâles"
   
   # Calculs pour les femelles matures (f_mature) --------------------------------------------------
-  temp_femelles <- alldata %>% filter(maturite == "O" & sexe == "F") %>% droplevels()
+  temp_femelles <- dataspec %>% filter(maturite == "O" & sexe == "F") %>% droplevels()
   
   # Agréger les données pour les femelles repro actives et calculer la biomasse et bpue
   temp_femelles <- temp_femelles %>% dplyr::group_by(no_station) %>%
@@ -188,7 +188,7 @@ biomasse_table <- function(specimen, sp_pen, data_station) {
   
   
   # Calculs pour les poissons immatures ou reproducteurs inactifs (immature) --------------------------------------------------
-  temp_immatures <- alldata %>% filter(maturite == "N") %>% droplevels()
+  temp_immatures <- dataspec %>% filter(maturite == "N") %>% droplevels()
   
   # Agréger les données pour les poissons immatures ou reproducteurs inactifs et calculer la biomasse
   temp_immatures <- temp_immatures %>% dplyr::group_by(no_station) %>%
@@ -217,7 +217,7 @@ biomasse_table <- function(specimen, sp_pen, data_station) {
   
 
   # Calculs pour les poissons avec statut reproducteur inconnu (inconnu) --------------------------------------------------
-  temp_inconnu <- alldata %>% filter(maturite =="IND") %>% droplevels()
+  temp_inconnu <- dataspec %>% filter(maturite =="IND") %>% droplevels()
   
   # Agréger les données pour les poissons avec statut reproducteur inconnu et calculer la biomasse
   temp_inconnu <- temp_inconnu %>% dplyr::group_by(no_station) %>%

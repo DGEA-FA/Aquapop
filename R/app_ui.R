@@ -73,17 +73,7 @@ app_ui <- function() {
           )
         )
       ),
-      # visualisation panel ------------------------------------------------
-      
-      # tabPanel("Visualisation",
-      #          tabsetPanel(
-      #            tabPanel("Capture",
-      #                     fluidRow(DTOutput("capture_table"))),
-      #            tabPanel("Specimen",
-      #                     fluidRow(DTOutput("specimen_table")))
-      #          )), 
-      # 
-      # 
+
       
       # abondance_biomasse_panel ------------------------------------------------
       tabPanel(title = "Abondance et biomasse",
