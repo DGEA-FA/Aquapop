@@ -835,89 +835,36 @@ app_server <- function(input, output, session) {
  
    output$zobs_text <- renderText(zobs())
   # Maturite sexuelle -------------------------------------------------------
-  df_maturite <- reactive({
-    req(specimen(), sp_pen())
-    x <- specimen() %>% filter(sp == sp_pen()) %>% droplevels()
-    x <-
-      x %>% filter(maturite != "IND") %>% droplevels() #filter les donnees pour retirer les specimens de Maturite IND
-    x <-
-      x %>% filter(sexe != "IND") %>% droplevels() #filter les donnees pour retirer les specimens de sexe IND
-    x$maturite <-
-      factor(x$maturite,
-             levels = c("N", "O"),
-             ordered = TRUE)
-    x
-  })
-  
-  
-  df_maturiteltm <- reactive({
-    req(df_maturite())
-    subset(df_maturite(), !is.na(ltm))# this data frame needed to be "cleaned" by removing all records where mesures were missing
-  })
-  
-  
-  df_maturiteage <- reactive({
-    req(df_maturite())
-    subset(df_maturite(), !is.na(age))# this data frame needed to be "cleaned" by removing all records where mesures were missing
-  })
+   df_maturiteltm <- reactive({
+     req(specimen(), sp_pen())
+     specimen() %>%
+       filter(sp == sp_pen(), maturite != "IND", sexe != "IND", !is.na(ltm)) %>%
+       droplevels() %>%
+       mutate(maturite = factor(maturite, levels = c("N", "O"), ordered = TRUE))
+   })
+
+   df_maturiteage <- reactive({
+     req(specimen(), sp_pen())
+     specimen() %>%
+       filter(sp == sp_pen(), maturite != "IND", sexe != "IND", !is.na(age)) %>%
+       droplevels() %>%
+       mutate(maturite = factor(maturite, levels = c("N", "O"), ordered = TRUE))
+   })
   
   
   ## L50 -------------------------------------------------------
-  LTMmaturite.model.logit.L <- reactive({
-    req(df_maturiteltm())
-    glm(maturite ~ ltm,
-        family = binomial(link = "logit"),
-        data = df_maturiteltm())
-  })
-  
-  LTMmaturite.model.probit.L <- reactive({
-    req(df_maturiteltm())
-    glm(maturite ~ ltm,
-        family = binomial(link = "probit"),
-        data = df_maturiteltm())
-  })
-  LTMmaturite.model.cloglog.L <- reactive({
-    req(df_maturiteltm())
-    glm(maturite ~ ltm,
-        family = binomial(link = "cloglog"),
-        data = df_maturiteltm())
-  })
-  LTMmaturite.model.logit.ADD <- reactive({
-    req(df_maturiteltm())
-    glm(maturite ~ ltm + sexe,
-        family = binomial(link = "logit"),
-        data = df_maturiteltm())
-  })
-  LTMmaturite.model.probit.ADD <- reactive({
-    req(df_maturiteltm())
-    glm(maturite ~ ltm + sexe,
-        family = binomial(link = "probit"),
-        data = df_maturiteltm())
-  })
-  LTMmaturite.model.cloglog.ADD <- reactive({
-    req(df_maturiteltm())
-    glm(maturite ~ ltm + sexe,
-        family = binomial(link = "cloglog"),
-        data = df_maturiteltm())
-  })
-  LTMmaturite.model.logit.INT <- reactive({
-    req(df_maturiteltm())
-    glm(maturite ~ ltm * sexe,
-        family = binomial(link = "logit"),
-        data = df_maturiteltm())
-  })
-  LTMmaturite.model.probit.INT <- reactive({
-    req(df_maturiteltm())
-    glm(maturite ~ ltm * sexe,
-        family = binomial(link = "probit"),
-        data = df_maturiteltm())
-  })
-  LTMmaturite.model.cloglog.INT <- reactive({
-    req(df_maturiteltm())
-    glm(maturite ~ ltm * sexe,
-        family = binomial(link = "cloglog"),
-        data = df_maturiteltm())
-  })
+   LTMmaturite.model.logit.L <- reactive({ req(df_maturiteltm()); glm(maturite ~ ltm, family = binomial(link = "logit"), data = df_maturiteltm()) })
+   LTMmaturite.model.probit.L <- reactive({ req(df_maturiteltm()); glm(maturite ~ ltm, family = binomial(link = "probit"), data = df_maturiteltm()) })
+   LTMmaturite.model.cloglog.L <- reactive({ req(df_maturiteltm()); glm(maturite ~ ltm, family = binomial(link = "cloglog"), data = df_maturiteltm()) })
+   
+   LTMmaturite.model.logit.ADD <- reactive({ req(df_maturiteltm()); glm(maturite ~ ltm + sexe, family = binomial(link = "logit"), data = df_maturiteltm()) })
+   LTMmaturite.model.probit.ADD <- reactive({ req(df_maturiteltm()); glm(maturite ~ ltm + sexe, family = binomial(link = "probit"), data = df_maturiteltm()) })
+   LTMmaturite.model.cloglog.ADD <- reactive({ req(df_maturiteltm()); glm(maturite ~ ltm + sexe, family = binomial(link = "cloglog"), data = df_maturiteltm()) })
+   
+   LTMmaturite.model.logit.INT <- reactive({ req(df_maturiteltm()); glm(maturite ~ ltm * sexe, family = binomial(link = "logit"), data = df_maturiteltm()) })
+   LTMmaturite.model.probit.INT <- reactive({ req(df_maturiteltm()); glm(maturite ~ ltm * sexe, family = binomial(link = "probit"), data = df_maturiteltm()) })
+   LTMmaturite.model.cloglog.INT <- reactive({ req(df_maturiteltm()); glm(maturite ~ ltm * sexe, family = binomial(link = "cloglog"), data = df_maturiteltm()) })
+   
   L50_selection_modeles_df <- reactive({
     req(
       LTMmaturite.model.logit.L(),
@@ -959,43 +906,49 @@ app_server <- function(input, output, session) {
   ## minitable l50 -----------------------------------------------------------
   minitablel50.logit.L <- reactive({
     req(LTMmaturite.model.logit.L())
-    minitable_param_model_l_l50(model = LTMmaturite.model.logit.L()) %>% as.data.frame()
+    generate_minitable_param_modelL50(model = LTMmaturite.model.logit.L(), model_type = "l") %>% as.data.frame()
   })
+  
   minitablel50.probit.L <- reactive({
     req(LTMmaturite.model.probit.L())
-    minitable_param_model_l_l50(model = LTMmaturite.model.probit.L()) %>% as.data.frame()
+    generate_minitable_param_modelL50(model = LTMmaturite.model.probit.L(), model_type = "l") %>% as.data.frame()
   })
+  
   minitablel50.cloglog.L <- reactive({
     req(LTMmaturite.model.cloglog.L())
-    minitable_param_model_l_l50(model = LTMmaturite.model.cloglog.L()) %>% as.data.frame()
+    generate_minitable_param_modelL50(model = LTMmaturite.model.cloglog.L(), model_type = "l") %>% as.data.frame()
   })
+  
   minitablel50.logit.ADD <- reactive({
     req(LTMmaturite.model.logit.ADD())
-    minitable_param_model_add_l50(model = LTMmaturite.model.logit.ADD()) %>% as.data.frame()
+    generate_minitable_param_modelL50(model = LTMmaturite.model.logit.ADD(), model_type = "add") %>% as.data.frame()
   })
+  
   minitablel50.probit.ADD <- reactive({
     req(LTMmaturite.model.probit.ADD())
-    minitable_param_model_add_l50(model = LTMmaturite.model.probit.ADD()) %>% as.data.frame()
+    generate_minitable_param_modelL50(model = LTMmaturite.model.probit.ADD(), model_type = "add") %>% as.data.frame()
   })
+  
   minitablel50.cloglog.ADD <- reactive({
     req(LTMmaturite.model.cloglog.ADD())
-    minitable_param_model_add_l50(model = LTMmaturite.model.cloglog.ADD()) %>% as.data.frame()
+    generate_minitable_param_modelL50(model = LTMmaturite.model.cloglog.ADD(), model_type = "add") %>% as.data.frame()
   })
+  
   minitablel50.logit.INT <- reactive({
     req(LTMmaturite.model.logit.INT(), df_maturiteltm())
-    minitable_param_model_int_l50(model = LTMmaturite.model.logit.INT(),
-                                  df = df_maturiteltm()) %>% as.data.frame()
+    generate_minitable_param_modelL50(model = LTMmaturite.model.logit.INT(), model_type = "int", df = df_maturiteltm()) %>% as.data.frame()
   })
+  
   minitablel50.probit.INT <- reactive({
     req(LTMmaturite.model.probit.INT(), df_maturiteltm())
-    minitable_param_model_int_l50(model = LTMmaturite.model.probit.INT(),
-                                  df = df_maturiteltm()) %>% as.data.frame()
+    generate_minitable_param_modelL50(model = LTMmaturite.model.probit.INT(), model_type = "int", df = df_maturiteltm()) %>% as.data.frame()
   })
+  
   minitablel50.cloglog.INT <- reactive({
     req(LTMmaturite.model.cloglog.INT(), df_maturiteltm())
-    minitable_param_model_int_l50(model = LTMmaturite.model.cloglog.INT(),
-                                  df = df_maturiteltm()) %>% as.data.frame()
+    generate_minitable_param_modelL50(model = LTMmaturite.model.cloglog.INT(), model_type = "int", df = df_maturiteltm()) %>% as.data.frame()
   })
+  
   ## selection modele L50 ----------------------------------------------------
   selectedmodelL50 <- reactive({
     selected <-
@@ -1092,246 +1045,94 @@ app_server <- function(input, output, session) {
     }))
   ## selected L50 plot -------------------------------------------------------
   output$selectedmodelL50plot <- renderPlot({
-    req(selectedmodelL50())
-    if (selectedmodelL50() == "Longueur (lien logit)") {
-      req(df_maturiteltm(),
-          LTMmaturite.model.logit.L(),
-          minitablel50.logit.L())
-      ggmodel_L_L50(df = df_maturiteltm(),
-                    model = LTMmaturite.model.logit.L(),
-                    minitable = minitablel50.logit.L())
-    } else if (selectedmodelL50() == "Longueur + Sexe (lien logit)") {
-      req(df_maturiteltm(),
-          LTMmaturite.model.logit.ADD(),
-          minitablel50.logit.ADD())
-      ggmodel_ADD_L50(df = df_maturiteltm(),
-                      model = LTMmaturite.model.logit.ADD(),
-                      minitable = minitablel50.logit.ADD())
-    } else if (selectedmodelL50() == "Longueur + Sexe + Longueur:Sexe (lien logit)") {
-      req(df_maturiteltm(),
-          LTMmaturite.model.logit.INT(),
-          minitablel50.logit.INT())
-      ggmodel_INT_L50(df = df_maturiteltm(),
-                      model = LTMmaturite.model.logit.INT(),
-                      minitable = minitablel50.logit.INT())
-    } else if (selectedmodelL50() == "Longueur (lien probit)") {
-      req(df_maturiteltm(),
-          LTMmaturite.model.probit.L(),
-          minitablel50.probit.L())
-      ggmodel_L_L50(df = df_maturiteltm(),
-                    model = LTMmaturite.model.probit.L(),
-                    minitable = minitablel50.probit.L())
-    } else if (selectedmodelL50() == "Longueur + Sexe (lien probit)") {
-      req(
-        df_maturiteltm(),
-        LTMmaturite.model.probit.ADD(),
-        minitablel50.probit.ADD()
-      )
-      ggmodel_ADD_L50(df = df_maturiteltm(),
-                      model = LTMmaturite.model.probit.ADD(),
-                      minitable = minitablel50.probit.ADD())
-    } else if (selectedmodelL50() == "Longueur + Sexe + Longueur:Sexe (lien probit)") {
-      req(
-        df_maturiteltm(),
-        LTMmaturite.model.probit.INT(),
-        minitablel50.probit.INT()
-      )
-      ggmodel_INT_L50(df = df_maturiteltm(),
-                      model = LTMmaturite.model.probit.INT(),
-                      minitable = minitablel50.probit.INT())
-    } else if (selectedmodelL50() == "Longueur (lien cloglog)") {
-      req(df_maturiteltm(),
-          LTMmaturite.model.cloglog.L(),
-          minitablel50.cloglog.L())
-      ggmodel_L_L50(df = df_maturiteltm(),
-                    model = LTMmaturite.model.cloglog.L(),
-                    minitable = minitablel50.cloglog.L())
-    } else if (selectedmodelL50() == "Longueur + Sexe (lien cloglog)") {
-      req(
-        df_maturiteltm(),
-        LTMmaturite.model.cloglog.ADD(),
-        minitablel50.cloglog.ADD()
-      )
-      ggmodel_ADD_L50(df = df_maturiteltm(),
-                      model = LTMmaturite.model.cloglog.ADD(),
-                      minitable = minitablel50.cloglog.ADD())
-    } else if (selectedmodelL50() == "Longueur + Sexe + Longueur:Sexe (lien cloglog)") {
-      req(
-        df_maturiteltm(),
-        LTMmaturite.model.cloglog.INT(),
-        minitablel50.cloglog.INT()
-      )
-      ggmodel_INT_L50(df = df_maturiteltm(),
-                      model = LTMmaturite.model.cloglog.INT(),
-                      minitable = minitablel50.cloglog.INT())
-    }
+    req(selectedmodelL50(), df_maturiteltm())
+    
+    model_info <- list(
+      "Longueur (lien logit)" = list(model = LTMmaturite.model.logit.L, minitable = minitablel50.logit.L, type = "L"),
+      "Longueur + Sexe (lien logit)" = list(model = LTMmaturite.model.logit.ADD, minitable = minitablel50.logit.ADD, type = "ADD"),
+      "Longueur + Sexe + Longueur:Sexe (lien logit)" = list(model = LTMmaturite.model.logit.INT, minitable = minitablel50.logit.INT, type = "INT"),
+      "Longueur (lien probit)" = list(model = LTMmaturite.model.probit.L, minitable = minitablel50.probit.L, type = "L"),
+      "Longueur + Sexe (lien probit)" = list(model = LTMmaturite.model.probit.ADD, minitable = minitablel50.probit.ADD, type = "ADD"),
+      "Longueur + Sexe + Longueur:Sexe (lien probit)" = list(model = LTMmaturite.model.probit.INT, minitable = minitablel50.probit.INT, type = "INT"),
+      "Longueur (lien cloglog)" = list(model = LTMmaturite.model.cloglog.L, minitable = minitablel50.cloglog.L, type = "L"),
+      "Longueur + Sexe (lien cloglog)" = list(model = LTMmaturite.model.cloglog.ADD, minitable = minitablel50.cloglog.ADD, type = "ADD"),
+      "Longueur + Sexe + Longueur:Sexe (lien cloglog)" = list(model = LTMmaturite.model.cloglog.INT, minitable = minitablel50.cloglog.INT, type = "INT")
+    )
+    
+    selected_info <- model_info[[selectedmodelL50()]]
+    
+    req(selected_info$model(), selected_info$minitable())
+    
+    generate_ggmodel_L50(df = df_maturiteltm(),
+                         model = selected_info$model(),
+                         minitable = selected_info$minitable(),
+                         model_type = selected_info$type)
   }, res = 96)
   ## download_selectedmodelL50plot -------------------------------------------
   output$download_selectedmodelL50plot <- downloadHandler(
     filename = function() {
       req(selectedmodelL50())
-      if (selectedmodelL50() == "Longueur (lien logit)") {
-        paste("ggLTMmaturite_logit.L", '.png', sep = '')
-      } else if (selectedmodelL50() == "Longueur + Sexe (lien logit)") {
-        paste("ggLTMmaturite_logit.ADD", '.png', sep = '')
-      } else if (selectedmodelL50() == "Longueur + Sexe + Longueur:Sexe (lien logit)") {
-        paste("ggLTMmaturite_logit.INT", '.png', sep = '')
-      } else if (selectedmodelL50() == "Longueur (lien probit)") {
-        paste("ggLTMmaturite_probit.L", '.png', sep = '')
-      } else if (selectedmodelL50() == "Longueur + Sexe (lien probit)") {
-        paste("ggLTMmaturite_probit.ADD", '.png', sep = '')
-      } else if (selectedmodelL50() == "Longueur + Sexe + Longueur:Sexe (lien probit)") {
-        paste("ggLTMmaturite_probit.INT", '.png', sep = '')
-      } else if (selectedmodelL50() == "Longueur (lien cloglog)") {
-        paste("ggLTMmaturite_cloglog.L", '.png', sep = '')
-      } else if (selectedmodelL50() == "Longueur + Sexe (lien cloglog)") {
-        paste("ggLTMmaturite_cloglog.ADD", '.png', sep = '')
-      } else if (selectedmodelL50() == "Longueur + Sexe + Longueur:Sexe (lien cloglog)") {
-        paste("ggLTMmaturite_cloglog.INT", '.png', sep = '')
-      }
+      
+      file_names <- list(
+        "Longueur (lien logit)" = "ggLTMmaturite_logit.L.png",
+        "Longueur + Sexe (lien logit)" = "ggLTMmaturite_logit.ADD.png",
+        "Longueur + Sexe + Longueur:Sexe (lien logit)" = "ggLTMmaturite_logit.INT.png",
+        "Longueur (lien probit)" = "ggLTMmaturite_probit.L.png",
+        "Longueur + Sexe (lien probit)" = "ggLTMmaturite_probit.ADD.png",
+        "Longueur + Sexe + Longueur:Sexe (lien probit)" = "ggLTMmaturite_probit.INT.png",
+        "Longueur (lien cloglog)" = "ggLTMmaturite_cloglog.L.png",
+        "Longueur + Sexe (lien cloglog)" = "ggLTMmaturite_cloglog.ADD.png",
+        "Longueur + Sexe + Longueur:Sexe (lien cloglog)" = "ggLTMmaturite_cloglog.INT.png"
+      )
+      
+      file_names[[selectedmodelL50()]]
     },
+    
     content = function(file) {
-      ggsave(file, plot = {
-        req(selectedmodelL50())
-        if (selectedmodelL50() == "Longueur (lien logit)") {
-          req(df_maturiteltm(),
-              LTMmaturite.model.logit.L(),
-              minitablel50.logit.L())
-          ggmodel_L_L50(df = df_maturiteltm(),
-                        model = LTMmaturite.model.logit.L(),
-                        minitable = minitablel50.logit.L())
-        } else if (selectedmodelL50() == "Longueur + Sexe (lien logit)") {
-          req(
-            df_maturiteltm(),
-            LTMmaturite.model.logit.ADD(),
-            minitablel50.logit.ADD()
-          )
-          ggmodel_ADD_L50(df = df_maturiteltm(),
-                          model = LTMmaturite.model.logit.ADD(),
-                          minitable = minitablel50.logit.ADD())
-        } else if (selectedmodelL50() == "Longueur + Sexe + Longueur:Sexe (lien logit)") {
-          req(
-            df_maturiteltm(),
-            LTMmaturite.model.logit.INT(),
-            minitablel50.logit.INT()
-          )
-          ggmodel_INT_L50(df = df_maturiteltm(),
-                          model = LTMmaturite.model.logit.INT(),
-                          minitable = minitablel50.logit.INT())
-        } else if (selectedmodelL50() == "Longueur (lien probit)") {
-          req(df_maturiteltm(),
-              LTMmaturite.model.probit.L(),
-              minitablel50.probit.L())
-          ggmodel_L_L50(df = df_maturiteltm(),
-                        model = LTMmaturite.model.probit.L(),
-                        minitable = minitablel50.probit.L())
-        } else if (selectedmodelL50() == "Longueur + Sexe (lien probit)") {
-          req(
-            df_maturiteltm(),
-            LTMmaturite.model.probit.ADD(),
-            minitablel50.probit.ADD()
-          )
-          ggmodel_ADD_L50(df = df_maturiteltm(),
-                          model = LTMmaturite.model.probit.ADD(),
-                          minitable = minitablel50.probit.ADD())
-        } else if (selectedmodelL50() == "Longueur + Sexe + Longueur:Sexe (lien probit)") {
-          req(
-            df_maturiteltm(),
-            LTMmaturite.model.probit.INT(),
-            minitablel50.probit.INT()
-          )
-          ggmodel_INT_L50(df = df_maturiteltm(),
-                          model = LTMmaturite.model.probit.INT(),
-                          minitable = minitablel50.probit.INT())
-        } else if (selectedmodelL50() == "Longueur (lien cloglog)") {
-          req(
-            df_maturiteltm(),
-            LTMmaturite.model.cloglog.L(),
-            minitablel50.cloglog.L()
-          )
-          ggmodel_L_L50(df = df_maturiteltm(),
-                        model = LTMmaturite.model.cloglog.L(),
-                        minitable = minitablel50.cloglog.L())
-        } else if (selectedmodelL50() == "Longueur + Sexe (lien cloglog)") {
-          req(
-            df_maturiteltm(),
-            LTMmaturite.model.cloglog.ADD(),
-            minitablel50.cloglog.ADD()
-          )
-          ggmodel_ADD_L50(df = df_maturiteltm(),
-                          model = LTMmaturite.model.cloglog.ADD(),
-                          minitable = minitablel50.cloglog.ADD())
-        } else if (selectedmodelL50() == "Longueur + Sexe + Longueur:Sexe (lien cloglog)") {
-          req(
-            df_maturiteltm(),
-            LTMmaturite.model.cloglog.INT(),
-            minitablel50.cloglog.INT()
-          )
-          ggmodel_INT_L50(df = df_maturiteltm(),
-                          model = LTMmaturite.model.cloglog.INT(),
-                          minitable = minitablel50.cloglog.INT())
-        }
-      } , device = "png")
+      req(selectedmodelL50(), df_maturiteltm())
+      
+      model_info <- list(
+        "Longueur (lien logit)" = list(model = LTMmaturite.model.logit.L, minitable = minitablel50.logit.L, type = "L"),
+        "Longueur + Sexe (lien logit)" = list(model = LTMmaturite.model.logit.ADD, minitable = minitablel50.logit.ADD, type = "ADD"),
+        "Longueur + Sexe + Longueur:Sexe (lien logit)" = list(model = LTMmaturite.model.logit.INT, minitable = minitablel50.logit.INT, type = "INT"),
+        "Longueur (lien probit)" = list(model = LTMmaturite.model.probit.L, minitable = minitablel50.probit.L, type = "L"),
+        "Longueur + Sexe (lien probit)" = list(model = LTMmaturite.model.probit.ADD, minitable = minitablel50.probit.ADD, type = "ADD"),
+        "Longueur + Sexe + Longueur:Sexe (lien probit)" = list(model = LTMmaturite.model.probit.INT, minitable = minitablel50.probit.INT, type = "INT"),
+        "Longueur (lien cloglog)" = list(model = LTMmaturite.model.cloglog.L, minitable = minitablel50.cloglog.L, type = "L"),
+        "Longueur + Sexe (lien cloglog)" = list(model = LTMmaturite.model.cloglog.ADD, minitable = minitablel50.cloglog.ADD, type = "ADD"),
+        "Longueur + Sexe + Longueur:Sexe (lien cloglog)" = list(model = LTMmaturite.model.cloglog.INT, minitable = minitablel50.cloglog.INT, type = "INT")
+      )
+      
+      selected_info <- model_info[[selectedmodelL50()]]
+      
+      req(selected_info$model(), selected_info$minitable())
+      
+      ggsave(
+        file,
+        plot = generate_ggmodel_L50(
+          df = df_maturiteltm(),
+          model = selected_info$model(),
+          minitable = selected_info$minitable(),
+          model_type = selected_info$type
+        ),
+        device = "png"
+      )
     }
   )
-  
  
   ## A50 -------------------------------------------------------
-  AGEmaturite.model.logit.L <- reactive({
-    req(df_maturiteage())
-    glm(maturite ~ age,
-        family = binomial(link = "logit"),
-        data = df_maturiteage())
-  })
- 
-  AGEmaturite.model.probit.L <- reactive({
-    req(df_maturiteage())
-    glm(maturite ~ age,
-        family = binomial(link = "probit"),
-        data = df_maturiteage())
-  })
-  AGEmaturite.model.cloglog.L <- reactive({
-    req(df_maturiteage())
-    glm(maturite ~ age,
-        family = binomial(link = "cloglog"),
-        data = df_maturiteage())
-  })
-  AGEmaturite.model.logit.ADD <- reactive({
-    req(df_maturiteage())
-    glm(maturite ~ age + sexe,
-        family = binomial(link = "logit"),
-        data = df_maturiteage())
-  })
-  AGEmaturite.model.probit.ADD <- reactive({
-    req(df_maturiteage())
-    glm(maturite ~ age + sexe,
-        family = binomial(link = "probit"),
-        data = df_maturiteage())
-  })
-  AGEmaturite.model.cloglog.ADD <- reactive({
-    req(df_maturiteage())
-    glm(maturite ~ age + sexe,
-        family = binomial(link = "cloglog"),
-        data = df_maturiteage())
-  })
-  AGEmaturite.model.logit.INT <- reactive({
-    req(df_maturiteage())
-    glm(maturite ~ age * sexe,
-        family = binomial(link = "logit"),
-        data = df_maturiteage())
-  })
-  AGEmaturite.model.probit.INT <- reactive({
-    req(df_maturiteage())
-    glm(maturite ~ age * sexe,
-        family = binomial(link = "probit"),
-        data = df_maturiteage())
-  })
-  AGEmaturite.model.cloglog.INT <- reactive({
-    req(df_maturiteage())
-    glm(maturite ~ age * sexe,
-        family = binomial(link = "cloglog"),
-        data = df_maturiteage())
-  })
+  AGEmaturite.model.logit.L <- reactive({ req(df_maturiteage()); glm(maturite ~ age, family = binomial(link = "logit"), data = df_maturiteage()) })
+  AGEmaturite.model.probit.L <- reactive({ req(df_maturiteage()); glm(maturite ~ age, family = binomial(link = "probit"), data = df_maturiteage()) })
+  AGEmaturite.model.cloglog.L <- reactive({ req(df_maturiteage()); glm(maturite ~ age, family = binomial(link = "cloglog"), data = df_maturiteage()) })
+  
+  AGEmaturite.model.logit.ADD <- reactive({ req(df_maturiteage()); glm(maturite ~ age + sexe, family = binomial(link = "logit"), data = df_maturiteage()) })
+  AGEmaturite.model.probit.ADD <- reactive({ req(df_maturiteage()); glm(maturite ~ age + sexe, family = binomial(link = "probit"), data = df_maturiteage()) })
+  AGEmaturite.model.cloglog.ADD <- reactive({ req(df_maturiteage()); glm(maturite ~ age + sexe, family = binomial(link = "cloglog"), data = df_maturiteage()) })
+  
+  AGEmaturite.model.logit.INT <- reactive({ req(df_maturiteage()); glm(maturite ~ age * sexe, family = binomial(link = "logit"), data = df_maturiteage()) })
+  AGEmaturite.model.probit.INT <- reactive({ req(df_maturiteage()); glm(maturite ~ age * sexe, family = binomial(link = "probit"), data = df_maturiteage()) })
+  AGEmaturite.model.cloglog.INT <- reactive({ req(df_maturiteage()); glm(maturite ~ age * sexe, family = binomial(link = "cloglog"), data = df_maturiteage()) })
+  
   A50_selection_modeles_df <- reactive({
     req(
       AGEmaturite.model.logit.L(),
@@ -1373,42 +1174,47 @@ app_server <- function(input, output, session) {
   ## minitable a50 -----------------------------------------------------------
   minitablea50.logit.L <- reactive({
     req(AGEmaturite.model.logit.L())
-    minitable_param_model_l_a50(model = AGEmaturite.model.logit.L()) %>% as.data.frame()
+    generate_minitable_param_model_a50(model = AGEmaturite.model.logit.L(), model_type = "L") %>% as.data.frame()
   })
+  
   minitablea50.probit.L <- reactive({
     req(AGEmaturite.model.probit.L())
-    minitable_param_model_l_a50(model = AGEmaturite.model.probit.L()) %>% as.data.frame()
+    generate_minitable_param_model_a50(model = AGEmaturite.model.probit.L(), model_type = "L") %>% as.data.frame()
   })
+  
   minitablea50.cloglog.L <- reactive({
     req(AGEmaturite.model.cloglog.L())
-    minitable_param_model_l_a50(model = AGEmaturite.model.cloglog.L()) %>% as.data.frame()
+    generate_minitable_param_model_a50(model = AGEmaturite.model.cloglog.L(), model_type = "L") %>% as.data.frame()
   })
+  
   minitablea50.logit.ADD <- reactive({
     req(AGEmaturite.model.logit.ADD())
-    minitable_param_model_add_a50(model = AGEmaturite.model.logit.ADD()) %>% as.data.frame()
+    generate_minitable_param_model_a50(model = AGEmaturite.model.logit.ADD(), model_type = "ADD") %>% as.data.frame()
   })
+  
   minitablea50.probit.ADD <- reactive({
     req(AGEmaturite.model.probit.ADD())
-    minitable_param_model_add_a50(model = AGEmaturite.model.probit.ADD()) %>% as.data.frame()
+    generate_minitable_param_model_a50(model = AGEmaturite.model.probit.ADD(), model_type = "ADD") %>% as.data.frame()
   })
+  
   minitablea50.cloglog.ADD <- reactive({
     req(AGEmaturite.model.cloglog.ADD())
-    minitable_param_model_add_a50(model = AGEmaturite.model.cloglog.ADD()) %>% as.data.frame()
+    generate_minitable_param_model_a50(model = AGEmaturite.model.cloglog.ADD(), model_type = "ADD") %>% as.data.frame()
   })
+  
   minitablea50.logit.INT <- reactive({
     req(AGEmaturite.model.logit.INT(), df_maturiteage())
-    minitable_param_model_int_a50(model = AGEmaturite.model.logit.INT(),
-                                  df = df_maturiteage()) %>% as.data.frame()
+    generate_minitable_param_model_a50(model = AGEmaturite.model.logit.INT(), model_type = "INT", df = df_maturiteage()) %>% as.data.frame()
   })
+  
   minitablea50.probit.INT <- reactive({
     req(AGEmaturite.model.probit.INT(), df_maturiteage())
-    minitable_param_model_int_a50(model = AGEmaturite.model.probit.INT(),
-                                  df = df_maturiteage()) %>% as.data.frame()
+    generate_minitable_param_model_a50(model = AGEmaturite.model.probit.INT(), model_type = "INT", df = df_maturiteage()) %>% as.data.frame()
   })
+  
   minitablea50.cloglog.INT <- reactive({
     req(AGEmaturite.model.cloglog.INT(), df_maturiteage())
-    minitable_param_model_int_a50(model = AGEmaturite.model.cloglog.INT(),
-                                  df = df_maturiteage()) %>% as.data.frame()
+    generate_minitable_param_model_a50(model = AGEmaturite.model.cloglog.INT(), model_type = "INT", df = df_maturiteage()) %>% as.data.frame()
   })
   ## selection modele A50 ----------------------------------------------------
   selectedmodelA50 <- reactive({
@@ -1506,204 +1312,81 @@ app_server <- function(input, output, session) {
     }))
   ## selected A50 plot -------------------------------------------------------
   output$selectedmodelA50plot <- renderPlot({
-    req(selectedmodelA50())
-    if (selectedmodelA50() == "Âge (lien logit)") {
-      req(df_maturiteage(),
-          AGEmaturite.model.logit.L(),
-          minitablea50.logit.L())
-      ggmodel_L_A50(df = df_maturiteage(),
-                    model = AGEmaturite.model.logit.L(),
-                    minitable = minitablea50.logit.L())
-    } else if (selectedmodelA50() == "Âge + Sexe (lien logit)") {
-      req(df_maturiteage(),
-          AGEmaturite.model.logit.ADD(),
-          minitablea50.logit.ADD())
-      ggmodel_ADD_A50(df = df_maturiteage(),
-                      model = AGEmaturite.model.logit.ADD(),
-                      minitable = minitablea50.logit.ADD())
-    } else if (selectedmodelA50() == "Âge + Sexe + Âge:Sexe (lien logit)") {
-      req(df_maturiteage(),
-          AGEmaturite.model.logit.INT(),
-          minitablea50.logit.INT())
-      ggmodel_INT_A50(df = df_maturiteage(),
-                      model = AGEmaturite.model.logit.INT(),
-                      minitable = minitablea50.logit.INT())
-    } else if (selectedmodelA50() == "Âge (lien probit)") {
-      req(df_maturiteage(),
-          AGEmaturite.model.probit.L(),
-          minitablea50.probit.L())
-      ggmodel_L_A50(df = df_maturiteage(),
-                    model = AGEmaturite.model.probit.L(),
-                    minitable = minitablea50.probit.L())
-    } else if (selectedmodelA50() == "Âge + Sexe (lien probit)") {
-      req(
-        df_maturiteage(),
-        AGEmaturite.model.probit.ADD(),
-        minitablea50.probit.ADD()
-      )
-      ggmodel_ADD_A50(df = df_maturiteage(),
-                      model = AGEmaturite.model.probit.ADD(),
-                      minitable = minitablea50.probit.ADD())
-    } else if (selectedmodelA50() == "Âge + Sexe + Âge:Sexe (lien probit)") {
-      req(
-        df_maturiteage(),
-        AGEmaturite.model.probit.INT(),
-        minitablea50.probit.INT()
-      )
-      ggmodel_INT_A50(df = df_maturiteage(),
-                      model = AGEmaturite.model.probit.INT(),
-                      minitable = minitablea50.probit.INT())
-    } else if (selectedmodelA50() == "Âge (lien cloglog)") {
-      req(df_maturiteage(),
-          AGEmaturite.model.cloglog.L(),
-          minitablea50.cloglog.L())
-      ggmodel_L_A50(df = df_maturiteage(),
-                    model = AGEmaturite.model.cloglog.L(),
-                    minitable = minitablea50.cloglog.L())
-    } else if (selectedmodelA50() == "Âge + Sexe (lien cloglog)") {
-      req(
-        df_maturiteage(),
-        AGEmaturite.model.cloglog.ADD(),
-        minitablea50.cloglog.ADD()
-      )
-      ggmodel_ADD_A50(df = df_maturiteage(),
-                      model = AGEmaturite.model.cloglog.ADD(),
-                      minitable = minitablea50.cloglog.ADD())
-    } else if (selectedmodelA50() == "Âge + Sexe + Âge:Sexe (lien cloglog)") {
-      req(
-        df_maturiteage(),
-        AGEmaturite.model.cloglog.INT(),
-        minitablea50.cloglog.INT()
-      )
-      ggmodel_INT_A50(df = df_maturiteage(),
-                      model = AGEmaturite.model.cloglog.INT(),
-                      minitable = minitablea50.cloglog.INT())
-    }
+    req(selectedmodelA50(), df_maturiteage())
+    
+    model_info <- list(
+      "Âge (lien logit)" = list(model = AGEmaturite.model.logit.L, minitable = minitablea50.logit.L, type = "L"),
+      "Âge + Sexe (lien logit)" = list(model = AGEmaturite.model.logit.ADD, minitable = minitablea50.logit.ADD, type = "ADD"),
+      "Âge + Sexe + Âge:Sexe (lien logit)" = list(model = AGEmaturite.model.logit.INT, minitable = minitablea50.logit.INT, type = "INT"),
+      "Âge (lien probit)" = list(model = AGEmaturite.model.probit.L, minitable = minitablea50.probit.L, type = "L"),
+      "Âge + Sexe (lien probit)" = list(model = AGEmaturite.model.probit.ADD, minitable = minitablea50.probit.ADD, type = "ADD"),
+      "Âge + Sexe + Âge:Sexe (lien probit)" = list(model = AGEmaturite.model.probit.INT, minitable = minitablea50.probit.INT, type = "INT"),
+      "Âge (lien cloglog)" = list(model = AGEmaturite.model.cloglog.L, minitable = minitablea50.cloglog.L, type = "L"),
+      "Âge + Sexe (lien cloglog)" = list(model = AGEmaturite.model.cloglog.ADD, minitable = minitablea50.cloglog.ADD, type = "ADD"),
+      "Âge + Sexe + Âge:Sexe (lien cloglog)" = list(model = AGEmaturite.model.cloglog.INT, minitable = minitablea50.cloglog.INT, type = "INT")
+    )
+    
+    selected_info <- model_info[[selectedmodelA50()]]
+    
+    req(selected_info$model(), selected_info$minitable())
+    
+    generate_ggmodel_A50(df = df_maturiteage(),
+                         model = selected_info$model(),
+                         minitable = selected_info$minitable(),
+                         model_type = selected_info$type)
   }, res = 96)
-  ## download_selectedmodelA50plot -------------------------------------------
+  
   output$download_selectedmodelA50plot <- downloadHandler(
     filename = function() {
       req(selectedmodelA50())
-      if (selectedmodelA50() == "Âge (lien logit)") {
-        paste("ggAGEmaturite_logit.L", '.png', sep = '')
-      } else if (selectedmodelA50() == "Âge + Sexe (lien logit)") {
-        paste("ggAGEmaturite_logit.ADD", '.png', sep = '')
-      } else if (selectedmodelA50() == "Âge + Sexe + Âge:Sexe (lien logit)") {
-        paste("ggAGEmaturite_logit.INT", '.png', sep = '')
-      } else if (selectedmodelA50() == "Âge (lien probit)") {
-        paste("ggAGEmaturite_probit.L", '.png', sep = '')
-      } else if (selectedmodelA50() == "Âge + Sexe (lien probit)") {
-        paste("ggAGEmaturite_probit.ADD", '.png', sep = '')
-      } else if (selectedmodelA50() == "Âge + Sexe + Âge:Sexe (lien probit)") {
-        paste("ggAGEmaturite_probit.INT", '.png', sep = '')
-      } else if (selectedmodelA50() == "Âge (lien cloglog)") {
-        paste("ggAGEmaturite_cloglog.L", '.png', sep = '')
-      } else if (selectedmodelA50() == "Âge + Sexe (lien cloglog)") {
-        paste("ggAGEmaturite_cloglog.ADD", '.png', sep = '')
-      } else if (selectedmodelA50() == "Âge + Sexe + Âge:Sexe (lien cloglog)") {
-        paste("ggAGEmaturite_cloglog.INT", '.png', sep = '')
-      }
+      
+      file_names <- list(
+        "Âge (lien logit)" = "ggAGEmaturite_logit.L.png",
+        "Âge + Sexe (lien logit)" = "ggAGEmaturite_logit.ADD.png",
+        "Âge + Sexe + Âge:Sexe (lien logit)" = "ggAGEmaturite_logit.INT.png",
+        "Âge (lien probit)" = "ggAGEmaturite_probit.L.png",
+        "Âge + Sexe (lien probit)" = "ggAGEmaturite_probit.ADD.png",
+        "Âge + Sexe + Âge:Sexe (lien probit)" = "ggAGEmaturite_probit.INT.png",
+        "Âge (lien cloglog)" = "ggAGEmaturite_cloglog.L.png",
+        "Âge + Sexe (lien cloglog)" = "ggAGEmaturite_cloglog.ADD.png",
+        "Âge + Sexe + Âge:Sexe (lien cloglog)" = "ggAGEmaturite_cloglog.INT.png"
+      )
+      
+      file_names[[selectedmodelA50()]]
     },
+    
     content = function(file) {
-      ggsave(file, plot = {
-        req(selectedmodelA50())
-        if (selectedmodelA50() == "Âge (lien logit)") {
-          req(df_maturiteage(),
-              AGEmaturite.model.logit.L(),
-              minitablea50.logit.L())
-          ggmodel_L_A50(df = df_maturiteage(),
-                        model = AGEmaturite.model.logit.L(),
-                        minitable = minitablea50.logit.L())
-        } else if (selectedmodelA50() == "Âge + Sexe (lien logit)") {
-          req(
-            df_maturiteage(),
-            AGEmaturite.model.logit.ADD(),
-            minitablea50.logit.ADD()
-          )
-          ggmodel_ADD_A50(df = df_maturiteage(),
-                          model = AGEmaturite.model.logit.ADD(),
-                          minitable = minitablea50.logit.ADD())
-        } else if (selectedmodelA50() == "Âge + Sexe + Âge:Sexe (lien logit)") {
-          req(
-            df_maturiteage(),
-            AGEmaturite.model.logit.INT(),
-            minitablea50.logit.INT()
-          )
-          ggmodel_INT_A50(df = df_maturiteage(),
-                          model = AGEmaturite.model.logit.INT(),
-                          minitable = minitablea50.logit.INT())
-        } else if (selectedmodelA50() == "Âge (lien probit)") {
-          req(df_maturiteage(),
-              AGEmaturite.model.probit.L(),
-              minitablea50.probit.L())
-          ggmodel_L_A50(df = df_maturiteage(),
-                        model = AGEmaturite.model.probit.L(),
-                        minitable = minitablea50.probit.L())
-        } else if (selectedmodelA50() == "Âge + Sexe (lien probit)") {
-          req(
-            df_maturiteage(),
-            AGEmaturite.model.probit.ADD(),
-            minitablea50.probit.ADD()
-          )
-          ggmodel_ADD_A50(df = df_maturiteage(),
-                          model = AGEmaturite.model.probit.ADD(),
-                          minitable = minitablea50.probit.ADD())
-        } else if (selectedmodelA50() == "Âge + Sexe + Âge:Sexe (lien probit)") {
-          req(
-            df_maturiteage(),
-            AGEmaturite.model.probit.INT(),
-            minitablea50.probit.INT()
-          )
-          ggmodel_INT_A50(df = df_maturiteage(),
-                          model = AGEmaturite.model.probit.INT(),
-                          minitable = minitablea50.probit.INT())
-        } else if (selectedmodelA50() == "Âge (lien cloglog)") {
-          req(
-            df_maturiteage(),
-            AGEmaturite.model.cloglog.L(),
-            minitablea50.cloglog.L()
-          )
-          ggmodel_L_A50(df = df_maturiteage(),
-                        model = AGEmaturite.model.cloglog.L(),
-                        minitable = minitablea50.cloglog.L())
-        } else if (selectedmodelA50() == "Âge + Sexe (lien cloglog)") {
-          req(
-            df_maturiteage(),
-            AGEmaturite.model.cloglog.ADD(),
-            minitablea50.cloglog.ADD()
-          )
-          ggmodel_ADD_A50(df = df_maturiteage(),
-                          model = AGEmaturite.model.cloglog.ADD(),
-                          minitable = minitablea50.cloglog.ADD())
-        } else if (selectedmodelA50() == "Âge + Sexe + Âge:Sexe (lien cloglog)") {
-          req(
-            df_maturiteage(),
-            AGEmaturite.model.cloglog.INT(),
-            minitablea50.cloglog.INT()
-          )
-          ggmodel_INT_A50(df = df_maturiteage(),
-                          model = AGEmaturite.model.cloglog.INT(),
-                          minitable = minitablea50.cloglog.INT())
-        }
-      } , device = "png")
+      req(selectedmodelA50(), df_maturiteage())
+      
+      model_info <- list(
+        "Âge (lien logit)" = list(model = AGEmaturite.model.logit.L, minitable = minitablea50.logit.L, type = "L"),
+        "Âge + Sexe (lien logit)" = list(model = AGEmaturite.model.logit.ADD, minitable = minitablea50.logit.ADD, type = "ADD"),
+        "Âge + Sexe + Âge:Sexe (lien logit)" = list(model = AGEmaturite.model.logit.INT, minitable = minitablea50.logit.INT, type = "INT"),
+        "Âge (lien probit)" = list(model = AGEmaturite.model.probit.L, minitable = minitablea50.probit.L, type = "L"),
+        "Âge + Sexe (lien probit)" = list(model = AGEmaturite.model.probit.ADD, minitable = minitablea50.probit.ADD, type = "ADD"),
+        "Âge + Sexe + Âge:Sexe (lien probit)" = list(model = AGEmaturite.model.probit.INT, minitable = minitablea50.probit.INT, type = "INT"),
+        "Âge (lien cloglog)" = list(model = AGEmaturite.model.cloglog.L, minitable = minitablea50.cloglog.L, type = "L"),
+        "Âge + Sexe (lien cloglog)" = list(model = AGEmaturite.model.cloglog.ADD, minitable = minitablea50.cloglog.ADD, type = "ADD"),
+        "Âge + Sexe + Âge:Sexe (lien cloglog)" = list(model = AGEmaturite.model.cloglog.INT, minitable = minitablea50.cloglog.INT, type = "INT")
+      )
+      
+      selected_info <- model_info[[selectedmodelA50()]]
+      
+      req(selected_info$model(), selected_info$minitable())
+      
+      ggsave(
+        file,
+        plot = generate_ggmodel_A50(
+          df = df_maturiteage(),
+          model = selected_info$model(),
+          minitable = selected_info$minitable(),
+          model_type = selected_info$type
+        ),
+        device = "png"
+      )
     }
   )
   
-  
-  # Download report ---------------------------------------------------------
-  # output$report <- downloadHandler(
-  #   filename = "report.docx",
-  #   content = function(file) {
-  #     params <- list(n = input$n,
-  #                    typ_pech = input$typ_pech)
-  #     callr::r(render_report,
-  #              list(
-  #                input = report_path,
-  #                output = file,
-  #                params = params
-  #              ))
-  #   }
-  # )
    
    output$report <- downloadHandler(
      filename = function() {

@@ -85,7 +85,6 @@ app_ui <- function() {
                    htmltools::includeMarkdown(path = './texte/CPUE_texte.rmd'),
                    withSpinner(tableOutput(outputId = "verif_ntable"),
                               type = myspinner),
-                   # htmltools::includeMarkdown(path = './texte/CPUE_texte2.rmd'),
                    withSpinner(
                      tableOutput(outputId = "selection_modele_CPUE_toustable"),
                      type = myspinner
@@ -316,7 +315,6 @@ app_ui <- function() {
                    br(),
                    h3(text_elements$titreA50_selection_modeles_table),
                    
-                   #titre plot
                    withSpinner(
                      reactableOutput(outputId = "A50_selection_modeles_table"),
                      type = myspinner

@@ -67,12 +67,7 @@ gt_ltmpoidsage <- function(data) {
       align = "center",
       columns = everything()
     ) %>%
-    # fmt_number(
-    #   columns = c(ltm_moy, ltm_e_t, ltm_min, ltm_max, 
-    #               masse_moy, masse_e_t, masse_min, masse_max,
-    #               age_moy, age_e_t, age_min, age_max),
-    #   decimals = 2
-    # ) %>%
+    
     tab_options(
       table.width = pct(100),
       table.font.size = px(10)
@@ -324,4 +319,47 @@ labelled_data <- function(data) {
   colnames(data) <- unlist(labels)
   
   return(data)
+}
+
+agemax <- function(data) {
+  age_max <-
+    max(na.omit(data$age)) #Trouver le plus vieil âge et ignorer les NA de votre jeu de données s’il en contient (sinon = erreur)
+  age_max
+}
+
+
+death <- function(data, espece) {
+  data %>%
+    dplyr::filter(sp == espece) %>%
+    droplevels() %>%
+    dplyr::filter(!is.na(age))
+}
+
+create_sp_pen <- function(input_typ_pech) {
+  if (input_typ_pech == "PENT") {
+    return("SANA")
+  } else if (input_typ_pech == "PENOF") {
+    return("SAFO")
+  } else if (input_typ_pech == "PENDJ") {
+    return("SAVI")
+  } else {
+    return(NULL)
+  }
+}
+
+get_zobs <- function(PP, death, agemax) {
+  # Calcul de la mortalité selon plusieurs méthodes
+  mortalite <- agesurv(
+    type = 1,
+    age = death$age,
+    full = PP,
+    last = agemax,
+    estimate = "z",
+    method = c("he", "lr", "wlr", "cr", "crcb", "pois")
+  )
+  
+  # Extraction de la valeur de Z pour la méthode "cr"
+  zobs <- mortalite$results[4, "Estimate"]
+  
+  return(zobs)
 }
