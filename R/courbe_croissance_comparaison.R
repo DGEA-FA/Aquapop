@@ -167,8 +167,8 @@ courbe_croissance_comparaison <- function(dfspecimen, sp_pen) {
     l_inf_ic = "L∞ IC 95%",
     k = "K",
     k_ic = "K IC 95%",
-    t0 = "t0",
-    t0_ic = "t0 IC 95%",
+    t0 = "t\u2080",  # Utilisation de Unicode pour afficher t avec un 0 en indice
+    t0_ic = "t\u2080 IC 95%",  # Même chose ici pour l'IC
     aicc = "AICc",
     delta_aicc = "Δ AICc",
     aicc_wt = "Poids d’Akaike",

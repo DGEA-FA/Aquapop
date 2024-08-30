@@ -711,25 +711,14 @@ app_server <- function(input, output, session) {
     paste(details)
   })
   
-  output$table_stateCROISSANCE <- 
-    renderText(selectedmodelcroissance()) #Non nécéssaire, mais sert de flag de vérification durant l'utilisation de l'app pour s'assurer qu'on voit bien le modèle qu'on veut
-  
   output$download_croissance1 <-
     download_data_format_xlsx(givenname = "courbe_croissance_comparaison", datadown = croissance1())
-  
-  
   
   output$selectedmodelcroissanceplot <- renderPlot({
     req(selectedmodelcroissance(), specimen(), sp_pen(), croissance1())
     
-    # En fonction du modèle sélectionné, appeler la fonction appropriée
-    if (selectedmodelcroissance() == "Von Bertalanffy") {
-      courbe_croissance_ggVONBERT(dfspecimen = specimen(), sp_pen = sp_pen(), tablemodele = croissance1())
-    } else if (selectedmodelcroissance() == "Gompertz") {
-      courbe_croissance_ggGOMP(dfspecimen = specimen(), sp_pen = sp_pen(), tablemodele = croissance1())
-    } else if (selectedmodelcroissance() == "Logistique") {
-      courbe_croissance_ggLOGIST(dfspecimen = specimen(), sp_pen = sp_pen(), tablemodele = croissance1())
-    }
+    # Appeler la fonction générique en fonction du modèle sélectionné
+    courbe_croissance_plot(dfspecimen = specimen(), sp_pen = sp_pen(), tablemodele = croissance1(), modele = selectedmodelcroissance())
   }, res = 96)
   
   
@@ -747,21 +736,11 @@ app_server <- function(input, output, session) {
     },
     content = function(file) {
       ggsave(file, plot = {
-        req(selectedmodelcroissance())
-        if (selectedmodelcroissance() == "Von Bertalanffy") {
-          req(initcroissance(), croissance1())
-          courbe_croissance_ggVONBERT(initcroissance = initcroissance(),
-                                      tablemodele = croissance1())
-        } else if (selectedmodelcroissance() == "Gompertz") {
-          req(initcroissance(), croissance1())
-          courbe_croissance_ggGOMP(initcroissance = initcroissance(),
-                                   tablemodele = croissance1())
-        } else if (selectedmodelcroissance() == "Logistique") {
-          req(initcroissance(), croissance1())
-          courbe_croissance_ggLOGIST(initcroissance = initcroissance(),
-                                     tablemodele = croissance1())
-        }
-      } , device = "png")
+        req(selectedmodelcroissance(), specimen(), sp_pen(), croissance1())
+        
+        # Appeler la fonction générique en fonction du modèle sélectionné
+        courbe_croissance_plot(dfspecimen = specimen(), sp_pen = sp_pen(), tablemodele = croissance1(), modele = selectedmodelcroissance())
+      }, device = "png")
     }
   )
   

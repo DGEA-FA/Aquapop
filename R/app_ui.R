@@ -238,20 +238,16 @@ app_ui <- function() {
         
         withSpinner(reactableOutput(outputId = "croissance1_table"), type = myspinner),
         downloadButton(outputId = "download_croissance1", label = "Téléchargement"),
-        sidebarLayout(
-          sidebarPanel(textOutput(outputId = "table_stateCROISSANCE"),),
-          mainPanel(
-            plotOutput(
-              outputId = "selectedmodelcroissanceplot",
-              width = 600,
-              height = 400
-            ),
-            h3(text_elements$titreselectedmodelcroissanceplot),
-            
-           
-            downloadButton(outputId = "download_selectedmodelcroissanceplot", label = "Téléchargement"),
-          )
-        )
+        
+        # Supprimer le sidebarLayout
+        plotOutput(
+          outputId = "selectedmodelcroissanceplot",
+          width = 600,
+          height = 400
+        ),
+        h3(text_elements$titreselectedmodelcroissanceplot),
+        
+        downloadButton(outputId = "download_selectedmodelcroissanceplot", label = "Téléchargement")
       ),
       # mortalite_panel ---------------------------------------------------------
       tabPanel(
