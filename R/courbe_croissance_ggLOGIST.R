@@ -1,8 +1,18 @@
-courbe_croissance_ggLOGIST <- function(initcroissance, tablemodele) {
-  init <- initcroissance
+courbe_croissance_ggLOGIST <- function(dfspecimen, sp_pen, tablemodele) {
+  # Filtrer les données pour l'espèce spécifiée
+  init <- dfspecimen %>% filter(sp == sp_pen)
   
-  colnames(tablemodele)[1] <- "Methode"
-  model <- tablemodele %>% filter(Methode == "Logistique")
+  # Supprimer les enregistrements avec des valeurs manquantes pour ltm et age
+  init <- init %>%
+    filter(!is.na(ltm) & !is.na(age))
+  
+  # Sélectionner uniquement les colonnes nécessaires
+  init <- init %>% select(ltm, age, no_specimen)
+  
+  # Renommer les rangées séquentiellement de 1 à n
+  rownames(init) <- seq(nrow(init))
+
+  model <- tablemodele %>% filter(methode == "Logistique")
   
   #pour avoir les ranges dages
   dfbase <-
@@ -18,8 +28,8 @@ courbe_croissance_ggLOGIST <- function(initcroissance, tablemodele) {
   # vb <- FSA::vbFuns(param = "Typical")
   # (sv0 <- FSA::vbStarts(ltm ~ age, data = init))
   
-  sv0$Linf <- model$'L∞'
-  sv0$K <- model$K
+  sv0$Linf <- model$l_inf
+  sv0$K <- model$k
   sv0$t0 <- model$t0
   
   #fit0 <- nls(ltm~vb(age,Linf,K,t0),data=init,start=sv0)

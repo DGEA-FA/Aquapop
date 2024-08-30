@@ -297,3 +297,14 @@ get_nomsp <- function(espece) {
     return(NULL)
   }
 }
+
+
+labelled_data <- function(data) {
+  # Obtenir les labels des colonnes
+  labels <- labelled::var_label(data)
+  
+  # Remplacer les noms des colonnes par leurs labels
+  colnames(data) <- unlist(labels)
+  
+  return(data)
+}

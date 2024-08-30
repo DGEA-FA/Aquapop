@@ -1,22 +1,29 @@
-courbe_croissance_comparaison <- function(data) {
+courbe_croissance_comparaison <- function(dfspecimen, sp_pen) {
+  # Filtrer les données pour l'espèce spécifiée
+  df <- dfspecimen %>% filter(sp == sp_pen)
+  
+  # Supprimer les enregistrements avec des valeurs manquantes pour ltm et age
+  df <- df %>%
+    filter(!is.na(ltm) & !is.na(age))
+  
+  # Sélectionner uniquement les colonnes nécessaires
+  df <- df %>% select(ltm, age, no_specimen)
+  
+  # Renommer les rangées séquentiellement de 1 à n
+  rownames(df) <- seq(nrow(df))
+
   # https://rdrr.io/cran/fishmethods/man/growthlrt.html  pas assez clair pour reproduire, besoin de plus d'infos
   #A la place je me suis inspiree de Mainguy pour definir les modeles, puis de Ogle (Chapitre 12) Dans Quist and Isermann (2017) pour comparer les modeles
   
-  #calculs selon Julien Mainguy
-  # library(FSA)
-  #library(nlstools)
+  # Initialisation des données et estimation des paramètres initiaux pour le modèle de croissance
+  pi <- FSA::vbStarts(ltm ~ age, data = df)  # Estimation initiale des paramètres Linf, K et t0
   
-
-  init <- data 
-  
-  pi <- FSA::vbStarts(ltm ~ age, data = init) #Les pi pour Linf, K et t0 peuvent être obtenus grâce à la fonction vbStarts() du package FSA.
-  
-  #chercher growth dans help si necessaire
+  # Exécution du modèle de croissance avec les paramètres estimés
   result <- fishmethods::growth(
     intype = 1,
     unit = 1,
-    size = init$ltm,
-    age = init$age,
+    size = df$ltm,
+    age = df$age,
     calctype = 1,
     wgtby = 1,
     error = 1,
@@ -31,23 +38,23 @@ courbe_croissance_comparaison <- function(data) {
     )
   )
   
-  # Define a function to handle error cases
+  # Fonction de gestion des erreurs pour capturer les messages en cas d'échec des intervalles de confiance
   handle_error <- function(e) {
     return(conditionMessage(e))
   }
   
   
-  
+  # Construction du tableau des résultats en extrayant les paramètres pour chaque modèle
   tableresult <- data.frame(
-    Methode = c("Von Bertalanffy",
+    methode = c("Von Bertalanffy",
                 "Gompertz" ,
                 "Logistique"),
-    Linf = c(
+    l_inf = c(
       environment(result[["vout"]][["m"]][["deviance"]])[["env"]][["Sinf"]],
       environment(result[["gout"]][["m"]][["deviance"]])[["env"]][["Sinf"]],
       environment(result[["lout"]][["m"]][["deviance"]])[["env"]][["Sinf"]]
     ),
-    K = c(
+    k = c(
       tryCatch(stats::confint(result[["vout"]], level = 0.95)[2, 1], error = handle_error),
       tryCatch(stats::confint(result[["gout"]], level = 0.95)[2, 1], error = handle_error),
       tryCatch(stats::confint(result[["lout"]], level = 0.95)[2, 1], error = handle_error)
@@ -57,32 +64,32 @@ courbe_croissance_comparaison <- function(data) {
       tryCatch(stats::confint(result[["gout"]], level = 0.95)[3, 1], error = handle_error),
       tryCatch(stats::confint(result[["lout"]], level = 0.95)[3, 1], error = handle_error)
     ),
-    LCI_linf = c(
+    l_ci_inf = c(
       tryCatch(stats::confint(result[["vout"]], level = 0.95)[1, 1], error = handle_error),
       tryCatch(stats::confint(result[["gout"]], level = 0.95)[1, 1], error = handle_error),
       tryCatch(stats::confint(result[["lout"]], level = 0.95)[1, 1], error = handle_error)
     ),
-    UCI_linf = c(
+    u_ci_inf = c(
       tryCatch(stats::confint(result[["vout"]], level = 0.95)[1, 2], error = handle_error),
       tryCatch(stats::confint(result[["gout"]], level = 0.95)[1, 2], error = handle_error),
       tryCatch(stats::confint(result[["lout"]], level = 0.95)[1, 2], error = handle_error)
     ),
-    LCI_K = c(
+    l_ci_k = c(
       tryCatch(stats::confint(result[["vout"]], level = 0.95)[2, 1], error = handle_error),
       tryCatch(stats::confint(result[["gout"]], level = 0.95)[2, 1], error = handle_error),
       tryCatch(stats::confint(result[["lout"]], level = 0.95)[2, 1], error = handle_error)
     ),
-    UCI_K = c(
+    u_ci_k = c(
       tryCatch(stats::confint(result[["vout"]], level = 0.95)[2, 2], error = handle_error),
       tryCatch(stats::confint(result[["gout"]], level = 0.95)[2, 2], error = handle_error),
       tryCatch(stats::confint(result[["lout"]], level = 0.95)[2, 2], error = handle_error)
     ),
-    LCI_t0 = c(
+    l_ci_t0 = c(
       tryCatch(stats::confint(result[["vout"]], level = 0.95)[3, 1], error = handle_error),
       tryCatch(stats::confint(result[["gout"]], level = 0.95)[3, 1], error = handle_error),
       tryCatch(stats::confint(result[["lout"]], level = 0.95)[3, 1], error = handle_error)
     ),
-    UCI_t0 = c(
+    u_ci_t0 = c(
       tryCatch(stats::confint(result[["vout"]], level = 0.95)[3, 2], error = handle_error),
       tryCatch(stats::confint(result[["gout"]], level = 0.95)[3, 2], error = handle_error),
       tryCatch(stats::confint(result[["lout"]], level = 0.95)[3, 2], error = handle_error)
@@ -95,125 +102,99 @@ courbe_croissance_comparaison <- function(data) {
   
   
 
-  #Pour obtenir les AIC
-  resultAIC <- AICcmodavg::aictab(list(result[["vout"]],
-                                       result[["gout"]],
-                                       result[["lout"]]),
-                                  c("Von Bertalanffy",
-                                    "Gompertz" ,
-                                    "Logistique")) %>% as.data.frame()
+  # Calcul des AIC pour comparer les modèles
+  result_aic_df <- AICcmodavg::aictab(
+    list(result[["vout"]], result[["gout"]], result[["lout"]]),
+    c("Von Bertalanffy", "Gompertz", "Logistique")
+  ) %>% as.data.frame()
   
-  #Mise en page
-  resultAIC <- resultAIC %>% rename(Methode = Modnames)
-  resultAIC <- resultAIC %>% dplyr::select(-c("K"))
-  CLEAN  <- merge(tableresult, resultAIC, by = "Methode")
+  # Nettoyage et formatage du tableau final
+  result_aic_df <- result_aic_df %>% rename(methode = Modnames)
+  result_aic_df <- result_aic_df %>% dplyr::select(-c("K"))
+  final_table  <- merge(tableresult, result_aic_df, by = "methode")
+  final_table <- final_table %>% dplyr::select(-c("LL", "Cum.Wt", "ModelLik"))
   
-  CLEAN <- CLEAN %>% dplyr::select(-c("LL", "Cum.Wt", "ModelLik"))
+  # Traduction des résultats de convergence
+  final_table[final_table == "converged"] <- "convergé"
   
-  CLEAN[CLEAN == "converged"] <- "convergé"
+  # Renommer les colonnes pour une meilleure compréhension conforme au tidyverse
+  final_table <- final_table %>% rename(
+    aicc = AICc,
+    delta_aicc = Delta_AICc,
+    aicc_wt = AICcWt
+  )
   
+  # Arrondir les valeurs numériques pour une présentation plus claire
+  final_table$l_inf <- round(final_table$l_inf, digits = 0)
+  if (is.numeric(final_table$k)) final_table$k <- round(final_table$k, digits = 3)
+  if (is.numeric(final_table$t0)) final_table$t0 <- round(final_table$t0, digits = 3)
+  final_table$aicc <- round(final_table$aicc, digits = 2)
+  final_table$delta_aicc <- round(final_table$delta_aicc, digits = 2)
+  final_table$aicc_wt <- round(final_table$aicc_wt, digits = 2)
   
-  
-  CLEAN$Linf <- round(CLEAN$Linf, digits = 0)
-  
-  if(is.numeric(CLEAN$K)) {
-    CLEAN$K <- round(CLEAN$K, digits = 3)
-  }
-  
-  if(is.numeric(CLEAN$t0)) {
-    CLEAN$t0 <- round(CLEAN$t0, digits = 3)
-  }
-  
-  CLEAN$AICc <- round(CLEAN$AICc, digits = 2)
-  CLEAN$Delta_AICc <- round(CLEAN$Delta_AICc, digits = 2)
-  CLEAN$AICcWt <- round(CLEAN$AICcWt, digits = 2)
-  
-  if(is.numeric(CLEAN$UCI_linf)) {
-    CLEAN$UCI_linf <- round(CLEAN$UCI_linf, digits = 0)
-  }
-  
-
-  if(is.numeric(CLEAN$LCI_linf)) {
-    CLEAN$LCI_linf <- round(CLEAN$LCI_linf, digits = 0)
-  }
-  
-
-  if(is.numeric(CLEAN$LCI_linf) & is.numeric(CLEAN$UCI_linf)) {
-    CLEAN <- CLEAN %>% mutate(LinfIC = paste0("[", LCI_linf, "-", UCI_linf, "]"))
+  # Calcul et création des intervalles de confiance pour L∞, K et t0
+  if (is.numeric(final_table$u_ci_inf)) final_table$u_ci_inf <- round(final_table$u_ci_inf, digits = 0)
+  if (is.numeric(final_table$l_ci_inf)) final_table$l_ci_inf <- round(final_table$l_ci_inf, digits = 0)
+  if (is.numeric(final_table$l_ci_inf) & is.numeric(final_table$u_ci_inf)) {
+    final_table <- final_table %>% mutate(l_inf_ic = paste0("[", l_ci_inf, "-", u_ci_inf, "]"))
   } else {
-    CLEAN <- CLEAN %>% mutate(LinfIC = "")
+    final_table <- final_table %>% mutate(l_inf_ic = "")
   }
+  final_table <- final_table %>% dplyr::select(-c("l_ci_inf", "u_ci_inf"))
   
-
-  CLEAN <- CLEAN %>% dplyr::select(-c("LCI_linf", "UCI_linf"))
-  
-  if(is.numeric(CLEAN$UCI_K)) {
-    CLEAN$UCI_K <- round(CLEAN$UCI_K, digits = 3)
-  }
-  
-  if(is.numeric(CLEAN$LCI_K)) {
-    CLEAN$LCI_K <- round(CLEAN$LCI_K, digits = 3)
-  }
-  
-
-  
-  if(is.numeric(CLEAN$LCI_K) & is.numeric(CLEAN$UCI_K)) {
-    CLEAN <- CLEAN %>% mutate(KIC = paste0("[", LCI_K, "-", UCI_K, "]"))
-  }else {
-    CLEAN <- CLEAN %>% mutate(KIC = "")
-  }
-  
-  CLEAN <- CLEAN %>% dplyr::select(-c("LCI_K", "UCI_K"))
-  
-  
-  if(is.numeric(CLEAN$UCI_t0)) {
-    CLEAN$UCI_t0 <- round(CLEAN$UCI_t0, digits = 3)
-  }
-  
-  
-  if(is.numeric(CLEAN$LCI_t0)) {
-    CLEAN$LCI_t0 <- round(CLEAN$LCI_t0, digits = 3)
-  }
-  
-  
-  if(is.numeric(CLEAN$LCI_t0) & is.numeric(CLEAN$UCI_t0)) {
-    CLEAN <- CLEAN %>% mutate(t0IC = paste0("[", LCI_t0, "-", UCI_t0, "]"))
+  if (is.numeric(final_table$u_ci_k)) final_table$u_ci_k <- round(final_table$u_ci_k, digits = 3)
+  if (is.numeric(final_table$l_ci_k)) final_table$l_ci_k <- round(final_table$l_ci_k, digits = 3)
+  if (is.numeric(final_table$l_ci_k) & is.numeric(final_table$u_ci_k)) {
+    final_table <- final_table %>% mutate(k_ic = paste0("[", l_ci_k, "-", u_ci_k, "]"))
   } else {
-    CLEAN <- CLEAN %>% mutate(t0IC = "")
-    }
+    final_table <- final_table %>% mutate(k_ic = "")
+  }
+  final_table <- final_table %>% dplyr::select(-c("l_ci_k", "u_ci_k"))
   
-  CLEAN <- CLEAN %>% dplyr::select(-c("LCI_t0", "UCI_t0"))
+  if (is.numeric(final_table$u_ci_t0)) final_table$u_ci_t0 <- round(final_table$u_ci_t0, digits = 3)
+  if (is.numeric(final_table$l_ci_t0)) final_table$l_ci_t0 <- round(final_table$l_ci_t0, digits = 3)
+  if (is.numeric(final_table$l_ci_t0) & is.numeric(final_table$u_ci_t0)) {
+    final_table <- final_table %>% mutate(t0_ic = paste0("[", l_ci_t0, "-", u_ci_t0, "]"))
+  } else {
+    final_table <- final_table %>% mutate(t0_ic = "")
+  }
+  final_table <- final_table %>% dplyr::select(-c("l_ci_t0", "u_ci_t0"))
   
+  # Application des labels aux colonnes pour une meilleure lisibilité
+  final_table <- final_table %>% labelled::set_variable_labels(
+    methode = "Modèles",
+    l_inf = "L∞",
+    l_inf_ic = "L∞ IC 95%",
+    k = "K",
+    k_ic = "K IC 95%",
+    t0 = "t0",
+    t0_ic = "t0 IC 95%",
+    aicc = "AICc",
+    delta_aicc = "Δ AICc",
+    aicc_wt = "Poids d’Akaike",
+    converged = "Convergence"
+  )
   
-  
-  CLEAN <-
-    CLEAN %>% dplyr::select(
+  final_table <-
+    final_table %>% dplyr::select(
       c(
-        "Methode",
-        "Linf",
-        "LinfIC",
-        "K",
-        "KIC",
+        "methode",
+        "l_inf",
+        "l_inf_ic",
+        "k",
+        "k_ic",
         "t0",
-        "t0IC",
-        "AICc",
-        "Delta_AICc",
-        "AICcWt",
+        "t0_ic",
+        "aicc",
+        "delta_aicc",
+        "aicc_wt",
         "converged"
       )
     )
-  CLEAN <- CLEAN %>% dplyr::arrange(AICc)
   
-  colnames(CLEAN)[1] <- "Modèles"
-  colnames(CLEAN)[2] <- "L∞"
-  colnames(CLEAN)[3] <- "L∞ IC95%"
-  colnames(CLEAN)[5] <- "K IC95%"
-  colnames(CLEAN)[7] <- "t0 IC95%"
-  colnames(CLEAN)[9] <- "Δ AICc"
-  colnames(CLEAN)[10] <- "Poids d’Akaike"
-  colnames(CLEAN)[11] <- "Convergence"
+  # Trier le tableau final par AICc croissant
+  final_table <- final_table %>% dplyr::arrange(aicc)
   
-  CLEAN
-
+  return(final_table)
  }
 

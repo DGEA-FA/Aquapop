@@ -684,27 +684,25 @@ app_server <- function(input, output, session) {
     }
   )
   # Croissance ------------------------------------------------
-  initcroissance <- reactive({
-    #selectionner slmt le data necessaire
-    req(specimen(), sp_pen())
-    temp <- create_initcroissance(specimen(), sp_pen())
-    temp
+  croissance1 <- reactive({
+    req(specimen(), sp_pen())  # S'assurer que les données nécessaires sont disponibles
+    
+    # Appeler directement la fonction `courbe_croissance_comparaison`
+    courbe_croissance_comparaison(dfspecimen = specimen(), sp_pen = sp_pen()) %>% as.data.frame()
   })
-  
-  croissance1 <- reactive({ #ici pas encore reactable
-    req(initcroissance())
-    courbe_croissance_comparaison(data = initcroissance()) %>% as.data.frame()
-  })
-  output$croissance1_table <-
-    renderReactable( #deviens reactable ici
-      reactable(
-        croissance1(),
-        selection = "single",
-        onClick = "select",
-        defaultSelected = 1
+
+  output$croissance1_table <- renderReactable(
+    reactable(
+      labelled_data(croissance1()),  
+      selection = "single",
+      onClick = "select",
+      defaultSelected = 1,
+      defaultColDef = colDef(
+        align = "center",  # Centre les valeurs par défaut
+        headerStyle = list(textAlign = "center")  # Centre les titres par défaut
       )
     )
-  
+  )
 
   selectedmodelcroissance <- reactive({ #selection du modele choisi dans le reactable
     selected <- getReactableState("croissance1_table", "selected")
@@ -721,17 +719,19 @@ app_server <- function(input, output, session) {
   
   
   
-  #ici, on fait appel a differentes fxns selon le modele selectionné
   output$selectedmodelcroissanceplot <- renderPlot({
-    req(selectedmodelcroissance(), initcroissance(), croissance1())
+    req(selectedmodelcroissance(), specimen(), sp_pen(), croissance1())
+    
+    # En fonction du modèle sélectionné, appeler la fonction appropriée
     if (selectedmodelcroissance() == "Von Bertalanffy") {
-      courbe_croissance_ggVONBERT(initcroissance = initcroissance(), tablemodele = croissance1())
+      courbe_croissance_ggVONBERT(dfspecimen = specimen(), sp_pen = sp_pen(), tablemodele = croissance1())
     } else if (selectedmodelcroissance() == "Gompertz") {
-      courbe_croissance_ggGOMP(initcroissance = initcroissance(), tablemodele = croissance1())
+      courbe_croissance_ggGOMP(dfspecimen = specimen(), sp_pen = sp_pen(), tablemodele = croissance1())
     } else if (selectedmodelcroissance() == "Logistique") {
-      courbe_croissance_ggLOGIST(initcroissance = initcroissance(), tablemodele = croissance1())
+      courbe_croissance_ggLOGIST(dfspecimen = specimen(), sp_pen = sp_pen(), tablemodele = croissance1())
     }
   }, res = 96)
+  
   
   # download_selectedmodelcroissanceplot
   output$download_selectedmodelcroissanceplot <- downloadHandler(

@@ -1,9 +1,20 @@
 courbe_croissance_ggVONBERT <-
-  function(initcroissance, tablemodele) {
-    init <- initcroissance
+  function(dfspecimen, sp_pen, tablemodele) {
+    # Filtrer les données pour l'espèce spécifiée
+    init <- dfspecimen %>% filter(sp == sp_pen)
     
-    colnames(tablemodele)[1] <- "Methode"
-    model <- tablemodele %>% dplyr::filter(Methode == "Von Bertalanffy")
+    # Supprimer les enregistrements avec des valeurs manquantes pour ltm et age
+    init <- init %>%
+      filter(!is.na(ltm) & !is.na(age))
+    
+    # Sélectionner uniquement les colonnes nécessaires
+    init <- init %>% select(ltm, age, no_specimen)
+    
+    # Renommer les rangées séquentiellement de 1 à n
+    rownames(init) <- seq(nrow(init))
+    
+    
+    model <- tablemodele %>% dplyr::filter(methode == "Von Bertalanffy")
     
     #pour avoir les ranges d'ages
     dfbase <-
@@ -18,8 +29,8 @@ courbe_croissance_ggVONBERT <-
     
     sv0 <- FSA::vbStarts(ltm ~ age, data = init)
     
-    sv0$Linf <- model$'L∞'
-    sv0$K <- model$K
+    sv0$Linf <- model$l_inf
+    sv0$K <- model$k
     sv0$t0 <- model$t0
     
     # fit0 <- nls(ltm ~ Linf * (1 - exp(-K * (age - t0))), data = init, start = sv0) #####cette ligne fait quon predict avec une equation de vonB meme si je mets les param des 2 autres
