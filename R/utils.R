@@ -35,47 +35,47 @@ gt_ltmpoidsage <- function(data) {
     ) %>%
     cols_label(
       Sexe = "Groupe",
-      ltm_N = "N",
-      ltm_Moyenne = "Moy.",
-      ltm_ET = "ET",
-      ltm_Minimum = "Min",
-      ltm_Maximum = "Max",
-      masse_N = "N",
-      masse_Moyenne = "Moy.",
-      masse_ET = "ET",
-      masse_Minimum = "Min",
-      masse_Maximum = "Max",
-      age_N = "N",
-      age_Moyenne = "Moy.",
-      age_ET = "ET",
-      age_Minimum = "Min",
-      age_Maximum = "Max"
+      ltm_nb = "N",
+      ltm_moy = "Moy.",
+      ltm_e_t = "ET",
+      ltm_min = "Min",
+      ltm_max = "Max",
+      masse_nb = "N",
+      masse_moy = "Moy.",
+      masse_e_t = "ET",
+      masse_min = "Min",
+      masse_max = "Max",
+      age_nb = "N",
+      age_moy = "Moy.",
+      age_e_t = "ET",
+      age_min = "Min",
+      age_max = "Max"
     ) %>%
     tab_spanner(
       label = "LTMax (mm)",
-      columns = c(ltm_N, ltm_Moyenne, ltm_ET, ltm_Minimum, ltm_Maximum)
+      columns = c(ltm_nb, ltm_moy, ltm_e_t, ltm_min, ltm_max)
     ) %>%
     tab_spanner(
       label = "Masse (g)",
-      columns = c(masse_N, masse_Moyenne, masse_ET, masse_Minimum, masse_Maximum)
+      columns = c(masse_nb, masse_moy, masse_e_t, masse_min, masse_max)
     ) %>%
     tab_spanner(
       label = "Âge",
-      columns = c(age_N, age_Moyenne, age_ET, age_Minimum, age_Maximum)
+      columns = c(age_nb, age_moy, age_e_t, age_min, age_max)
     ) %>%
     cols_align(
       align = "center",
       columns = everything()
     ) %>%
-    fmt_number(
-      columns = c(ltm_Moyenne, ltm_ET, ltm_Minimum, ltm_Maximum, 
-                  masse_Moyenne, masse_ET, masse_Minimum, masse_Maximum,
-                  age_Moyenne, age_ET, age_Minimum, age_Maximum),
-      decimals = 2
-    ) %>%
+    # fmt_number(
+    #   columns = c(ltm_moy, ltm_e_t, ltm_min, ltm_max, 
+    #               masse_moy, masse_e_t, masse_min, masse_max,
+    #               age_moy, age_e_t, age_min, age_max),
+    #   decimals = 2
+    # ) %>%
     tab_options(
       table.width = pct(100),
-      table.font.size = px(12)
+      table.font.size = px(10)
     )
 }
 
@@ -195,18 +195,35 @@ kable_mortalite1 <- function(data) {
                   position="center") 
 }
 
-kable_mortalite2 <- function(data) {
+gt_mortalite2 <- function(data) {
   req(data)
-  data %>% 
-    kable( align = c("r","c","r"),
-           caption = "Estimations obtenues à partir du modèle de Robson-Chapman (à titre comparatif seulement)", 
-           row.names = FALSE    ) %>%
-    kable_styling(full_width = FALSE,
-                  #lightable_options = "basic",
-                  font_size = 12,
-                  html_font="sans-serif", 
-                  position="center") 
+  
+  # Utilisation des labels comme noms de colonnes dans gt
+  data %>%
+    gt() %>%
+    tab_header(
+      title = md("**Estimations obtenues à partir du modèle de Robson-Chapman**"),
+      subtitle = "À titre comparatif seulement"
+    ) %>%
+    cols_label(
+      methode = var_label(data$methode),
+      z = var_label(data$z),
+      se = var_label(data$se),
+      a = var_label(data$a),
+      ic_95 = var_label(data$ic_95)
+    ) %>%
+    cols_align(
+      align = "center",
+      columns = everything()
+    ) %>%
+    tab_options(
+      table.width = pct(100),
+      table.font.size = px(12),
+      table.font.names = "sans-serif",
+      table.align = "center"
+    )
 }
+
 
 # Copy report to temporary directory. This is mostly important when
 # deploying the app, since often the working directory won't be writable

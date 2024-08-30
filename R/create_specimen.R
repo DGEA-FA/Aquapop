@@ -40,6 +40,28 @@ create_specimen <- function(data_specimen, data_station) {
 
   # Filtrer pour ne retenir que les filets experimentaux ?
   # alldata <- alldata %>% dplyr::filter(type_maill %in% c("G", NA)) %>% droplevels() 
+
+  
+  
+  specimen$sexe <-
+    factor(
+      specimen$sexe,
+      levels = c(
+        "F",
+        "M",
+        "IND"
+      )
+    )
+  specimen$maturite <-
+    factor(
+      specimen$maturite,
+      levels = c(
+        "O",
+        "N",
+        "IND"
+      )
+    )
+  
   
     return(specimen)
   

@@ -1,450 +1,93 @@
 taille_masse_age <- function(dataspecimen, espece) {
-
   
-  dataspecimen$sexe <-
-    factor(
-      dataspecimen$sexe,
-      levels = c(
-        "F",
-        "M",
-        "IND"
+  # Filtrer les données pour l'espèce concernée
+  dataspecimen_filtered <- dataspecimen %>% filter(sp == espece)
+  
+  # Fonction pour calculer les statistiques par groupe
+  # - `data`: le dataframe filtré à utiliser
+  # - `var`: le nom de la variable pour laquelle calculer les statistiques
+  # - `group_var`: le nom de la variable de regroupement (par exemple, sexe)
+  calculate_stats <- function(data, var, group_var = NULL) {
+    if (!is.null(group_var)) {
+      data <- data %>% group_by(!!sym(group_var), .drop = FALSE)
+    }
+    data %>%
+      dplyr::summarise(
+        nb = sum(!is.na(!!sym(var))),   # Nombre d'observations non manquantes
+        moy = ifelse(all(is.na(!!sym(var))), NA, mean(!!sym(var), na.rm = TRUE)) %>% round(digits = 1),  # Moyenne
+        e_t = ifelse(all(is.na(!!sym(var))), NA, sd(!!sym(var), na.rm = TRUE)) %>% round(digits = 1),    # Écart type
+        min = ifelse(all(is.na(!!sym(var))), NA, min(!!sym(var), na.rm = TRUE)) %>% round(digits = 1),   # Minimum
+        max = ifelse(all(is.na(!!sym(var))), NA, max(!!sym(var), na.rm = TRUE)) %>% round(digits = 1),   # Maximum
+        .groups = "drop" # Éviter les messages d'avertissement liés au regroupement
       )
-    )
-  dataspecimen$maturite <-
-    factor(
-      dataspecimen$maturite,
-      levels = c(
-        "O",
-        "N",
-        "IND"
-      )
-    )
+  }
   
+  # Calcul des statistiques par longueur
+  ltm_mf <- calculate_stats(dataspecimen_filtered, "ltm", group_var = "sexe")
+  ltm_tous <- calculate_stats(dataspecimen_filtered, "ltm") %>% mutate(sexe = NA)
+  ltm_fmat <- calculate_stats(dataspecimen_filtered %>% filter(maturite == "O" & sexe == "F"), "ltm") %>% mutate(sexe = "Reprod. actifs ♀")
+  ltm_mmat <- calculate_stats(dataspecimen_filtered %>% filter(maturite == "O" & sexe == "M"), "ltm") %>% mutate(sexe = "Reprod. actifs ♂")
+  ltm_immature <- calculate_stats(dataspecimen_filtered %>% filter(maturite == "N"), "ltm") %>% mutate(sexe = "Imm. ou reprod. inactifs")
+  ltm_inconnu <- calculate_stats(dataspecimen_filtered %>% filter(maturite == "IND"), "ltm") %>% mutate(sexe = "Statut reprod. inconnu")
   
-    # longueur ----------------------------------------------------------------
-
+  # Combiner les résultats de longueur dans un dataframe unique
+  ltm_df <- bind_rows(ltm_mf, ltm_tous, ltm_mmat, ltm_immature, ltm_fmat, ltm_inconnu) %>%
+    mutate(sexe = as.character(sexe),
+           sexe = ifelse(is.na(sexe), "Tous", sexe),  # Remplacer les valeurs manquantes par "Tous"
+           sexe = plyr::mapvalues(sexe, from = c("M", "F", "IND"), to = c("Mâle", "Femelle", "Sexe inconnu")),  # Traduction des codes
+           sexe = factor(sexe, levels = c("Tous", "Femelle", "Mâle", "Sexe inconnu", "Reprod. actifs ♀", "Reprod. actifs ♂", "Imm. ou reprod. inactifs", "Statut reprod. inconnu"))) %>%
+    arrange(sexe)  # Trier par sexe
   
-   ltm_MF <-
-    dataspecimen %>%  filter(sp == espece) %>%  filter(sexe %in% c("M", "F", "IND")) %>%
-    dplyr::select(ltm, sexe) %>%
-    group_by(sexe, .drop = FALSE) %>%
-    dplyr::summarise(across(
-      where(is.numeric),
-      .fns = list(
-        N =  ~ sum(!is.na(.x)),
-        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
-        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
-      )
-    ))
+  # Calcul des statistiques par masse
+  masse_mf <- calculate_stats(dataspecimen_filtered, "masse", group_var = "sexe")
+  masse_tous <- calculate_stats(dataspecimen_filtered, "masse") %>% mutate(sexe = NA)
+  masse_fmat <- calculate_stats(dataspecimen_filtered %>% filter(maturite == "O" & sexe == "F"), "masse") %>% mutate(sexe = "Reprod. actifs ♀")
+  masse_mmat <- calculate_stats(dataspecimen_filtered %>% filter(maturite == "O" & sexe == "M"), "masse") %>% mutate(sexe = "Reprod. actifs ♂")
+  masse_immature <- calculate_stats(dataspecimen_filtered %>% filter(maturite == "N"), "masse") %>% mutate(sexe = "Imm. ou reprod. inactifs")
+  masse_inconnu <- calculate_stats(dataspecimen_filtered %>% filter(maturite == "IND"), "masse") %>% mutate(sexe = "Statut reprod. inconnu")
   
-  ltm_tous <- dataspecimen %>%  filter(sp == espece) %>%
-    dplyr::select(ltm) %>%
-    dplyr::summarise(across(
-      where(is.numeric),
-      .fns = list(
-        N =  ~ sum(!is.na(.x)),
-        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
-        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
-      )
-    )) %>% mutate(sexe = NA)
+  # Combiner les résultats de masse dans un dataframe unique
+  masse_df <- bind_rows(masse_mf, masse_tous, masse_mmat, masse_immature, masse_fmat, masse_inconnu) %>%
+    mutate(sexe = as.character(sexe),
+           sexe = ifelse(is.na(sexe), "Tous", sexe),
+           sexe = plyr::mapvalues(sexe, from = c("M", "F", "IND"), to = c("Mâle", "Femelle", "Sexe inconnu")),
+           sexe = factor(sexe, levels = c("Tous", "Femelle", "Mâle", "Sexe inconnu", "Reprod. actifs ♀", "Reprod. actifs ♂", "Imm. ou reprod. inactifs", "Statut reprod. inconnu"))) %>%
+    arrange(sexe)
   
-  ltm_Fmature <-
-    dataspecimen %>%  filter(sp == espece & maturite == "O" & sexe == "F")  %>%
-    dplyr::select(ltm) %>%
-    dplyr::summarise(across(
-      where(is.numeric),
-      .fns = list(
-        N =  ~ sum(!is.na(.x)),
-        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
-        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
-      )
-    )) %>% mutate(sexe = "Reprod. actifs ♀")
+  # Calcul des statistiques par âge
+  age_mf <- calculate_stats(dataspecimen_filtered, "age", group_var = "sexe")
+  age_tous <- calculate_stats(dataspecimen_filtered, "age") %>% mutate(sexe = NA)
+  age_fmat <- calculate_stats(dataspecimen_filtered %>% filter(maturite == "O" & sexe == "F"), "age") %>% mutate(sexe = "Reprod. actifs ♀")
+  age_mmat <- calculate_stats(dataspecimen_filtered %>% filter(maturite == "O" & sexe == "M"), "age") %>% mutate(sexe = "Reprod. actifs ♂")
+  age_immature <- calculate_stats(dataspecimen_filtered %>% filter(maturite == "N"), "age") %>% mutate(sexe = "Imm. ou reprod. inactifs")
+  age_inconnu <- calculate_stats(dataspecimen_filtered %>% filter(maturite == "IND"), "age") %>% mutate(sexe = "Statut reprod. inconnu")
   
-  ltm_Mmature <-
-    dataspecimen %>%  filter(sp == espece &
-                               maturite == "O" & sexe == "M")  %>%
-    dplyr::select(ltm) %>%
-    dplyr::summarise(across(
-      where(is.numeric),
-      .fns = list(
-        N =  ~ sum(!is.na(.x)),
-        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
-        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
-      )
-    )) %>% mutate(sexe = "Reprod. actifs ♂")
+  # Combiner les résultats d'âge dans un dataframe unique
+  age_df <- bind_rows(age_mf, age_tous, age_mmat, age_immature, age_fmat, age_inconnu) %>%
+    mutate(sexe = as.character(sexe),
+           sexe = ifelse(is.na(sexe), "Tous", sexe),
+           sexe = plyr::mapvalues(sexe, from = c("M", "F", "IND"), to = c("Mâle", "Femelle", "Sexe inconnu")),
+           sexe = factor(sexe, levels = c("Tous", "Femelle", "Mâle", "Sexe inconnu", "Reprod. actifs ♀", "Reprod. actifs ♂", "Imm. ou reprod. inactifs", "Statut reprod. inconnu"))) %>%
+    arrange(sexe)
   
-  ltm_immature <-
-    dataspecimen %>%  filter(sp == espece & maturite == "N")  %>%
-    dplyr::select(ltm) %>%
-    dplyr::summarise(across(
-      where(is.numeric),
-      .fns = list(
-        N =  ~ sum(!is.na(.x)),
-        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
-        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
-      )
-    )) %>% mutate(sexe = "Imm. ou reprod. inactifs")
+  # Renommer les colonnes de chaque dataframe avec le préfixe approprié
+  ltm_df <- ltm_df %>%
+    rename_with(~ paste0("ltm_", .), -sexe)
   
-  ltm_inconnu <-
-    dataspecimen %>%  filter(sp == espece & maturite == "IND")  %>%
-    dplyr::select(ltm) %>%
-    dplyr::summarise(across(
-      where(is.numeric),
-      .fns = list(
-        # N =  ~ length(.x[!is.na(.x)]),
-        N =  ~ sum(!is.na(.x)),
-        # Moyenne = ~ mean(.x, na.rm = TRUE) %>% round(digits = 1),
-        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
-        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
-        # ET = ~ sd(.x, na.rm = TRUE) %>% round(digits = 1),
-        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
-        # Minimum = ~ min(.x, na.rm = TRUE) %>% round(digits = 1),
-        # Maximum = ~ max(.x, na.rm = TRUE) %>% round(digits = 1)
-      )
-    )) %>% mutate(sexe = "Statut reprod. inconnu")
+  masse_df <- masse_df %>%
+    rename_with(~ paste0("masse_", .), -sexe)
   
+  age_df <- age_df %>%
+    rename_with(~ paste0("age_", .), -sexe)
   
-  completltm <-
-    rbind(ltm_MF,
-          ltm_tous,
-          ltm_Mmature,
-          ltm_immature,
-          ltm_Fmature,
-          ltm_inconnu)
-  completltm$sexe <- as.character(completltm$sexe)
-  completltm$sexe[is.na(completltm$sexe)] <- "Tous"
-  completltm <-
-    completltm %>% mutate(sexe = plyr::mapvalues(
-      sexe,
-      from = c("M", "F", "IND"),
-      to = c("Mâle", "Femelle", "Sexe inconnu")
-    ))
-  completltm$sexe <- as.factor(completltm$sexe)
+  # Fusionner les dataframes sur la colonne `sexe`
+  complet <- ltm_df %>%
+    inner_join(masse_df, by = "sexe") %>%
+    inner_join(age_df, by = "sexe") %>%
+    rename(Sexe = sexe) %>%
+    # Remplacement des valeurs infinies ou NA par "-"
+    mutate(across(ends_with(c("min", "max", "moy", "e_t")),
+                  ~ ifelse(. %in% c("Inf", "-Inf") | is.na(.), "-", .)))
   
-  completltm$sexe <-
-    factor(
-      completltm$sexe,
-      levels = c(
-        "Tous",
-        "Femelle",
-        "Mâle",
-        "Sexe inconnu",
-        "Reprod. actifs ♀",
-        "Reprod. actifs ♂",
-        "Imm. ou reprod. inactifs",
-        "Statut reprod. inconnu"
-      )
-    )
-  completltm <- completltm %>% arrange(sexe)
-  completltm <-
-    completltm %>% dplyr::select(c(sexe, ltm_N, ltm_Moyenne, ltm_ET, ltm_Minimum, ltm_Maximum))
-  
-  # masse -------------------------------------------------------------------
-  masse_MF <-
-    dataspecimen %>%  filter(sp == espece) %>%  filter(sexe %in% c("M", "F", "IND")) %>%
-    dplyr::select(masse, sexe) %>%
-    group_by(sexe, .drop = FALSE) %>%
-    dplyr::summarise(across(
-      where(is.numeric),
-      .fns = list(
-        N =  ~ sum(!is.na(.x)),
-        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
-        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
-      )
-    ))
-  
-
-  
-  masse_tous <- dataspecimen %>%  filter(sp == espece) %>%
-    dplyr::select(masse) %>%
-    dplyr::summarise(across(
-      where(is.numeric),
-      .fns = list(
-        N =  ~ sum(!is.na(.x)),
-        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
-        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
-      )
-    )) %>% mutate(sexe = NA)
-  
-  masse_Fmature <-
-    dataspecimen %>%  filter(sp == espece & maturite == "O" & sexe == "F")  %>%
-    dplyr::select(masse) %>%
-    dplyr::summarise(across(
-      where(is.numeric),
-      .fns = list(
-        N =  ~ sum(!is.na(.x)),
-        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
-        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
-      )
-    )) %>% mutate(sexe = "Reprod. actifs ♀")
-  
-  masse_Mmature <-
-    dataspecimen %>%  filter(sp == espece &
-                               maturite == "O" & sexe == "M")  %>%
-    dplyr::select(masse) %>%
-    dplyr::summarise(across(
-      where(is.numeric),
-      .fns = list(
-        N =  ~ sum(!is.na(.x)),
-        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
-        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
-      )
-    )) %>% mutate(sexe = "Reprod. actifs ♂")
-  
-  masse_immature <-
-    dataspecimen %>%  filter(sp == espece & maturite == "N")  %>%
-    dplyr::select(masse) %>%
-    dplyr::summarise(across(
-      where(is.numeric),
-      .fns = list(
-        N =  ~ sum(!is.na(.x)),
-        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
-        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
-      )
-    )) %>% mutate(sexe = "Imm. ou reprod. inactifs")
-  
-  masse_inconnu <-
-    dataspecimen %>%  filter(sp == espece & maturite == "IND")  %>%
-    dplyr::select(masse) %>%
-    dplyr::summarise(across(
-      where(is.numeric),
-      .fns = list(
-        N =  ~ sum(!is.na(.x)),
-        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
-        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
-      )
-    )) %>% mutate(sexe = "Statut reprod. inconnu")
-  
-  
-  completmasse <-
-    rbind(masse_MF,
-          masse_tous,
-          masse_Mmature,
-          masse_immature,
-          masse_Fmature,
-          masse_inconnu)
-  completmasse$sexe <- as.character(completmasse$sexe)
-  completmasse$sexe[is.na(completmasse$sexe)] <- "Tous"
-  completmasse <-
-    completmasse %>% mutate(sexe = plyr::mapvalues(
-      sexe,
-      from = c("M", "F", "IND"),
-      to = c("Mâle", "Femelle", "Sexe inconnu")
-    ))
-  completmasse$sexe <- as.factor(completmasse$sexe)
-  
-  completmasse$sexe <-
-    factor(
-      completmasse$sexe,
-      levels = c(
-        "Tous",
-        "Femelle",
-        "Mâle",
-        "Sexe inconnu",
-        "Reprod. actifs ♀",
-        "Reprod. actifs ♂",
-        "Imm. ou reprod. inactifs",
-        "Statut reprod. inconnu"
-      )
-    )
-  completmasse <- completmasse %>% arrange(sexe)
-  completmasse <- completmasse %>% dplyr::select(c(
-    sexe,
-    masse_N,
-    masse_Moyenne,
-    masse_ET,
-    masse_Minimum,
-    masse_Maximum
-  ))
-  
-  
-  # age ---------------------------------------------------------------------
-  age_MF <-
-    dataspecimen %>%  filter(sp == espece) %>%  filter(sexe %in% c("M", "F", "IND")) %>%
-    dplyr::select(age, sexe) %>%
-    group_by(sexe, .drop = FALSE) %>%
-    dplyr::summarise(across(
-      where(is.numeric),
-      .fns = list(
-        N =  ~ sum(!is.na(.x)),
-        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
-        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
-      )
-    ))
-  
-  age_tous <- dataspecimen %>%  filter(sp == espece) %>%
-    dplyr::select(age) %>%
-    dplyr::summarise(across(
-      where(is.numeric),
-      .fns = list(
-        N =  ~ sum(!is.na(.x)),
-        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
-        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
-      )
-    )) %>% mutate(sexe = NA)
-  
-  age_Fmature <-
-    dataspecimen %>%  filter(sp == espece & maturite == "O" & sexe == "F")  %>%
-    dplyr::select(age) %>%
-    dplyr::summarise(across(
-      where(is.numeric),
-      .fns = list(
-        N =  ~ sum(!is.na(.x)),
-        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
-        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
-      )
-    )) %>% mutate(sexe = "Reprod. actifs ♀")
-  
-  
-  age_Mmature <-
-    dataspecimen %>%  filter(sp == espece &
-                               maturite == "O" & sexe == "M")  %>%
-    dplyr::select(age) %>%
-    dplyr::summarise(across(
-      where(is.numeric),
-      .fns = list(
-        N =  ~ sum(!is.na(.x)),
-        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
-        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
-      )
-    )) %>% mutate(sexe = "Reprod. actifs ♂")
-  
-  age_immature <-
-    dataspecimen %>%  filter(sp == espece & maturite == "N")  %>%
-    dplyr::select(age) %>%
-    dplyr::summarise(across(
-      where(is.numeric),
-      .fns = list(
-        N =  ~ sum(!is.na(.x)),
-        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
-        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
-      )
-    )) %>% mutate(sexe = "Imm. ou reprod. inactifs")
-  
-  age_inconnu <-
-    dataspecimen %>%  filter(sp == espece & maturite == "IND")  %>%
-    dplyr::select(age) %>%
-    dplyr::summarise(across(
-      where(is.numeric),
-      .fns = list(
-        N =  ~ sum(!is.na(.x)),
-        Moyenne = ~ ifelse(all(is.na(.x)), NA, mean(.x, na.rm = TRUE)) %>% round(digits = 1),
-        ET = ~ ifelse(all(is.na(.x)), NA, sd(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Minimum = ~ ifelse(all(is.na(.x)), NA, min(.x, na.rm = TRUE)) %>% round(digits = 1),
-        Maximum = ~ ifelse(all(is.na(.x)), NA, max(.x, na.rm = TRUE)) %>% round(digits = 1)
-      )
-    )) %>% mutate(sexe = "Statut reprod. inconnu")
-  
-  completage <-
-    rbind(age_MF,
-          age_tous,
-          age_Mmature,
-          age_immature,
-          age_Fmature,
-          age_inconnu)
-  completage$sexe <- as.character(completage$sexe)
-  completage$sexe[is.na(completage$sexe)] <- "Tous"
-  completage <-
-    completage %>% mutate(sexe = plyr::mapvalues(
-      sexe,
-      from = c("M", "F", "IND"),
-      to = c("Mâle", "Femelle", "Sexe inconnu")
-    ))
-  completage$sexe <- as.factor(completage$sexe)
-  
-  completage$sexe <-
-    factor(
-      completage$sexe,
-      levels = c(
-        "Tous",
-        "Femelle",
-        "Mâle",
-        "Sexe inconnu",
-        "Reprod. actifs ♀",
-        "Reprod. actifs ♂",
-        "Imm. ou reprod. inactifs",
-        "Statut reprod. inconnu"
-      )
-    )
-  completage <- completage %>% arrange(sexe)
-  completage <-
-    completage %>% dplyr::select(c(sexe,
-                                   age_N,
-                                   age_Moyenne,
-                                   age_ET,
-                                   age_Minimum,
-                                   age_Maximum))
-  completage <- completage %>% dplyr::rename(Sexe = "sexe")
-  
-  complet <- cbind(completltm, completmasse, completage)
-  complet <-
-    complet %>% dplyr::select(
-      c(
-        Sexe,
-        ltm_N,
-        ltm_Moyenne,
-        ltm_ET,
-        ltm_Minimum,
-        ltm_Maximum,
-        masse_N,
-        masse_Moyenne,
-        masse_ET,
-        masse_Minimum,
-        masse_Maximum,
-        age_N,
-        age_Moyenne,
-        age_ET,
-        age_Minimum,
-        age_Maximum
-      )
-    )
-  
-  complet <- complet %>%
-    mutate(ltm_Minimum = ifelse(ltm_Minimum %in% c("Inf", "-Inf") | is.na(ltm_Minimum), "-", ltm_Minimum),
-           ltm_Maximum = ifelse(ltm_Maximum %in% c("Inf", "-Inf") | is.na(ltm_Maximum), "-", ltm_Maximum),
-           ltm_Moyenne = ifelse(is.na(ltm_Moyenne), "-", ltm_Moyenne),
-           ltm_ET = ifelse(is.na(ltm_ET), "-", ltm_ET),
-           age_Minimum = ifelse(age_Minimum %in% c("Inf", "-Inf") | is.na(age_Minimum), "-", age_Minimum),
-           age_Maximum = ifelse(age_Maximum %in% c("Inf", "-Inf") | is.na(age_Maximum), "-", age_Maximum),
-           age_Moyenne = ifelse(is.na(age_Moyenne), "-", age_Moyenne),
-           age_ET = ifelse(is.na(age_ET), "-", age_ET),
-           masse_Minimum = ifelse(masse_Minimum %in% c("Inf", "-Inf") | is.na(masse_Minimum), "-", masse_Minimum),
-           masse_Maximum = ifelse(masse_Maximum %in% c("Inf", "-Inf") | is.na(masse_Maximum), "-", masse_Maximum),
-           masse_Moyenne = ifelse(is.na(masse_Moyenne), "-", masse_Moyenne),
-           masse_ET = ifelse(is.na(masse_ET), "-", masse_ET))
-  
-  complet
+  return(complet)
 }

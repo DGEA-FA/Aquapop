@@ -99,35 +99,11 @@ print(plot_maturite)
 plot_marquage <- structure_taille(dfspecimen = specimen, espece = sp_pen, binwidth = binwidth, nomsp = nomsp, groupement = "marquage")
 print(plot_marquage)
 
-source("R/structure_taille_tous.R")
-structure_taille_tous(dfspecimen = specimen, espece = sp_pen)
-
-source("R/structure_taille_sexe.R")
-structuretailleplot <- structure_taille_sexe(dfspecimen = specimen, espece = sp_pen)
 
 
-source("R/get_df_from_plot_sexe.R")
-dddf <- get_df_from_plot_sexe(structuretailleplot)
-
-source("R/structure_taille_maturite.R")
-structure_taille_maturite(dfspecimen = specimen, espece = sp_pen)
-source("R/structure_taille_marquage.R")
-structure_taille_marquage(dfspecimen = specimen, espece = sp_pen)
-
-source("R/structure_age_tous.R")
-structure_age_tous(dfspecimen = specimen, espece = sp_pen)
-
-source("R/structure_age_maturite.R")
-structure_age_maturite(dfspecimen = specimen, espece = sp_pen)
-
-source("R/structure_age_sexe.R")
-structure_age_sexe(dfspecimen = specimen, espece = sp_pen)
-
-source("R/structure_age_marquage.R")
-structure_age_marquage(dfspecimen = specimen, espece = sp_pen)
 
 source("R/taille_masse_age.R")
-taille_masse_age(dataspecimen = specimen, espece = sp_pen)
+taille_masse_agedf <- taille_masse_age(dataspecimen = specimen, espece = sp_pen)
 
 source("R/psd_indice.R")
 psd_indice(data = specimen, sp = sp_pen)
@@ -170,11 +146,11 @@ source("R/mortalite_selection_modeles.R")
 df_EXT = df_ext
 # mortalite1 <- mortalite_selection_modeles(df_EXT = df_ext) #ca fini pu
 
-source("R/mortalite_ChapmanRobson.R")
+source("R/mortalite_chaprob.R")
 
-mortalite2 <- mortalite_ChapmanRobson(data = deathdf,
+mortalite2 <- mortalite_chaprob(data = deathdf,
                           pp = newPP,
-                          agemax_val = agemax_val) %>% as.data.frame()
+                          agemax_val = agemax_val) %>% as.data.frame() %>% gt_mortalite2()
 
 source("R/psd_indice.R")
 psd1 <- psd_indice(data = specimen, sp = sp_pen)

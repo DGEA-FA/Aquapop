@@ -811,13 +811,13 @@ app_server <- function(input, output, session) {
   
   mortalite2 <- reactive({
     req(newPP(), agemax_val(), deathdf())
-    mortalite_ChapmanRobson(data = deathdf(),
+    mortalite_chaprob(data = deathdf(),
                             pp = newPP(),
                             agemax_val = agemax_val()) %>% as.data.frame()
   })
   
   output$mortalite2_table <-  function() {
-    kable_mortalite2(data = mortalite2())
+    gt_mortalite2(data = mortalite2())
   }
  
    output$download_mortalite1 <-

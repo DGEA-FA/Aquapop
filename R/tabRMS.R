@@ -14,34 +14,7 @@ tabRMS <- function(superficie_ha, profil) {
                        Valeur = c(Frms, Mrms, Zrms))
   
   TabRMS[,2] <- round(TabRMS[,2], 3) 
-  TabRMS
   
+  return(TabRMS)
 }
-
-
-#methode <- "glm (Mainguy et Morales)"
-#z <- abs(coef( m.df_EXT.p)[2])
-#A <- 1 - exp(-z) 
-#A <-A * 100
-#A <- round(A, digits = 1)
-
-#lowerZ <- abs(coef(m.df_EXT.p)[2] - confint(m.df_EXT.p)[2,1])
-
-#highZ <- abs(coef(m.df_EXT.p)[2] + confint(m.df_EXT.p)[2,2])
-
-#Alow <- 1 - exp(-lowerZ)
-#Alow <- Alow * 100
-#Alow <- round(Alow, digits = 1)
-
-#Ahigh <- 1 - exp(- highZ)
-#Ahigh <- Ahigh * 100
-#Ahigh <- round(Ahigh, digits = 1)
-
-#newdata <- data.frame(moyenne = c("Atotal"))
-#resultmort <- cbind(newdata, A,  Alow,   Ahigh)
-
-#resultmort <- resultmort %>% mutate(IC95 = glue("({  Alow}-{Ahigh})"))
-
-
-    
 

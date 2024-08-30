@@ -1,9 +1,8 @@
 #TableWeightRef
-t <- FSA::wsVal("Lake Trout") #obtenir les valeurs de reference pour cette espece selon la liste de Ogle
-a <- FSA::wsVal("Brook Trout") #obtenir les valeurs de reference pour cette espece selon la liste de Ogle
-b <- FSA::wsVal("Walleye") #obtenir les valeurs de reference pour cette espece selon la liste de Ogle
-TableWeightRef <- rbind(t,a,b)
+refSANA <- FSA::wsVal("Lake Trout", units = "metric", ref = 75) # valeurs de référence pour Lake Trout
+refSAFO <- FSA::wsVal("Brook Trout", units = "metric", ref = 75) # valeurs de référence pour Brook Trout
+refSAVI <- FSA::wsVal("Walleye", units = "metric", ref = 75) # valeurs de référence pour Walleye
+TableWeightRef <- rbind(refSANA, refSAFO, refSAVI)
 
-rm(list= c( "t", "a", "b"))
 library(dplyr)
-TableWeightRef <- TableWeightRef %>% mutate(sp= c("SANA", "SAFO", "SAVI"))
+TableWeightRef <- TableWeightRef %>% mutate(sp = c("SANA", "SAFO", "SAVI"))
