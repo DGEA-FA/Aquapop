@@ -11,7 +11,12 @@ app_ui <- function() {
       # Page d'accueil -------------------------------------------------------------
       tabPanel(
         icon("home"),
-        htmltools::includeMarkdown(path = './texte/user_guide.rmd')
+        tags$iframe(
+          src = "user_guide.html",
+          width = "100%",
+          height = "800px",
+          style = "border:none;"
+        )
       ),
       # Téléchargement ---------------------------------------------------
       tabPanel(
@@ -50,8 +55,6 @@ app_ui <- function() {
             uiOutput("status_text_data_recolte"),
             uiOutput("status_text_data_specimen"),
             uiOutput("status_text_data_lac"),
-            uiOutput("status_text_data_parametres"),
-            uiOutput("status_text_data_profil"),
             
             # Affichage des messages de doublons
             uiOutput("doublons_data_station"),
@@ -65,12 +68,8 @@ app_ui <- function() {
               tabPanelBody("lac", dataTableOutput(outputId = "table_lac")),
               tabPanelBody("station", dataTableOutput(outputId = "table_station")),
               tabPanelBody("recolte", dataTableOutput(outputId = "table_recolte")),
-              tabPanelBody("specimen", dataTableOutput(outputId = "table_specimen")),
-              tabPanelBody("profil", dataTableOutput(outputId = "table_profil")),
-              tabPanelBody(
-                "parametres",
-                dataTableOutput(outputId = "table_parametres")
-              )
+              tabPanelBody("specimen", dataTableOutput(outputId = "table_specimen"))
+
             )
           )
         )
@@ -338,14 +337,7 @@ app_ui <- function() {
                      )
                    )
                  )
-               )),
-      # Téléchargement panel ------------------------------------------------------
-      tabPanel(
-        title = "Rapport final",
-        downloadButton(outputId = "report", label = "Generate report")
-      )
-    
-      
+               ))
       
     )
   )

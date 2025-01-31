@@ -5,9 +5,11 @@ bibliography: references.bib
 nocite: '@*'
 output:
   html_document:
+    self_contained: false
+    keep_md: true
 ---
 
-**Version : `r rmarkdown::metadata$version`**
+**Version : 1.1.0**
 
 AquaPop est une application conçue pour soutenir les professionnels du MELCCFP dans les analyses les plus couramment utilisées pour décrire une population de poissons. Les analyses s’appliquent aux pêches expérimentales normalisées au touladi (PENT), au doré jaune (PENDJ) et à l’omble de fontaine (PENOF) structurées selon la base de données IFA (classeur AquaPop). Les comparaisons spatiales et temporelles ne sont pas abordées dans cette version de l’outil.
 

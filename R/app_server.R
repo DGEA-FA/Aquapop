@@ -1,4 +1,5 @@
 app_server <- function(input, output, session) {
+ 
   # voir_exemple -----------------------------------------------------------
   uploadexampleServer("uploadexample1") #dans uploadexample.R
   # Filter ID --------------------------------------------------------------
@@ -82,9 +83,7 @@ app_server <- function(input, output, session) {
         "Lac" = "lac",
         "Stations" = "station",
         "Récolte" = "recolte",
-        "Spécimens" = "specimen"#, #je les garde pcq seront utilises dans la version 2 de lappli
-        # "Profil" = "profil",
-        # "Paramètres" = "parametres"
+        "Spécimens" = "specimen"
       ),
       selected = NULL,
       multiple = FALSE
@@ -123,20 +122,7 @@ app_server <- function(input, output, session) {
              typ_pech %in% input$typ_pech,
              annee %in% input$annee) %>% droplevels()
   })
-  data_profil <- reactive({
-    req(input$upload, input$no_lac, input$typ_pech, input$annee)
-    load_profil(path = input$upload$datapath, namesheet = "Profil") %>%
-      filter(no_lac %in% input$no_lac,
-             typ_pech %in% input$typ_pech,
-             annee %in% input$annee) %>% droplevels()
-  })
-  data_parametres <- reactive({
-    req(input$upload, input$no_lac, input$typ_pech, input$annee)
-    load_parametres(path = input$upload$datapath, namesheet = "Parametres") %>%
-      filter(no_lac %in% input$no_lac,
-             typ_pech %in% input$typ_pech,
-             annee %in% input$annee) %>% droplevels()
-  })
+  
   output$table_lac <-
     renderDataTable(data_lac(), options = brut_options) #brut_options dans utils.R
   output$table_station <-
@@ -145,10 +131,7 @@ app_server <- function(input, output, session) {
     renderDataTable(data_recolte(), options = brut_options)
   output$table_specimen <-
     renderDataTable(data_specimen(), options = brut_options)
-  output$table_profil <-
-    renderDataTable(data_profil(), options = brut_options)
-  output$table_parametres <-
-    renderDataTable(data_parametres(), options = brut_options)
+
   # identifier sp d'interet ------------------------------------------------
  
   sp_pen <- reactive({
@@ -244,27 +227,6 @@ app_server <- function(input, output, session) {
     return(NULL)
   })
   
-  output$status_text_data_parametres <- renderUI({
-    validate(
-      need(data_parametres(), "Les données de paramètres sont manquantes.")
-    )
-    message <- verifier_dataframes(data_parametres(), "Paramètres")
-    if (!is.null(message)) {
-      return(tags$p(message, style = "color: red;"))
-    }
-    return(NULL)
-  })
-  
-  output$status_text_data_profil <- renderUI({
-    validate(
-      need(data_profil(), "Les données de profil sont manquantes.")
-    )
-    message <- verifier_dataframes(data_profil(), "Profil")
-    if (!is.null(message)) {
-      return(tags$p(message, style = "color: red;"))
-    }
-    return(NULL)
-  })
   
   # Vérifier les doublons
   output$doublons_data_station <- renderUI({
@@ -898,7 +860,7 @@ app_server <- function(input, output, session) {
         selection = "single",
         onClick = "select",
         fullWidth = TRUE,
-        defaultSelected = 1
+        # defaultSelected = 1
       )
     )
   output$download_L50_selection_modeles_table <-
@@ -1386,17 +1348,5 @@ app_server <- function(input, output, session) {
       )
     }
   )
-  
-   
-   output$report <- downloadHandler(
-     filename = function() {
-       paste("rapport_analyse_", Sys.Date(), ".docx", sep = "")
-     },
-     content = function(file) {
-       generate_report(
-         data_brut = taillemasseagedata(),   # Données brutes réactives
-         output_file = file                  # Chemin du fichier de sortie
-       )
-     }
-   )
+
 }
