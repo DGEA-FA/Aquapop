@@ -29,9 +29,12 @@ courbe_croissance_plot <- function(dfspecimen, sp_pen, tablemodele, modele) {
   )
   
   # Définir les fonctions pour chaque modèle
-  vBert <- function(age, Linf, K, t0) Linf * (1 - exp(-K * (age - t0)))
-  Gompt <- function(age, Linf, K, t0) Linf * exp(-exp(-K * (age - t0)))
-  Logis <- function(age, Linf, K, t0) Linf / (1 + exp(-K * (age - t0)))
+  vBert <-
+    function(age, Linf, K, t0) {
+      Linf * (1 - exp(-K * (age - t0)))
+    }
+  Gompt <- function(age, Linf, K, t0) {Linf * exp(-exp(-K * (age - t0)))}
+  Logis <- function(age, Linf, K, t0) {Linf / (1 + exp(-K * (age - t0)))}
   
   # Choix du modèle à ajuster
   fit0 <- switch(modele,

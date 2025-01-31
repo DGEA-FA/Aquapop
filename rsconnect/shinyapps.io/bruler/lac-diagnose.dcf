@@ -1,0 +1,11 @@
+name: lac-diagnose
+title: lac-diagnose
+username:
+account: bruler
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 9030638
+bundleId: 7835368
+url: https://bruler.shinyapps.io/lac-diagnose/
+asMultiple: FALSE
+asStatic: FALSE
