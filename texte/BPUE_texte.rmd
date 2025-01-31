@@ -1,6 +1,7 @@
 ---
-title: "CPUE_texte.rmd"
+title: "BPUE_texte.rmd"
 author: "Caroline Brule"
 date: "25 octobre 2023"
 ---
-Le tableau ci-dessous présente le nombre de captures de l’espèce visée selon la table *Récolte* et le nombres d’individus dans la table *Spécimens*. L’abondance est calculée fonction du nombre de captures indiqués dans la table *Récolte*.
+
+Le tableau ci-dessous présente la répartition de la biomasse capturée selon la table *Spécimens*. 

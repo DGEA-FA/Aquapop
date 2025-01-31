@@ -22,7 +22,7 @@ taille_masse_age <- function(dataspecimen, espece) {
       )
   }
   
-  # Calcul des statistiques par longueur
+  # Calcul des statistiques de longueur
   ltm_mf <- calculate_stats(dataspecimen_filtered, "ltm", group_var = "sexe")
   ltm_tous <- calculate_stats(dataspecimen_filtered, "ltm") %>% mutate(sexe = NA)
   ltm_fmat <- calculate_stats(dataspecimen_filtered %>% filter(maturite == "O" & sexe == "F"), "ltm") %>% mutate(sexe = "Reprod. actifs ♀")
@@ -38,7 +38,7 @@ taille_masse_age <- function(dataspecimen, espece) {
            sexe = factor(sexe, levels = c("Tous", "Femelle", "Mâle", "Sexe inconnu", "Reprod. actifs ♀", "Reprod. actifs ♂", "Imm. ou reprod. inactifs", "Statut reprod. inconnu"))) %>%
     arrange(sexe)  # Trier par sexe
   
-  # Calcul des statistiques par masse
+  # Calcul des statistiques de masse
   masse_mf <- calculate_stats(dataspecimen_filtered, "masse", group_var = "sexe")
   masse_tous <- calculate_stats(dataspecimen_filtered, "masse") %>% mutate(sexe = NA)
   masse_fmat <- calculate_stats(dataspecimen_filtered %>% filter(maturite == "O" & sexe == "F"), "masse") %>% mutate(sexe = "Reprod. actifs ♀")
@@ -54,7 +54,7 @@ taille_masse_age <- function(dataspecimen, espece) {
            sexe = factor(sexe, levels = c("Tous", "Femelle", "Mâle", "Sexe inconnu", "Reprod. actifs ♀", "Reprod. actifs ♂", "Imm. ou reprod. inactifs", "Statut reprod. inconnu"))) %>%
     arrange(sexe)
   
-  # Calcul des statistiques par âge
+  # Calcul des statistiques d'âge
   age_mf <- calculate_stats(dataspecimen_filtered, "age", group_var = "sexe")
   age_tous <- calculate_stats(dataspecimen_filtered, "age") %>% mutate(sexe = NA)
   age_fmat <- calculate_stats(dataspecimen_filtered %>% filter(maturite == "O" & sexe == "F"), "age") %>% mutate(sexe = "Reprod. actifs ♀")

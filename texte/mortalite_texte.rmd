@@ -4,5 +4,7 @@ author: "Caroline Brule"
 date: "20 octobre 2023"
 ---
 
-Boîte de texte qui explique quel est le meilleur modèle (libellé TBD)
+Le premier tableau présente les résultats pour l’ensemble des modèles testés. Le modèle le mieux adapté aux données est celui avec le plus faible AICc.
+
+La mortalité estimée selon le modèle de Chapman-Robson est présentée à titre comparatif seulement, car son utilisation n’est pas recommandée. 
 

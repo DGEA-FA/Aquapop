@@ -283,6 +283,7 @@ app_server <- function(input, output, session) {
   output$download_taillemasseagetable <-
   download_data_format_xlsx(givenname = "taille_masse_age_table", datadown = taillemasseagedata())
 
+  # Structure taille ggplot ------------------------------------------------
 
   output$structuretailleplot <- renderPlot({
     req(specimen(), sp_pen(), nomsp_reactive(), binwidth_reactive())
@@ -528,12 +529,12 @@ app_server <- function(input, output, session) {
     req(specimen(), sp_pen())
     psd_indice(data = specimen(), sp = sp_pen()) %>% as.data.frame()
   })
+  
   output$psd1_table <-  function() {
     kable_psd1(data = psd1())
   }
-  output$download_psd1 <-
-    download_data_format_xlsx(givenname = "psd_indice", datadown = psd1())
-  psd2 <- reactive({
+ 
+   psd2 <- reactive({
     req(specimen(), sp_pen())
     psd_byclass(data = specimen(), sp = sp_pen()) %>% as.data.frame()
   })
@@ -757,9 +758,7 @@ app_server <- function(input, output, session) {
  
    output$download_mortalite1 <-
     download_data_format_xlsx(givenname = "mortalite_selection_modeles", datadown = mortalite1())
-  
-  output$download_mortalite2 <-
-    download_data_format_xlsx(givenname = "mortalite_ChapmanRobson", datadown = mortalite2())
+
   
   zobs <- reactive({
     req(newPP(), deathdf(), agemax_val())

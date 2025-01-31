@@ -152,7 +152,6 @@ app_ui <- function() {
             title = "PSD",
             htmltools::includeMarkdown(path = './texte/psd_texte.rmd'),
             withSpinner(tableOutput(outputId = "psd1_table"), type = myspinner),
-            downloadButton(outputId = "download_psd1", label = "Téléchargement"),
             withSpinner(tableOutput(outputId = "psd2_table"), type = myspinner),
             downloadButton(outputId = "download_psd2", label = "Téléchargement"),
             plotOutput("psd1plot", width = 600, height = 400),
@@ -247,8 +246,8 @@ app_ui <- function() {
       # mortalite_panel ---------------------------------------------------------
       tabPanel(
         title = "Mortalité",
-        p("Voici un rappel du graphique de la structure d'âge, avec Peak Plus mis en évidence.Peak Plus représente l'âge à partir duquel les indicateurs de mortalité devraient être estimés.'Comme on souhaite avoir la meilleure représentation possible des
-        classes d’âges pour estimer Z, il est [...] préférable d’utiliser la classe d’âge suivant le Peak observé' (Mainguy, 2022), 
+        p("Voici un rappel du graphique de la structure d'âge, avec le Peak Plus mis en évidence. Le Peak Plus représente l'âge à partir duquel les indicateurs de mortalité devraient être estimés.'Comme on souhaite avoir la meilleure représentation possible des
+        classes d’âges pour estimer Z, il est préférable d’utiliser la classe d’âge suivant le Peak observé' (Mainguy et Moral, 2021), 
         soit le Peak Plus."),
         
         plotOutput("structureageplot4death", width = 300, height = 200),
@@ -270,8 +269,7 @@ app_ui <- function() {
         p("Le modèle XYZ décrit le mieux la mortalité de la population de touladi (plus faible AICc).  La mortalité annuelle s’élève à XX% (libellé TBD)."),
         br(),
         p("Le modèle Chapman-Robson est également présenté à des fins comparatives."),
-        withSpinner(tableOutput(outputId = "mortalite2_table"), type = myspinner),
-        downloadButton(outputId = "download_mortalite2", label = "Téléchargement"),
+        withSpinner(tableOutput(outputId = "mortalite2_table"), type = myspinner)
       ),
       # maturite_sexuelle_panel -------------------------------------------------
       tabPanel(title = "Maturité sexuelle",

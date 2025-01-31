@@ -158,7 +158,7 @@ kable_CPUEtous <- function(data) {
   req(data)
   data %>% 
     kable( align = c("r","c","c","c","r"),
-           caption = "Comparaison des modèles : tous les spécimens ", 
+           caption = "Comparaison des modèles : tous les spécimens", 
            row.names = FALSE    ) %>%
     kable_styling(full_width = FALSE,
                   font_size = 12,
@@ -170,7 +170,7 @@ kable_CPUEFmature <- function(data) {
   req(data)
   data %>% 
     kable( align = c("r","c","c","c","r"),
-           caption = "Comparaison des modèles : femelles reproductrices actives ", 
+           caption = "Comparaison des modèles : femelles reproductrices actives", 
            row.names = FALSE) %>%
     kable_styling(full_width = FALSE,
                   font_size = 12,
