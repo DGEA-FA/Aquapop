@@ -269,14 +269,6 @@ verifier_dataframes <- function(dataframe, nom_dataframe) {
   return(NULL)
 }
 
-verifier_doublons <- function(dataframe, nom_dataframe) {
-  doublons <- dataframe[duplicated(dataframe), ]
-  if (nrow(doublons) > 0) {
-    return(paste("Doublons trouvés dans", nom_dataframe))
-  }
-  return(NULL)
-}
-
 
 calculate_mf_ratio <- function(male_count, female_count) {
   if (male_count == 0 && female_count == 0) {

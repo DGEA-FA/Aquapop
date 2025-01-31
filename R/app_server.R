@@ -188,11 +188,7 @@ app_server <- function(input, output, session) {
     }
     return(NULL)
   })
-  
-  output$status_text_data_recolte <- renderUI({
-    req(data_recolte())
-    verifier_dataframe_vide(data_recolte(), "Récolte")
-  })
+
   
   output$status_text_data_recolte <- renderUI({
     validate(
@@ -228,29 +224,6 @@ app_server <- function(input, output, session) {
   })
   
   
-  # Vérifier les doublons
-  output$doublons_data_station <- renderUI({
-    validate(
-      need(data_station(), "Les données de stations sont manquantes.")
-    )
-    message <- verifier_doublons(data_station(), "Stations")
-    if (!is.null(message)) {
-      return(tags$p(message, style = "color: red;"))
-    }
-    return(NULL)
-  })
-  
-  output$doublons_data_recolte <- renderUI({
-    validate(
-      need(data_recolte(), "Les données de récolte sont manquantes.")
-    )
-    message <- verifier_doublons(data_recolte(), "Récolte")
-    if (!is.null(message)) {
-      return(tags$p(message, style = "color: red;"))
-    }
-    return(NULL)
-  })
-
   
   # Creation du df specimen ------------------------------------------------
   specimen <- reactive({

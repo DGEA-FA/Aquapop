@@ -56,9 +56,6 @@ app_ui <- function() {
             uiOutput("status_text_data_specimen"),
             uiOutput("status_text_data_lac"),
             
-            # Affichage des messages de doublons
-            uiOutput("doublons_data_station"),
-            uiOutput("doublons_data_recolte"),
             
             tableOutput(outputId = "recap_intro_table"),
             tabsetPanel(

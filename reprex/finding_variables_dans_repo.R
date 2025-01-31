@@ -1,7 +1,7 @@
 library(fs)
 library(stringr)
 
-termeachercher<- "dataframe_vide"
+termeachercher<- "verifier_doublons_data_recolte"
 
 # Liste tous les fichiers R dans le repo
 files <- dir_ls(path = ".", recurse = TRUE, glob = "*.R")
@@ -21,3 +21,4 @@ results <- do.call(rbind, matches)
 
 # Afficher les résultats
 print(results)
+
