@@ -1,18 +1,20 @@
 create_capture <- function(data_station, data_recolte) {
-  # Joindre les dataframes en utilisant des colonnes communes
-  # On inclut "nom_lac" dans le "by" car il s'agit d'une colonne commune entre les deux dataframes.
-  # Cela permet d'éviter la duplication de cette colonne dans le dataframe final et garantit que les lignes sont correctement appariées.
-  # À l'inverse, on n'inclut pas "st_valide" ni "st_hasard" car ces colonnes se trouvent seulement dans data_station. 
-  # Toutes les colonnes des deux dataframes sont quand même présentent dans capture après le join.
- capture <- left_join(
-    x = data_station,
-    y = data_recolte,
-    by = c("no_station", "annee", "nom_lac", "no_lac", "typ_pech"),
+ capture <- full_join(
+   x = data_station %>% filter(st_valide == "O", st_hasard == "O"),  # Sélectionner les stations valides
+   y = data_recolte,
+    by = c("no_station", "annee", "no_lac", "typ_pech"), # Suppression de "nom_lac"
     relationship = "one-to-many"
   ) %>%
     droplevels() %>%
     distinct()
   
+ # Si "nom_lac" existe dans les deux dataframes, comparer et garder celui de data_station si différent
+ if ("nom_lac.x" %in% names(capture) && "nom_lac.y" %in% names(capture)) {
+   capture <- capture %>%
+     mutate(nom_lac = ifelse(nom_lac.x != nom_lac.y, nom_lac.x, nom_lac.y)) %>%
+     select(-nom_lac.x, -nom_lac.y)  # Supprimer les colonnes en double
+ }
+ 
   # Vérifier si les colonnes comments.x et comments.y existent
   if ("comments.x" %in% names(capture) && "comments.y" %in% names(capture)) {
     # Renommer les colonnes
@@ -21,18 +23,12 @@ create_capture <- function(data_station, data_recolte) {
              comments_station = comments.x)
   }
   
-  
-  # Filtrer pour ne retenir que les stations valides et au hasard
-  # Après la jointure, on applique un filtre pour ne conserver que les lignes où st_valide == "O" et st_hasard == "O"
-  # Cela garantit que seules les données pertinentes sont conservées pour les analyses ultérieures.
-  capture <- capture %>%
-    filter(st_valide == "O", st_hasard == "O")
-  
-  
-  # Ajouter nb_capture=0 et nb_pese=0 pour les stations qui ont des NA pour ces valeurs
-  capture <- capture %>%
-    mutate(nb_capture = ifelse(is.na(nb_capture), 0, nb_capture),
-           nb_pese = ifelse(is.na(nb_pese), 0, nb_pese))
+ # Ajouter récolte = 0 pour les stations valides sans récolte
+ capture <- capture %>%
+   mutate(
+     nb_capture = tidyr::replace_na(nb_capture, 0),  # Remplacer NA par 0
+     nb_pese = tidyr::replace_na(nb_pese, 0)
+   )
   
   return(capture)
 }

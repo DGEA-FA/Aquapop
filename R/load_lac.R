@@ -7,34 +7,14 @@ load_lac <- function(path, namesheet) {
     col_types = "text"
   ) %>%
     as.data.frame()
-  colnames(lac)[1] <-
-    'region_admin' #renommer la 1 colonne "Région administrative"
-  colnames(lac)[2] <-
-    'no_lac' #renommer la 2 colonne "No plan d'eau"
-  colnames(lac)[3] <- 'nom_lac' #renommer la 3 colonne "Nom du lac"
-  colnames(lac)[4] <-
-    'typ_pech' #renommer la 4 colonne "Type de pêche"
-  colnames(lac)[5] <- 'annee' #renommer la 5 colonne "Année"
-  colnames(lac)[6] <-
-    'sp_pen' #renommer la 6 colonne "Espèce visée code"
-  colnames(lac)[7] <-
-    'long_dd.dec' #renommer la 7 colonne "Longitude (DD.déc.)"
-  colnames(lac)[8] <-
-    'lat_dd.dec' #renommer la 8 colonne "Latitude (DD.déc.)"
-  colnames(lac)[9] <-
-    'terr_faun' #renommer la 9 colonne "Territoire faunique"
-  colnames(lac)[10] <-
-    'zon_pech' #renommer la 10 colonne "Zone de pêche"
-  colnames(lac)[11] <-
-    'superficie_ha' #renommer la 11 colonne "Superficie (ha)"
-  colnames(lac)[12] <-
-    'perimetre_km' #renommer la 12 colonne "Périmètre (km)"
-  colnames(lac)[13] <-
-    'prof_max_m' #renommer la 13 colonne "Prof. max (m)"
-  colnames(lac)[14] <-
-    'prof_moy_m' #renommer la 14 colonne "Prof. moy (m)"
-  colnames(lac)[15] <-
-    'comments' #renommer la 15 colonne "Commentaires généraux"
+  
+  
+  # Renommer les colonnes
+  colnames(lac) <- c(
+    'region_admin', 'no_lac', 'nom_lac', 'typ_pech', 'annee',
+    'sp_pen', 'long_dd.dec', 'lat_dd.dec', 'terr_faun', 'zon_pech',
+    'superficie_ha', 'perimetre_km', 'prof_max_m', 'prof_moy_m', 'comments'
+  )
   
   lac$annee <- lac$annee %>% as.integer()
   

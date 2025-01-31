@@ -36,28 +36,33 @@ load_specimen <- function(path, namesheet) {
     'comments'       # 23ème colonne : Commentaires
   )
   
+  # Remplacer les NA par "IND" pour sexe et maturité
+  specimen <- specimen %>%
+    mutate(
+      maturite = tidyr::replace_na(maturite, "IND"),
+      sexe = tidyr::replace_na(sexe, "IND")
+    )
   
-  # Convertir les colonnes appropriées en facteurs, numériques ou caractères
+  # Convertir en facteur, y compris `sexe` et `maturite`
   specimen <- specimen %>%
     mutate_at(
       vars(
-        no_lac,
-        nom_lac,
-        typ_pech,
-        no_station,
-        no_specimen,
-        sp,
-        ind_insec,
-        ind_benth,
-        ind_planc,
-        ind_chyme,
-        ind_vide,
-        ind_poiss,
-        poiss1,
-        poiss2
+        no_lac, nom_lac, typ_pech, no_station, no_specimen, sp, 
+        ind_insec, ind_benth, ind_planc, ind_chyme, ind_vide, 
+        ind_poiss, poiss1, poiss2, sexe, maturite
       ),
       factor
-    ) %>%
+    )
+  
+  # Définir les niveaux fixes pour `sexe` et `maturite`
+  specimen <- specimen %>%
+    mutate(
+      sexe = factor(sexe, levels = c("F", "M", "IND")),  
+      maturite = factor(maturite, levels = c("O", "N", "IND"))
+    )
+  
+  # Convertir d'autres colonnes en numérique / texte
+  specimen <- specimen %>%
     mutate(
       annee = as.integer(annee),
       ltm = as.numeric(ltm),
@@ -67,12 +72,16 @@ load_specimen <- function(path, namesheet) {
       comments = as.character(comments)
     )
   
-  # Trier par no_specimen en ordre croissant tout en gardant le format factor
+  # Trier par no_specimen en ordre croissant
   specimen <- specimen %>%
     mutate(no_specimen_numeric = as.numeric(as.character(no_specimen))) %>%
     arrange(no_specimen_numeric) %>%
     select(-no_specimen_numeric)
-
+  
+  # Filtrer si nécessaire les filets expérimentaux
+  # specimen <- specimen %>% filter(type_maill %in% c("G", NA)) %>% droplevels()
+  
+  
   # Supprimer les doublons
   specimen <- specimen %>% dplyr::distinct()
   

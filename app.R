@@ -41,6 +41,7 @@ library(officer)
 library(flextable)
 library(forcats)
 library(labelled)
+library(tidyr)
 
 
 # to_activate_before_play -------------------------------------------------

@@ -5,7 +5,7 @@ load_station <- function(path, namesheet) {
     col_names = TRUE,
     sheet = namesheet,
     na = c("", "NULL", "NA", " "), # Considérer ces valeurs comme NA
-    col_types = rep("text", 18)  # Toutes les colonnes en tant que texte
+    col_types = "text"  # Toutes les colonnes en tant que texte
   ) %>%
     as.data.frame() # Convertir en data.frame pour une manipulation plus facile
   
@@ -32,12 +32,19 @@ load_station <- function(path, namesheet) {
   )
   
 
-# Remplacer les NA par "O" dans les colonnes "st_valide" et "st_hasard"
-station <- station %>%
-  mutate(
-    st_valide = ifelse(is.na(st_valide), "O", st_valide),
-    st_hasard = ifelse(is.na(st_hasard), "O", st_hasard)
-  )
+# Remplacer les NA,IND et"-" par "O" dans les colonnes "st_valide" et "st_hasard"
+  station <- station %>%
+    mutate(
+      st_valide = dplyr::case_when(
+        is.na(st_valide) | st_valide %in% c("IND", "-") ~ "O",
+        TRUE ~ st_valide
+      ),
+      st_hasard = dplyr::case_when(
+        is.na(st_hasard) | st_hasard %in% c("IND", "-") ~ "O",
+        TRUE ~ st_hasard
+      )
+    )
+
 
   # Transformer certaines colonnes en facteurs
   station <- station %>%

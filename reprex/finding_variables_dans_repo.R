@@ -1,7 +1,7 @@
 library(fs)
 library(stringr)
 
-termeachercher<- "download_mortalite2"
+termeachercher<- "capture_table"
 
 # Liste tous les fichiers R dans le repo
 files <- dir_ls(path = ".", recurse = TRUE, glob = "*.R")

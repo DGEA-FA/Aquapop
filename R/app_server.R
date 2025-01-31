@@ -232,12 +232,12 @@ app_server <- function(input, output, session) {
     create_specimen(data_specimen(), data_station())
   })
   
-  # Affichage du tableau interactif pour specimen
-  output$specimen_table <- DT::renderDT({
-    req(specimen())
-    datatable(specimen())
-  })
+  # Creation du df specimen_valid ------------------------------------------------
   
+  specimen_valid <- reactive({
+    req(data_specimen(), data_station())
+    create_specimen_valid(data_specimen(), data_station())
+  })
   
   # Creation du df capture ------------------------------------------------
   capture <- reactive({
@@ -245,13 +245,6 @@ app_server <- function(input, output, session) {
     # Création de la capture en utilisant la fonction create_capture
     create_capture(data_station(), data_recolte())
   })
-  
-  # Affichage du tableau interactif pour capture
-  output$capture_table <- DT::renderDT({
-    req(capture())
-    datatable(capture())
-  })
-  
   
   output$capture_verif <- renderDataTable({
     req(capture())
