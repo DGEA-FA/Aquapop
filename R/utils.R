@@ -281,9 +281,9 @@ calculate_mf_ratio <- function(male_count, female_count) {
 
 
 get_binwidth <- function(espece) {
-  if (espece == "SANA") {
+  if (espece %in% c("SANA", "SAVI")) {
     return(50)
-  } else if (espece %in% c("SAFO", "SAVI")) {
+  } else if (espece %in% c("SAFO")) {
     return(20)
   } else {
     return(NULL)

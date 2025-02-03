@@ -4,7 +4,7 @@ load_station <- function(path, namesheet) {
     path,
     col_names = TRUE,
     sheet = namesheet,
-    na = c("", "NULL", "NA", " "), # Considérer ces valeurs comme NA
+    na = c("", "NULL", "NA", " ", "-"), # Considérer ces valeurs comme NA
     col_types = "text"  # Toutes les colonnes en tant que texte
   ) %>%
     as.data.frame() # Convertir en data.frame pour une manipulation plus facile
@@ -54,9 +54,13 @@ load_station <- function(path, namesheet) {
    station <- station[order(station$no_station, decreasing = FALSE),]
    
    # Convertir certaines colonnes 
-   station <- station %>%
+   station$annee <- station$annee %>% as.integer()
+   station$annee <- ifelse(nchar(station$annee) == 5, 
+                       as.integer(lubridate::year(as.Date(station$annee, origin = "1899-12-30"))), 
+                       station$annee)   
+   
+      station <- station %>%
      mutate(
-       annee = as.integer(annee),          # Année en entier
        lat_dd.dec = as.numeric(lat_dd.dec),  # Latitude en numérique
        long_dd.dec = as.numeric(long_dd.dec), # Longitude en numérique
        prof_deb = as.numeric(prof_deb),     # Profondeur début en numérique

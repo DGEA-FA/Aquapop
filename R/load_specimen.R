@@ -4,7 +4,7 @@ load_specimen <- function(path, namesheet) {
     path,
     col_names = TRUE,
     sheet = namesheet,
-    na = c("", "NULL", "NA", " "), # Considérer ces valeurs comme NA
+    na = c("", "NULL", "NA", " ", "-"), # Considérer ces valeurs comme NA
     col_types = "text"  # Toutes les colonnes en tant que texte
   ) %>%
     as.data.frame() # Convertir en data.frame pour une manipulation plus facile
@@ -61,10 +61,14 @@ load_specimen <- function(path, namesheet) {
       maturite = factor(maturite, levels = c("O", "N", "IND"))
     )
   
+  specimen$annee <- specimen$annee %>% as.integer()
+  specimen$annee <- ifelse(nchar(specimen$annee) == 5, 
+                      as.integer(lubridate::year(as.Date(specimen$annee, origin = "1899-12-30"))), 
+                      specimen$annee)  
+  
   # Convertir d'autres colonnes en numérique / texte
   specimen <- specimen %>%
     mutate(
-      annee = as.integer(annee),
       ltm = as.numeric(ltm),
       lf = as.numeric(lf),
       masse = as.numeric(masse),

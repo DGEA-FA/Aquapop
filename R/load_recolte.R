@@ -4,7 +4,7 @@ load_recolte <- function(path, namesheet) {
     path,
     col_names = TRUE,
     sheet = namesheet,
-    na = c("", "NULL", "NA", " "), # Considérer ces valeurs comme NA
+    na = c("", "NULL", "NA", " ", "-"), # Considérer ces valeurs comme NA
     col_types = "text" # Toutes les colonnes en tant que texte
   ) %>%
     as.data.frame() # Convertir en data.frame pour une manipulation plus facile
@@ -22,10 +22,16 @@ load_recolte <- function(path, namesheet) {
     'comments'       # 9ème colonne : Commentaires
   )
   
+  
+  recolte$annee <- recolte$annee %>% as.integer()
+  recolte$annee <- ifelse(nchar(recolte$annee) == 5, 
+                      as.integer(lubridate::year(as.Date(recolte$annee, origin = "1899-12-30"))), 
+                      recolte$annee)  
+  
+  
   # Convertir les colonnes appropriées en facteurs, numériques ou caractères
   recolte <- recolte %>%
     mutate(
-      annee = as.integer(annee),
       no_lac = as.factor(no_lac),
       nom_lac = as.factor(nom_lac),
       typ_pech = as.factor(typ_pech),

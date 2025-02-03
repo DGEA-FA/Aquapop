@@ -41,12 +41,17 @@ library(flextable)
 library(forcats)
 library(labelled)
 # Set path to your data
-path <- "data/exempledata.xlsx"
-
+# path <- "data/exempledata.xlsx"
 # Set the variables for filtering
-typ_pechvar <- "PENT" 
-no_lac_var <- "01480" 
-annee_var <- 2020   
+# typ_pechvar <- "PENT" 
+# no_lac_var <- "01480" 
+# annee_var <- 2020
+
+path <- "data/Extract IFA_R04_AquaPop.xlsx"
+namesheet <- "Lac"
+   
+source("R/load_lac.R")
+data_lac <- load_lac(path, namesheet= "Lac")
 
 # Load your custom functions
 source("R/load_station.R")

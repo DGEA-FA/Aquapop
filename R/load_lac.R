@@ -3,7 +3,7 @@ load_lac <- function(path, namesheet) {
     path,
     col_names = TRUE,
     sheet = namesheet,
-    na = c("", "NULL", "NA", " "),
+    na = c("", "NULL", "NA", " ", "-"),
     col_types = "text"
   ) %>%
     as.data.frame()
@@ -17,6 +17,10 @@ load_lac <- function(path, namesheet) {
   )
   
   lac$annee <- lac$annee %>% as.integer()
+  lac$annee <- ifelse(nchar(lac$annee) == 5, 
+                      as.integer(lubridate::year(as.Date(lac$annee, origin = "1899-12-30"))), 
+                      lac$annee)  
+  
   
   lac <-
     dplyr::mutate(lac, ID = paste0(nom_lac, " - ", annee, " - ", typ_pech))
@@ -34,6 +38,8 @@ load_lac <- function(path, namesheet) {
     ),
     factor
   ) #transformer en factor
+  
+  
   lac$long_dd.dec <-
     as.numeric(lac$long_dd.dec)#transformer en numeric
   lac$lat_dd.dec <-

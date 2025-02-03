@@ -35,7 +35,7 @@ library(DescTools)
 library(emdbook)
 library(AICcmodavg)
 library(investr)
-
+library(lubridate)
 library(gt)
 library(officer)
 library(flextable)
