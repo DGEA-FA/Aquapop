@@ -276,8 +276,8 @@ app_server <- function(input, output, session) {
   # Structure taille ggplot ------------------------------------------------
 
   output$structuretailleplot <- renderPlot({
-    req(specimen(), sp_pen(), nomsp_reactive(), binwidth_reactive())
-    structure_taille(dfspecimen = specimen(),
+    req(specimen_valid(), sp_pen(), nomsp_reactive(), binwidth_reactive())
+    structure_taille(dfspecimen = specimen_valid(),
                      espece = sp_pen(),
                      binwidth = binwidth_reactive(),
                      nomsp = nomsp_reactive(),
@@ -292,27 +292,27 @@ app_server <- function(input, output, session) {
     },
     content = function(file) {
       ggsave(file, plot = {
-        req(specimen(), sp_pen(), binwidth_reactive(), nomsp_reactive())
+        req(specimen_valid(), sp_pen(), binwidth_reactive(), nomsp_reactive())
         if (input$groupetailleplot == "tous") {
-          structure_taille(dfspecimen = specimen(),
+          structure_taille(dfspecimen = specimen_valid(),
                            espece = sp_pen(),
                            binwidth = binwidth_reactive(),
                            nomsp = nomsp_reactive(),
                            groupement = "tous")
         } else if (input$groupetailleplot == "marquage") {
-          structure_taille(dfspecimen = specimen(),
+          structure_taille(dfspecimen = specimen_valid(),
                            espece = sp_pen(),
                            binwidth = binwidth_reactive(),
                            nomsp = nomsp_reactive(),
                            groupement = "marquage")
         } else if (input$groupetailleplot == "sexe") {
-          structure_taille(dfspecimen = specimen(),
+          structure_taille(dfspecimen = specimen_valid(),
                            espece = sp_pen(),
                            binwidth = binwidth_reactive(),
                            nomsp = nomsp_reactive(),
                            groupement = "sexe")
         } else if (input$groupetailleplot == "maturite") {
-          structure_taille(dfspecimen = specimen(),
+          structure_taille(dfspecimen = specimen_valid(),
                            espece = sp_pen(),
                            binwidth = binwidth_reactive(),
                            nomsp = nomsp_reactive(),
@@ -325,9 +325,9 @@ app_server <- function(input, output, session) {
   
 
   data4plot_taille <- reactive({
-    req(specimen(), sp_pen(), binwidth_reactive(), nomsp_reactive())
+    req(specimen_valid(), sp_pen(), binwidth_reactive(), nomsp_reactive())
     
-    plot <- structure_taille(dfspecimen = specimen(),
+    plot <- structure_taille(dfspecimen = specimen_valid(),
                              espece = sp_pen(),
                              binwidth = binwidth_reactive(),
                              nomsp = nomsp_reactive(),
@@ -346,9 +346,9 @@ app_server <- function(input, output, session) {
   
   # Structure age ggplot ------------------------------------------------
   output$structureageplot <- renderPlot({
-    req(specimen(), sp_pen(), nomsp_reactive())
+    req(specimen_valid(), sp_pen(), nomsp_reactive())
     
-    structure_age(dfspecimen = specimen(),
+    structure_age(dfspecimen = specimen_valid(),
                   espece = sp_pen(),
                   nomsp = nomsp_reactive(),
                   groupement = input$groupeageplot)
@@ -362,9 +362,9 @@ app_server <- function(input, output, session) {
     },
     content = function(file) {
       ggsave(file, plot = {
-        req(specimen(), sp_pen(), nomsp_reactive())
+        req(specimen_valid(), sp_pen(), nomsp_reactive())
         
-        structure_age(dfspecimen = specimen(),
+        structure_age(dfspecimen = specimen_valid(),
                       espece = sp_pen(),
                       nomsp = nomsp_reactive(),
                       groupement = input$groupeageplot)
@@ -376,9 +376,9 @@ app_server <- function(input, output, session) {
   
   
   data4plot_age <- reactive({
-    req(specimen(), sp_pen(), nomsp_reactive())
+    req(specimen_valid(), sp_pen(), nomsp_reactive())
     
-    plot <- structure_age(dfspecimen = specimen(),
+    plot <- structure_age(dfspecimen = specimen_valid(),
                           espece = sp_pen(),
                           nomsp = nomsp_reactive(),
                           groupement = input$groupeageplot)

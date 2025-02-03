@@ -36,29 +36,32 @@ load_specimen <- function(path, namesheet) {
     'comments'       # 23ème colonne : Commentaires
   )
   
-  # Remplacer les NA par "IND" pour sexe et maturité
+  # Remplacer les NA par "IND" pour sexe et maturité, et marquage
   specimen <- specimen %>%
     mutate(
       maturite = tidyr::replace_na(maturite, "IND"),
-      sexe = tidyr::replace_na(sexe, "IND")
+      sexe = tidyr::replace_na(sexe, "IND"),
+      marquage = tidyr::replace_na(marquage, "NMA")
     )
   
-  # Convertir en facteur, y compris `sexe` et `maturite`
+  # Convertir en facteur, y compris `sexe` et `maturite` , et marquage
   specimen <- specimen %>%
     mutate_at(
       vars(
         no_lac, nom_lac, typ_pech, no_station, no_specimen, sp, 
         ind_insec, ind_benth, ind_planc, ind_chyme, ind_vide, 
-        ind_poiss, poiss1, poiss2, sexe, maturite
+        ind_poiss, poiss1, poiss2, sexe, maturite, marquage
       ),
       factor
     )
   
-  # Définir les niveaux fixes pour `sexe` et `maturite`
+  # Définir les niveaux fixes pour `sexe` et `maturite`, et marquage
   specimen <- specimen %>%
     mutate(
       sexe = factor(sexe, levels = c("F", "M", "IND")),  
-      maturite = factor(maturite, levels = c("O", "N", "IND"))
+      maturite = factor(maturite, levels = c("O", "N", "IND")),
+      marquage = factor(marquage, levels = c("MA", "NMA")),
+      
     )
   
   specimen$annee <- specimen$annee %>% as.integer()

@@ -40,16 +40,19 @@ library(officer)
 library(flextable)
 library(forcats)
 library(labelled)
-# Set path to your data
+# # Set path to your data
 # path <- "data/exempledata.xlsx"
-# Set the variables for filtering
-# typ_pechvar <- "PENT" 
-# no_lac_var <- "01480" 
+# # Set the variables for filtering
+# typ_pechvar <- "PENT"
+# no_lac_var <- "01480"
 # annee_var <- 2020
 
 path <- "data/Extract IFA_R04_AquaPop.xlsx"
-namesheet <- "Lac"
-   
+typ_pechvar <- "PENDJ"
+no_lac_var <- "00005"
+annee_var <- 2005
+
+
 source("R/load_lac.R")
 data_lac <- load_lac(path, namesheet= "Lac")
 
@@ -63,7 +66,6 @@ source("R/create_specimen.R")
 source("R/create_capture.R")
 source("R/abondance_table.R")
 source("R/biomasse_table.R")
-source("R/structure_taille.R")  # Assuming you refactor all structure_taille_* functions into structure_taille
 
 # Load datasets
 data_station <- load_station(path, namesheet= "Stations")
@@ -88,6 +90,8 @@ biomasse_table <- biomasse_table(specimen, sp_pen, data_station) %>% as.data.fra
 binwidth <- get_binwidth(sp_pen)
 nomsp <- get_nomsp(sp_pen)
 
+source("R/structure_taille.R")  # Assuming you refactor all structure_taille_* functions into structure_taille
+
 # Test with 'tous' groupement
 plot_tous <- structure_taille(dfspecimen = specimen, espece = sp_pen, binwidth = binwidth, nomsp = nomsp, groupement = "tous")
 print(plot_tous)
@@ -104,7 +108,23 @@ print(plot_maturite)
 plot_marquage <- structure_taille(dfspecimen = specimen, espece = sp_pen, binwidth = binwidth, nomsp = nomsp, groupement = "marquage")
 print(plot_marquage)
 
+source("R/structure_age.R")  # Charger la fonction depuis le script
 
+# Test avec 'tous' (aucun groupement)
+plot_age_tous <- structure_age(dfspecimen = specimen, espece = sp_pen, nomsp = nomsp, groupement = "tous")
+print(plot_age_tous)
+
+# Test avec 'sexe' comme groupement
+plot_age_sexe <- structure_age(dfspecimen = specimen, espece = sp_pen, nomsp = nomsp, groupement = "sexe")
+print(plot_age_sexe)
+
+# Test avec 'maturite' comme groupement
+plot_age_maturite <- structure_age(dfspecimen = specimen, espece = sp_pen, nomsp = nomsp, groupement = "maturite")
+print(plot_age_maturite)
+
+# Test avec 'marquage' comme groupement
+plot_age_marquage <- structure_age(dfspecimen = specimen, espece = sp_pen, nomsp = nomsp, groupement = "marquage")
+print(plot_age_marquage)
 
 
 source("R/taille_masse_age.R")
@@ -182,3 +202,72 @@ courbe_croissance_ggGOMP(initcroissance = initcroissance, tablemodele = croissan
 
 source("R/courbe_croissance_ggLOGIST.R")
 courbe_croissance_ggLOGIST(initcroissance = initcroissance, tablemodele = croissance1)
+
+#######
+
+library(ggplot2)
+
+# Définition des couleurs
+colors <- c("A" = "red", "B" = "blue", "C" = "green")
+
+# Données factices juste pour la légende
+df_legende <- data.frame(
+  categorie = factor(c("A", "B", "C"), levels = c("A", "B", "C")),
+  valeur = NA  # Ne sera pas utilisé
+)
+
+x <- ggplot(df_legende, aes(x = categorie,y=valeur, fill = categorie)) +
+  geom_bar(stat = "identity", show.legend = TRUE, width = 0) +  # width = 0 pour cacher les barres
+  scale_fill_manual(
+    values = colors,
+    drop = FALSE,
+    guide = guide_legend(override.aes = list(fill = colors, colour = NA))
+  ) +
+  theme_void()  # Supprime tout sauf la légende
+
+str(x)
+
+
+##########
+
+library(ggplot2)
+library(patchwork)  # Pour combiner les graphiques
+
+# Définition des couleurs
+colors <- c("A" = "red", "B" = "blue", "C" = "green")
+
+# Données du vrai graphique
+dfvrai <- data.frame(
+  categorie = factor(c("A", "B"), levels = c("A", "B", "C")),
+  valeur = c(10, 20)
+)
+
+# Graphique principal
+p1 <- ggplot(dfvrai, aes(x = categorie, y = valeur, fill = categorie)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(
+    values = colors,
+    drop = FALSE
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")  # On cache la légende ici
+
+# Données factices juste pour la légende
+df_legende <- data.frame(
+  categorie = factor(c("A", "B", "C"), levels = c("A", "B", "C")),
+  valeur = NA  # Ne sera pas utilisé
+)
+
+# Graphique "invisible" pour la légende
+p2 <- ggplot(df_legende, aes(x = categorie, y = valeur, fill = categorie)) +
+  geom_bar(stat = "identity", show.legend = TRUE, width = 0) +  # width = 0 pour cacher les barres
+  scale_fill_manual(
+    values = colors,
+    drop = FALSE,
+    guide = guide_legend(override.aes = list(fill = colors, colour = NA))
+  ) +
+  theme_void()  # Supprime tout sauf la légende
+
+# Combiner le graphique principal et la légende
+p1 + p2 + plot_layout(ncol = 2, widths = c(3, 1))  # Ajuste la mise en page
+
