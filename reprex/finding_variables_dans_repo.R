@@ -1,7 +1,7 @@
 library(fs)
 library(stringr)
 
-termeachercher<- "capture_table"
+termeachercher<- "structure_age_tous"
 
 # Liste tous les fichiers R dans le repo
 files <- dir_ls(path = ".", recurse = TRUE, glob = "*.R")

@@ -26,13 +26,10 @@ app_server <- function(input, output, session) {
     req(df_filtered1())
     
     # Extraire les numéros de lac
-    no_lac <- unique(df_filtered1()$no_lac)
+    req(df_filtered1())
     
-    # Extraire la partie numérique des numéros de lac pour effectuer le tri
-    numeric_part <- as.numeric(gsub("[^0-9]", "", no_lac))
-    
-    # Trier les numéros de lac en fonction de la partie numérique
-    no_lac_sorted <- no_lac[order(numeric_part)]
+    # Extraire les numéros de lac et trier en tant que facteur alphanumérique
+    no_lac_sorted <- sort(unique(df_filtered1()$no_lac), decreasing = FALSE)
     
     # Créer l'élément UI avec les choix triés
     selectInput(
@@ -265,8 +262,8 @@ app_server <- function(input, output, session) {
   
   # Taille masse age -------------------------------------------------------
   taillemasseagedata <- reactive({
-    req(specimen(), sp_pen())
-    taille_masse_age(dataspecimen = specimen(), espece = sp_pen()) %>% as.data.frame()
+    req(specimen_valid(), sp_pen())
+    taille_masse_age(dataspecimen = specimen_valid(), espece = sp_pen()) %>% as.data.frame()
   })
   
   output$taillemasseagetable <- render_gt({
@@ -688,9 +685,11 @@ app_server <- function(input, output, session) {
   })
   
   output$structureageplot4death <- renderPlot({
-    req(specimen(), sp_pen(), pp())
-      structure_age_tous(dfspecimen = specimen(),
-                         espece = sp_pen()) + 
+    req(specimen(), sp_pen(), pp(), nomsp_reactive())
+    structure_age(dfspecimen = specimen(),
+                       espece = sp_pen(),
+                  nomsp = nomsp_reactive(), 
+                  groupement = "tous") + 
         theme( legend.position = "none") +
         gghighlight::gghighlight(age == pp(), use_group_by = FALSE, label_key= espece)
     } )
