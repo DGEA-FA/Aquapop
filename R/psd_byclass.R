@@ -1,6 +1,5 @@
-psd_byclass <- function(data, sp) {
-  df  <-
-    data %>% filter(sp == sp) %>% droplevels()# selectionner slmt le data necessaire
+psd_byclass <- function(data, espece) {
+  df  <- data %>% filter(sp == espece) %>% droplevels()# selectionner slmt le data necessaire
   Classename <-
     c("Sous-stock",
       "Stock",
@@ -9,11 +8,11 @@ psd_byclass <- function(data, sp) {
       "Mémorable",
       "Trophée")
   
-  if (sp == "SANA") {
+  if (espece == "SANA") {
     breakClass <- c(0, 300, 500, 650, 800, 1000)
-  } else if (sp == "SAFO") {
+  } else if (espece == "SAFO") {
     breakClass <- c(0, 150, 250, 325, 400, 500)
-  } else if (sp == "SAVI") {
+  } else if (espece == "SAVI") {
     breakClass <- c(0, 250, 380, 510, 630, 760)
   }
   
@@ -25,15 +24,15 @@ psd_byclass <- function(data, sp) {
     mutate(gcat = FSA::lencat(
       ltm,
       breaks = breakClass,
-      use.names = TRUE,
       droplevels = TRUE
     ))
   
-  bunch <-
-    mutate(bunch,
-           Classe = plyr::mapvalues(gcat, from = breakClass, to = Classename)) #classe de taille texte
+  bunch <- bunch %>% mutate(
+           Classe = plyr::mapvalues(gcat, 
+                                    from = breakClass,
+                                    to = Classename, warn_missing = FALSE)) #classe de taille texte
   
-  if (sp == "SANA") {
+  if (espece == "SANA") {
     bunch  <-
       mutate(bunch , range = plyr::mapvalues(
         gcat,
@@ -45,26 +44,29 @@ psd_byclass <- function(data, sp) {
           "650-799",
           "800-999",
           ">=1000"
-        )
+        ), 
+        warn_missing = FALSE
       ))
-  } else if (sp == "SAFO") {
+  } else if (espece == "SAFO") {
     bunch  <-
       mutate(bunch , range = plyr::mapvalues(
         gcat,
         from = breakClass,
-        to = c("<150", "150-249", "250-324", "325-399", "400-499", ">=500")
+        to = c("<150", "150-249", "250-324", "325-399", "400-499", ">=500"), 
+        warn_missing = FALSE
       ))
-  } else if (sp == "SAVI") {
+  } else if (espece == "SAVI") {
     bunch  <-
       mutate(bunch ,
              range = plyr::mapvalues(
                gcat,
-               from = nestlac$breakClass,
-               to = c("<250", "250-379", "380-509", "510-629", "630-759", ">=760")
+               from = breakClass,
+               to = c("<250", "250-379", "380-509", "510-629", "630-759", ">=760"),
+               warn_missing = FALSE
              ))
   }
   y <-
-    bunch %>% group_by(gcat, Classe, range) %>% summarise(n = n()) %>% droplevels()#nb de poissons dans ch classe de taille
+    bunch %>% group_by(gcat, Classe, range) %>% summarise(n = n(),.groups = "drop") %>% droplevels()#nb de poissons dans ch classe de taille
   bunch <-
     merge(bunch, y, by = c("gcat", "Classe", "range")) #merge le df avec le nb de poissons
   
@@ -75,9 +77,9 @@ psd_byclass <- function(data, sp) {
     merge(bunch, psdtable, by = "gcat") #merge le df avec le nb de poissons
   bunch  <- bunch %>% dplyr::select(c(Classe, range, n, Freq))
   bunch <-
-    bunch %>% group_by(Classe, range, n, Freq) %>% summarise()
+    bunch %>% group_by(Classe, range, n, Freq) %>% summarise(.groups = "drop")
   virgin <- tibble(Classe = Classename)
-  if (sp == "SANA") {
+  if (espece == "SANA") {
     virgin$range <-
       c("<300",
         "300-499",
@@ -85,10 +87,10 @@ psd_byclass <- function(data, sp) {
         "650-799",
         "800-999",
         ">=1000")
-  } else if (sp == "SAFO") {
+  } else if (espece == "SAFO") {
     virgin$range <-
       c("<150", "150-249", "250-324", "325-399", "400-499", ">=500")
-  } else if (sp == "SAVI") {
+  } else if (espece == "SAVI") {
     virgin$range <-
       c("<250", "250-379", "380-509", "510-629", "630-759", ">=760")
   }
@@ -102,7 +104,7 @@ psd_byclass <- function(data, sp) {
   complet <- complet %>% arrange(Classe)
   complet$Freq <- as.numeric(complet$Freq) %>% round(digits = 0)
   complet[1, 3] <-
-    data %>% filter(sp == sp) %>%  filter(ltm < limInfStock) %>% summarise(n())
+    data %>% filter(sp == espece) %>%  filter(ltm < limInfStock) %>% summarise(n())
   colnames(complet)[2] <- "Intervalle (mm)"
   complet <-
     complet %>% mutate(Freq = ifelse(is.na(Freq), "0", Freq))

@@ -235,6 +235,8 @@ app_server <- function(input, output, session) {
     req(data_specimen(), data_station())
     create_specimen_valid(data_specimen(), data_station())
   })
+
+  
   
   # Creation du df capture ------------------------------------------------
   capture <- reactive({
@@ -516,8 +518,8 @@ app_server <- function(input, output, session) {
     download_data_format_xlsx(givenname = "biomasse1", datadown = biomasse1())
   # PSD -------------------------------------------------------
   psd1 <- reactive({
-    req(specimen(), sp_pen())
-    psd_indice(data = specimen(), sp = sp_pen()) %>% as.data.frame()
+    req(specimen_valid(), sp_pen())
+    psd_indice(data = specimen_valid(), sp = sp_pen()) %>% as.data.frame()
   })
   
   output$psd1_table <-  function() {
@@ -525,8 +527,8 @@ app_server <- function(input, output, session) {
   }
  
    psd2 <- reactive({
-    req(specimen(), sp_pen())
-    psd_byclass(data = specimen(), sp = sp_pen()) %>% as.data.frame()
+    req(specimen_valid(), sp_pen())
+    psd_byclass(data = specimen_valid(), espece = sp_pen()) %>% as.data.frame()
   })
   output$psd2_table <-  function() {
     kable_psd2(data = psd2())
@@ -569,8 +571,8 @@ app_server <- function(input, output, session) {
   )
   # Indice de condition -------------------------------------------------------
   wri1data <- reactive({
-    req(specimen(), sp_pen())
-    table_wri(data = specimen(), espece = sp_pen()) %>% as.data.frame()
+    req(data_specimen(), sp_pen())
+    table_wri(data = data_specimen(), espece = sp_pen()) %>% as.data.frame()
   })
   output$wri1_table <-  function() {
     kable_wri(data = wri1data())
@@ -579,8 +581,8 @@ app_server <- function(input, output, session) {
     download_data_format_xlsx(givenname = "table_wri", datadown = wri1data())
   ## Wri tous ggplot ------------------------------------------------
   output$wri2plot <- renderPlot({
-    req(specimen(), sp_pen())
-    fig_wri_tous(data = specimen(), espece = sp_pen())
+    req(data_specimen(), sp_pen())
+    fig_wri_tous(data = data_specimen(), espece = sp_pen())
   }, res = 96)
   output$download_wri2plot <- downloadHandler(
     filename = function() {
@@ -588,15 +590,15 @@ app_server <- function(input, output, session) {
     },
     content = function(file) {
       ggsave(file, plot = {
-        req(specimen(), sp_pen())
-        fig_wri_tous(data = specimen(), espece = sp_pen())
+        req(data_specimen(), sp_pen())
+        fig_wri_tous(data = data_specimen(), espece = sp_pen())
       } , device = "png")
     }
   )
   ## Wri byclass ggplot ------------------------------------------------
   output$wri3plot <- renderPlot({
-    req(specimen(), sp_pen())
-    fig_wri_byclass(data = specimen(), espece = sp_pen())
+    req(data_specimen(), sp_pen())
+    fig_wri_byclass(data = data_specimen(), espece = sp_pen())
   }, res = 96)
   output$download_wri3plot <- downloadHandler(
     filename = function() {
@@ -604,17 +606,17 @@ app_server <- function(input, output, session) {
     },
     content = function(file) {
       ggsave(file, plot = {
-        req(specimen(), sp_pen())
-        fig_wri_byclass(data = specimen(), espece = sp_pen())
+        req(data_specimen(), sp_pen())
+        fig_wri_byclass(data = data_specimen(), espece = sp_pen())
       } , device = "png")
     }
   )
   # Croissance ------------------------------------------------
   croissance1 <- reactive({
-    req(specimen(), sp_pen())  # S'assurer que les données nécessaires sont disponibles
+    req(data_specimen(), sp_pen())  # S'assurer que les données nécessaires sont disponibles
     
     # Appeler directement la fonction `courbe_croissance_comparaison`
-    courbe_croissance_comparaison(dfspecimen = specimen(), sp_pen = sp_pen()) %>% as.data.frame()
+    courbe_croissance_comparaison(dfspecimen = data_specimen(), sp_pen = sp_pen()) %>% as.data.frame()
   })
 
   output$croissance1_table <- renderReactable(
@@ -641,10 +643,10 @@ app_server <- function(input, output, session) {
     download_data_format_xlsx(givenname = "courbe_croissance_comparaison", datadown = croissance1())
   
   output$selectedmodelcroissanceplot <- renderPlot({
-    req(selectedmodelcroissance(), specimen(), sp_pen(), croissance1())
+    req(selectedmodelcroissance(), data_specimen(), sp_pen(), croissance1())
     
     # Appeler la fonction générique en fonction du modèle sélectionné
-    courbe_croissance_plot(dfspecimen = specimen(), sp_pen = sp_pen(), tablemodele = croissance1(), modele = selectedmodelcroissance())
+    courbe_croissance_plot(dfspecimen = data_specimen(), sp_pen = sp_pen(), tablemodele = croissance1(), modele = selectedmodelcroissance())
   }, res = 96)
   
   
@@ -662,10 +664,10 @@ app_server <- function(input, output, session) {
     },
     content = function(file) {
       ggsave(file, plot = {
-        req(selectedmodelcroissance(), specimen(), sp_pen(), croissance1())
+        req(selectedmodelcroissance(), data_specimen(), sp_pen(), croissance1())
         
         # Appeler la fonction générique en fonction du modèle sélectionné
-        courbe_croissance_plot(dfspecimen = specimen(), sp_pen = sp_pen(), tablemodele = croissance1(), modele = selectedmodelcroissance())
+        courbe_croissance_plot(dfspecimen = data_specimen(), sp_pen = sp_pen(), tablemodele = croissance1(), modele = selectedmodelcroissance())
       }, device = "png")
     }
   )

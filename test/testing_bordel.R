@@ -64,6 +64,8 @@ source("R/utils.R")
 source("R/create_sp_pen.R")
 source("R/create_specimen.R")
 source("R/create_capture.R")
+source("R/create_specimen_valid.R")
+
 source("R/abondance_table.R")
 source("R/biomasse_table.R")
 
@@ -80,6 +82,8 @@ data_specimen <- data_specimen %>% filter(typ_pech == typ_pechvar & no_lac == no
 # Create derived variables
 sp_pen <- create_sp_pen(input_typ_pech = typ_pechvar)
 specimen <- create_specimen(data_specimen, data_station)
+specimen_valid <- create_specimen_valid(data_specimen, data_station)
+
 capture <- create_capture(data_station, data_recolte)
 
 # Test abundance and biomass tables
@@ -130,8 +134,16 @@ print(plot_age_marquage)
 source("R/taille_masse_age.R")
 taille_masse_agedf <- taille_masse_age(dataspecimen = specimen, espece = sp_pen)
 
+
+
+
+
 source("R/psd_indice.R")
-psd_indice(data = specimen, sp = sp_pen)
+psd_indice(data = specimen_valid, sp = sp_pen) %>% as.data.frame()
+
+source("R/psd_byclass.R")
+
+psd_byclass(data = specimen_valid, espece = sp_pen) %>% as.data.frame()
 
 source("R/table_wri.R")
 table_wri(data = specimen, espece = sp_pen)
