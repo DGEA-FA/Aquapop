@@ -1,109 +1,75 @@
-selection_modele_CPUE_tous <-
-  function(capture, specimen, espece, station) {
-    datacapt <-
-      capture %>%  dplyr::filter(sp == espece)  %>% droplevels()
-    datacapt <-
-      datacapt %>% dplyr::select("no_station", "nb_capture",  "nb_pese")
-    
-    dataspec <-
-      specimen %>% dplyr::filter(sp == espece)  %>% droplevels()
-    alldata <-
-      merge(dataspec, datacapt, all.x = TRUE) #ch ligne 1 specimen ou on a ajoute n total de capture et de poissons peses par station.On part de ca pour tous les autres filtres
-    
-    #alldata <- alldata %>% dplyr::filter(TYPE_MAILL %in% c("G",NA))  %>% droplevels() #on veut juste les filets expérimentaux
-    #UPDATE: LES TECHS SPECIFIENT QUEL COTE DU FILET EXP EST SUR LE BORD DE LA RIVE. DONC NON, PAS DE FILTRE POUR LE TYPE DENGIN
-    
-    
-    alldata <-
-      alldata %>% dplyr::filter(st_hasard == "O") #slmt les stations hasard  tirage aleatoire
-    alldata <-
-      alldata %>% dplyr::filter(st_valide %in% c("O", NA)) #slmt les stations valides. Filet entortillés par ex.
-    #Pourrait etre valide mais hasard non, et tout les combinaisons donc important que les 2 oui.
-    #Parfois NA partout donc on selectionne oui, sauf si explicitement N
-    
-    alldata <-
-      alldata %>% dplyr::filter(no_station != "") #retirer station NA où oubli d'écrire la station
-    alldata$sexe[is.na(alldata$sexe)] <-
-      "IND" #quand sexe=NA, jai mis ind
-    
-    #ICI CONSIDERER LES STATIONS VIDES
-    nstation <- length(unique(station$no_station)) %>% as.numeric()
-    listallstation <- unique(station$no_station)
-    dfvide <- data.frame(no_station = listallstation)
-    
-    alldata <-
-      merge(dfvide, alldata, by = "no_station",  all.x = TRUE) # on ajoute ligne pour stations vides
-    
+selection_modele_CPUE_tous <- function(capture, specimen, espece, station) {
+  # Sélectionner les stations valides et au hasard
+  stations_valides <- station %>%
+    dplyr::filter(st_hasard == "O", st_valide %in% c("O", NA)) %>%
+    dplyr::select(no_station)
+  
+  # Assurer que datacapt contient bien toutes les stations valides, y compris celles avec 0 captures
+  datacapt <- capture %>%
+    dplyr::filter(sp == espece) %>%
+    dplyr::select(no_station, nb_capture, nb_pese) %>%
+    right_join(stations_valides, by = "no_station") %>%  # Ajouter toutes les stations valides
+    mutate(nb_capture = replace_na(nb_capture, 0),  # Remplacer NA par 0 pour les stations vides
+           nb_pese = replace_na(nb_pese, 0))
+  
+  # Joindre datacapt avec specimen (filtré pour l'espèce sélectionnée)
+  alldata <- specimen %>%
+    dplyr::filter(sp == espece) %>%
+    right_join(datacapt, by = "no_station")  # Conserver toutes les stations valides
+  
+  # Vérifier que no_station n'est pas vide (par précaution)
+  alldata <- alldata %>% dplyr::filter(no_station != "")
+  
+  # Remplacer les valeurs NA dans la colonne sexe par "IND"
+  alldata$sexe[is.na(alldata$sexe)] <- "IND"
+  
     #Tous
     temp <- alldata %>%  dplyr::group_by(no_station) %>%
       summarise(CPUE = length(which(no_specimen != 0)), #Count the number of non-zero elements of each column
                 Group = "Tous")
     
-    abondancefix <- sum(temp$CPUE) %>% as.numeric()
-    
     # Poisson -----------------------------------------------------------------
+  
+    # Ajustement du modèle de Poisson
+    model.p <- glm(CPUE ~ 1, family = poisson, data = temp)
     
-    
-    ## Poisson (p), on teste un premier modele pour CPUElac
-    
-    model.p <-
-      glm(CPUE ~ 1, family = poisson, data = temp)#modele glm initial pour le calcul
-    
+    # Vérification de l'ajustement avec hnp
     library(hnp)
-    
-    set.seed(2023) # fonction set.seed(2023) sert à reproduire toujours la même valeur car hnp fonctionne
-    #à partir de simulations. Utiliser 10 ou 100 simulations pour le même modèle va produire une estimation semblable à
-    #la première, mais différente aussi.
+    set.seed(2023)  # Reproductibilité des simulations
     
     hnp_p <- list()
-    
-    for (i in 1:1) {
-      #remettre a 100
-      
-      hnp_p[[i]] <-
-        hnp(
-          model.p,
-          resid.type = "pearson",
-          how.many.out = TRUE,
-          plot.sim = FALSE
-        )
-      
+    for (i in 1:1) {  # Remettre à 100 si nécessaire
+      hnp_p[[i]] <- hnp(
+        model.p,
+        resid.type = "pearson",
+        how.many.out = TRUE,
+        plot.sim = FALSE
+      )
     }
     
-    summary_hnp_p <- sapply(hnp_p, function(x)
-      x$out / x$total * 100)
+    # Calcul de l'ajustement
+    summary_hnp_p <- sapply(hnp_p, function(x) x$out / x$total * 100)
+    ajustement.p <- mean(summary_hnp_p) %>% as.numeric() %>% round(digits = 2)
     
-    ajustement.p <-
-      mean(summary_hnp_p) %>% as.numeric() %>% round(digits = 2)
-    
-    #presentation des resultats
+    # Prédiction et calcul de la CPUE avec IC
     newdata <- data.frame(Moyenne = c("moyenne"))
-    method.p <- "Poisson"
-    predM.p <-
-      predict(model.p,
-              newdata,
-              full = TRUE,
-              se.fit = TRUE,
-              type = "link")
-    CPUEfinal.p <-
-      exp(predM.p$fit)  %>% round(digits = 2) #JM dit de pas faire round a lunite (digits=0) pour la moyenne, mais plutot 2
-    CPUEfinal.p
-    confint.p <-
-      confint(model.p) #ON DEVRAIT PRENDRE CA COMME lwr and upr limites ! Ca donne aussi un IC95%
-    commentaires.p <- NA
-    if (ajustement.p < 10) {
-      commentaires.p <-
-        "Le modèle de Poisson s'ajuste bien à vos données."
-    }
-    if (ajustement.p > 10) {
-      commentaires.p <-
-        "Le modèle de Poisson ne s'ajuste pas bien à vos données. Vous devriez utiliser un autre modèle."
-    }
-    linf <- (CPUEfinal.p - confint.p[1]) %>% round(digits = 2)
-    lsup <- (CPUEfinal.p + confint.p[2]) %>% round(digits = 2)
+    predM.p <- predict(model.p, newdata, full = TRUE, se.fit = TRUE, type = "link")
     
+    # Calcul uniforme des IC (intervalle de confiance 95%)
+    CPUEfinal.p <- exp(predM.p$fit) %>% round(digits = 2)
+    linf <- exp(predM.p$fit - 1.96 * predM.p$se.fit) %>% round(digits = 2)
+    lsup <- exp(predM.p$fit + 1.96 * predM.p$se.fit) %>% round(digits = 2)
+    
+    # Déterminer le commentaire selon l'ajustement
+    commentaires.p <- ifelse(
+      ajustement.p < 10,
+      "Le modèle de Poisson s'ajuste bien à vos données.",
+      "Le modèle de Poisson ne s'ajuste pas bien à vos données. Vous devriez utiliser un autre modèle."
+    )
+    
+    # Stocker les résultats
     resultCPUE.p <- data.frame(
-      "Méthode" = method.p,
+      "Méthode" = "Poisson",
       Ajustement = ajustement.p,
       CPUE = CPUEfinal.p,
       "IC95" = paste0("(", linf, "-", lsup, ")"),
@@ -111,42 +77,28 @@ selection_modele_CPUE_tous <-
       modeltemp = "model.p"
     )
     
-    
     # NB1 ---------------------------------------------------------------------
     
+    # Ajustement du modèle NB1
     library(glmmTMB)
-    model.NB1 <-
-      glmmTMB(CPUE ~ 1, family = nbinom1, data = temp)#modele glm initial pour le calcul
+    model.NB1 <- glmmTMB(CPUE ~ 1, family = nbinom1, data = temp)
     
-    
-    dfun <- function(obj) {
-      residuals(obj, type = "pearson")
-    }
-    sfun <- function(n, obj) {
-      simulate(obj)[[1]]
-    }
+    # Vérification de l'ajustement avec hnp
+    dfun <- function(obj) residuals(obj, type = "pearson")
+    sfun <- function(n, obj) simulate(obj)[[1]]
     
     ffun_nb1 <- function(response) {
-      fit <- try(glmmTMB(response ~ 1, family = nbinom1, data = temp),
-                 silent = TRUE)
+      fit <- try(glmmTMB(response ~ 1, family = nbinom1, data = temp), silent = TRUE)
       while (class(fit) == "try-error") {
-        response2 <- sfun(1, m.df_EXT.NB1)
-        fit <-
-          try(glmmTMB(response2 ~ 1, family = nbinom1, data = temp),
-              silent = TRUE)
+        response2 <- sfun(1, model.NB1)
+        fit <- try(glmmTMB(response2 ~ 1, family = nbinom1, data = temp), silent = TRUE)
       }
       return(fit)
     }
     
-    
-    set.seed(2023) # fonction set.seed(2023) sert à reproduire toujours la même valeur car hnp fonctionne
-    #à partir de simulations. Utiliser 10 ou 100 simulations pour le même modèle va produire une estimation semblable à
-    #la première, mais différente aussi.
-    
+    set.seed(2023)  # Reproductibilité des simulations
     hnp_NB1 <- list()
-    
-    for (i in 1:1) {
-      #remettre a 100
+    for (i in 1:1) {  # Remettre à 100 si nécessaire
       hnp_NB1[[i]] <- hnp(
         model.NB1,
         newclass = TRUE,
@@ -156,44 +108,31 @@ selection_modele_CPUE_tous <-
         how.many.out = TRUE,
         plot.sim = FALSE
       )
-      
     }
     
-    summary_hnp_NB1 <- sapply(hnp_NB1, function(x)
-      x$out / x$total * 100)
+    # Calcul de l'ajustement
+    summary_hnp_NB1 <- sapply(hnp_NB1, function(x) x$out / x$total * 100)
+    ajustement.NB1 <- mean(summary_hnp_NB1) %>% as.numeric() %>% round(digits = 2)
     
-    ajustement.NB1 <-
-      mean(summary_hnp_NB1) %>% as.numeric() %>% round(digits = 2)
-    
-    #presentation des resultats
+    # Prédiction et calcul de la CPUE avec IC
     newdata <- data.frame(Moyenne = c("moyenne"))
-    method.NB1 <- "NB1"
-    predM.NB1 <-
-      predict(
-        model.NB1,
-        newdata,
-        full = TRUE,
-        se.fit = TRUE,
-        type = "link"
-      )
-    CPUEfinal.NB1 <-
-      exp(predM.NB1$fit)  %>% round(digits = 2) #JM dit de pas faire round a lunite (digits=0) pour la moyenne, mais plutot 2
-    CPUEfinal.NB1
-    confint.NB1 <-
-      confint(model.NB1) #ON DEVRAIT PRENDRE CA COMME lwr and upr limites ! Ca donne aussi un IC95%
-    commentaires.NB1 <- NA
-    if (ajustement.NB1 < 10) {
-      commentaires.NB1 <- "Le modèle NB1 s'ajuste bien à vos données."
-    }
-    if (ajustement.NB1 > 10) {
-      commentaires.NB1 <-
-        "Le modèle NB1 ne s'ajuste pas bien à vos données. Vous devriez utiliser un autre modèle."
-    }
-    linf <- (CPUEfinal.NB1 - confint.NB1[1]) %>% round(digits = 2)
-    lsup <- (CPUEfinal.NB1 + confint.NB1[2]) %>% round(digits = 2)
+    predM.NB1 <- predict(model.NB1, newdata, full = TRUE, se.fit = TRUE, type = "link")
     
+    # Calcul uniforme des IC (intervalle de confiance 95%)
+    CPUEfinal.NB1 <- exp(predM.NB1$fit) %>% round(digits = 2)
+    linf <- exp(predM.NB1$fit - 1.96 * predM.NB1$se.fit) %>% round(digits = 2)
+    lsup <- exp(predM.NB1$fit + 1.96 * predM.NB1$se.fit) %>% round(digits = 2)
+    
+    # Déterminer le commentaire selon l'ajustement
+    commentaires.NB1 <- ifelse(
+      ajustement.NB1 < 10,
+      "Le modèle NB1 s'ajuste bien à vos données.",
+      "Le modèle NB1 ne s'ajuste pas bien à vos données. Vous devriez utiliser un autre modèle."
+    )
+    
+    # Stocker les résultats
     resultCPUE.NB1 <- data.frame(
-      "Méthode" = method.NB1,
+      "Méthode" = "NB1",
       Ajustement = ajustement.NB1,
       CPUE = CPUEfinal.NB1,
       "IC95" = paste0("(", linf, "-", lsup, ")"),
@@ -201,83 +140,75 @@ selection_modele_CPUE_tous <-
       modeltemp = "model.NB1"
     )
     
-    
-    
     # NB2 ---------------------------------------------------------------------
+    # Ajustement du modèle NB2
+    model.NB2 <- MASS::glm.nb(CPUE ~ 1, data = temp)
     
-    
-    
-    # NB2 (NB2), on teste un 2e modele
-    model.NB2 <-  MASS::glm.nb(CPUE ~ 1, data = temp)
-    set.seed(2023)
-    
+    # Vérification de l'ajustement avec hnp
+    set.seed(2023)  # Reproductibilité des simulations
     hnp_NB2 <- list()
-    
-    for (i in 1:1) {
-      #remettre a 100
-      
-      hnp_NB2[[i]] <-
-        hnp(
-          model.NB2,
-          resid.type = "pearson",
-          how.many.out = TRUE,
-          plot.sim = FALSE
-        )
-      
+    for (i in 1:1) {  # Remettre à 100 si nécessaire
+      hnp_NB2[[i]] <- hnp(
+        model.NB2,
+        resid.type = "pearson",
+        how.many.out = TRUE,
+        plot.sim = FALSE
+      )
     }
     
-    summary_hnp_NB2 <- sapply(hnp_NB2, function(x)
-      x$out / x$total * 100)
-    ajustement.NB2 <-
-      mean(summary_hnp_NB2) %>% as.numeric()  %>% round(digits = 2)
-    commentaires.NB2 <- NA
+    # Calcul de l'ajustement
+    summary_hnp_NB2 <- sapply(hnp_NB2, function(x) x$out / x$total * 100)
+    ajustement.NB2 <- mean(summary_hnp_NB2) %>% as.numeric() %>% round(digits = 2)
     
-    if (ajustement.NB2 < 10) {
-      commentaires.NB2 <- "Le modèle de NB2 s'ajuste bien à vos données."
-    }
-    if (ajustement.NB2 > 10) {
-      commentaires.NB2 <-
-        "Le modèle de NB2 ne s'ajuste pas bien à vos données. Vous devriez utiliser un autre modèle."
-    }
+    # Prédiction et calcul de la CPUE avec IC
+    newdata <- data.frame(Moyenne = c("moyenne"))
+    predM.NB2 <- predict(model.NB2, newdata, full = TRUE, se.fit = TRUE, type = "link")
     
+    # Calcul uniforme des IC (intervalle de confiance 95%)
+    CPUEfinal.NB2 <- exp(predM.NB2$fit) %>% round(digits = 2)
+    linf <- exp(predM.NB2$fit - 1.96 * predM.NB2$se.fit) %>% round(digits = 2)
+    lsup <- exp(predM.NB2$fit + 1.96 * predM.NB2$se.fit) %>% round(digits = 2)
+    
+    # Déterminer le commentaire selon l'ajustement
+    commentaires.NB2 <- ifelse(
+      ajustement.NB2 < 10,
+      "Le modèle NB2 s'ajuste bien à vos données.",
+      "Le modèle NB2 ne s'ajuste pas bien à vos données. Vous devriez utiliser un autre modèle."
+    )
+    
+    # Stocker les résultats
+    resultCPUE.NB2 <- data.frame(
+      "Méthode" = "NB2",
+      Ajustement = ajustement.NB2,
+      CPUE = CPUEfinal.NB2,
+      "IC95" = paste0("(", linf, "-", lsup, ")"),
+      Commentaires = commentaires.NB2,
+      modeltemp = "model.NB2"
+    )
     
     # CMP ---------------------------------------------------------------------
     
+    # Ajustement du modèle CMP (Conway-Maxwell-Poisson)
     library(glmmTMB)
-    model.CMP <-
-      glmmTMB::glmmTMB(CPUE ~ 1,
-                       family = glmmTMB::compois(link = "log"),
-                       data = temp)#modele glm initial pour le calcul
+    model.CMP <- glmmTMB(CPUE ~ 1, family = glmmTMB::compois(link = "log"), data = temp)
     
     
-    dfun <- function(obj) {
-      residuals(obj, type = "pearson")
-    }
-    sfun <- function(n, obj) {
-      simulate(obj)[[1]]
-    }
+    # Vérification de l'ajustement avec hnp
+    dfun <- function(obj) {residuals(obj, type = "pearson") }
+    sfun <- function(n, obj) { simulate(obj)[[1]] }
     
     ffun_CMP <- function(response) {
-      fit <- try(glmmTMB(response ~ 1, family = nbinom1, data = temp),
-                 silent = TRUE)
+      fit <- try(glmmTMB(response ~ 1, family = glmmTMB::compois(link = "log"), data = temp), silent = TRUE)
       while (class(fit) == "try-error") {
-        response2 <- sfun(1, m.df_EXT.CMP)
-        fit <-
-          try(glmmTMB(response2 ~ 1, family = nbinom1, data = temp),
-              silent = TRUE)
+        response2 <- sfun(1, model.CMP)
+        fit <- try(glmmTMB(response2 ~ 1, family = glmmTMB::compois(link = "log"), data = temp), silent = TRUE)
       }
       return(fit)
     }
     
-    
-    set.seed(2023) # fonction set.seed(2023) sert à reproduire toujours la même valeur car hnp fonctionne
-    #à partir de simulations. Utiliser 10 ou 100 simulations pour le même modèle va produire une estimation semblable à
-    #la première, mais différente aussi.
-    
+    set.seed(2023)  # Reproductibilité des simulations
     hnp_CMP <- list()
-    
-    for (i in 1:1) {
-      #remettre a 100
+    for (i in 1:1) {  # Remettre à 100 si nécessaire
       hnp_CMP[[i]] <- hnp(
         model.CMP,
         newclass = TRUE,
@@ -287,44 +218,31 @@ selection_modele_CPUE_tous <-
         how.many.out = TRUE,
         plot.sim = FALSE
       )
-      
     }
     
-    summary_hnp_CMP <- sapply(hnp_CMP, function(x)
-      x$out / x$total * 100)
+    # Calcul de l'ajustement
+    summary_hnp_CMP <- sapply(hnp_CMP, function(x) x$out / x$total * 100)
+    ajustement.CMP <- mean(summary_hnp_CMP) %>% as.numeric() %>% round(digits = 2)
     
-    ajustement.CMP <-
-      mean(summary_hnp_CMP) %>% as.numeric() %>% round(digits = 2)
-    
-    #presentation des resultats
+    # Prédiction et calcul de la CPUE avec IC
     newdata <- data.frame(Moyenne = c("moyenne"))
-    method.CMP <- "CMP"
-    predM.CMP <-
-      predict(
-        model.CMP,
-        newdata,
-        full = TRUE,
-        se.fit = TRUE,
-        type = "link"
-      )
-    CPUEfinal.CMP <-
-      exp(predM.CMP$fit)  %>% round(digits = 2) #JM dit de pas faire round a lunite (digits=0) pour la moyenne, mais plutot 2
-    CPUEfinal.CMP
-    confint.CMP <-
-      confint(model.CMP) #ON DEVRAIT PRENDRE CA COMME lwr and upr limites ! Ca donne aussi un IC95%
-    commentaires.CMP <- NA
-    if (ajustement.CMP < 10) {
-      commentaires.CMP <- "Le modèle CMP s'ajuste bien à vos données."
-    }
-    if (ajustement.CMP > 10) {
-      commentaires.CMP <-
-        "Le modèle CMP ne s'ajuste pas bien à vos données. Vous devriez utiliser un autre modèle."
-    }
-    linf <- (CPUEfinal.CMP - confint.CMP[1]) %>% round(digits = 2)
-    lsup <- (CPUEfinal.CMP + confint.CMP[2]) %>% round(digits = 2)
+    predM.CMP <- predict(model.CMP, newdata, full = TRUE, se.fit = TRUE, type = "link")
     
+    # Calcul uniforme des IC (intervalle de confiance 95%)
+    CPUEfinal.CMP <- exp(predM.CMP$fit) %>% round(digits = 2)
+    linf <- exp(predM.CMP$fit - 1.96 * predM.CMP$se.fit) %>% round(digits = 2)
+    lsup <- exp(predM.CMP$fit + 1.96 * predM.CMP$se.fit) %>% round(digits = 2)
+    
+    # Déterminer le commentaire selon l'ajustement
+    commentaires.CMP <- ifelse(
+      ajustement.CMP < 10,
+      "Le modèle CMP s'ajuste bien à vos données.",
+      "Le modèle CMP ne s'ajuste pas bien à vos données. Vous devriez utiliser un autre modèle."
+    )
+    
+    # Stocker les résultats
     resultCPUE.CMP <- data.frame(
-      "Méthode" = method.CMP,
+      "Méthode" = "CMP",
       Ajustement = ajustement.CMP,
       CPUE = CPUEfinal.CMP,
       "IC95" = paste0("(", linf, "-", lsup, ")"),
@@ -332,45 +250,28 @@ selection_modele_CPUE_tous <-
       modeltemp = "model.CMP"
     )
     
-
-    
     # GP ---------------------------------------------------------------------
     
+    # Ajustement du modèle GP (Generalized Poisson)
     library(glmmTMB)
-    model.GP <-
-      glmmTMB::glmmTMB(CPUE ~ 1,
-                       family = glmmTMB::genpois(link = "log"),
-                       data = temp)#modele glm initial pour le calcul
+    model.GP <- glmmTMB(CPUE ~ 1, family = glmmTMB::genpois(link = "log"), data = temp)
     
-    
-    dfun <- function(obj) {
-      residuals(obj, type = "pearson")
-    }
-    sfun <- function(n, obj) {
-      simulate(obj)[[1]]
-    }
+    # Vérification de l'ajustement avec hnp
+    dfun <- function(obj) residuals(obj, type = "pearson")
+    sfun <- function(n, obj) simulate(obj)[[1]]
     
     ffun_GP <- function(response) {
-      fit <- try(glmmTMB(response ~ 1, family = nbinom1, data = temp),
-                 silent = TRUE)
+      fit <- try(glmmTMB(response ~ 1, family = glmmTMB::genpois(link = "log"), data = temp), silent = TRUE)
       while (class(fit) == "try-error") {
-        response2 <- sfun(1, m.df_EXT.GP)
-        fit <-
-          try(glmmTMB(response2 ~ 1, family = nbinom1, data = temp),
-              silent = TRUE)
+        response2 <- sfun(1, model.GP) 
+        fit <- try(glmmTMB(response2 ~ 1, family = glmmTMB::genpois(link = "log"), data = temp), silent = TRUE)
       }
       return(fit)
     }
     
-    
-    set.seed(2023) # fonction set.seed(2023) sert à reproduire toujours la même valeur car hnp fonctionne
-    #à partir de simulations. Utiliser 10 ou 100 simulations pour le même modèle va produire une estimation semblable à
-    #la première, mais différente aussi.
-    
+    set.seed(2023)  # Reproductibilité des simulations
     hnp_GP <- list()
-    
-    for (i in 1:1) {
-      #remettre a 100
+    for (i in 1:1) {  # Remettre à 100 si nécessaire
       hnp_GP[[i]] <- hnp(
         model.GP,
         newclass = TRUE,
@@ -380,42 +281,31 @@ selection_modele_CPUE_tous <-
         how.many.out = TRUE,
         plot.sim = FALSE
       )
-      
     }
     
-    summary_hnp_GP <- sapply(hnp_GP, function(x)
-      x$out / x$total * 100)
+    # Calcul de l'ajustement
+    summary_hnp_GP <- sapply(hnp_GP, function(x) x$out / x$total * 100)
+    ajustement.GP <- mean(summary_hnp_GP) %>% as.numeric() %>% round(digits = 2)
     
-    ajustement.GP <-
-      mean(summary_hnp_GP) %>% as.numeric() %>% round(digits = 2)
-    
-    #presentation des resultats
+    # Prédiction et calcul de la CPUE avec IC
     newdata <- data.frame(Moyenne = c("moyenne"))
-    method.GP <- "GP"
-    predM.GP <-
-      predict(model.GP,
-              newdata,
-              full = TRUE,
-              se.fit = TRUE,
-              type = "link")
-    CPUEfinal.GP <-
-      exp(predM.GP$fit)  %>% round(digits = 2) #JM dit de pas faire round a lunite (digits=0) pour la moyenne, mais plutot 2
-    CPUEfinal.GP
-    confint.GP <-
-      confint(model.GP) #ON DEVRAIT PRENDRE CA COMME lwr and upr limites ! Ca donne aussi un IC95%
-    commentaires.GP <- NA
-    if (ajustement.GP < 10) {
-      commentaires.GP <- "Le modèle GP s'ajuste bien à vos données."
-    }
-    if (ajustement.GP > 10) {
-      commentaires.GP <-
-        "Le modèle GP ne s'ajuste pas bien à vos données. Vous devriez utiliser un autre modèle."
-    }
-    linf <- (CPUEfinal.GP - confint.GP[1]) %>% round(digits = 2)
-    lsup <- (CPUEfinal.GP + confint.GP[2]) %>% round(digits = 2)
+    predM.GP <- predict(model.GP, newdata, full = TRUE, se.fit = TRUE, type = "link")
     
+    # Calcul uniforme des IC (intervalle de confiance 95%)
+    CPUEfinal.GP <- exp(predM.GP$fit) %>% round(digits = 2)
+    linf <- exp(predM.GP$fit - 1.96 * predM.GP$se.fit) %>% round(digits = 2)
+    lsup <- exp(predM.GP$fit + 1.96 * predM.GP$se.fit) %>% round(digits = 2)
+    
+    # Déterminer le commentaire selon l'ajustement
+    commentaires.GP <- ifelse(
+      ajustement.GP < 10,
+      "Le modèle GP s'ajuste bien à vos données.",
+      "Le modèle GP ne s'ajuste pas bien à vos données. Vous devriez utiliser un autre modèle."
+    )
+    
+    # Stocker les résultats
     resultCPUE.GP <- data.frame(
-      "Méthode" = method.GP,
+      "Méthode" = "GP",
       Ajustement = ajustement.GP,
       CPUE = CPUEfinal.GP,
       "IC95" = paste0("(", linf, "-", lsup, ")"),
@@ -423,144 +313,111 @@ selection_modele_CPUE_tous <-
       modeltemp = "model.GP"
     )
     
+# Mise en page des resultats ----------------------------------------------
     
-    
-    
-    
-    
-    # presentation des resultats ----------------------------------------------
-    newdata <- data.frame(Moyenne = c("moyenne"))
-    method.NB2 <- "NB2"
-    predM.NB2 <-
-      predict(
-        model.NB2,
-        newdata,
-        full = TRUE,
-        se.fit = TRUE,
-        type = "link"
-      )
-    CPUEfinal.NB2 <-
-      exp(predM.NB2$fit)  %>% round(digits = 2) #JM dit de pas faire round a lunite (digits=0) pour la moyenne, mais plutot 2
-    confint.NB2 <-
-      confint(model.NB2) #ON DEVRAIT PRENDRE CA COMME lwr and upr limites ! Ca donne aussi un IC95%
-    
-    linf <- (CPUEfinal.NB2 - confint.NB2[1]) %>% round(digits = 2)
-    lsup <- (CPUEfinal.NB2 + confint.NB2[2]) %>% round(digits = 2)
-    
-    
-    resultCPUE.NB2 <- data.frame(
-      "Méthode" = method.NB2,
-      Ajustement = ajustement.NB2,
-      CPUE = CPUEfinal.NB2,
-      "IC95" = paste0("(", linf, "-", lsup, ")"),
-      Commentaires = commentaires.NB2,
-      modeltemp = "model.NB2"
+    # Construire le tableau CLEAN avec tous les modèles
+    CLEAN <- rbind(
+      resultCPUE.p,
+      resultCPUE.NB2,
+      resultCPUE.NB1,
+      resultCPUE.CMP,
+      resultCPUE.GP
     )
     
-    CLEAN <-
-      rbind(resultCPUE.p,
-            resultCPUE.NB2,
-            resultCPUE.NB1,
-            resultCPUE.CMP,
-            resultCPUE.GP)
+    # Vérification de la convergence des modèles et calcul de l'AICc
+    models_list <- list(
+      "model.p" = model.p,
+      "model.NB2" = model.NB2,
+      "model.NB1" = model.NB1,
+      "model.CMP" = model.CMP,
+      "model.GP" = model.GP
+    )
     
-    
-    #adequation de lajustement de chaque mod, ici pour M-2009 mp est inadequat donc on devrait pas le considerer pour le reste
-    #fxn hnp avec iteration, residu en dehors de lenveloppe simule (un bon modele en a <5% par ex. )
-    #PRESENTER OUI, mais bien identifier WARNING en fxn du CLASSEMENT DE LIDENTIFIANT comme JM : Le modele sajuste mal a vos donnees, vous devriez utiliser un autre modele!
-    indice <- CLEAN$Ajustement
-    indice <- which(indice == min(indice))
-    n_indice <- length(unique(indice)) %>% as.numeric()
-    
-    
-    modeles_egalite <- c(CLEAN[indice, ]$modeltemp)
-    modeles_egalite_nom <- c(CLEAN[indice, ]$'Méthode')
-    
-    if (n_indice >= 2) {
-      sorti <- model.sel(mget(modeles_egalite))
-      compromis <- model.avg(sorti , revised.var = TRUE)
-      
-      newdata <- data.frame(moyenne = c("moyenne"))
-      method.compromis <- "Compromis"
-      
-      predM.compromis <-
-        predict(
-          compromis,
-          newdata,
-          full = TRUE,
-          se.fit = TRUE,
-          type = "link"
+    CLEAN <- CLEAN %>%
+      mutate(
+        # Vérification de la convergence des modèles
+        Convergence = sapply(modeltemp, function(m) {
+          if (m %in% names(models_list)) {
+            mod <- models_list[[m]]
+            if ("converged" %in% names(mod)) {
+              return(mod$converged)
+            } else {
+              return(TRUE)  # Si la propriété n'existe pas, on suppose TRUE
+            }
+          } else {
+            return(NA)  # Cas improbable où le modèle est absent
+          }
+        }),
+        
+        # Calcul de l'AICc
+        AICc = sapply(modeltemp, function(m) {
+          if (m %in% names(models_list)) {
+            return(AICc(models_list[[m]]))
+          } else {
+            return(NA)
+          }
+        }),
+        
+        # Ajouter un commentaire si le modèle n'a pas convergé
+        Commentaires = ifelse(
+          Convergence == FALSE, 
+          paste0(Commentaires, " ATTENTION : Le modèle n'a pas convergé."),
+          Commentaires
         )
-      CPUEfinal.compromis <-
-        exp(predM.compromis$fit)  %>% round(digits = 2) #JM dit de pas faire round a lunite (digits=0) pour la moyenne, mais plutot 2
-      
-      
-      #confint.compromis <- confint(compromis) #ON DEVRAIT PRENDRE CA COMME lwr and upr limites ! Ca donne aussi un IC95%
-      #linf <- (CPUEfinal.compromis - confint.compromis[1]) %>% round(digits = 2)
-      #lsup <- (CPUEfinal.compromis + confint.compromis[2]) %>% round(digits = 2)
-      
-      #MAIS CA NE FONCTIONNE PAS DONC JE FAIS LA VIEILLE METHODE ?
-      
-      linf <-
-        exp(predM.compromis$fit - (1.96 * predM.compromis$se.fit)) %>%   round(digits = 2) #JM dit de pas faire round a lunite (digits=0) pour la moyenne, mais plutot 2
-      lsup <-
-        exp(predM.compromis$fit + (1.96 * predM.compromis$se.fit)) %>%   round(digits = 2) #JM dit de pas faire round a lunite (digits=0) pour la moyenne, mais plutot 2
-      
-      
-      
-      
-      
-      resultCPUE.compromis <- data.frame(
-        "Méthode" = method.compromis,
-        Ajustement = 0,
-        CPUE = CPUEfinal.compromis,
-        "IC95" = paste0("(", linf, "-", lsup, ")"),
-        Commentaires = paste0(
-          "Comme les modèles ",
-          paste(glue::glue(list(
-            modeles_egalite_nom
-          ))),
-          " s'ajustent bien à vos données, compromis recommandé."
-        ),
-        modeltemp = "temps"
       )
-      
-      CLEAN <- rbind(CLEAN, resultCPUE.compromis)
+    
+    # Sélection des modèles bien ajustés pour le calcul de ΔAICc
+    CLEAN_bien_ajuste <- CLEAN %>% filter(Ajustement < 10)
+    
+    if (nrow(CLEAN_bien_ajuste) > 0) {
+      min_AICc <- min(CLEAN_bien_ajuste$AICc, na.rm = TRUE)
+      CLEAN_bien_ajuste <- CLEAN_bien_ajuste %>%
+        mutate(Delta_AICc = AICc - min_AICc) %>%
+        arrange(AICc)
+    } else {
+      # Si aucun modèle n'est bien ajusté, on prend tous les modèles
+      min_AICc <- min(CLEAN$AICc, na.rm = TRUE)
+      CLEAN <- CLEAN %>%
+        mutate(Delta_AICc = AICc - min_AICc) %>%
+        arrange(AICc)
     }
     
+    # Réintégration des modèles mal ajustés avec priorité aux modèles bien ajustés
+    CLEAN <- CLEAN %>%
+      left_join(select(CLEAN_bien_ajuste, Méthode, Delta_AICc), by = "Méthode") %>%
+      mutate(Delta_AICc = replace_na(Delta_AICc, NA)) %>%
+      arrange(Ajustement >= 10, AICc)  # Priorité aux modèles bien ajustés, puis tri par AICc
     
-    #COMPROMIS SLMT SI LES 2 modeles sont CHILL.
-    #Donc les bios ont au moins les results des 2 modeles, et compromis en plus si classement de lajustement CHILL
+    # Sélection du meilleur modèle parmi ceux bien ajustés
+    if (nrow(CLEAN_bien_ajuste) > 0) {
+      best_model <- CLEAN_bien_ajuste %>% filter(Delta_AICc == 0)
+      best_model_name <- best_model$Méthode
+      CLEAN <- CLEAN %>%
+        mutate(Commentaires = ifelse(
+          Méthode == best_model_name,
+          paste0(Commentaires, "Ce modèle est recommandé car son AICc est le plus faible."),
+          Commentaires
+        ))
+    } else {
+      # Si aucun modèle ne s'ajuste bien, prendre le meilleur modèle global
+      best_model <- CLEAN %>% filter(Delta_AICc == 0)
+      best_model_name <- best_model$Méthode
+      CLEAN <- CLEAN %>%
+        mutate(Commentaires = ifelse(
+          Méthode == best_model_name,
+          paste0(Commentaires, "Il s’agit toutefois du meilleur modèle parmi les options disponibles."),
+          Commentaires
+        ))
+    }
     
-    # if (ajustement.NB2 < 10 && ajustement.p < 10 ) {
-    #   sorti <- model.sel(model.NB2, model.p )
-    #   compromis <- model.avg(sorti , revised.var = TRUE      )
-    #
-    #   newdata <- data.frame(moyenne=c("moyenne"))
-    #   method.compromis <- "Compromis NB2 et Poisson"
-    #
-    #   predM.compromis <-  predict(compromis,newdata, full = TRUE, se.fit = TRUE, type = "link")
-    #   CPUEfinal.compromis <- exp(predM.compromis$fit)  %>% round(digits = 2) #JM dit de pas faire round a lunite (digits=0) pour la moyenne, mais plutot 2
-    #   confint.compromis <- confint(compromis) #ON DEVRAIT PRENDRE CA COMME lwr and upr limites ! Ca donne aussi un IC95%
-    #
-    #   linf <- (CPUEfinal.compromis - confint.compromis[1]) %>% round(digits = 2)
-    #   lsup <- (CPUEfinal.compromis + confint.compromis[2]) %>% round(digits = 2)
-    #
-    #
-    #   resultCPUE.compromis <- data.frame("Méthode" = method.compromis,
-    #                                      Ajustement = NA,
-    #                                      CPUE = CPUEfinal.compromis,
-    #                                      "IC95" = paste0("(",linf,"-",lsup,")"),
-    #                                      Commentaires = "Comme les modèles Poisson et NB2 s'ajustent bien à vos données, compromis recommandé.")
-    #
-    #   CLEAN <- rbind(CLEAN, resultCPUE.compromis)
-    # }
-    #
+    # Sélection finale des colonnes pour affichage
+    CLEAN <- CLEAN %>%
+      select("Méthode", "Ajustement", "AICc", "Delta_AICc", "CPUE", "IC95", "Commentaires", "Convergence")
     
-    CLEAN$Ajustement <- as.numeric(CLEAN$Ajustement)
-    CLEAN <-
-      CLEAN %>% dplyr::select("Méthode", "Ajustement", "CPUE", "IC95", "Commentaires")
-    
-    CLEAN <- CLEAN %>% dplyr::arrange(Ajustement)
+    # Retourner le tableau final
     CLEAN
+    
+
+    
+    
   }

@@ -94,6 +94,13 @@ biomasse_table <- biomasse_table(specimen, sp_pen, data_station) %>% as.data.fra
 binwidth <- get_binwidth(sp_pen)
 nomsp <- get_nomsp(sp_pen)
 
+
+source("R/selection_modele_CPUE_tous.R")
+selection_modele_CPUE_tous(capture, specimen, espece = sp_pen, station = data_station)
+
+
+
+
 source("R/structure_taille.R")  # Assuming you refactor all structure_taille_* functions into structure_taille
 
 # Test with 'tous' groupement
@@ -215,6 +222,7 @@ courbe_croissance_ggGOMP(initcroissance = initcroissance, tablemodele = croissan
 
 source("R/courbe_croissance_ggLOGIST.R")
 courbe_croissance_ggLOGIST(initcroissance = initcroissance, tablemodele = croissance1)
+
 
 
 
