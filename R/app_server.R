@@ -650,8 +650,10 @@ app_server <- function(input, output, session) {
     selected <- getReactableState("croissance1_table", "selected")
     req(selected, croissance1())
     details <- croissance1()[selected, 1]
-    paste(details)
+    # paste(details)
   })
+  
+  
   
   output$download_croissance1 <-
     download_data_format_xlsx(givenname = "courbe_croissance_comparaison", datadown = croissance1())
@@ -660,7 +662,7 @@ app_server <- function(input, output, session) {
     req(selectedmodelcroissance(), data_specimen(), sp_pen(), croissance1())
     
     # Appeler la fonction générique en fonction du modèle sélectionné
-    courbe_croissance_plot(dfspecimen = data_specimen(), sp_pen = sp_pen(), tablemodele = croissance1(), modele = selectedmodelcroissance())
+    courbe_croissance_plot(dfspecimen = data_specimen(), sp_pen = sp_pen(), tablemodele = croissance1(), modele = paste(selectedmodelcroissance()))
   }, res = 96)
   
   

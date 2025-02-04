@@ -49,7 +49,7 @@ courbe_croissance_plot <- function(dfspecimen, sp_pen, tablemodele, modele) {
   
  
   # Création du graphique avec ggplot2
-  ggplot() +
+plot <-   ggplot() +
     geom_ribbon(data = preds, aes(x = age, ymin = lwr, ymax = upr), fill = "gray80") +
     geom_point(data = init, aes(y = ltm, x = age), size = 2, alpha = 0.1) +
     geom_line(data = preds, aes(x = age, y = fit), linewidth = 1, linetype = "dashed") +
@@ -64,4 +64,6 @@ courbe_croissance_plot <- function(dfspecimen, sp_pen, tablemodele, modele) {
                           "Equation : L(âge) = ", round(sv0$Linf, 2), 
                           " / (1 + exp(-", round(sv0$K, 3), 
                           " * (âge - ", round(sv0$t0, 3), ")))"))  
+
+return(plot)
 }

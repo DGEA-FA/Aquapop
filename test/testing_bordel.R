@@ -94,6 +94,34 @@ biomasse_table <- biomasse_table(specimen, sp_pen, data_station) %>% as.data.fra
 binwidth <- get_binwidth(sp_pen)
 nomsp <- get_nomsp(sp_pen)
 
+source("R/courbe_croissance_comparaison.R")
+croissance1 <- courbe_croissance_comparaison(dfspecimen= data_specimen, sp_pen)
+
+
+source("R/courbe_croissance_plot.R")
+
+selectedmodelcroissanceplot_vb <- courbe_croissance_plot(dfspecimen = data_specimen, 
+                                                      sp_pen,
+                                                      tablemodele = croissance1,
+                                                      modele = "Von Bertalanffy")
+selectedmodelcroissanceplot_vb
+
+selectedmodelcroissanceplot_g <- courbe_croissance_plot(dfspecimen = data_specimen, 
+                                                         sp_pen,
+                                                         tablemodele = croissance1,
+                                                         modele = "Gompertz")
+selectedmodelcroissanceplot_g
+
+
+selectedmodelcroissanceplot_l <- courbe_croissance_plot(dfspecimen = data_specimen, 
+                                                        sp_pen,
+                                                        tablemodele = croissance1,
+                                                        modele = "Logistique")
+selectedmodelcroissanceplot_l
+
+
+
+
 
 source("R/selection_modele_CPUE.R")
 selection_modele_CPUE_tous_data <- selection_modele_CPUE(capture, specimen, espece = sp_pen, station = data_station)
@@ -136,6 +164,9 @@ print(plot_age_maturite)
 # Test avec 'marquage' comme groupement
 plot_age_marquage <- structure_age(dfspecimen = specimen, espece = sp_pen, nomsp = nomsp, groupement = "marquage")
 print(plot_age_marquage)
+
+
+
 
 
 source("R/taille_masse_age.R")
@@ -207,22 +238,4 @@ data = specimen
 sp = sp_pen
 
   #selectionner slmt le data necessaire
-
-source("R/create_initcroissance.R")
-initcroissance <- create_initcroissance(specimen, sp_pen)
-
-source("R/courbe_croissance_comparaison.R")
-croissance1 <- courbe_croissance_comparaison(data = initcroissance)
-
-source("R/courbe_croissance_ggVONBERT.R")
-courbe_croissance_ggVONBERT(initcroissance = initcroissance, tablemodele = croissance1)
-
-source("R/courbe_croissance_ggGOMP.R")
-courbe_croissance_ggGOMP(initcroissance = initcroissance, tablemodele = croissance1)
-
-source("R/courbe_croissance_ggLOGIST.R")
-courbe_croissance_ggLOGIST(initcroissance = initcroissance, tablemodele = croissance1)
-
-
-
 
