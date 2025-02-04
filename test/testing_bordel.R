@@ -143,7 +143,7 @@ taille_masse_agedf <- taille_masse_age(dataspecimen = specimen, espece = sp_pen)
 
 source("R/relation_masse_longueur.R")
 
-relation_masse_longueur(data = data_specimen, espece = sp_pen) %>%
+relation_masse_longueur(data = data_specimen, espece = sp_pen)$graph %>%
   plotly::ggplotly(tooltip = "text")
 
 

@@ -199,7 +199,15 @@ app_ui <- function() {
               type = myspinner
             ),
             h3(text_elements$titregraph_relmasselongueur),
-            downloadButton(outputId = "download_masselongueur_plot", label = "Téléchargement")
+            downloadButton(outputId = "download_masselongueur_plot", label = "Téléchargement"),
+            br(), br(),
+            
+            # Ajout du tableau des coefficients
+            h3("Tableau des coefficients de la relation Masse-Longueur"),
+            tableOutput("relation_masse_longueur_table"),
+            
+            # Bouton de téléchargement du tableau
+            downloadButton(outputId = "download_relation_masse_longueur_table", label = "Télécharger le tableau")
           )
         )
       ),

@@ -546,9 +546,26 @@ app_server <- function(input, output, session) {
     }
   )
   # Relation masse-longueur -------------------------------------------------------
+    relation_masse_longueur_data <- reactive({
+    req(specimen(), sp_pen())
+    relation_masse_longueur(specimen(), sp_pen())
+  })
+  
+  # Affichage du tableau des coefficients
+  output$relation_masse_longueur_table <- renderTable({
+    relation_masse_longueur_data()$table
+  })
+  
+  # Bouton de téléchargement
+  output$download_relation_masse_longueur_table <-
+    download_data_format_xlsx(
+      givenname = "relation_masse_longueur_coefficient",
+      datadown = relation_masse_longueur_data()$table)
+    
+  
   output$masselongueur_plot <- plotly::renderPlotly({
-    req(data_specimen(), sp_pen())
-    relation_masse_longueur(data = data_specimen(), espece = sp_pen()) %>%
+    req(relation_masse_longueur_data())
+    relation_masse_longueur_data()$graph %>%
       plotly::ggplotly(tooltip = "text")
   })
  
@@ -558,11 +575,12 @@ app_server <- function(input, output, session) {
     },
     content = function(file) {
       ggsave(file, plot = {
-        req(data_specimen(), sp_pen())
-        relation_masse_longueur(data = data_specimen(), espece = sp_pen())
+        req(relation_masse_longueur_data())
+        relation_masse_longueur_data()$graph
       } , device = "png")
     }
   )
+  
   # Indice de condition -------------------------------------------------------
   wri1data <- reactive({
     req(data_specimen(), sp_pen())

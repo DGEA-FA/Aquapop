@@ -1,74 +1,66 @@
 relation_masse_longueur <- function(data, espece) {
-  dfAllometrie <-
-    data  %>% filter(sp == espece) %>% droplevels() #seulement l'espece PEN
-  dfAllometrie  <-
-    subset(dfAllometrie,!is.na(ltm))# removing all records where mesures ltm were missing
-  dfAllometrie <-
-    subset(dfAllometrie,!is.na(masse))# removing all records where mesures masse were missing
-  dfAllometrie <- dfAllometrie %>%
-    mutate(logW = log10(masse), #quantitative response variable
-           logL = log10(ltm)) #quantitative explanatory variable
-  #Surtout inspiré de Ogle p.134 IFAR
+  # Filtrer les données pour l'espèce sélectionnée
+  dfAllometrie <- data %>%
+    filter(sp == espece) %>%
+    droplevels() %>%
+    filter(!is.na(ltm), !is.na(masse)) %>% # Retirer les valeurs manquantes
+    mutate(
+      logW = log10(masse), # Variable réponse en log10
+      logL = log10(ltm) # Variable explicative en log10
+    )
   
-  fit1 <-
-    lm(logW ~ logL,  data = dfAllometrie) #simple linear regression fitted with lm
-  a <-
-    coef(fit1)[1] %>% as.numeric() %>% round(digits = 3) #extration des parametres du modele #UPDATE CEST LOG 10 de A
-  b <-
-    coef(fit1)[2] %>% as.numeric() %>% round(digits = 3) #extration des parametres du modele
+  # Ajustement du modèle de régression
+  fit1 <- lm(logW ~ logL, data = dfAllometrie)
   
-  #visualising the fit
-  tmp <-
-    range(dfAllometrie$logL) #etendue des valeurs de logL (get min et max)
-  xs <-
-    seq(tmp[1], tmp[2], length.out = 99)  #get sequence de valeurs de min a max by 1 (pour l'axe des X)
-  ys <-
-    predict(fit1, data.frame(logL = xs)) #predire val de Y pour valeurs de X avec le modele fit1 calcule
+  # Extraction des coefficients avec erreurs standard et IC95%
+  coef_summary <- summary(fit1)$coefficients
+  a <- coef_summary[1, 1] %>% round(3) # Intercept (log10(a))
+  b <- coef_summary[2, 1] %>% round(3) # Pente (b)
+  se_a <- coef_summary[1, 2] %>% round(3) # SE de log10(a)
+  se_b <- coef_summary[2, 2] %>% round(3) # SE de b
   
-  #the predicted log-weigth are back transformed to the original scale.
-  #Mais comme les valeurs qui sont retransformées d'une échelle log sont biaisée,
-  #on fait a common correction for allometric equations (sprugel 1983) (voir Ogle p.136 dans IFAR). Ogle computed this equation in his package using logbtcf().
-  cf <- FSA::logbtcf(fit1, 10) #facteur de correction.
-  #the corrected back-transformed predicted value of the response variable is then calculated by multiplying the back-transformed predicted value by this correction factor
-  btys <-
-    cf * 10 ^ predict(fit1, data.frame(logL = xs), interval = "prediction") # same as Ogle p.138 IFAR
+  # Calcul des intervalles de confiance à 95%
+  conf_int <- confint(fit1)
+  ic_a <- paste0("[", round(conf_int[1, 1], 3), " - ", round(conf_int[1, 2], 3), "]")
+  ic_b <- paste0("[", round(conf_int[2, 1], 3), " - ", round(conf_int[2, 2], 3), "]")
+  
+  # Création d'un tableau des coefficients
+  coef_table <- data.frame(
+    Coefficient = c("log10(a)", "b"),
+    Estimate = c(a, b),
+    SE = c(se_a, se_b),
+    IC95 = c(ic_a, ic_b)
+  )
+  
+  # Prédiction pour la courbe ajustée
+  tmp <- range(dfAllometrie$logL)
+  xs <- seq(tmp[1], tmp[2], length.out = 99)
+  ys <- predict(fit1, data.frame(logL = xs))
+  
+  # Correction pour la transformation inverse
+  cf <- FSA::logbtcf(fit1, 10)
+  btys <- cf * 10 ^ predict(fit1, data.frame(logL = xs), interval = "prediction")
   btxs <- 10 ^ xs
-  PREDICT <- data.frame("btxs" = btxs, btys)
-  PREDICT2 <- data.frame("xs" = xs, "ys" = ys)
-  #faire le graphique. Inspirée de Ogle p.139 IFAR, mais que jai traduit en ggplot2
-  # Labeltext <- substitute( y==a~x^{b}   )            #il faudrait plutot ecrire lequation en log 10 NON PLUTOT
-  # Plutot mettre log10a = et b =
-  # Labeltext <- map(paste('<b>log10a = </b>', a, '<b>b = </b>', b,'<br>'), HTML)
-  dfAllometrie <- dfAllometrie %>%  dplyr::rename(LTmax = ltm,
-                                                  Masse = masse)
-
-  # Création du graphique avec suppression des avertissements
+  PREDICT <- data.frame(btxs, btys)
   
-    ggRelationML <- suppressWarnings(
+ 
+  # Création du graphique
+  ggRelationML <- suppressWarnings(
     ggplot() +
-    geom_point(data = dfAllometrie, aes(
-      x = LTmax,
-      y = Masse,
-      text = paste0("<b># spécimen:</b> ", no_specimen, "<br>")
-      
-    )) +
-    geom_line(data = PREDICT, aes(x = btxs, y = fit)) +
-    geom_line(data = PREDICT, aes(x = btxs, y = lwr), linetype = 2) +
-    geom_line(data = PREDICT, aes(x = btxs, y = upr), linetype = 2) +
-    theme_classic() +
-    ggtitle(dfAllometrie$ID) +
-    labs(x = "Longueur totale maximale (mm)",
-         y = "Masse (g)") +
-    theme(panel.background = element_rect(fill = "white", colour = "black"))   +
-    annotate(
-      "text",
-      label = paste0("log10a = ", a, "\n",
-                     "b = ", b),
-      x = min(dfAllometrie$LTmax) + 200,
-      y =  max(dfAllometrie$Masse),
-      color = "black",
-      vjust = "inward",
-      hjust = "inward"
-    ) )
-  return(ggRelationML)
+      geom_point(data = dfAllometrie, aes(
+        x = ltm, y = masse,
+        text = paste0("<b># spécimen:</b> ", no_specimen, "<br>")
+      )) +
+      geom_line(data = PREDICT, aes(x = btxs, y = fit), color = "blue") +
+      geom_line(data = PREDICT, aes(x = btxs, y = lwr), linetype = 2, color = "red") +
+      geom_line(data = PREDICT, aes(x = btxs, y = upr), linetype = 2, color = "red") +
+      theme_classic() +
+      labs(
+        title = paste("Relation masse-longueur pour", espece),
+        x = "Longueur totale maximale (mm)",
+        y = "Masse (g)"
+      ) 
+  )
+  
+  return(list(graph = ggRelationML, table = coef_table))
 }
