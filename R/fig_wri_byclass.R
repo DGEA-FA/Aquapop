@@ -95,7 +95,7 @@ fig_wri_byclass <- function(data, espece) {
   
   aov1 <-  lm(Wri ~ gcat, data = init)
   y <-
-    init %>% group_by(gcat, Classe, range) %>% summarise(n = n()) %>% droplevels()#nb de poissons dans ch classe de taille
+    init %>% group_by(gcat, Classe, range) %>% summarise(n = n(),.groups = "keep") %>% droplevels()#nb de poissons dans ch classe de taille
   init <-
     merge(init, y, by = "gcat") #merge le df avec le nb de poissons
   

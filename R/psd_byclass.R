@@ -66,7 +66,9 @@ psd_byclass <- function(data, espece) {
              ))
   }
   y <-
-    bunch %>% group_by(gcat, Classe, range) %>% summarise(n = n(),.groups = "drop") %>% droplevels()#nb de poissons dans ch classe de taille
+    bunch %>% group_by(gcat, Classe, range) %>% summarise(n = n(),
+                                                          .groups = "keep"
+                                                          ) %>% droplevels()#nb de poissons dans ch classe de taille
   bunch <-
     merge(bunch, y, by = c("gcat", "Classe", "range")) #merge le df avec le nb de poissons
   
@@ -77,7 +79,9 @@ psd_byclass <- function(data, espece) {
     merge(bunch, psdtable, by = "gcat") #merge le df avec le nb de poissons
   bunch  <- bunch %>% dplyr::select(c(Classe, range, n, Freq))
   bunch <-
-    bunch %>% group_by(Classe, range, n, Freq) %>% summarise(.groups = "drop")
+    bunch %>% group_by(Classe, range, n, Freq) %>% summarise(
+      .groups = "keep"
+      )
   virgin <- tibble(Classe = Classename)
   if (espece == "SANA") {
     virgin$range <-

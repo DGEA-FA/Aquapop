@@ -553,8 +553,8 @@ app_server <- function(input, output, session) {
   )
   # Relation masse-longueur -------------------------------------------------------
   output$masselongueur_plot <- plotly::renderPlotly({
-    req(specimen(), sp_pen())
-    relation_masse_longueur(data = specimen(), espece = sp_pen()) %>%
+    req(data_specimen(), sp_pen())
+    relation_masse_longueur(data = data_specimen(), espece = sp_pen()) %>%
       plotly::ggplotly(tooltip = "text")
   })
  
@@ -564,8 +564,8 @@ app_server <- function(input, output, session) {
     },
     content = function(file) {
       ggsave(file, plot = {
-        req(specimen(), sp_pen())
-        relation_masse_longueur(data = specimen(), espece = sp_pen())
+        req(data_specimen(), sp_pen())
+        relation_masse_longueur(data = data_specimen(), espece = sp_pen())
       } , device = "png")
     }
   )
@@ -578,7 +578,9 @@ app_server <- function(input, output, session) {
     kable_wri(data = wri1data())
   }
   output$download_wri1 <-
-    download_data_format_xlsx(givenname = "table_wri", datadown = wri1data())
+    download_data_format_xlsx(givenname = "table_wri",
+                              datadown = wri1data()%>%
+                                tibble::rownames_to_column(var = "Catégorie"))
   ## Wri tous ggplot ------------------------------------------------
   output$wri2plot <- renderPlot({
     req(data_specimen(), sp_pen())

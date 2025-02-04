@@ -1,7 +1,7 @@
 library(fs)
 library(stringr)
 
-termeachercher<- "structure_age_tous"
+termeachercher<- ".groups"
 
 # Liste tous les fichiers R dans le repo
 files <- dir_ls(path = ".", recurse = TRUE, glob = "*.R")

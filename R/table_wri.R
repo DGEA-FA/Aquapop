@@ -92,7 +92,7 @@ table_wri <- function(data, espece) {
   aov1 <-  lm(Wri ~ gcat, data = init)
   
   y <-
-    init %>% group_by(gcat, Classe, range) %>% summarise(n = n()) %>% droplevels()#nb de poissons dans ch classe de taille
+    init %>% group_by(gcat, Classe, range) %>% summarise(n = n(), .groups = "keep") %>% droplevels()#nb de poissons dans ch classe de taille
   init <-
     merge(init, y, by = "gcat") #merge le df avec le nb de poissons
   
@@ -133,7 +133,7 @@ table_wri <- function(data, espece) {
   
     aov2 <-  lm(Wri ~ sexe, data = init)
   y2 <-
-    init %>% group_by(sexe) %>% summarise(n = n()) %>% droplevels()#nb de poissons dans ch classe de taille
+    init %>% group_by(sexe) %>% summarise(n = n(), .groups = "keep") %>% droplevels()#nb de poissons dans ch classe de taille
   
   grps2 <- levels(y2$sexe)
   nd2 <- data.frame(sexe = factor(grps2, levels = grps2))

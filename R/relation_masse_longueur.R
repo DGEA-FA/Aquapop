@@ -41,14 +41,16 @@ relation_masse_longueur <- function(data, espece) {
   # Labeltext <- map(paste('<b>log10a = </b>', a, '<b>b = </b>', b,'<br>'), HTML)
   dfAllometrie <- dfAllometrie %>%  dplyr::rename(LTmax = ltm,
                                                   Masse = masse)
-  ggRelationML <-
+
+  # Création du graphique avec suppression des avertissements
+  
+    ggRelationML <- suppressWarnings(
     ggplot() +
     geom_point(data = dfAllometrie, aes(
       x = LTmax,
       y = Masse,
-      text = map(paste(
-        '<b># spécimen:</b>', no_specimen, '<br>'
-      ), HTML)
+      text = paste0("<b># spécimen:</b> ", no_specimen, "<br>")
+      
     )) +
     geom_line(data = PREDICT, aes(x = btxs, y = fit)) +
     geom_line(data = PREDICT, aes(x = btxs, y = lwr), linetype = 2) +
@@ -58,16 +60,15 @@ relation_masse_longueur <- function(data, espece) {
     labs(x = "Longueur totale maximale (mm)",
          y = "Masse (g)") +
     theme(panel.background = element_rect(fill = "white", colour = "black"))   +
-    #scale_x_continuous(limits = c(0, NA)) +
     annotate(
       "text",
-      label = paste0("log10a = ", a,
-                     ", b = ", b),
+      label = paste0("log10a = ", a, "\n",
+                     "b = ", b),
       x = min(dfAllometrie$LTmax) + 200,
       y =  max(dfAllometrie$Masse),
       color = "black",
       vjust = "inward",
       hjust = "inward"
-    )
-  ggRelationML
+    ) )
+  return(ggRelationML)
 }

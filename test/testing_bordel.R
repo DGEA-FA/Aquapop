@@ -134,7 +134,10 @@ print(plot_age_marquage)
 source("R/taille_masse_age.R")
 taille_masse_agedf <- taille_masse_age(dataspecimen = specimen, espece = sp_pen)
 
+source("R/relation_masse_longueur.R")
 
+relation_masse_longueur(data = data_specimen, espece = sp_pen) %>%
+  plotly::ggplotly(tooltip = "text")
 
 
 
@@ -146,15 +149,13 @@ source("R/psd_byclass.R")
 psd_byclass(data = specimen_valid, espece = sp_pen) %>% as.data.frame()
 
 source("R/table_wri.R")
-table_wri(data = specimen, espece = sp_pen)
-data = specimen
-espece = sp_pen
+table_wri(data = data_specimen, espece = sp_pen)
 
 source("R/fig_wri_tous.R")
-fig_wri_tous(data = specimen, espece = sp_pen)
+fig_wri_tous(data = data_specimen, espece = sp_pen)
 
 source("R/fig_wri_byclass.R")
-# fig_wri_byclass(data = specimen, espece = sp_pen)
+fig_wri_byclass(data = data_specimen, espece = sp_pen)
 
 # source("R/utils.R")
 source("R/death.R")
@@ -215,71 +216,5 @@ courbe_croissance_ggGOMP(initcroissance = initcroissance, tablemodele = croissan
 source("R/courbe_croissance_ggLOGIST.R")
 courbe_croissance_ggLOGIST(initcroissance = initcroissance, tablemodele = croissance1)
 
-#######
 
-library(ggplot2)
-
-# Définition des couleurs
-colors <- c("A" = "red", "B" = "blue", "C" = "green")
-
-# Données factices juste pour la légende
-df_legende <- data.frame(
-  categorie = factor(c("A", "B", "C"), levels = c("A", "B", "C")),
-  valeur = NA  # Ne sera pas utilisé
-)
-
-x <- ggplot(df_legende, aes(x = categorie,y=valeur, fill = categorie)) +
-  geom_bar(stat = "identity", show.legend = TRUE, width = 0) +  # width = 0 pour cacher les barres
-  scale_fill_manual(
-    values = colors,
-    drop = FALSE,
-    guide = guide_legend(override.aes = list(fill = colors, colour = NA))
-  ) +
-  theme_void()  # Supprime tout sauf la légende
-
-str(x)
-
-
-##########
-
-library(ggplot2)
-library(patchwork)  # Pour combiner les graphiques
-
-# Définition des couleurs
-colors <- c("A" = "red", "B" = "blue", "C" = "green")
-
-# Données du vrai graphique
-dfvrai <- data.frame(
-  categorie = factor(c("A", "B"), levels = c("A", "B", "C")),
-  valeur = c(10, 20)
-)
-
-# Graphique principal
-p1 <- ggplot(dfvrai, aes(x = categorie, y = valeur, fill = categorie)) +
-  geom_bar(stat = "identity") +
-  scale_fill_manual(
-    values = colors,
-    drop = FALSE
-  ) +
-  theme_minimal() +
-  theme(legend.position = "none")  # On cache la légende ici
-
-# Données factices juste pour la légende
-df_legende <- data.frame(
-  categorie = factor(c("A", "B", "C"), levels = c("A", "B", "C")),
-  valeur = NA  # Ne sera pas utilisé
-)
-
-# Graphique "invisible" pour la légende
-p2 <- ggplot(df_legende, aes(x = categorie, y = valeur, fill = categorie)) +
-  geom_bar(stat = "identity", show.legend = TRUE, width = 0) +  # width = 0 pour cacher les barres
-  scale_fill_manual(
-    values = colors,
-    drop = FALSE,
-    guide = guide_legend(override.aes = list(fill = colors, colour = NA))
-  ) +
-  theme_void()  # Supprime tout sauf la légende
-
-# Combiner le graphique principal et la légende
-p1 + p2 + plot_layout(ncol = 2, widths = c(3, 1))  # Ajuste la mise en page
 
