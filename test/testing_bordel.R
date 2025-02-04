@@ -95,9 +95,9 @@ binwidth <- get_binwidth(sp_pen)
 nomsp <- get_nomsp(sp_pen)
 
 
-source("R/selection_modele_CPUE_tous.R")
-selection_modele_CPUE_tous(capture, specimen, espece = sp_pen, station = data_station)
-
+source("R/selection_modele_CPUE.R")
+selection_modele_CPUE_tous_data <- selection_modele_CPUE(capture, specimen, espece = sp_pen, station = data_station)
+selection_modele_CPUE_tous_data
 
 
 

@@ -412,15 +412,12 @@ app_server <- function(input, output, session) {
   ## tous --------------------------------------------------------------------
   selection_modele_CPUE_tous_data <- reactive({
     req(specimen(), sp_pen(), capture(), data_station())
-    temp <- selection_modele_CPUE_tous(
+    selection_modele_CPUE(
         capture = capture(),
         specimen = specimen(),
         espece = sp_pen(),
         station = data_station()
-      ) %>% as.data.frame()
-    temp <- temp %>% rename('IC 95%' = IC95,
-                            "Ajustement (résultat du test HNP)" = Ajustement)
-    temp
+      )
   })
   output$selection_modele_CPUE_toustable <-  function() {
     kable_CPUEtous(data = selection_modele_CPUE_tous_data())
@@ -439,16 +436,13 @@ app_server <- function(input, output, session) {
   ## femelle mature ----------------------------------------------------------
   selection_modele_CPUE_Fmature_data <- reactive({
     req(specimen(), sp_pen(), capture(), data_station())
-    temp <-
-      selection_modele_CPUE_Fmature(
+      selection_modele_CPUE(
         capture = capture(),
         specimen = specimen(),
         espece = sp_pen(),
-        station = data_station()
-      ) %>% as.data.frame()
-    temp <- temp %>% rename('IC 95%' = IC95,
-                            "Ajustement (résultat du test HNP)" = Ajustement)
-    temp
+        station = data_station(),
+        filtre_specimen = quo(maturite == "O" & sexe == "F")
+      ) 
   })
   output$selection_modele_CPUE_Fmaturetable <-  function() {
     kable_CPUEFmature(data = selection_modele_CPUE_Fmature_data())
