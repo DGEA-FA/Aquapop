@@ -43,6 +43,8 @@ library(forcats)
 library(labelled)
 library(tidyr)
 
+#should work ?
+
 source("functions.R")
 source("./texte/text_elements.R", local = TRUE)   # Load the text elements
 # to_activate_before_play -------------------------------------------------
