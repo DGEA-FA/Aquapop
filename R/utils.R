@@ -2,7 +2,6 @@ brut_options <- list(pageLength = 10, autoWidth = TRUE, searching = FALSE)
 myspinner <- 6
 
 
-
 kable_psd1 <- function(data) {
   req(data)
   data %>% 
@@ -181,7 +180,7 @@ kable_CPUEFmature <- function(data) {
 kable_mortalite1 <- function(data) {
   req(data)
   data %>% 
-    kable( align = c("r","c","c","c","c","c","c","c","c","r"),
+    kable( #align = c("r","c","c","c","c","c","c","c","c","r"),
            caption = "Table de sélection des modèles de l’estimation de la mortalité", 
            row.names = FALSE    ) %>%
     kable_styling(full_width = FALSE,

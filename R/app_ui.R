@@ -30,6 +30,15 @@ app_ui <- function() {
               style = "font-size: 85%; color: #555;"
             ),
             ## upload ----------------------------------------------------------------
+            tags$head(
+              tags$style(HTML("
+    .btn-file {
+      background-color: #007bff !important; /* Bleu */
+      color: white !important; /* Texte blanc */
+      font-weight: bold !important; /* Texte en gras */
+    }
+  "))
+            ),
             fileInput(
               inputId = "upload",
               label = "Téléchargez vos données (*.xlsx)",
@@ -37,6 +46,9 @@ app_ui <- function() {
               multiple = FALSE,
               accept = c(".xlsx")
             ),
+            
+            
+            
             ## exemple fichier ----------------------------------------------------------
             uploadexampleUI("uploadexample1"),
             #dans uploadexample.R

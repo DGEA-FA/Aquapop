@@ -32,8 +32,8 @@ mortalite_chaprob <- function(pp, agemax_val, data) {
       methode = "Méthode utilisée",
       z = "Estimation de Z",
       se = "Erreur standard",
-      a = "Taux de mortalité (A)",
-      ic_95 = "Intervalle de confiance à 95% pour A"
+      a = "Taux de mortalité (A%)",
+      ic_95 = "Intervalle de confiance à 95% pour A%"
     )
   
   return(final_table)

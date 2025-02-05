@@ -43,6 +43,7 @@ library(forcats)
 library(labelled)
 library(tidyr)
 
+source("functions.R")
 
 # to_activate_before_play -------------------------------------------------
 reactlog::reactlog_enable() # Pour voir le graphe des réactifs

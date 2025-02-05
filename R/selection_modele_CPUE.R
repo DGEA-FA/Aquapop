@@ -13,11 +13,6 @@ selection_modele_CPUE <- function(capture, specimen, espece, station, filtre_spe
     mutate(nb_capture = replace_na(nb_capture, 0),  # Remplacer NA par 0 pour les stations vides
            nb_pese = replace_na(nb_pese, 0))
   
-  # # Joindre datacapt avec specimen (filtré pour l'espèce sélectionnée)
-  # alldata <- specimen %>%
-  #   dplyr::filter(sp == espece) %>%
-  #   right_join(datacapt, by = "no_station")  # Conserver toutes les stations valides
-  
   # Filtrage des spécimens pour l'espèce concernée
   dataspec <- specimen %>% filter(sp == espece) %>% droplevels()
   

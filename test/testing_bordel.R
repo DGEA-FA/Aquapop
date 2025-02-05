@@ -67,7 +67,6 @@ source("R/create_capture.R")
 source("R/create_specimen_valid.R")
 
 source("R/abondance_table.R")
-source("R/biomasse_table.R")
 
 # Load datasets
 data_station <- load_station(path, namesheet= "Stations")
@@ -88,11 +87,68 @@ capture <- create_capture(data_station, data_recolte)
 
 # Test abundance and biomass tables
 abondance_table <- abondance_table(specimen, sp_pen) %>% as.data.frame()
-biomasse_table <- biomasse_table(specimen, sp_pen, data_station) %>% as.data.frame()
+
+source("R/biomasse_table.R")
+biomasse_table <- biomasse_table(specimen= data_specimen, sp_pen, data_station) %>% as.data.frame()
+biomasse_table
+
+
+
+
 
 # Use the functions to define binwidth and nomsp
 binwidth <- get_binwidth(sp_pen)
 nomsp <- get_nomsp(sp_pen)
+
+source("R/death.R")
+deathdf <- death(data = specimen, espece = sp_pen)
+
+source("R/peakplus.R")
+pp <- peakplus(data = deathdf)
+newPP <- pp #on le change ici si on veut autre chose
+
+source("R/agemax.R")
+agemax_val <- agemax(data = deathdf)
+
+source("R/creation_df_CORR.R")
+df_corr <- creation_df_CORR(data = deathdf,
+                            peakplus = newPP,
+                            agemax = agemax_val) %>% as.data.frame()
+
+source("R/creation_df_EXT.R")
+df_ext <- creation_df_EXT(data = df_corr,
+                          peakplus = newPP,
+                          agemax = agemax_val) %>% as.data.frame()
+
+
+
+source("R/mortalite_selection_modeles.R")
+df_EXT = df_ext
+# mortalite1 <- mortalite_selection_modeles(df_EXT = df_ext) #ca fini pu
+
+source("R/mortalite_chaprob.R")
+
+mortalite2 <- mortalite_chaprob(data = deathdf,
+                                pp = newPP,
+                                agemax_val = agemax_val) %>% as.data.frame() %>% gt_mortalite2()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 source("R/courbe_croissance_comparaison.R")
 croissance1 <- courbe_croissance_comparaison(dfspecimen= data_specimen, sp_pen)
@@ -196,37 +252,6 @@ source("R/fig_wri_byclass.R")
 fig_wri_byclass(data = data_specimen, espece = sp_pen)
 
 # source("R/utils.R")
-source("R/death.R")
-deathdf <- death(data = specimen, espece = sp_pen)
-
-source("R/peakplus.R")
-pp <- peakplus(data = deathdf)
-newPP <- pp #on le change ici si on veut autre chose
-
-source("R/agemax.R")
-agemax_val <- agemax(data = deathdf)
-
-source("R/creation_df_CORR.R")
-df_corr <- creation_df_CORR(data = deathdf,
-                            peakplus = newPP,
-                            agemax = agemax_val) %>% as.data.frame()
-
-source("R/creation_df_EXT.R")
-df_ext <- creation_df_EXT(data = df_corr,
-                            peakplus = newPP,
-                            agemax = agemax_val) %>% as.data.frame()
-
-
-
-source("R/mortalite_selection_modeles.R")
-df_EXT = df_ext
-# mortalite1 <- mortalite_selection_modeles(df_EXT = df_ext) #ca fini pu
-
-source("R/mortalite_chaprob.R")
-
-mortalite2 <- mortalite_chaprob(data = deathdf,
-                          pp = newPP,
-                          agemax_val = agemax_val) %>% as.data.frame() %>% gt_mortalite2()
 
 source("R/psd_indice.R")
 psd1 <- psd_indice(data = specimen, sp = sp_pen)

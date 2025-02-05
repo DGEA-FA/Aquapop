@@ -21,6 +21,12 @@ courbe_croissance_plot <- function(dfspecimen, sp_pen, tablemodele, modele) {
   ageGRAPH <- c(0, (ceiling(agemax / 5) * 5) + 1)
   ageGRAPHbreak <- c(ageGRAPH[1]:ageGRAPH[2])
   
+  #   # Définir les fonctions pour chaque modèle
+  # vBert <- function(age, Linf, K, t0) { Linf * (1 - exp(-K * (age - t0)))}
+  # Gompt <- function(age, Linf, K, t0) {Linf * exp(-exp(-K * (age - t0)))}
+  # Logis <- function(age, Linf, K, t0) {Linf / (1 + exp(-K * (age - t0)))}
+  
+  
   # Initialisation des paramètres du modèle
   sv0 <- list(
     Linf = model$l_inf,
@@ -28,14 +34,7 @@ courbe_croissance_plot <- function(dfspecimen, sp_pen, tablemodele, modele) {
     t0 = model$t0
   )
   
-  # Définir les fonctions pour chaque modèle
-  vBert <-
-    function(age, Linf, K, t0) {
-      Linf * (1 - exp(-K * (age - t0)))
-    }
-  Gompt <- function(age, Linf, K, t0) {Linf * exp(-exp(-K * (age - t0)))}
-  Logis <- function(age, Linf, K, t0) {Linf / (1 + exp(-K * (age - t0)))}
-  
+
   # Choix du modèle à ajuster
   fit0 <- switch(modele,
                  "Von Bertalanffy" = nls(ltm ~ vBert(age, Linf, K, t0), data = init, start = sv0),

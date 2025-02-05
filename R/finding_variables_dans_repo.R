@@ -1,7 +1,7 @@
 library(fs)
 library(stringr)
 
-termeachercher<- "download_data_format_docx"
+termeachercher<- "biomasse"
 
 # Liste tous les fichiers R dans le repo
 files <- dir_ls(path = ".", recurse = TRUE, glob = "*.R")

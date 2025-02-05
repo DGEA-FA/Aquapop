@@ -650,7 +650,6 @@ app_server <- function(input, output, session) {
     selected <- getReactableState("croissance1_table", "selected")
     req(selected, croissance1())
     details <- croissance1()[selected, 1]
-    # paste(details)
   })
   
   
@@ -690,8 +689,8 @@ app_server <- function(input, output, session) {
   
   # Mortalite -------------------------------------------------------
   deathdf <- reactive({
-    req(specimen(), sp_pen())
-    death(data = specimen(), espece = sp_pen()) %>% as.data.frame()
+    req(data_specimen(), sp_pen())
+    death(data = data_specimen(), espece = sp_pen()) %>% as.data.frame()
   })
   pp <- reactive({
     req(deathdf())
@@ -702,7 +701,7 @@ app_server <- function(input, output, session) {
     pp()
   })
   
-  output$structureageplot4death <- renderPlot({
+  output$structureageplot4death <- renderPlot({ #potentiellement ici, est-ce que je devrais mettre data_specimen alors ? 
     req(specimen(), sp_pen(), pp(), nomsp_reactive())
     structure_age(dfspecimen = specimen(),
                        espece = sp_pen(),
@@ -717,10 +716,13 @@ app_server <- function(input, output, session) {
   # when the value of input$goButton becomes out of date 
   # (i.e., when the button is pressed)
   newPP <- eventReactive(input$goButton, {
+    req(input$newPPtext)  # Vérifie que l'entrée n'est pas vide ou NULL
     input$newPPtext
   })
   
+  
   output$newPP_veriftext <- renderText({
+    req(newPP())
     newPP()
   })
   
@@ -780,8 +782,8 @@ app_server <- function(input, output, session) {
    output$zobs_text <- renderText(zobs())
   # Maturite sexuelle -------------------------------------------------------
    df_maturiteltm <- reactive({
-     req(specimen(), sp_pen())
-     specimen() %>%
+     req(data_specimen(), sp_pen())
+     data_specimen() %>%
        filter(sp == sp_pen(), maturite != "IND", sexe != "IND", !is.na(ltm)) %>%
        droplevels() %>%
        mutate(maturite = factor(maturite, levels = c("N", "O"), ordered = TRUE))

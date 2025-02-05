@@ -2,21 +2,27 @@ biomasse_table <- function(specimen, sp_pen, data_station) {
   
   # Filtrage des données par l'espèce ciblée
   dataspec <- specimen %>%
-    dplyr::filter(sp == sp_pen) %>%
+    filter(sp == sp_pen) %>%
     droplevels()
   
-  # Calculer le nombre total de stations échantillonnées (incluant celles sans captures)
-  nstation <- nrow(data_station) # Toutes les stations échantillonnées, y compris celles sans captures
-
+  # Nombre total de stations échantillonnées (y compris celles sans captures)
+  nstation <- nrow(data_station)
   
-  # Calculs pour le groupe "Tous" --------------------------------------------------
-  # Agréger les données pour obtenir la biomasse totale par station
-  temp <- dataspec %>% dplyr::group_by(no_station) %>%
-    summarise(bpue = sum(masse, na.rm = TRUE), Group = "Tous", .groups = "drop")
+  # ---- Calculs pour la catégorie "Tous" ----
+  temp <- dataspec %>% 
+    group_by(no_station) %>%
+    summarise(bpue = sum(masse, na.rm = TRUE), .groups = "drop")
   
-  # Calculer la biomasse totale pour toutes les stations en kg
-  biomassefix <- sum(temp$bpue, na.rm = TRUE) %>% as.numeric() / 1000
-
+  # Inclure les stations sans captures avec bpue = 0
+  temp <- data_station %>%
+    select(no_station) %>%
+    left_join(temp, by = "no_station") %>%
+    mutate(bpue = ifelse(is.na(bpue), 0, bpue))
+  
+  # Biomasse totale en kg
+  biomassefix <- sum(temp$bpue, na.rm = TRUE) / 1000
+  
+  
   # Modèle poisson pour bpuelac
   mp <- glm(bpue ~ 1, family = poisson, data = temp)
   # The warnings you are seeing occur because the Poisson distribution is intended for modeling count data, 
@@ -33,6 +39,10 @@ biomasse_table <- function(specimen, sp_pen, data_station) {
   
   # Modèle nb (negative binomial) pour bpuelac
   mnb2 <- MASS::glm.nb(bpue ~ 1, data = temp)
+  
+  # Modèle gamma au lieu de Poisson
+ # mg <- glm(bpue ~ 1, family = Gamma(link = "log"), data = temp) # Sinon potentiellement lui aussi, pour des valeurs continues
+  
   
   # Compromis entre les deux modèles
   compromis <- model.avg(model.sel(mnb2, mp))
@@ -59,7 +69,8 @@ biomasse_table <- function(specimen, sp_pen, data_station) {
   upperlimbpue <- format(upperlimbpue_arrondi, nsmall = 1)
   
   # Calculer le pourcentage de biomasse pour la catégorie "Tous"
-  percent_tous <- round(biomassefix * 100 / biomassefix, digits = 0) # Ce sera toujours 100%
+  # percent_tous <- round(biomassefix * 100 / biomassefix, digits = 0) # Ce sera toujours 100%
+  percent_tous <- round(biomassefix * 100 / sum(biomassefix, na.rm = TRUE), 0) #corrigé
   
   
   # Créer le dataframe pour le groupe "Tous"
