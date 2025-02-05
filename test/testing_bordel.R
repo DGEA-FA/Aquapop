@@ -1,51 +1,30 @@
-library(shiny)
-library(car)
-library(DT)
-library(kableExtra)
-library(reactable)
-library(FSA)
-library(nlstools)
-library(shinyBS)
-library(gghighlight)
-library(htmltools)
-library(markdown)
-library(readxl)
-library(ggplot2)
-library(scales)
-library(dplyr)
-library(patchwork)
-library(reactlog)
-library(stringr)
-library(chron)
-library(purrr)
-library(writexl)
-library(shinycssloaders)
-library(glue)
-library(fishmethods)
-library(hnp)
-library(MASS)
-library(glmmTMB)
-library(MuMIn)
-library(plotly)
-library(gapminder)
-library(AER)
-library(pROC)
-library(DescTools)
-library(emdbook)
-library(AICcmodavg)
-library(investr)
+# # Vérifier si renv est installé, sinon l’installer
+# if (!requireNamespace("renv", quietly = TRUE)) {
+#   install.packages("renv")
+# }
+# 
+# # Activer renv (s'il est déjà activé, ça ne fait rien)
+# renv::activate()
+# 
+# # Vérifier si une restauration est nécessaire
+# if (!file.exists("renv/library")) {
+#   cat("Restauration complète de l'environnement {renv}...\n")
+#   renv::restore()
+# }
 
-library(gt)
-library(officer)
-library(flextable)
-library(forcats)
-library(labelled)
-# # Set path to your data
-# path <- "data/exempledata.xlsx"
-# # Set the variables for filtering
-# typ_pechvar <- "PENT"
-# no_lac_var <- "01480"
-# annee_var <- 2020
+# Lister tous les fichiers R dans le dossier R/
+script_files <- list.files("R", pattern = "\\.R$", full.names = TRUE)
+
+# Charger chaque script dans l'environnement global
+sapply(script_files, function(f) {
+  tryCatch(
+    source(f, local = FALSE),  # Chargement dans l'environnement global
+    error = function(e) message("Erreur dans ", f, ": ", e$message)
+  )
+})
+
+
+# Tous les scripts sont maintenant chargés et prêts à être utilisés
 
 path <- "data/Extract IFA_R04_AquaPop.xlsx"
 typ_pechvar <- "PENDJ"
@@ -53,20 +32,10 @@ no_lac_var <- "00005"
 annee_var <- 2005
 
 
-source("R/load_lac.R")
 data_lac <- load_lac(path, namesheet= "Lac")
 
-# Load your custom functions
-source("R/load_station.R")
-source("R/load_recolte.R")
-source("R/load_specimen.R")
-source("R/utils.R")
-source("R/create_sp_pen.R")
-source("R/create_specimen.R")
-source("R/create_capture.R")
-source("R/create_specimen_valid.R")
-
-source("R/abondance_table.R")
+# Si besoin de reload une fonction que tu viens de modifier
+# source("R/load_station.R")
 
 # Load datasets
 data_station <- load_station(path, namesheet= "Stations")
@@ -88,7 +57,6 @@ capture <- create_capture(data_station, data_recolte)
 # Test abundance and biomass tables
 abondance_table <- abondance_table(specimen, sp_pen) %>% as.data.frame()
 
-source("R/biomasse_table.R")
 biomasse_table <- biomasse_table(specimen= data_specimen, sp_pen, data_station) %>% as.data.frame()
 biomasse_table
 
@@ -100,33 +68,26 @@ biomasse_table
 binwidth <- get_binwidth(sp_pen)
 nomsp <- get_nomsp(sp_pen)
 
-source("R/death.R")
 deathdf <- death(data = specimen, espece = sp_pen)
 
-source("R/peakplus.R")
 pp <- peakplus(data = deathdf)
 newPP <- pp #on le change ici si on veut autre chose
 
-source("R/agemax.R")
 agemax_val <- agemax(data = deathdf)
 
-source("R/creation_df_CORR.R")
 df_corr <- creation_df_CORR(data = deathdf,
                             peakplus = newPP,
                             agemax = agemax_val) %>% as.data.frame()
 
-source("R/creation_df_EXT.R")
 df_ext <- creation_df_EXT(data = df_corr,
                           peakplus = newPP,
                           agemax = agemax_val) %>% as.data.frame()
 
 
 
-source("R/mortalite_selection_modeles.R")
 df_EXT = df_ext
 # mortalite1 <- mortalite_selection_modeles(df_EXT = df_ext) #ca fini pu
 
-source("R/mortalite_chaprob.R")
 
 mortalite2 <- mortalite_chaprob(data = deathdf,
                                 pp = newPP,
@@ -150,11 +111,9 @@ mortalite2 <- mortalite_chaprob(data = deathdf,
 
 
 
-source("R/courbe_croissance_comparaison.R")
 croissance1 <- courbe_croissance_comparaison(dfspecimen= data_specimen, sp_pen)
 
 
-source("R/courbe_croissance_plot.R")
 
 selectedmodelcroissanceplot_vb <- courbe_croissance_plot(dfspecimen = data_specimen, 
                                                       sp_pen,
@@ -179,13 +138,11 @@ selectedmodelcroissanceplot_l
 
 
 
-source("R/selection_modele_CPUE.R")
 selection_modele_CPUE_tous_data <- selection_modele_CPUE(capture, specimen, espece = sp_pen, station = data_station)
 selection_modele_CPUE_tous_data
 
 
 
-source("R/structure_taille.R")  # Assuming you refactor all structure_taille_* functions into structure_taille
 
 # Test with 'tous' groupement
 plot_tous <- structure_taille(dfspecimen = specimen, espece = sp_pen, binwidth = binwidth, nomsp = nomsp, groupement = "tous")
@@ -203,7 +160,6 @@ print(plot_maturite)
 plot_marquage <- structure_taille(dfspecimen = specimen, espece = sp_pen, binwidth = binwidth, nomsp = nomsp, groupement = "marquage")
 print(plot_marquage)
 
-source("R/structure_age.R")  # Charger la fonction depuis le script
 
 # Test avec 'tous' (aucun groupement)
 plot_age_tous <- structure_age(dfspecimen = specimen, espece = sp_pen, nomsp = nomsp, groupement = "tous")
@@ -225,42 +181,24 @@ print(plot_age_marquage)
 
 
 
-source("R/taille_masse_age.R")
 taille_masse_agedf <- taille_masse_age(dataspecimen = specimen, espece = sp_pen)
 
-source("R/relation_masse_longueur.R")
 
 relation_masse_longueur(data = data_specimen, espece = sp_pen)$graph %>%
   plotly::ggplotly(tooltip = "text")
 
 
 
-source("R/psd_indice.R")
 psd_indice(data = specimen_valid, sp = sp_pen) %>% as.data.frame()
 
-source("R/psd_byclass.R")
 
 psd_byclass(data = specimen_valid, espece = sp_pen) %>% as.data.frame()
 
-source("R/table_wri.R")
 table_wri(data = data_specimen, espece = sp_pen)
 
-source("R/fig_wri_tous.R")
 fig_wri_tous(data = data_specimen, espece = sp_pen)
 
-source("R/fig_wri_byclass.R")
 fig_wri_byclass(data = data_specimen, espece = sp_pen)
 
-# source("R/utils.R")
 
-source("R/psd_indice.R")
 psd1 <- psd_indice(data = specimen, sp = sp_pen)
-
-source("R/psd_byclass.R")
-
-# psd2 <- psd_byclass(data = specimen, sp = sp_pen) %>% as.data.frame()
-data = specimen
-sp = sp_pen
-
-  #selectionner slmt le data necessaire
-

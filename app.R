@@ -44,7 +44,7 @@ library(labelled)
 library(tidyr)
 
 source("functions.R")
-
+source("./texte/text_elements.R", local = TRUE)   # Load the text elements
 # to_activate_before_play -------------------------------------------------
 reactlog::reactlog_enable() # Pour voir le graphe des réactifs
 Sys.setlocale("LC_TIME", "French")  # Pour définir le format de la date en français
