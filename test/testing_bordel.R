@@ -1,17 +1,3 @@
-# # Vérifier si renv est installé, sinon l’installer
-# if (!requireNamespace("renv", quietly = TRUE)) {
-#   install.packages("renv")
-# }
-# 
-# # Activer renv (s'il est déjà activé, ça ne fait rien)
-# renv::activate()
-# 
-# # Vérifier si une restauration est nécessaire
-# if (!file.exists("renv/library")) {
-#   cat("Restauration complète de l'environnement {renv}...\n")
-#   renv::restore()
-# }
-
 # Lister tous les fichiers R dans le dossier R/
 script_files <- list.files("R", pattern = "\\.R$", full.names = TRUE)
 
@@ -27,9 +13,9 @@ sapply(script_files, function(f) {
 # Tous les scripts sont maintenant chargés et prêts à être utilisés
 
 path <- "data/Extract IFA_R04_AquaPop.xlsx"
-typ_pechvar <- "PENDJ"
-no_lac_var <- "00005"
-annee_var <- 2005
+typ_pechvar <- "PENOF"
+no_lac_var <- "05533" 
+annee_var <- 2009
 
 
 data_lac <- load_lac(path, namesheet= "Lac")
@@ -53,6 +39,53 @@ specimen <- create_specimen(data_specimen, data_station)
 specimen_valid <- create_specimen_valid(data_specimen, data_station)
 
 capture <- create_capture(data_station, data_recolte)
+
+df_maturiteltm <- create_df_maturiteltm(specimen,sp_pen )
+
+# Étape 1 : Ajuster les modèles
+L50_models <- fit_L50_models(df_maturiteltm)
+
+# Étape 2 : Évaluer les modèles
+L50_evaluation <- evaluate_L50_models(L50_models)
+# Afficher les résultats
+L50_evaluation %>% afficher_avec_labels()
+
+# Étape 3 : Sélectionner les meilleurs modèles
+best_L50 <- select_best_L50_models(L50_evaluation)
+print(best_L50)
+
+# Étape 4 : Ajuster les modèles combinés (sexes ensemble)
+L50_combined_models <- fit_L50_combined_models(df_maturiteltm)
+
+# Étape 5 : Évaluer les modèles combinés
+L50_combined_evaluation <- evaluate_L50_models(L50_combined_models)
+# Afficher les résultats
+L50_combined_evaluation %>% afficher_avec_labels()
+
+best_combined_L50 <- select_best_L50_combined_model(L50_combined_evaluation)
+print(best_combined_L50)
+
+modele_male <- get_best_L50_model(best_L50, sexe = "M")
+modele_femelle <- get_best_L50_model(best_L50, sexe = "F")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Test abundance and biomass tables
 abondance_table <- abondance_table(specimen, sp_pen) %>% as.data.frame()

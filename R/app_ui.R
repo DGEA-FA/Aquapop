@@ -296,61 +296,21 @@ app_ui <- function() {
                tabsetPanel(
                  tabPanel(
                    title = "Longueur à maturité",
-                   htmltools::includeMarkdown(path = './texte/L50_texte.rmd'),
-                   br(),
-                   h3(text_elements$titreL50_selection_modeles_table),
+                   h4("Approche des sexes séparés"),
+                   tableOutput("separate_evaluation_table"),
+                   textOutput("best_separate_model_text"),
                    
-                   withSpinner(
-                     reactableOutput(outputId = "L50_selection_modeles_table"),
-                     type = myspinner
-                   ),
-                   downloadButton(outputId = "download_L50_selection_modeles_table", label = "Téléchargement"),
-                   sidebarLayout(
-                     sidebarPanel(
-                       h3(text_elements$titreselectedmodelL50minitable),
-                       tableOutput(outputId = "selectedmodelL50minitable"),
-                       downloadButton(outputId = "download_minitableselectedmodelL50", label = "Téléchargement") # Button Téléchargement
-                     ),
-                     mainPanel(
-                       plotOutput(
-                         "selectedmodelL50plot",
-                         width = 600,
-                         height = 400
-                       ),
-                       h3(text_elements$titreselectedmodelL50plot),
-                       
-                       downloadButton(outputId = "download_selectedmodelL50plot", label = "Téléchargement"),
-                     )
-                   )
+                   br(),
+                   uiOutput("combined_section") # Afficher la section combinée seulement si nécessaire
+                   
+                  
+                   
+                   
                  ),
                  tabPanel(
                    title = "Âge à maturité",
                    htmltools::includeMarkdown(path = './texte/A50_texte.rmd'),
-                   br(),
-                   h3(text_elements$titreA50_selection_modeles_table),
                    
-                   withSpinner(
-                     reactableOutput(outputId = "A50_selection_modeles_table"),
-                     type = myspinner
-                   ),
-                   downloadButton(outputId = "download_A50_selection_modeles_table", label = "Téléchargement"),
-                   sidebarLayout(
-                     sidebarPanel(
-                       h3(text_elements$titreselectedmodelA50minitable),
-                       
-                       tableOutput(outputId = "selectedmodelA50minitable"),
-                       downloadButton(outputId = "download_minitableselectedmodelA50", label = "Téléchargement") # Button Téléchargement
-                     ),
-                     mainPanel(
-                       plotOutput(
-                         outputId = "selectedmodelA50plot",
-                         width = 600,
-                         height = 400
-                       ),
-                       h3(text_elements$titreselectedmodelA50plot),
-                       downloadButton(outputId = "download_selectedmodelA50plot", label = "Téléchargement"),
-                     )
-                   )
                  )
                ))
       

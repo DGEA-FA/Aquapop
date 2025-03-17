@@ -6,7 +6,7 @@ library(fs)
 library(stringr)
 
 # Définir le terme à rechercher
-terme_a_chercher <- "biomasse"
+terme_a_chercher <- "minitable_param_model_add_a50"
 
 # Lister tous les fichiers R dans le projet (sauf ceux dans test/)
 files <- dir_ls(path = ".", recurse = TRUE, glob = "*.R")
