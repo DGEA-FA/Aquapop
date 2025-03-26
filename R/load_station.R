@@ -45,10 +45,13 @@ load_station <- function(path, namesheet) {
       )
     )
 
-
-  # Transformer certaines colonnes en facteurs
-  station <- station %>%
-    mutate_at(vars(no_lac, nom_lac, typ_pech, st_hasard, st_valide, type_maill, no_station), factor)
+  station <- station %>%  # Transformer certaines colonnes en facteurs
+    mutate(across(
+      c(no_lac, nom_lac, typ_pech, st_hasard, st_valide, type_maill, no_station),
+      as.factor
+    ))
+  
+  # station <- station %>% mutate_at(vars(no_lac, nom_lac, typ_pech, st_hasard, st_valide, type_maill, no_station), factor)
 
    # Trier les stations par numéro de station
    station <- station[order(station$no_station, decreasing = FALSE),]

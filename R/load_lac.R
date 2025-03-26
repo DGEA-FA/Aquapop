@@ -24,20 +24,26 @@ load_lac <- function(path, namesheet) {
   
   lac <-
     dplyr::mutate(lac, ID = paste0(nom_lac, " - ", annee, " - ", typ_pech))
-  lac <- mutate_at(
-    lac,
-    vars(
-      region_admin,
-      no_lac,
-      nom_lac,
-      typ_pech,
-      sp_pen,
-      terr_faun,
-      # annee,
-      zon_pech
-    ),
-    factor
-  ) #transformer en factor
+  lac <- lac %>%
+    mutate(across(
+      c(region_admin, no_lac, nom_lac, typ_pech, sp_pen, terr_faun, zon_pech),
+      as.factor
+    ))
+  
+  # lac <- dplyr::mutate_at(
+  #   lac,
+  #   vars(
+  #     region_admin,
+  #     no_lac,
+  #     nom_lac,
+  #     typ_pech,
+  #     sp_pen,
+  #     terr_faun,
+  #     # annee,
+  #     zon_pech
+  #   ),
+  #   factor
+  # ) #transformer en factor
   
   
   lac$long_dd.dec <-

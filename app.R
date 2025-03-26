@@ -13,7 +13,6 @@ library(markdown)
 library(readxl)
 library(ggplot2)
 library(scales)
-library(dplyr)
 library(patchwork)
 library(reactlog)
 library(stringr)
@@ -42,6 +41,7 @@ library(flextable)
 library(forcats)
 library(labelled)
 library(tidyr)
+library(dplyr)
 
 #should work ?
 

@@ -68,8 +68,15 @@ print(best_combined_L50)
 modele_male <- get_best_L50_model(best_L50, sexe = "M")
 modele_femelle <- get_best_L50_model(best_L50, sexe = "F")
 
+# Exemple d'utilisation :
+resultat_M <- process_L50_model(modele_id = "M_cloglog", data = df_maturiteltm, liste_modeles= L50_models)
+resultat_F <- process_L50_model("F_probit", data= df_maturiteltm, liste_modeles = L50_models)
 
-
+# Afficher les résultats
+print(resultat_M$minitable)
+print(resultat_F$minitable)
+print(resultat_M$plot)
+str(resultat_M$DATAogive)
 
 
 

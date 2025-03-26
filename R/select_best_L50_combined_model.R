@@ -5,8 +5,7 @@
 #' @return Une liste contenant le modèle sélectionné ou un message si aucun modèle n'est valide.
 #' @export
 select_best_L50_combined_model <- function(evaluation_df) {
-  library(dplyr)
-  
+
   valid_models <- evaluation_df %>%
     filter(convergence == TRUE, !grepl("rejeter|choisir un autre modèle", commentaire))
   

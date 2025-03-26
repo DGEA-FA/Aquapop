@@ -45,15 +45,23 @@ load_specimen <- function(path, namesheet) {
     )
   
   # Convertir en facteur, y compris `sexe` et `maturite` , et marquage
-  specimen <- specimen %>%
-    mutate_at(
-      vars(
-        no_lac, nom_lac, typ_pech, no_station, no_specimen, sp, 
+  # specimen <- specimen %>%
+  #   mutate_at(
+  #     vars(
+  #       no_lac, nom_lac, typ_pech, no_station, no_specimen, sp, 
+  #       ind_insec, ind_benth, ind_planc, ind_chyme, ind_vide, 
+  #       ind_poiss, poiss1, poiss2, sexe, maturite, marquage
+  #     ),
+  #     factor
+  #   )
+  
+  specimen <- specimen %>%  # Transformer certaines colonnes en facteurs , y compris `sexe` et `maturite` , et marquage
+    mutate(across(
+      c(no_lac, nom_lac, typ_pech, no_station, no_specimen, sp, 
         ind_insec, ind_benth, ind_planc, ind_chyme, ind_vide, 
-        ind_poiss, poiss1, poiss2, sexe, maturite, marquage
-      ),
-      factor
-    )
+        ind_poiss, poiss1, poiss2, sexe, maturite, marquage),
+      as.factor
+    ))
   
   # Définir les niveaux fixes pour `sexe` et `maturite`, et marquage
   specimen <- specimen %>%
