@@ -1,4 +1,8 @@
-brut_options <- list(pageLength = 10, autoWidth = TRUE, searching = FALSE)
+# Affichage brut
+afficher_table <- function(data_reactif) {
+  renderDataTable(data_reactif(), options = list(pageLength = 10, autoWidth = TRUE, searching = FALSE))
+}
+
 myspinner <- 6
 
 
@@ -278,30 +282,6 @@ calculate_mf_ratio <- function(male_count, female_count) {
   return(paste0(ratio[1], ":", ratio[2]))
 }
 
-
-get_binwidth <- function(espece) {
-  if (espece %in% c("SANA", "SAVI")) {
-    return(50)
-  } else if (espece %in% c("SAFO")) {
-    return(20)
-  } else {
-    return(NULL)
-  }
-}
-
-get_nomsp <- function(espece) {
-  if (espece == "SANA") {
-    return("touladis")
-  } else if (espece == "SAFO") {
-    return("ombles de fontaine")
-  } else if (espece == "SAVI") {
-    return("dorés jaunes")
-  } else {
-    return(NULL)
-  }
-}
-
-
 labelled_data <- function(data) {
   # Obtenir les labels des colonnes
   labels <- labelled::var_label(data)
@@ -324,18 +304,6 @@ death <- function(data, espece) {
     dplyr::filter(sp == espece) %>%
     droplevels() %>%
     dplyr::filter(!is.na(age))
-}
-
-create_sp_pen <- function(input_typ_pech) {
-  if (input_typ_pech == "PENT") {
-    return("SANA")
-  } else if (input_typ_pech == "PENOF") {
-    return("SAFO")
-  } else if (input_typ_pech == "PENDJ") {
-    return("SAVI")
-  } else {
-    return(NULL)
-  }
 }
 
 get_zobs <- function(PP, death, agemax) {
@@ -955,4 +923,7 @@ get_best_L50_model <- function(best_L50, sexe = "M") {
     stop("Le modèle spécifié n'existe pas dans la liste fournie.")
   }
 }
+
+
+
 

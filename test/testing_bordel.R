@@ -2,20 +2,19 @@
 script_files <- list.files("R", pattern = "\\.R$", full.names = TRUE)
 
 # Charger chaque script dans l'environnement global
-sapply(script_files, function(f) {
+invisible(lapply(script_files, function(f) {
   tryCatch(
-    source(f, local = FALSE),  # Chargement dans l'environnement global
+    source(f, local = FALSE),
     error = function(e) message("Erreur dans ", f, ": ", e$message)
   )
-})
-
+}))
 
 # Tous les scripts sont maintenant chargés et prêts à être utilisés
 
 path <- "data/Extract IFA_R04_AquaPop.xlsx"
-typ_pechvar <- "PENOF"
-no_lac_var <- "05533" 
-annee_var <- 2009
+typ_pechvar <- "PENT"
+no_lac_var <- "00024" 
+annee_var <- 2015
 
 
 data_lac <- load_lac(path, namesheet= "Lac")
@@ -23,15 +22,10 @@ data_lac <- load_lac(path, namesheet= "Lac")
 # Si besoin de reload une fonction que tu viens de modifier
 # source("R/load_station.R")
 
-# Load datasets
-data_station <- load_station(path, namesheet= "Stations")
-data_recolte <- load_recolte(path, namesheet= "Recolte")
-data_specimen <- load_specimen(path, namesheet= "Specimens")
-
-# Filter data based on specified variables
-data_station <- data_station %>% filter(typ_pech == typ_pechvar & no_lac == no_lac_var & annee == annee_var)
-data_recolte <- data_recolte %>% filter(typ_pech == typ_pechvar & no_lac == no_lac_var & annee == annee_var)
-data_specimen <- data_specimen %>% filter(typ_pech == typ_pechvar & no_lac == no_lac_var & annee == annee_var)
+# Load datasets et Filter data based on specified variables
+data_station <-  load_station(path, namesheet= "Stations") %>% filter(typ_pech == typ_pechvar & no_lac == no_lac_var & annee == annee_var)
+data_recolte <- load_recolte(path, namesheet= "Recolte") %>% filter(typ_pech == typ_pechvar & no_lac == no_lac_var & annee == annee_var)
+data_specimen <- load_specimen(path, namesheet= "Specimens") %>% filter(typ_pech == typ_pechvar & no_lac == no_lac_var & annee == annee_var)
 
 # Create derived variables
 sp_pen <- create_sp_pen(input_typ_pech = typ_pechvar)
@@ -41,6 +35,26 @@ specimen_valid <- create_specimen_valid(data_specimen, data_station)
 capture <- create_capture(data_station, data_recolte)
 
 df_maturiteltm <- create_df_maturiteltm(specimen,sp_pen )
+
+
+
+
+
+
+
+
+
+# Test abundance and biomass tables
+abondance_table <- abondance_table(specimen, sp_pen) %>% as.data.frame()
+
+biomasse_table <- biomasse_table(specimen= specimen, sp_pen, data_station) %>% as.data.frame()
+biomasse_table
+
+
+
+
+
+
 
 # Étape 1 : Ajuster les modèles
 L50_models <- fit_L50_models(df_maturiteltm)
@@ -88,17 +102,6 @@ str(resultat_M$DATAogive)
 
 
 
-
-
-
-
-
-
-# Test abundance and biomass tables
-abondance_table <- abondance_table(specimen, sp_pen) %>% as.data.frame()
-
-biomasse_table <- biomasse_table(specimen= data_specimen, sp_pen, data_station) %>% as.data.frame()
-biomasse_table
 
 
 

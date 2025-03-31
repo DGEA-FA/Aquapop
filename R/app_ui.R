@@ -47,22 +47,16 @@ app_ui <- function() {
               accept = c(".xlsx")
             ),
             
-            
-            
-            ## exemple fichier ----------------------------------------------------------
-            uploadexampleUI("uploadexample1"),
             #dans uploadexample.R
             ## filter_ID -------------------------------------------------------------
-            uiOutput(outputId = "no_lac"),
-            uiOutput(outputId = "typ_pech"),
-            uiOutput(outputId = "annee"),
-            uiOutput(outputId = "annee_notif"),
+            uiOutput(outputId = "ui_typ_pech"),
+            uiOutput(outputId = "ui_no_lac"),
+            uiOutput(outputId = "ui_annee"),
             uiOutput(outputId = "visualiser")
           ),
           ## display_brut ----------------------------------------------------------
           mainPanel(
             
-            # Affichage des messages de statut pour les dataframes
             uiOutput("status_text_data_station"),
             uiOutput("status_text_data_recolte"),
             uiOutput("status_text_data_specimen"),
@@ -83,7 +77,6 @@ app_ui <- function() {
           )
         )
       ),
-
       
       # abondance_biomasse_panel ------------------------------------------------
       tabPanel(title = "Abondance et biomasse",

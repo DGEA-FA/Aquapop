@@ -1,15 +1,47 @@
+#' Charger et structurer les données du feuillet "Récolte"
+#'
+#' Cette fonction importe les données brutes du feuillet "Récolte" d’un fichier Excel,
+#' applique des transformations pour nettoyer et convertir les colonnes au bon format,
+#' puis retourne un tableau prêt à l’analyse.
+#'
+#' @param path Chemin complet vers le fichier Excel (.xlsx) à importer.
+#' @param namesheet Nom du feuillet contenant les données de récolte (par défaut `"Recolte"`).
+#'
+#' @return Un `data.frame` contenant :
+#' \describe{
+#'   \item{no_lac, nom_lac, typ_pech, no_station, sp}{Facteurs}
+#'   \item{annee}{Année numérique, convertie à partir du format Excel si nécessaire}
+#'   \item{nb_capture, nb_pese}{Numériques}
+#'   \item{comments}{Chaîne de caractères}
+#' }
+#'
+#' @details
+#' La fonction effectue les étapes suivantes :
+#' \enumerate{
+#'   \item Lecture du fichier Excel avec toutes les colonnes en texte
+#'   \item Renommage des colonnes selon le format attendu
+#'   \item Conversion des colonnes en types appropriés (facteurs, numériques, caractères)
+#'   \item Conversion de l’année au format Excel si nécessaire
+#'   \item Suppression des doublons
+#' }
+#'
+#' @importFrom readxl read_excel
+#' @importFrom lubridate year
+#' @importFrom dplyr mutate distinct
+#' @export
 load_recolte <- function(path, namesheet) {
-  # Charger les données à partir du fichier Excel
+  
+  # 1. Lecture du fichier Excel
   recolte <- readxl::read_excel(
     path,
     col_names = TRUE,
     sheet = namesheet,
-    na = c("", "NULL", "NA", " ", "-"), # Considérer ces valeurs comme NA
-    col_types = "text" # Toutes les colonnes en tant que texte
+    na = c("", "NULL", "NA", " ", "-"),
+    col_types = "text"
   ) %>%
-    as.data.frame() # Convertir en data.frame pour une manipulation plus facile
+    as.data.frame()
   
-  # Renommer les colonnes
+  # 2. Renommage des colonnes
   colnames(recolte) <- c(
     'no_lac',        # 1ère colonne : No plan d'eau
     'nom_lac',       # 2ème colonne : Nom plan d'eau
@@ -22,27 +54,28 @@ load_recolte <- function(path, namesheet) {
     'comments'       # 9ème colonne : Commentaires
   )
   
+  # 3. Conversion de l'année (Excel → entier si nécessaire)
+  recolte$annee <- as.integer(recolte$annee)
+  recolte$annee <- ifelse(
+    nchar(recolte$annee) == 5,
+    as.integer(lubridate::year(as.Date(recolte$annee, origin = "1899-12-30"))),
+    recolte$annee
+  )
   
-  recolte$annee <- recolte$annee %>% as.integer()
-  recolte$annee <- ifelse(nchar(recolte$annee) == 5, 
-                      as.integer(lubridate::year(as.Date(recolte$annee, origin = "1899-12-30"))), 
-                      recolte$annee)  
-  
-  
-  # Convertir les colonnes appropriées en facteurs, numériques ou caractères
+  # 4. Conversion des types
   recolte <- recolte %>%
-    mutate(
-      no_lac = as.factor(no_lac),
-      nom_lac = as.factor(nom_lac),
-      typ_pech = as.factor(typ_pech),
+    dplyr::mutate(
+      no_lac     = as.factor(no_lac),
+      nom_lac    = as.factor(nom_lac),
+      typ_pech   = as.factor(typ_pech),
       no_station = as.factor(no_station),
-      sp = as.factor(sp),
+      sp         = as.factor(sp),
       nb_capture = as.numeric(nb_capture),
-      nb_pese = as.numeric(nb_pese),
-      comments = as.character(comments)
+      nb_pese    = as.numeric(nb_pese),
+      comments   = as.character(comments)
     )
   
-  # Supprimer les doublons
+  # 5. Suppression des doublons
   recolte <- recolte %>% dplyr::distinct()
   
   return(recolte)

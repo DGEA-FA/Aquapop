@@ -1,52 +1,10 @@
-# librairies --------------------------------------------------------------
-library(shiny)
-library(car)
-library(DT)
-library(kableExtra)
-library(reactable)
-library(FSA)
-library(nlstools)
-library(shinyBS)
-library(gghighlight)
-library(htmltools)
-library(markdown)
-library(readxl)
-library(ggplot2)
-library(scales)
-library(patchwork)
-library(reactlog)
-library(stringr)
-library(chron)
-library(purrr)
-library(writexl)
-library(shinycssloaders)
-library(glue)
-library(fishmethods)
-library(hnp)
-library(MASS)
-library(glmmTMB)
-library(MuMIn)
-library(plotly)
-library(gapminder)
-library(AER)
-library(pROC)
-library(DescTools)
-library(emdbook)
-library(AICcmodavg)
-library(investr)
-library(lubridate)
-library(gt)
-library(officer)
-library(flextable)
-library(forcats)
-library(labelled)
-library(tidyr)
-library(dplyr)
-
-#should work ?
+source("R/load_packages.R")
 
 source("functions.R")
 source("./texte/text_elements.R", local = TRUE)   # Load the text elements
+
+
+
 # to_activate_before_play -------------------------------------------------
 reactlog::reactlog_enable() # Pour voir le graphe des réactifs
 Sys.setlocale("LC_TIME", "French")  # Pour définir le format de la date en français
@@ -58,3 +16,6 @@ shinyApp(
   ui = app_ui,
   server = app_server
 )
+
+# reactlogShow()
+
