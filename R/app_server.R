@@ -1,11 +1,13 @@
 app_server <- function(input, output, session) {
- 
-  # 1. Lecture du fichier
-  data_temp <- eventReactive(input$upload, {
+
+# Téléchargement data_lac -------------------------------------------------
+
+# Upload de la feuille Lac du fichier *.xlsx
+    data_temp <- eventReactive(input$upload, {
     load_lac(path = input$upload$datapath, namesheet = "Lac")
   })
   
-  # 2. UI dynamique – typ_pech (pas de sélection initiale)
+# UI dynamique – typ_pech (pas de sélection initiale)
   output$ui_typ_pech <- renderUI({
     req(data_temp())
     radioButtons(
@@ -16,13 +18,13 @@ app_server <- function(input, output, session) {
     )
   })
   
-  # 3. Filtrage 1 : selon typ_pech
+  # Filtrage 1 : selon typ_pech
   df_filtered1 <- reactive({
     req(data_temp(), input$typ_pech)
     filtrer_par_pen_lac_annee(data = data_temp(), typ_pech = input$typ_pech)
   })
   
-  # 4. UI dynamique – no_lac (aucune sélection automatique)
+  # UI dynamique – no_lac (aucune sélection automatique)
   output$ui_no_lac <- renderUI({
     req(df_filtered1())
     selectInput(
@@ -33,13 +35,13 @@ app_server <- function(input, output, session) {
     )
   })
   
-  # 5. Filtrage 2 : selon no_lac
+  # Filtrage 2 : selon no_lac
   df_filtered2 <- reactive({
     req(df_filtered1(), input$no_lac)
     filtrer_par_pen_lac_annee(data = df_filtered1(), no_lac = input$no_lac)
   })
   
-  # 6. UI dynamique – année (aucune sélection automatique)
+  # UI dynamique – année (aucune sélection automatique)
   output$ui_annee <- renderUI({
     req(df_filtered2())
     tagList(
@@ -52,82 +54,77 @@ app_server <- function(input, output, session) {
     )
   })
   
-  # 7. Filtrage 3 : selon année
-  df_filtered <- reactive({
+  # Filtrage 3 : selon année (et création de data_lac)
+  data_lac <- reactive({
     req(df_filtered2(), input$annee)
     filtrer_par_pen_lac_annee(data = df_filtered2(), annee = input$annee)
   })
+  
+  # Affichage dans la console des filtres effectués (facilite debug)
+  observeEvent(data_lac(), {
+    cat("\n--- Données filtrées data_lac() ---\n")
+    cat("→ Type(s) de pêche sélectionné(s):\n")
+    print(unique(data_lac()$typ_pech))
+    cat("→ Numéro(s) de lac sélectionné(s):\n")
+    print(unique(data_lac()$no_lac))
+    cat("→ Année(s) dans data_lac():\n")
+    print(sort(unique(data_lac()$annee)))
+  })
+  
+# Identification de l'espèce ciblée ---------------------------------------
+  
+  info_pen_reactive <- reactive({
+    req(input$typ_pech)
+    get_info_pen(input$typ_pech)
+  })
+  
+  # Accès aux elements préparés
+  binwidth_reactive <- reactive({ info_pen_reactive()$binwidth })
+  nomsp_reactive     <- reactive({ info_pen_reactive()$nom_sp })
+  sp_pen <- reactive({ info_pen_reactive()$code_sp })
  
-  # Lac (déjà chargé dans data_temp)
-  data_lac <- reactive({
-    req(data_temp(), input$typ_pech, input$no_lac, input$annee)
-    filtrer_par_pen_lac_annee(
-      data     = data_temp(),
+
+# Téléchargement des autres bases de données ------------------------------
+
+  analysis_data <- reactive({
+    req(input$upload, input$typ_pech, input$no_lac, input$annee)
+    
+    get_analysis_data(
+      path     = input$upload$datapath,
       typ_pech = input$typ_pech,
       no_lac   = input$no_lac,
       annee    = input$annee
     )
   })
   
-  # Station
-  data_station <- reactive({
-    req(input$upload, input$typ_pech, input$no_lac, input$annee)
-    df <- load_station(path = input$upload$datapath, namesheet = "Stations")
-    filtrer_par_pen_lac_annee(
-      data     = df,
-      typ_pech = input$typ_pech,
-      no_lac   = input$no_lac,
-      annee    = input$annee
-    )
-  })
+  # Accès aux jeux préparés
+  data_station <- reactive({ analysis_data()$data_station })
+  specimen     <- reactive({ analysis_data()$specimen })
+  specimen_valid <- reactive({ analysis_data()$specimen_valid })
+  capture      <- reactive({ analysis_data()$capture })
   
-  # Récolte
-  data_recolte <- reactive({
-    req(input$upload, input$typ_pech, input$no_lac, input$annee)
-    df <- load_recolte(path = input$upload$datapath, namesheet = "Recolte")
-    filtrer_par_pen_lac_annee(
-      data     = df,
-      typ_pech = input$typ_pech,
-      no_lac   = input$no_lac,
-      annee    = input$annee
-    )
-  })
-  
-  # Spécimen
-  data_specimen <- reactive({
-    req(input$upload, input$typ_pech, input$no_lac, input$annee)
-    df <- load_specimen(path = input$upload$datapath, namesheet = "Specimens")
-    filtrer_par_pen_lac_annee(
-      data     = df,
-      typ_pech = input$typ_pech,
-      no_lac   = input$no_lac,
-      annee    = input$annee
-    )
-  })
+  # Tableau de synthèse introductif
   
   output$recap_intro_table <- renderTable({
-    req(df_filtered(), data_station())
-    table_recap(datalac = df_filtered(), data_station = data_station())
-  })
-  
-  # Vérifie les années présentes dans df_filtered()
-  observeEvent(df_filtered(), {
-    cat("\n--- Données filtrées df_filtered() ---\n")
-    cat("→ Type(s) de pêche sélectionné(s):\n")
-    print(unique(df_filtered()$typ_pech))
-    cat("→ Numéro(s) de lac sélectionné(s):\n")
-    print(unique(df_filtered()$no_lac))
-    cat("→ Année(s) dans df_filtered():\n")
-    print(sort(unique(df_filtered()$annee)))
+    req(data_lac(), data_station())
+    table_recap(datalac = data_lac(), data_station = data_station())
   })
 
+  #UI dynamique – visualisation des données téléchargées
+
   output$visualiser <- renderUI({
-    req(df_filtered())
+    req(data_lac())
     selectInput(
       inputId = "controller",
-      label = "Visualiser les données brutes",
-      choices = c("Lac" = "lac", "Stations" = "station", "Récolte" = "recolte", "Spécimens" = "specimen"),
-      selected = NULL,
+      label = "Visualiser les données",
+      choices = c(
+        "Lac" = "data_lac",
+        "Stations" = "data_station",
+        "Spécimens" = "specimen",
+        "Spécimens valides" = "specimen_valid",
+        "Capture" = "capture"
+        
+      ),       selected = NULL,
       multiple = FALSE
     )
   })
@@ -136,83 +133,12 @@ app_server <- function(input, output, session) {
     updateTabsetPanel(inputId = "switcher", selected = input$controller)
   })
  
-  # Affichage brut des tables
   output$table_lac      <- afficher_table(data_lac)
   output$table_station  <- afficher_table(data_station)
-  output$table_recolte  <- afficher_table(data_recolte)
-  output$table_specimen <- afficher_table(data_specimen)  
+  output$table_specimen  <- afficher_table(specimen)
+  output$table_specimen_valid  <- afficher_table(specimen_valid)
+  output$table_capture <- afficher_table(capture)  
 
-  # identifier sp d'interet ------------------------------------------------
- 
-  info_pen_reactive <- reactive({
-    req(input$typ_pech)
-    get_info_pen(input$typ_pech)
-  })
-  
-  binwidth_reactive <- reactive({
-    req(info_pen_reactive())
-    info_pen_reactive()$binwidth
-  })
-  
-  nomsp_reactive <- reactive({
-    req(info_pen_reactive())
-    info_pen_reactive()$nom_sp
-  })
-  
-  sp_pen <- reactive({
-    req(info_pen_reactive())
-    info_pen_reactive()$code_sp
-  })
-  
-  
-  # Verif dataframes vides ------------------------------------------------
-
-  # Liste des dataframes et noms à vérifier
-  data_list <- list(
-    data_station = list(data = data_station, nom = "Stations"),
-    data_recolte = list(data = data_recolte, nom = "Récolte"),
-    data_specimen = list(data = data_specimen, nom = "Spécimen"),
-    data_lac = list(data = data_lac, nom = "Lac")
-  )
-  
-  # Génération des outputs avec une boucle
-  lapply(names(data_list), function(output_id) {
-    output[[paste0("status_text_", output_id)]] <- renderUI({
-      data_fun <- data_list[[output_id]]$data
-      nom_df   <- data_list[[output_id]]$nom
-      
-      validate(
-        need(data_fun(), paste0("Les données de ", tolower(nom_df), " sont manquantes."))
-      )
-      message <- verifier_dataframes(data_fun(), nom_df)
-      if (!is.null(message)) {
-        tags$p(message, style = "color: red;")
-      } else {
-        NULL
-      }
-    })
-  })
-  
-  # Creation du df specimen ------------------------------------------------
-  specimen <- reactive({
-    req(data_specimen(), data_station())
-    # Création de la specimen en utilisant la fonction create_specimen
-    create_specimen(data_specimen(), data_station())
-  })
-  
-  # Creation du df specimen_valid ------------------------------------------------
-  
-  specimen_valid <- reactive({
-    req(data_specimen(), data_station())
-    create_specimen_valid(data_specimen(), data_station())
-  })
-  
-  # Creation du df capture ------------------------------------------------
-  capture <- reactive({
-    req(data_recolte(), data_station())
-    create_capture(data_station(), data_recolte())
-  })
-  
   
   # Taille masse age -------------------------------------------------------
   taillemasseagedata <- reactive({

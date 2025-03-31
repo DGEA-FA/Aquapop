@@ -4,30 +4,64 @@
 #          hors de l'application Shiny
 # ============================================================================
 
-# 1. Charger les dépendances et les fonctions --------------------------------
+# CHARGER LES DÉPENDANCES ET LES FONCTIONS MÉTIER -------------------------
+
+# Charger les packages
 source("R/load_packages.R")
 
+# Charger toutes les fonctions définies 
+script_files <- list.files("R", pattern = "\\.R$", full.names = TRUE)
+
+invisible(lapply(script_files, function(f) {
+  tryCatch(
+    source(f, local = FALSE),
+    error = function(e) message("Erreur dans ", f, ": ", e$message)
+  )
+}))
+
+# DÉFINIR LES PARAMÈTRES D’EXTRACTION -------------------------------------
+
+# Chemin vers le fichier Excel d’extraction
 path <- "data/Extract IFA_R04_AquaPop.xlsx"
 
-# (À terme : source ici les fichiers contenant les fonctions que tu veux tester)
-source("R/import_data.R")        # À créer bientôt
-source("R/biomasse_table.R")     # Supposé déjà fonctionnel
+# Paramètres d’identification du sous-ensemble de données à analyser
+typ_pech <- "PENT"
+no_lac   <- "00024"
+annee    <- 2015
 
-# 2. Charger les données d’exemple ------------------------------------------
-# (Données extraites de la base IFA au bon format)
-donnees_capture <- readxl::read_excel("data/exempledata.xlsx", sheet = "capture")
-donnees_specimen <- readxl::read_excel("data/exempledata.xlsx", sheet = "specimen")
-donnees_station <- readxl::read_excel("data/exempledata.xlsx", sheet = "station")
 
-# 3. Calculer un indicateur simple ------------------------------------------
-# (ici on teste seulement biomasse_table)
-table_biomasse <- biomasse_table(
-  data_capture = donnees_capture,
-  data_specimen = donnees_specimen,
-  data_station = donnees_station
+
+# EXTRAIRE LES DONNÉES POUR ANALYSE ---------------------------------------
+
+# Cette fonction regroupe la logique d’import et de filtrage par typ_pech / lac / année
+df <- get_analysis_data(
+  path     = path,
+  typ_pech = typ_pech,
+  no_lac   = no_lac,
+  annee    = annee
 )
 
-# 4. Exporter les résultats --------------------------------------------------
-writexl::write_xlsx(table_biomasse, "resultats/biomasse_demo.xlsx")
+# Les objets retournés sont organisés en liste
+data_station     <- df$data_station
+specimen         <- df$specimen
+specimen_valid   <- df$specimen_valid
+capture          <- df$capture
 
-message("✅ Exemple d'utilisation complété. Résultat dans : resultats/biomasse_demo.xlsx")
+# Extraire et filtrer la feuille "Lac"
+data_lac <- load_lac(path, namesheet = "Lac") |>
+  # appliquer les filtres 
+  filtrer_par_pen_lac_annee(typ_pech = typ_pech,
+                            no_lac = no_lac,
+                            annee = annee)
+
+# Générer un tableau synthèse (optionnel)
+table_recap(datalac = data_lac, data_station = data_station)
+
+# EXTRAIRE LES MÉTADONNÉES LIÉES AU TYPE DE PÊCHE -------------------------
+
+info_pen <- get_info_pen(typ_pech)
+
+# Espèce cible, nom et largeur de classes de taille
+code_sp  <- info_pen$code_sp
+nom_sp   <- info_pen$nom_sp
+binwidth <- info_pen$binwidth

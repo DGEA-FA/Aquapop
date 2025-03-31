@@ -9,12 +9,12 @@
 #'
 #' @return Un `data.frame` contenant :
 #' \describe{
-#'   \item{no_lac, nom_lac, typ_pech, no_station, no_specimen, sp}{Facteurs}
+#'   \item{no_lac, typ_pech, no_station, no_specimen, sp}{Facteurs}
 #'   \item{ltm, lf, masse, age}{Numériques}
 #'   \item{sexe, maturite, marquage}{Facteurs avec niveaux ordonnés ("F", "M", "IND"), ("O", "N", "IND"), ("MA", "NMA")}
 #'   \item{ind_insec, ind_benth, ind_planc, ind_chyme, ind_vide, ind_poiss, poiss1, poiss2}{Facteurs}
 #'   \item{annee}{Année numérique, convertie si format Excel}
-#'   \item{comments}{Chaîne de caractères}
+#'   \item{comments_specimen}{Chaîne de caractères}
 #' }
 #'
 #' @details
@@ -25,13 +25,15 @@
 #'   \item Remplacement des `NA` dans `sexe`, `maturite`, et `marquage`
 #'   \item Conversion des colonnes en facteurs ou numériques selon leur nature
 #'   \item Définition de niveaux explicites pour `sexe`, `maturite` et `marquage`
+#'   \item Conversion de l’année et renommage de la variable `comments`
 #'   \item Tri par numéro de spécimen croissant
 #'   \item Suppression des doublons
+#'   \item Suppression de la colonne `nom_lac`
 #' }
 #'
 #' @importFrom readxl read_excel
 #' @importFrom lubridate year
-#' @importFrom dplyr mutate across distinct arrange select
+#' @importFrom dplyr mutate across distinct arrange select rename
 #' @importFrom tidyr replace_na
 #' @export
 load_specimen <- function(path, namesheet) {
@@ -73,7 +75,10 @@ load_specimen <- function(path, namesheet) {
     'comments'       # 23ème colonne : Commentaires
   )
   
-  # 3. Remplacement des valeurs manquantes dans certaines colonnes clés
+  # 3. Suppression de la colonne nom_lac
+  specimen <- specimen %>% dplyr::select(-nom_lac)
+  
+  # 4. Remplacement des valeurs manquantes dans certaines colonnes clés
   specimen <- specimen %>%
     dplyr::mutate(
       maturite = tidyr::replace_na(maturite, "IND"),
@@ -81,11 +86,11 @@ load_specimen <- function(path, namesheet) {
       marquage = tidyr::replace_na(marquage, "NMA")
     )
   
-  # 4. Conversion des types
+  # 5. Conversion des types
   specimen <- specimen %>%
     dplyr::mutate(
       across(
-        c(no_lac, nom_lac, typ_pech, no_station, no_specimen, sp,
+        c(no_lac, typ_pech, no_station, no_specimen, sp,
           ind_insec, ind_benth, ind_planc, ind_chyme, ind_vide, ind_poiss,
           poiss1, poiss2, sexe, maturite, marquage),
         as.factor
@@ -95,7 +100,7 @@ load_specimen <- function(path, namesheet) {
       marquage = factor(marquage, levels = c("MA", "NMA"))
     )
   
-  # 5. Conversion de l’année (Excel → entier si nécessaire)
+  # 6. Conversion de l’année (Excel → entier si nécessaire)
   specimen$annee <- as.integer(specimen$annee)
   specimen$annee <- ifelse(
     nchar(specimen$annee) == 5,
@@ -103,23 +108,24 @@ load_specimen <- function(path, namesheet) {
     specimen$annee
   )
   
-  # 6. Conversion des autres colonnes
+  # 7. Conversion des colonnes numériques et renommage de comments
   specimen <- specimen %>%
     dplyr::mutate(
       ltm      = as.numeric(ltm),
       lf       = as.numeric(lf),
       masse    = as.numeric(masse),
       age      = as.numeric(age),
-      comments = as.character(comments)
-    )
+      comments_specimen = as.character(comments)
+    ) %>%
+    dplyr::select(-comments)
   
-  # 7. Tri croissant par no_specimen
+  # 8. Tri croissant par no_specimen
   specimen <- specimen %>%
     dplyr::mutate(no_specimen_numeric = as.numeric(as.character(no_specimen))) %>%
     dplyr::arrange(no_specimen_numeric) %>%
     dplyr::select(-no_specimen_numeric)
   
-  # 8. Suppression des doublons
+  # 9. Suppression des doublons
   specimen <- specimen %>% dplyr::distinct()
   
   return(specimen)

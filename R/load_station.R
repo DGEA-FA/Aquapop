@@ -9,7 +9,7 @@
 #'
 #' @return Un `data.frame` contenant :
 #' \describe{
-#'   \item{no_lac, nom_lac, typ_pech, no_station, st_valide, st_hasard, type_maill}{Facteurs}
+#'   \item{no_lac, typ_pech, no_station, st_valide, st_hasard, type_maill}{Facteurs}
 #'   \item{annee}{Année numérique, convertie à partir du format Excel si nécessaire}
 #'   \item{lat_dd.dec, long_dd.dec, prof_deb, prof_fin}{Numériques}
 #'   \item{date_pose, date_leve}{Dates calculées (pose = veille de la levée)}
@@ -73,6 +73,10 @@ load_station <- function(path, namesheet) {
     'comments'         # 18ème colonne : Commentaires
   )
   
+  
+  # 3. Suppression de la colonne nom_lac
+  station <- station %>% dplyr::select(-nom_lac)
+  
   # 3. Nettoyage des statuts : NA, "IND" ou "-" deviennent "O" dans les colonnes "st_valide" et "st_hasard"
   station <- station %>%
     dplyr::mutate(
@@ -89,7 +93,7 @@ load_station <- function(path, namesheet) {
   # 4. Conversion des types de base
   station <- station %>%
     dplyr::mutate(
-      across(c(no_lac, nom_lac, typ_pech, st_hasard, st_valide, type_maill, no_station), as.factor),
+      across(c(no_lac, typ_pech, st_hasard, st_valide, type_maill, no_station), as.factor),
       annee = dplyr::case_when(
         nchar(annee) == 5 ~ as.integer(lubridate::year(as.Date(as.numeric(annee), origin = "1899-12-30"))),
         TRUE              ~ suppressWarnings(as.integer(annee))
@@ -98,8 +102,9 @@ load_station <- function(path, namesheet) {
       long_dd.dec = as.numeric(long_dd.dec),
       prof_deb    = as.numeric(prof_deb),
       prof_fin    = as.numeric(prof_fin),
-      comments    = as.character(comments)
-    )
+      comments_station    = as.character(comments)
+    ) %>%
+    dplyr::select(-comments)
   
   # 6. Conversion de la date de levée et calcul de la date de pose
   station$date_leve <- as.Date(as.numeric(station$date_leve), origin = "1899-12-30")

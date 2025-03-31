@@ -12,10 +12,20 @@ invisible(lapply(script_files, function(f) {
 # Tous les scripts sont maintenant chargés et prêts à être utilisés
 
 path <- "data/Extract IFA_R04_AquaPop.xlsx"
-typ_pechvar <- "PENT"
-no_lac_var <- "00024" 
-annee_var <- 2015
+typ_pech <- "PENT"
+no_lac <- "00024" 
+annee <- 2015
 
+
+df <- get_analysis_data(
+  path     = path,
+  typ_pech = typ_pechvar,
+  no_lac   = no_lac_var,
+  annee    = annee_var
+)
+
+resultats$capture
+resultats$specimen_valid
 
 data_lac <- load_lac(path, namesheet= "Lac")
 

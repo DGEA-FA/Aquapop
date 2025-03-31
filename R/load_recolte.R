@@ -9,7 +9,7 @@
 #'
 #' @return Un `data.frame` contenant :
 #' \describe{
-#'   \item{no_lac, nom_lac, typ_pech, no_station, sp}{Facteurs}
+#'   \item{no_lac, typ_pech, no_station, sp}{Facteurs}
 #'   \item{annee}{Année numérique, convertie à partir du format Excel si nécessaire}
 #'   \item{nb_capture, nb_pese}{Numériques}
 #'   \item{comments}{Chaîne de caractères}
@@ -54,7 +54,10 @@ load_recolte <- function(path, namesheet) {
     'comments'       # 9ème colonne : Commentaires
   )
   
-  # 3. Conversion de l'année (Excel → entier si nécessaire)
+  # 3. Suppression de la colonne nom_lac
+  recolte <- recolte %>% dplyr::select(-nom_lac)
+  
+  # 4. Conversion de l'année (Excel → entier si nécessaire)
   recolte$annee <- as.integer(recolte$annee)
   recolte$annee <- ifelse(
     nchar(recolte$annee) == 5,
@@ -62,20 +65,20 @@ load_recolte <- function(path, namesheet) {
     recolte$annee
   )
   
-  # 4. Conversion des types
+  # 5. Conversion des types et renommage de comments
   recolte <- recolte %>%
     dplyr::mutate(
       no_lac     = as.factor(no_lac),
-      nom_lac    = as.factor(nom_lac),
       typ_pech   = as.factor(typ_pech),
       no_station = as.factor(no_station),
       sp         = as.factor(sp),
       nb_capture = as.numeric(nb_capture),
       nb_pese    = as.numeric(nb_pese),
-      comments   = as.character(comments)
-    )
+      comments_recolte   = as.character(comments)
+    ) %>%
+    dplyr::select(-comments)
   
-  # 5. Suppression des doublons
+  # 6. Suppression des doublons
   recolte <- recolte %>% dplyr::distinct()
   
   return(recolte)

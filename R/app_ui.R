@@ -1,14 +1,25 @@
+# ════════════════════════════════════════════════════════════════════════
+# INTERFACE UTILISATEUR – FONCTION PRINCIPALE app_ui()
+# ════════════════════════════════════════════════════════════════════════
+
 app_ui <- function() {
-  # Source the text elements
+  
+  # Chargement des éléments textuels (ex. : titres, instructions, etc.)
   source("texte/text_elements.R", local = TRUE)
+  
   fluidPage(
     
     
-    # app_title --------------------------------------------------------------
-    titlePanel(title = "AquaPop : Outil d'aide à l'analyse de données d'inventaire ichtyologique"),
+    # TITRE DE L’APPLICATION -------------------------------------------------
+    titlePanel(
+      title = "AquaPop : Outil d'aide à l'analyse de données d'inventaire ichtyologique"
+      ),
+    
+    # NAVIGATION PAR ONGLET --------------------------------------------------
     navbarPage(
       "",
-      # Page d'accueil -------------------------------------------------------------
+      
+      # ONGLET 1 – Page d’accueil --------------------------------------------
       tabPanel(
         icon("home"),
         tags$iframe(
@@ -18,26 +29,33 @@ app_ui <- function() {
           style = "border:none;"
         )
       ),
-      # Téléchargement ---------------------------------------------------
+      
+      # ONGLET 2 – Téléchargement des données --------------------------------
       tabPanel(
         title = "Téléchargement",
         icon = icon("upload"),
+        
         sidebarLayout(
+          
+          # PANNEAU LATÉRAL – Téléversement et filtres -----------------------
           sidebarPanel(
-            # Inclure le texte d'instructions avec une taille réduite
+            
+            # Texte d’instructions utilisateur
             tags$div(
               htmltools::includeMarkdown(path = './texte/instruction_texte.rmd'),
               style = "font-size: 85%; color: #555;"
             ),
-            ## upload ----------------------------------------------------------------
+            
+            
+            # Bouton de téléchargement de fichier .xlsx ----------------------
             tags$head(
               tags$style(HTML("
-    .btn-file {
-      background-color: #007bff !important; /* Bleu */
-      color: white !important; /* Texte blanc */
-      font-weight: bold !important; /* Texte en gras */
-    }
-  "))
+                .btn-file {
+                  background-color: #007bff !important;
+                  color: white !important;
+                  font-weight: bold !important;
+                }
+              "))
             ),
             fileInput(
               inputId = "upload",
@@ -47,32 +65,31 @@ app_ui <- function() {
               accept = c(".xlsx")
             ),
             
-            #dans uploadexample.R
-            ## filter_ID -------------------------------------------------------------
+            # Filtres dynamiques (pêche, lac, année) --------------------------
             uiOutput(outputId = "ui_typ_pech"),
             uiOutput(outputId = "ui_no_lac"),
             uiOutput(outputId = "ui_annee"),
+            
+            # Sélecteur pour visualisation des jeux de données ---------------
             uiOutput(outputId = "visualiser")
           ),
-          ## display_brut ----------------------------------------------------------
+          
+          # PANNEAU PRINCIPAL – Affichage brut des données ------------------
           mainPanel(
             
-            uiOutput("status_text_data_station"),
-            uiOutput("status_text_data_recolte"),
-            uiOutput("status_text_data_specimen"),
-            uiOutput("status_text_data_lac"),
-            
-            
+            # Tableau de synthèse introductif
             tableOutput(outputId = "recap_intro_table"),
+            
+            # Affichage tabulaire conditionnel selon sélection utilisateur
             tabsetPanel(
               id = "switcher",
               type = "hidden",
               selected = NULL,
-              tabPanelBody("lac", dataTableOutput(outputId = "table_lac")),
-              tabPanelBody("station", dataTableOutput(outputId = "table_station")),
-              tabPanelBody("recolte", dataTableOutput(outputId = "table_recolte")),
-              tabPanelBody("specimen", dataTableOutput(outputId = "table_specimen"))
-
+              tabPanelBody("data_lac", dataTableOutput(outputId = "table_lac")),
+              tabPanelBody("data_station", dataTableOutput(outputId = "table_station")),
+              tabPanelBody("specimen", dataTableOutput(outputId = "table_specimen")),
+              tabPanelBody("specimen_valid", dataTableOutput(outputId = "table_specimen_valid")),
+              tabPanelBody("capture", dataTableOutput(outputId = "table_capture"))
             )
           )
         )
