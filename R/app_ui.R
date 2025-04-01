@@ -136,9 +136,12 @@ app_ui <- function() {
           ## taille_masse_age_subpanel ----------------------------------------------
           tabPanel(
             title = "Taille, masse et âge moyens",
-            htmltools::includeMarkdown(path = './texte/taillemasseage_texte.rmd'),
-            withSpinner(tableOutput(outputId = "taillemasseagetable"), type = myspinner),
-            downloadButton(outputId = "download_taillemasseagetable", label = "Téléchargement")
+            p("Le tableau suivant reprend les statistiques descriptives, soit le nombre de spécimens mesurés/pesés/âgés (N) 
+              ainsi que la moyenne (Moy.), l’écart-type (ET), les valeurs minimale (Min) et maximale (Max) de la longueur
+              totale maximale (LTMax), de la masse et de l’âge des poissons pour différents groupes."),
+            h3("Aperçu des données morphologiques"),
+            withSpinner(uiOutput("taillemasseage_ui"), type = myspinner),
+            uiOutput("dl_taillemasseage_ui")
           ),
           ## structure de taille -------------------------------------------------
           tabPanel(

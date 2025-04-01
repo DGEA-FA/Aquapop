@@ -55,7 +55,7 @@ data_lac <- load_lac(path, namesheet = "Lac") |>
                             annee = annee)
 
 # Générer un tableau synthèse (optionnel)
-table_recap(datalac = data_lac, data_station = data_station)
+table_recap(data_lac = data_lac, data_station = data_station)
 
 # EXTRAIRE LES MÉTADONNÉES LIÉES AU TYPE DE PÊCHE -------------------------
 
@@ -65,3 +65,16 @@ info_pen <- get_info_pen(typ_pech)
 code_sp  <- info_pen$code_sp
 nom_sp   <- info_pen$nom_sp
 binwidth <- info_pen$binwidth
+
+
+
+# TAILLE MASSE ÂGE  -------------------------------------------------------
+
+# Pour obtenir le tableau de données
+df_taillemasseage <- taille_masse_age(specimen_valid, format = "data.frame")
+
+# Pour afficher le flextable
+taille_masse_age(specimen_valid, format = "flextable")
+
+# Exemple : Exporter manuellement un tableau
+# download_data(df_taillemasseage, path = "df_taillemasseage.xlsx")

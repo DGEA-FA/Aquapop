@@ -1,93 +1,121 @@
-taille_masse_age <- function(dataspecimen, espece) {
+#' Génère un tableau morphologique (taille, masse, âge) au format brut ou flextable
+#'
+#' Cette fonction calcule des statistiques descriptives (N, moyenne, écart-type, min, max)
+#' pour la longueur totale (LTMax), la masse et l'âge des spécimens, regroupés par sexe et statut reproducteur.
+#' Elle retourne soit un `data.frame`, soit un `flextable` mis en page selon l'argument `format`.
+#'
+#' @param data_specimen_valid Un data.frame contenant les colonnes `ltm`, `masse`, `age`, `sexe` et `maturite`.
+#' @param format Format de sortie : `"data.frame"` (par défaut) ou `"flextable"`.
+#'
+#' @return Un tableau de statistiques morphologiques au format spécifié.
+#' @export
+taille_masse_age <- function(data_specimen_valid, format = c("data.frame", "flextable")) {
+  format <- match.arg(format)
   
-  # Filtrer les données pour l'espèce concernée
-  dataspecimen_filtered <- dataspecimen %>% filter(sp == espece)
-  
-  # Fonction pour calculer les statistiques par groupe
-  # - `data`: le dataframe filtré à utiliser
-  # - `var`: le nom de la variable pour laquelle calculer les statistiques
-  # - `group_var`: le nom de la variable de regroupement (par exemple, sexe)
   calculate_stats <- function(data, var, group_var = NULL) {
     if (!is.null(group_var)) {
       data <- data %>% group_by(!!sym(group_var), .drop = FALSE)
     }
     data %>%
-      dplyr::summarise(
-        nb = sum(!is.na(!!sym(var))),   # Nombre d'observations non manquantes
-        moy = ifelse(all(is.na(!!sym(var))), NA, mean(!!sym(var), na.rm = TRUE)) %>% round(digits = 1),  # Moyenne
-        e_t = ifelse(all(is.na(!!sym(var))), NA, sd(!!sym(var), na.rm = TRUE)) %>% round(digits = 1),    # Écart type
-        min = ifelse(all(is.na(!!sym(var))), NA, min(!!sym(var), na.rm = TRUE)) %>% round(digits = 1),   # Minimum
-        max = ifelse(all(is.na(!!sym(var))), NA, max(!!sym(var), na.rm = TRUE)) %>% round(digits = 1),   # Maximum
-        .groups = "drop" # Éviter les messages d'avertissement liés au regroupement
+      summarise(
+        nb  = sum(!is.na(!!sym(var))),
+        moy = ifelse(all(is.na(!!sym(var))), NA, mean(!!sym(var), na.rm = TRUE)) %>% round(1),
+        e_t = ifelse(all(is.na(!!sym(var))), NA, sd(!!sym(var), na.rm = TRUE)) %>% round(1),
+        min = ifelse(all(is.na(!!sym(var))), NA, min(!!sym(var), na.rm = TRUE)) %>% round(1),
+        max = ifelse(all(is.na(!!sym(var))), NA, max(!!sym(var), na.rm = TRUE)) %>% round(1),
+        .groups = "drop"
       )
   }
   
-  # Calcul des statistiques de longueur
-  ltm_mf <- calculate_stats(dataspecimen_filtered, "ltm", group_var = "sexe")
-  ltm_tous <- calculate_stats(dataspecimen_filtered, "ltm") %>% mutate(sexe = NA)
-  ltm_fmat <- calculate_stats(dataspecimen_filtered %>% filter(maturite == "O" & sexe == "F"), "ltm") %>% mutate(sexe = "Reprod. actifs ♀")
-  ltm_mmat <- calculate_stats(dataspecimen_filtered %>% filter(maturite == "O" & sexe == "M"), "ltm") %>% mutate(sexe = "Reprod. actifs ♂")
-  ltm_immature <- calculate_stats(dataspecimen_filtered %>% filter(maturite == "N"), "ltm") %>% mutate(sexe = "Imm. ou reprod. inactifs")
-  ltm_inconnu <- calculate_stats(dataspecimen_filtered %>% filter(maturite == "IND"), "ltm") %>% mutate(sexe = "Statut reprod. inconnu")
-  
-  # Combiner les résultats de longueur dans un dataframe unique
-  ltm_df <- bind_rows(ltm_mf, ltm_tous, ltm_mmat, ltm_immature, ltm_fmat, ltm_inconnu) %>%
-    mutate(sexe = as.character(sexe),
-           sexe = ifelse(is.na(sexe), "Tous", sexe),  # Remplacer les valeurs manquantes par "Tous"
-           sexe = plyr::mapvalues(sexe, from = c("M", "F", "IND"), to = c("Mâle", "Femelle", "Sexe inconnu")),  # Traduction des codes
-           sexe = factor(sexe, levels = c("Tous", "Femelle", "Mâle", "Sexe inconnu", "Reprod. actifs ♀", "Reprod. actifs ♂", "Imm. ou reprod. inactifs", "Statut reprod. inconnu"))) %>%
-    arrange(sexe)  # Trier par sexe
-  
-  # Calcul des statistiques de masse
-  masse_mf <- calculate_stats(dataspecimen_filtered, "masse", group_var = "sexe")
-  masse_tous <- calculate_stats(dataspecimen_filtered, "masse") %>% mutate(sexe = NA)
-  masse_fmat <- calculate_stats(dataspecimen_filtered %>% filter(maturite == "O" & sexe == "F"), "masse") %>% mutate(sexe = "Reprod. actifs ♀")
-  masse_mmat <- calculate_stats(dataspecimen_filtered %>% filter(maturite == "O" & sexe == "M"), "masse") %>% mutate(sexe = "Reprod. actifs ♂")
-  masse_immature <- calculate_stats(dataspecimen_filtered %>% filter(maturite == "N"), "masse") %>% mutate(sexe = "Imm. ou reprod. inactifs")
-  masse_inconnu <- calculate_stats(dataspecimen_filtered %>% filter(maturite == "IND"), "masse") %>% mutate(sexe = "Statut reprod. inconnu")
-  
-  # Combiner les résultats de masse dans un dataframe unique
-  masse_df <- bind_rows(masse_mf, masse_tous, masse_mmat, masse_immature, masse_fmat, masse_inconnu) %>%
-    mutate(sexe = as.character(sexe),
-           sexe = ifelse(is.na(sexe), "Tous", sexe),
-           sexe = plyr::mapvalues(sexe, from = c("M", "F", "IND"), to = c("Mâle", "Femelle", "Sexe inconnu")),
-           sexe = factor(sexe, levels = c("Tous", "Femelle", "Mâle", "Sexe inconnu", "Reprod. actifs ♀", "Reprod. actifs ♂", "Imm. ou reprod. inactifs", "Statut reprod. inconnu"))) %>%
+  # ---- Données LTMax ----
+  ltm_df <- bind_rows(
+    calculate_stats(data_specimen_valid, "ltm", "sexe"),
+    calculate_stats(data_specimen_valid, "ltm") %>% mutate(sexe = NA),
+    calculate_stats(filter(data_specimen_valid, maturite == "O" & sexe == "M"), "ltm") %>% mutate(sexe = "Reprod. actifs mâles"),
+    calculate_stats(filter(data_specimen_valid, maturite == "N"), "ltm") %>% mutate(sexe = "Imm. ou reprod. inactifs"),
+    calculate_stats(filter(data_specimen_valid, maturite == "O" & sexe == "F"), "ltm") %>% mutate(sexe = "Reprod. actifs femelles"),
+    calculate_stats(filter(data_specimen_valid, maturite == "IND"), "ltm") %>% mutate(sexe = "Statut reprod. inconnu")
+  ) %>%
+    mutate(
+      sexe = as.character(sexe),
+      sexe = ifelse(is.na(sexe), "Tous", sexe),
+      sexe = plyr::mapvalues(sexe, from = c("M", "F", "IND"), to = c("Mâle", "Femelle", "Sexe inconnu")),
+      sexe = factor(sexe, levels = c("Tous", "Femelle", "Mâle", "Sexe inconnu",
+                                     "Reprod. actifs femelles", "Reprod. actifs mâles",
+                                     "Imm. ou reprod. inactifs", "Statut reprod. inconnu"))
+    ) %>%
     arrange(sexe)
   
-  # Calcul des statistiques d'âge
-  age_mf <- calculate_stats(dataspecimen_filtered, "age", group_var = "sexe")
-  age_tous <- calculate_stats(dataspecimen_filtered, "age") %>% mutate(sexe = NA)
-  age_fmat <- calculate_stats(dataspecimen_filtered %>% filter(maturite == "O" & sexe == "F"), "age") %>% mutate(sexe = "Reprod. actifs ♀")
-  age_mmat <- calculate_stats(dataspecimen_filtered %>% filter(maturite == "O" & sexe == "M"), "age") %>% mutate(sexe = "Reprod. actifs ♂")
-  age_immature <- calculate_stats(dataspecimen_filtered %>% filter(maturite == "N"), "age") %>% mutate(sexe = "Imm. ou reprod. inactifs")
-  age_inconnu <- calculate_stats(dataspecimen_filtered %>% filter(maturite == "IND"), "age") %>% mutate(sexe = "Statut reprod. inconnu")
-  
-  # Combiner les résultats d'âge dans un dataframe unique
-  age_df <- bind_rows(age_mf, age_tous, age_mmat, age_immature, age_fmat, age_inconnu) %>%
-    mutate(sexe = as.character(sexe),
-           sexe = ifelse(is.na(sexe), "Tous", sexe),
-           sexe = plyr::mapvalues(sexe, from = c("M", "F", "IND"), to = c("Mâle", "Femelle", "Sexe inconnu")),
-           sexe = factor(sexe, levels = c("Tous", "Femelle", "Mâle", "Sexe inconnu", "Reprod. actifs ♀", "Reprod. actifs ♂", "Imm. ou reprod. inactifs", "Statut reprod. inconnu"))) %>%
+  # ---- Masse ----
+  masse_df <- bind_rows(
+    calculate_stats(data_specimen_valid, "masse", "sexe"),
+    calculate_stats(data_specimen_valid, "masse") %>% mutate(sexe = NA),
+    calculate_stats(filter(data_specimen_valid, maturite == "O" & sexe == "M"), "masse") %>% mutate(sexe = "Reprod. actifs mâles"),
+    calculate_stats(filter(data_specimen_valid, maturite == "N"), "masse") %>% mutate(sexe = "Imm. ou reprod. inactifs"),
+    calculate_stats(filter(data_specimen_valid, maturite == "O" & sexe == "F"), "masse") %>% mutate(sexe = "Reprod. actifs femelles"),
+    calculate_stats(filter(data_specimen_valid, maturite == "IND"), "masse") %>% mutate(sexe = "Statut reprod. inconnu")
+  ) %>%
+    mutate(
+      sexe = as.character(sexe),
+      sexe = ifelse(is.na(sexe), "Tous", sexe),
+      sexe = plyr::mapvalues(sexe, from = c("M", "F", "IND"), to = c("Mâle", "Femelle", "Sexe inconnu")),
+      sexe = factor(sexe, levels = levels(ltm_df$sexe))
+    ) %>%
     arrange(sexe)
   
-  # Renommer les colonnes de chaque dataframe avec le préfixe approprié
-  ltm_df <- ltm_df %>%
-    rename_with(~ paste0("ltm_", .), -sexe)
+  # ---- Âge ----
+  age_df <- bind_rows(
+    calculate_stats(data_specimen_valid, "age", "sexe"),
+    calculate_stats(data_specimen_valid, "age") %>% mutate(sexe = NA),
+    calculate_stats(filter(data_specimen_valid, maturite == "O" & sexe == "M"), "age") %>% mutate(sexe = "Reprod. actifs mâles"),
+    calculate_stats(filter(data_specimen_valid, maturite == "N"), "age") %>% mutate(sexe = "Imm. ou reprod. inactifs"),
+    calculate_stats(filter(data_specimen_valid, maturite == "O" & sexe == "F"), "age") %>% mutate(sexe = "Reprod. actifs femelles"),
+    calculate_stats(filter(data_specimen_valid, maturite == "IND"), "age") %>% mutate(sexe = "Statut reprod. inconnu")
+  ) %>%
+    mutate(
+      sexe = as.character(sexe),
+      sexe = ifelse(is.na(sexe), "Tous", sexe),
+      sexe = plyr::mapvalues(sexe, from = c("M", "F", "IND"), to = c("Mâle", "Femelle", "Sexe inconnu")),
+      sexe = factor(sexe, levels = levels(ltm_df$sexe))
+    ) %>%
+    arrange(sexe)
   
-  masse_df <- masse_df %>%
-    rename_with(~ paste0("masse_", .), -sexe)
+  # ---- Fusion ----
+  ltm_df    <- rename_with(ltm_df, ~ paste0("ltm_", .), -sexe)
+  masse_df  <- rename_with(masse_df, ~ paste0("masse_", .), -sexe)
+  age_df    <- rename_with(age_df, ~ paste0("age_", .), -sexe)
   
-  age_df <- age_df %>%
-    rename_with(~ paste0("age_", .), -sexe)
-  
-  # Fusionner les dataframes sur la colonne `sexe`
   complet <- ltm_df %>%
     inner_join(masse_df, by = "sexe") %>%
     inner_join(age_df, by = "sexe") %>%
     rename(Sexe = sexe) %>%
-    # Remplacement des valeurs infinies ou NA par "-"
     mutate(across(ends_with(c("min", "max", "moy", "e_t")),
                   ~ ifelse(. %in% c("Inf", "-Inf") | is.na(.), "-", .)))
+  
+  # ---- Optionnel : sortie flextable ----
+  if (format == "flextable") {
+    normal_border <- officer::fp_border(width = 1)
+    header <- tibble::tibble(
+      col_keys = names(complet),
+      Niveau1 = c("Groupe", rep("LTMax (mm)", 5), rep("Masse (g)", 5), rep("Âge", 5)),
+      Niveau2 = c("", rep(c("N", "Moyenne", "ÉT", "Min", "Max"), 3))
+    )
+    
+    complet <- complet %>%
+      flextable::flextable() %>%
+      flextable::set_header_df(mapping = header, key = "col_keys") %>%
+      flextable::merge_h(part = "header") %>%
+      flextable::align(align = "center", part = "all") %>%
+      flextable::autofit() %>%
+      flextable::border(i = 2, border.bottom = normal_border, part = "header") %>%
+      flextable::fontsize(size = 10, part = "all")
+    
+    for (col in c("ltm_max", "masse_max")) {
+      complet <- complet %>%
+        flextable::border(i = 1:2, j = col, border.right = normal_border, part = "header") %>%
+        flextable::border(j = col, border.right = normal_border, part = "body")
+    }
+  }
   
   return(complet)
 }

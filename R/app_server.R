@@ -107,7 +107,7 @@ app_server <- function(input, output, session) {
   
   output$recap_intro_table <- renderTable({
     req(data_lac(), data_station())
-    table_recap(datalac = data_lac(), data_station = data_station())
+    table_recap(data_lac = data_lac(), data_station = data_station())
   })
 
   #UI dynamique – visualisation des données téléchargées
@@ -133,26 +133,32 @@ app_server <- function(input, output, session) {
     updateTabsetPanel(inputId = "switcher", selected = input$controller)
   })
  
-  output$table_lac      <- afficher_table(data_lac)
-  output$table_station  <- afficher_table(data_station)
-  output$table_specimen  <- afficher_table(specimen)
-  output$table_specimen_valid  <- afficher_table(specimen_valid)
-  output$table_capture <- afficher_table(capture)  
-
+  output$table_lac      <- renderDataTable(data_lac(), options = list(pageLength = 10, autoWidth = TRUE, searching = FALSE))
+  output$table_station  <- renderDataTable(data_station(), options = list(pageLength = 10, autoWidth = TRUE, searching = FALSE))
+  output$table_specimen  <- renderDataTable(specimen(), options = list(pageLength = 10, autoWidth = TRUE, searching = FALSE))
+  output$table_specimen_valid  <- renderDataTable(specimen_valid(), options = list(pageLength = 10, autoWidth = TRUE, searching = FALSE))
+  output$table_capture <- renderDataTable(capture(), options = list(pageLength = 10, autoWidth = TRUE, searching = FALSE))
   
   # Taille masse age -------------------------------------------------------
-  taillemasseagedata <- reactive({
-    req(specimen_valid(), sp_pen())
-    taille_masse_age(dataspecimen = specimen_valid(), espece = sp_pen()) %>% as.data.frame()
+  # 1. Données brutes
+  df_taillemasseage <- reactive({
+    req(specimen_valid())
+    taille_masse_age(specimen_valid(), format = "data.frame")
   })
   
-  output$taillemasseagetable <- render_gt({
-    gt_ltmpoidsage(data = taillemasseagedata())
+  # 2. Tableau mis en forme
+  ft_taillemasseage <- reactive({
+    req(specimen_valid())
+    taille_masse_age(specimen_valid(), format = "flextable")
   })
   
-  output$download_taillemasseagetable <-
-  download_data_format_xlsx(givenname = "taille_masse_age_table", datadown = taillemasseagedata())
-
+  # 3. Affichage du tableau
+  render_flextable_ui("taillemasseage_ui", ft_taillemasseage)
+  
+  # 4. Bouton de téléchargement
+  render_download_button_ui("dl_taillemasseage", df_taillemasseage())
+  
+  
   # Structure taille ggplot ------------------------------------------------
 
   output$structuretailleplot <- renderPlot({
@@ -220,7 +226,7 @@ app_server <- function(input, output, session) {
   
   
   output$download_data4plot_taille <-
-    download_data_format_xlsx(givenname = paste0("data4plot_taille_",input$groupetailleplot), datadown = data4plot_taille())
+    download_data_format_xlsx(nom_output = paste0("data4plot_taille_",input$groupetailleplot), data = data4plot_taille())
   
   
   
@@ -270,8 +276,8 @@ app_server <- function(input, output, session) {
   
   
   output$download_data4plot_age <- download_data_format_xlsx(
-    givenname = paste0("data4plot_age_", input$groupeageplot),
-    datadown = data4plot_age()
+    nom_output = paste0("data4plot_age_", input$groupeageplot),
+    data = data4plot_age()
   )
   
   
@@ -301,7 +307,7 @@ app_server <- function(input, output, session) {
     kable_CPUEtous(data = selection_modele_CPUE_tous_data())
   }
   output$download_selection_modele_CPUE_toustable <-
-    download_data_format_xlsx(givenname = "selection_modele_CPUE_tous_data", datadown = selection_modele_CPUE_tous_data())
+    download_data_format_xlsx(nom_output = "selection_modele_CPUE_tous_data", data = selection_modele_CPUE_tous_data())
  
    CPUE_tous <- reactive({
     req(selection_modele_CPUE_tous_data())
@@ -326,7 +332,7 @@ app_server <- function(input, output, session) {
     kable_CPUEFmature(data = selection_modele_CPUE_Fmature_data())
   }
   output$download_selection_modele_CPUE_Fmaturetable <-
-    download_data_format_xlsx(givenname = "selection_modele_CPUE_Fmature_data", datadown = selection_modele_CPUE_Fmature_data())
+    download_data_format_xlsx(nom_output = "selection_modele_CPUE_Fmature_data", data = selection_modele_CPUE_Fmature_data())
   CPUE_Fmature <- reactive({
     req(selection_modele_CPUE_Fmature_data())
     paste(selection_modele_CPUE_Fmature_data()[1 , "CPUE"]) #prendre le premier de la liste, car classe par ordre croissant de Ajustement
@@ -371,7 +377,7 @@ app_server <- function(input, output, session) {
   
  
   output$download_abondance1 <-
-    download_data_format_xlsx(givenname = "abondance1", datadown = abondance1())
+    download_data_format_xlsx(nom_output = "abondance1", data = abondance1())
   # BPUE ------------------------------------------------
   biomasse1 <- reactive({
     req(specimen(), sp_pen(), data_station())
@@ -387,7 +393,7 @@ app_server <- function(input, output, session) {
     gt_biomasse(data = biomasse1())
   })
   output$download_biomasse1 <-
-    download_data_format_xlsx(givenname = "biomasse1", datadown = biomasse1())
+    download_data_format_xlsx(nom_output = "biomasse1", data = biomasse1())
   # PSD -------------------------------------------------------
   psd1 <- reactive({
     req(specimen_valid(), sp_pen())
@@ -406,7 +412,7 @@ app_server <- function(input, output, session) {
     kable_psd2(data = psd2())
   }
   output$download_psd2 <-
-    download_data_format_xlsx(givenname = "psd_byclass", datadown = psd2())
+    download_data_format_xlsx(nom_output = "psd_byclass", data = psd2())
 
     output$psd1plot <- renderPlot({
     req(psd2())
@@ -437,8 +443,8 @@ app_server <- function(input, output, session) {
   # Bouton de téléchargement
   output$download_relation_masse_longueur_table <-
     download_data_format_xlsx(
-      givenname = "relation_masse_longueur_coefficient",
-      datadown = relation_masse_longueur_data()$table)
+      nom_output = "relation_masse_longueur_coefficient",
+      data = relation_masse_longueur_data()$table)
     
   
   output$masselongueur_plot <- plotly::renderPlotly({
@@ -468,8 +474,8 @@ app_server <- function(input, output, session) {
     kable_wri(data = wri1data())
   }
   output$download_wri1 <-
-    download_data_format_xlsx(givenname = "table_wri",
-                              datadown = wri1data()%>%
+    download_data_format_xlsx(nom_output = "table_wri",
+                              data = wri1data()%>%
                                 tibble::rownames_to_column(var = "Catégorie"))
   ## Wri tous ggplot ------------------------------------------------
   output$wri2plot <- renderPlot({
@@ -533,7 +539,7 @@ app_server <- function(input, output, session) {
   
   
   output$download_croissance1 <-
-    download_data_format_xlsx(givenname = "courbe_croissance_comparaison", datadown = croissance1())
+    download_data_format_xlsx(nom_output = "courbe_croissance_comparaison", data = croissance1())
   
   output$selectedmodelcroissanceplot <- renderPlot({
     req(selectedmodelcroissance(), data_specimen(), sp_pen(), croissance1())
@@ -647,7 +653,7 @@ app_server <- function(input, output, session) {
   }
  
    output$download_mortalite1 <-
-    download_data_format_xlsx(givenname = "mortalite_selection_modeles", datadown = mortalite1())
+    download_data_format_xlsx(nom_output = "mortalite_selection_modeles", data = mortalite1())
 
   
   zobs <- reactive({
@@ -817,7 +823,7 @@ app_server <- function(input, output, session) {
   #     )
   #   )
   # output$download_L50_selection_modeles_table <-
-  #   download_data_format_xlsx(givenname = "L50_selection_modeles_table", datadown = L50_selection_modeles_df())
+  #   download_data_format_xlsx(nom_output = "L50_selection_modeles_table", data = L50_selection_modeles_df())
   # ## minitable l50 -----------------------------------------------------------
   # minitablel50.logit.L <- reactive({
   #   req(LTMmaturite.model.logit.L())
@@ -905,7 +911,7 @@ app_server <- function(input, output, session) {
   #   }
   # })
   # output$download_minitableselectedmodelL50 <-
-  #   download_data_format_xlsx(givenname = ({
+  #   download_data_format_xlsx(nom_output = ({
   #     req(selectedmodelL50())
   #     if (selectedmodelL50() == "Longueur (lien logit)") {
   #       paste0("minitablel50.logit.L")
@@ -927,7 +933,7 @@ app_server <- function(input, output, session) {
   #       paste0("minitablel50.cloglog.INT")
   #     }
   #   }),
-  #   datadown = ({
+  #   data = ({
   #     req(selectedmodelL50())
   #     if (selectedmodelL50() == "Longueur (lien logit)") {
   #       req(minitablel50.logit.L())
@@ -1085,7 +1091,7 @@ app_server <- function(input, output, session) {
   #     )
   #   )
   # output$download_A50_selection_modeles_table <-
-  #   download_data_format_xlsx(givenname = "A50_selection_modeles_table", datadown = A50_selection_modeles_df())
+  #   download_data_format_xlsx(nom_output = "A50_selection_modeles_table", data = A50_selection_modeles_df())
   # ## minitable a50 -----------------------------------------------------------
   # minitablea50.logit.L <- reactive({
   #   req(AGEmaturite.model.logit.L())
@@ -1172,7 +1178,7 @@ app_server <- function(input, output, session) {
   #   }
   # })
   # output$download_minitableselectedmodelA50 <-
-  #   download_data_format_xlsx(givenname = ({
+  #   download_data_format_xlsx(nom_output = ({
   #     req(selectedmodelA50())
   #     if (selectedmodelA50() == "Âge (lien logit)") {
   #       paste0("minitablea50.logit.L")
@@ -1194,7 +1200,7 @@ app_server <- function(input, output, session) {
   #       paste0("minitablea50.cloglog.INT")
   #     }
   #   }),
-  #   datadown = ({
+  #   data = ({
   #     req(selectedmodelA50())
   #     if (selectedmodelA50() == "Âge (lien logit)") {
   #       req(minitablea50.logit.L())

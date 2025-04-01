@@ -1,10 +1,10 @@
-download_data_format_xlsx <- function(givenname, datadown) {
+download_data_format_xlsx <- function(nom_output, data) {
   downloadHandler(
     filename = function() {
-      paste(givenname, ".xlsx", sep = "")
+      paste(nom_output, ".xlsx", sep = "")
     },
     content = function(file) {
-      write_xlsx(datadown,
+      write_xlsx(data,
                  file,
                  col_names = TRUE,
                  format_headers = TRUE)

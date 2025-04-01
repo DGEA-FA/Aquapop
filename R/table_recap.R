@@ -1,14 +1,14 @@
 #' Résumé des métadonnées d'un inventaire
 #'
-#' @param datalac Un data.frame filtré sur un lac/type de pêche/année, contenant les données du feuillet "Lac".
+#' @param data_lac Un data.frame filtré sur un lac/type de pêche/année, contenant les données du feuillet "Lac".
 #' @param data_station Un data.frame correspondant au feuillet "Stations", déjà filtré sur le même jeu.
 #'
 #' @return Un tableau (data.frame) avec une ligne par type de variable et une colonne par type de pêche.
 #' @export
-table_recap <- function(datalac, data_station) {
+table_recap <- function(data_lac, data_station) {
   
   # Informations issues du feuillet "Lac"
-  info_lac <- datalac %>% reframe(
+  info_lac <- data_lac %>% reframe(
     "Type de pêche" = unique(typ_pech),
     "No de lac" = unique(no_lac),
     "Nom du lac" = unique(nom_lac),

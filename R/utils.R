@@ -1,8 +1,3 @@
-# Affichage brut
-afficher_table <- function(data_reactif) {
-  renderDataTable(data_reactif(), options = list(pageLength = 10, autoWidth = TRUE, searching = FALSE))
-}
-
 myspinner <- 6
 
 
@@ -30,52 +25,6 @@ kable_psd2 <- function(data) {
 }
 
 
-gt_ltmpoidsage <- function(data) {
-  data %>%
-    gt() %>%
-    tab_header(
-      title = md("**Aperçu des données morphologiques**")
-    ) %>%
-    cols_label(
-      Sexe = "Groupe",
-      ltm_nb = "N",
-      ltm_moy = "Moy.",
-      ltm_e_t = "ET",
-      ltm_min = "Min",
-      ltm_max = "Max",
-      masse_nb = "N",
-      masse_moy = "Moy.",
-      masse_e_t = "ET",
-      masse_min = "Min",
-      masse_max = "Max",
-      age_nb = "N",
-      age_moy = "Moy.",
-      age_e_t = "ET",
-      age_min = "Min",
-      age_max = "Max"
-    ) %>%
-    tab_spanner(
-      label = "LTMax (mm)",
-      columns = c(ltm_nb, ltm_moy, ltm_e_t, ltm_min, ltm_max)
-    ) %>%
-    tab_spanner(
-      label = "Masse (g)",
-      columns = c(masse_nb, masse_moy, masse_e_t, masse_min, masse_max)
-    ) %>%
-    tab_spanner(
-      label = "Âge",
-      columns = c(age_nb, age_moy, age_e_t, age_min, age_max)
-    ) %>%
-    cols_align(
-      align = "center",
-      columns = everything()
-    ) %>%
-    
-    tab_options(
-      table.width = pct(100),
-      table.font.size = px(10)
-    )
-}
 
 kable_wri <- function(data) {
   req(data)
@@ -94,8 +43,6 @@ kable_wri <- function(data) {
     column_spec(4, #male
                 border_right = TRUE)
 }
-
-
 
 gt_abondance <- function(data) {
   # Extraire les labels des colonnes
