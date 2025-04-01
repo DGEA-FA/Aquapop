@@ -176,7 +176,8 @@ app_ui <- function() {
           tabPanel(
             title = "PSD",
             htmltools::includeMarkdown(path = './texte/psd_texte.rmd'),
-            withSpinner(tableOutput(outputId = "psd1_table"), type = myspinner),
+            withSpinner(uiOutput("psd_indice_ui"), type = myspinner),
+            
             withSpinner(tableOutput(outputId = "psd2_table"), type = myspinner),
             downloadButton(outputId = "download_psd2", label = "Téléchargement"),
             plotOutput("psd1plot", width = 600, height = 400),

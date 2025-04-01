@@ -1,17 +1,22 @@
 myspinner <- 6
 
+#' Constantes associées aux espèces suivies par PEN
+#'
+#' Contient le nom commun, le binwidth recommandé pour les histogrammes,
+#' et les seuils de classes PSD (`breaks`) par espèce (`sp`).
+#'
+#' @export
+pen_constants <- tibble::tibble(
+  sp       = c("SANA", "SAFO", "SAVI"),
+  nom_sp   = c("touladis", "ombles de fontaine", "dorés jaunes"),
+  binwidth = c(50, 20, 50),
+  breaks   = list(
+    c(0, 300, 500, 650, 800, 1000),
+    c(0, 150, 250, 325, 400, 500),
+    c(0, 250, 380, 510, 630, 760)
+  )
+)
 
-kable_psd1 <- function(data) {
-  req(data)
-  data %>% 
-    kable( align = c("c","c"),
-           caption = "Nombre et fréquence relative (%) des classes de taille du PSD", 
-           row.names = FALSE) %>%
-    kable_styling(full_width = FALSE,
-                  font_size = 12,
-                  html_font="sans-serif", 
-                  position="left") 
-}
 kable_psd2 <- function(data) {
   req(data)
   data %>% 

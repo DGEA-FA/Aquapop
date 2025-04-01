@@ -6,7 +6,7 @@ library(fs)
 library(stringr)
 
 # Définir le terme à rechercher
-terme_a_chercher <- "render_table_flextable"
+terme_a_chercher <- "kable_psd1"
 
 # Lister tous les fichiers R dans le projet (sauf ceux dans test/)
 # files <- dir_ls(path = ".", recurse = TRUE, glob = "*.R")

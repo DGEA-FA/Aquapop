@@ -1,25 +1,30 @@
-#' Obtenir les infos associées au type de pêche sélectionné
+#' Obtenir les informations associées à un code d’espèce ou un type de pêche
 #'
-#' @param input_typ_pech Code du type de pêche (ex: "PENT", "PENOF", "PENDJ")
+#' @param input Soit un code d’espèce (`"SANA"`, `"SAFO"`, etc.), soit un type de pêche (`"PENT"`, etc.)
 #'
-#' @return Une liste contenant code_sp, nom_sp et binwidth, ou NULL si le type de pêche est inconnu.
+#' @return Une liste contenant `sp`, `nom_sp`, `binwidth`, et `breaks`, ou `NULL` si inconnu.
 #' @export
-get_info_pen <- function(input_typ_pech) {
-  pen_info <- tibble::tibble(
+get_info_pen <- function(input) {
+  mapping_typ_pech <- tibble::tibble(
     typ_pech = c("PENT", "PENOF", "PENDJ"),
-    code_sp  = c("SANA", "SAFO", "SAVI"),
-    nom_sp   = c("touladis", "ombles de fontaine", "dorés jaunes"),
-    binwidth = c(50, 20, 50)
+    sp       = c("SANA", "SAFO", "SAVI")
   )
   
-  info <- pen_info %>%
-    dplyr::filter(typ_pech == input_typ_pech)
+  # Déduire le code d’espèce si l’entrée est un type de pêche
+  sp_code <- if (input %in% mapping_typ_pech$typ_pech) {
+    mapping_typ_pech %>% filter(typ_pech == input) %>% pull(sp)
+  } else {
+    input
+  }
+  
+  info <- pen_constants %>% filter(sp == sp_code)
   
   if (nrow(info) == 0) return(NULL)
   
   list(
-    code_sp  = info$code_sp,
+    code_sp       = info$sp,
     nom_sp   = info$nom_sp,
-    binwidth = info$binwidth
+    binwidth = info$binwidth,
+    breaks   = info$breaks[[1]]
   )
 }

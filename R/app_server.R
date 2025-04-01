@@ -395,14 +395,13 @@ app_server <- function(input, output, session) {
   output$download_biomasse1 <-
     download_data_format_xlsx(nom_output = "biomasse1", data = biomasse1())
   # PSD -------------------------------------------------------
-  psd1 <- reactive({
-    req(specimen_valid(), sp_pen())
-    psd_indice(data = specimen_valid(), sp = sp_pen()) %>% as.data.frame()
+  ft_psd_indice <- reactive({
+    req(specimen_valid())
+    psd_indice(data = specimen_valid(), format = "flextable")
   })
   
-  output$psd1_table <-  function() {
-    kable_psd1(data = psd1())
-  }
+  render_flextable_ui("psd_indice_ui", ft_psd_indice)
+  
  
    psd2 <- reactive({
     req(specimen_valid(), sp_pen())

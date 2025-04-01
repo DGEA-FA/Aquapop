@@ -60,13 +60,7 @@ table_recap(data_lac = data_lac, data_station = data_station)
 # EXTRAIRE LES MÉTADONNÉES LIÉES AU TYPE DE PÊCHE -------------------------
 
 info_pen <- get_info_pen(typ_pech)
-
-# Espèce cible, nom et largeur de classes de taille
-code_sp  <- info_pen$code_sp
-nom_sp   <- info_pen$nom_sp
-binwidth <- info_pen$binwidth
-
-
+info_pen
 
 # TAILLE MASSE ÂGE  -------------------------------------------------------
 
@@ -78,3 +72,11 @@ taille_masse_age(specimen_valid, format = "flextable")
 
 # Exemple : Exporter manuellement un tableau
 # download_data(df_taillemasseage, path = "df_taillemasseage.xlsx")
+
+# PSD ---------------------------------------------------------------------
+
+# Pour l'affichage
+psd_indice(data = specimen_valid, format = "flextable")
+
+# Pour l'exportation Excel
+psd_indice(data = specimen_valid, format = "data.frame")
