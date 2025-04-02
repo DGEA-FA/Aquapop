@@ -1,5 +1,0 @@
----
-title: "wri1_texte.rmd"
----
-
-Le tableau ci-dessous présente l’indice de masse relative (Wr) et son intervalle de confiance à 95 % pour l’ensemble de la population, par sexe et par classe de PSD (classe selon Gabelhouse 1984). 

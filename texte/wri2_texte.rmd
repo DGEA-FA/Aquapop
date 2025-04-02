@@ -1,5 +1,0 @@
----
-title: "wri2_texte.rmd"
----
-
-Le graphique suivant illustre, pour chaque spécimen capturé, l’indice de condition en fonction de la longueur totale maximale et du sexe. La valeur moyenne est indiquée par une ligne pointillée en rouge (tous), en bleu foncé (femelles) et en bleu pâle. La ligne en gris représente la référence standard pour l’espèce selon Hyatt & Hubert 2011 (SAFO), Murphy et al. 1990 (SAVI) et Piccolo et al. 1993 (SANA). 

@@ -49,24 +49,35 @@ group_colors <- list(
 )
 
 
+#' Constantes pour le calcul de l'indice de condition (Wr)
+#'
+#' Source : FSA::wsVal() pour Lake Trout, Brook Trout, Walleye
+#'
+#' @format Un `tibble` avec les colonnes :
+#' - `sp` : Code d’espèce (SANA, SAFO, SAVI)
+#' - `species` : Nom anglais de l'espèce
+#' - `min_TL` : Longueur minimale (mm)
+#' - `int` : Intercept de la régression log-log
+#' - `slope` : Pente de la régression log-log
+#' - `source` : Référence source
+#' @export
+wr_constants <- tibble::tibble(
+  sp      = c("SANA", "SAFO", "SAVI"),
+  species = c("Lake Trout", "Brook Trout", "Walleye"),
+  min_TL  = c(280, 120, 150),
+  int     = c(-5.681, -5.186, -5.453),
+  slope   = c(3.246, 3.103, 3.180),
+  source  = c(
+    "Piccolo et al. (1993)",
+    "Hyatt and Hubert (2001a)",
+    "Murphy et al. (1990)"
+  )
+)
 
-
-kable_wri <- function(data) {
-  req(data)
-  data %>% 
-    kable( align = c("r","c","c","c","c","c","c","c","c","r"),
-           caption = "Indice de masse relative (Wr)"
-    ) %>%
-    kable_styling(full_width = FALSE,
-                  font_size = 12,
-                  html_font="sans-serif", 
-                  position="center") %>% 
-    column_spec(1, #row
-                border_right = TRUE) %>% 
-    column_spec(2, #tous
-                border_right = TRUE) %>% 
-    column_spec(4, #male
-                border_right = TRUE)
+get_wr_constants <- function(sp) {
+  wr_constants |>
+    dplyr::filter(sp == sp) |>
+    dplyr::slice(1)
 }
 
 gt_abondance <- function(data) {
@@ -235,15 +246,6 @@ generate_report <- function(data_brut, output_file, data_comment = NULL, result_
     envir = new.env(parent = globalenv())
   )
 }
-
-
-verifier_dataframes <- function(dataframe, nom_dataframe) {
-  if (nrow(dataframe) == 0) {
-    return(paste(nom_dataframe, "est vide."))
-  }
-  return(NULL)
-}
-
 
 calculate_mf_ratio <- function(male_count, female_count) {
   if (male_count == 0 && female_count == 0) {

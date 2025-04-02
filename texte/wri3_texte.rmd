@@ -1,5 +1,0 @@
----
-title: "wri3_texte.rmd"
----
-
-Ce graphique présente la variation de l’indice de condition selon les classes de PSD. Les valeurs moyenne et les intervalles de confiance sont illustrés.

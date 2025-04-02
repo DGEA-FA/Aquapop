@@ -220,6 +220,81 @@ app_server <- function(input, output, session) {
   # Téléchargement des données
   render_download_table("download_data4plot_age", df_structure_age())
   
+  # === PSD (Proportional Size Distribution) ===================================
+  
+  # --- 1. Tableau : Indice PSD global -----------------------------------------
+  
+  # Reactive : retourne un tableau flextable avec l'indice PSD et IC95
+  ft_psd_indice <- reactive({
+    req(specimen_valid())
+    psd_indice(data = specimen_valid(), format = "flextable")
+  })
+  
+  # Rendu du tableau dans l'interface
+  render_table_flextable("psd_indice_ui", ft_psd_indice)
+  
+  
+  # --- 2. Tableau : Répartition par classe de taille --------------------------
+  
+  # Reactive (brut) : pour téléchargement
+  df_psd_byclass <- reactive({
+    req(specimen_valid())
+    psd_byclass(data = specimen_valid(), format = "data.frame")
+  })
+  
+  # Reactive (flextable) : pour affichage
+  ft_psd_byclass <- reactive({
+    req(specimen_valid())
+    psd_byclass(data = specimen_valid(), format = "flextable")
+  })
+  
+  # Rendu du tableau formaté dans l'interface
+  render_table_flextable("psd_byclass_ui", ft_psd_byclass)
+  
+  # Bouton de téléchargement du tableau brut
+  render_download_table("dl_psd_byclass", df_psd_byclass())
+  
+  
+  # --- 3. Graphique : Histogramme par classe de taille ------------------------
+  
+  # Reactive : retourne un objet ggplot du graphique PSD
+  plot_psd <- reactive({
+    req(specimen_valid())
+    psd_byclass(data = specimen_valid(), format = "plot")
+  })
+  
+  # Affichage du graphique dans l'interface
+  render_plot_ggplot("psd_byclass_plot", plot_psd)
+  
+  # Bouton de téléchargement du graphique (PNG)
+  render_download_plot("download_psd_byclass_plot", plot_psd)
+  
+  # Relation masse-longueur -------------------------------------------------------
+  
+  # --- Graphique ---
+  plot_masselongueur <- reactive({
+    req(specimen())
+    relation_masse_longueur(data = specimen(), format = "plot")
+  })
+  
+  render_plot_ggplot("plot_masselongueur", plot_masselongueur)
+  render_download_plot("download_masselongueur_plot", plot_masselongueur)
+  
+  # --- Tableau des coefficients ---
+  table_masselongueur <- reactive({
+    req(specimen())
+    relation_masse_longueur(data = specimen(), format = "data.frame")
+  })
+  
+  ft_masselongueur <- reactive({
+    req(specimen())
+    relation_masse_longueur(data = specimen(), format = "flextable")
+  })
+  
+  render_table_flextable("table_masselongueur_ui", ft_masselongueur)
+  render_download_table("download_masselongueur_table", table_masselongueur())
+  
+  
   
   # CPUE ------------------------------------------------
   ## verification du n de specimen ------------------------------------------------
@@ -334,125 +409,43 @@ app_server <- function(input, output, session) {
   })
   output$download_biomasse1 <-
     download_data_format_xlsx(nom_output = "biomasse1", data = biomasse1())
-  # === PSD (Proportional Size Distribution) ===================================
-  
-  # --- 1. Tableau : Indice PSD global -----------------------------------------
-  
-  # Reactive : retourne un tableau flextable avec l'indice PSD et IC95
-  ft_psd_indice <- reactive({
-    req(specimen_valid())
-    psd_indice(data = specimen_valid(), format = "flextable")
-  })
-  
-  # Rendu du tableau dans l'interface
-  render_table_flextable("psd_indice_ui", ft_psd_indice)
-  
-  
-  # --- 2. Tableau : Répartition par classe de taille --------------------------
-  
-  # Reactive (brut) : pour téléchargement
-  df_psd_byclass <- reactive({
-    req(specimen_valid())
-    psd_byclass(data = specimen_valid(), format = "data.frame")
-  })
-  
-  # Reactive (flextable) : pour affichage
-  ft_psd_byclass <- reactive({
-    req(specimen_valid())
-    psd_byclass(data = specimen_valid(), format = "flextable")
-  })
-  
-  # Rendu du tableau formaté dans l'interface
-  render_table_flextable("psd_byclass_ui", ft_psd_byclass)
-  
-  # Bouton de téléchargement du tableau brut
-  render_download_table("dl_psd_byclass", df_psd_byclass())
-  
-  
-  # --- 3. Graphique : Histogramme par classe de taille ------------------------
-  
-  # Reactive : retourne un objet ggplot du graphique PSD
-  plot_psd <- reactive({
-    req(specimen_valid())
-    psd_byclass(data = specimen_valid(), format = "plot")
-  })
-  
-  # Affichage du graphique dans l'interface
-  render_plot_ggplot("psd_byclass_plot", plot_psd)
-  
-  # Bouton de téléchargement du graphique (PNG)
-  render_download_plot("download_psd_byclass_plot", plot_psd)
-  
-  # Relation masse-longueur -------------------------------------------------------
-  
-  # --- Graphique ---
-  plot_masselongueur <- reactive({
-    req(specimen())
-    relation_masse_longueur(data = specimen(), format = "plot")
-  })
-  
-  render_plot_ggplot("plot_masselongueur", plot_masselongueur)
-  render_download_plot("download_masselongueur_plot", plot_masselongueur)
-  
-  # --- Tableau des coefficients ---
-  table_masselongueur <- reactive({
-    req(specimen())
-    relation_masse_longueur(data = specimen(), format = "data.frame")
-  })
-
-  ft_masselongueur <- reactive({
-    req(specimen())
-    relation_masse_longueur(data = specimen(), format = "flextable")
-  })
-
-  render_table_flextable("table_masselongueur_ui", ft_masselongueur)
-  render_download_table("download_masselongueur_table", table_masselongueur())
-
-  
+ 
   # Indice de condition -------------------------------------------------------
-  wri1data <- reactive({
-    req(data_specimen(), sp_pen())
-    table_wri(data = data_specimen(), espece = sp_pen()) %>% as.data.frame()
+  
+  # Tableau Wr 
+  ft_wri <- reactive({
+    req(specimen_valid())
+    indice_condition(data = specimen_valid(), format = "flextable")
   })
-  output$wri1_table <-  function() {
-    kable_wri(data = wri1data())
-  }
-  output$download_wri1 <-
-    download_data_format_xlsx(nom_output = "table_wri",
-                              data = wri1data()%>%
-                                tibble::rownames_to_column(var = "Catégorie"))
-  ## Wri tous ggplot ------------------------------------------------
-  output$wri2plot <- renderPlot({
-    req(data_specimen(), sp_pen())
-    fig_wri_tous(data = data_specimen(), espece = sp_pen())
-  }, res = 96)
-  output$download_wri2plot <- downloadHandler(
-    filename = function() {
-      paste("wri_tous", '.png', sep = '')
-    },
-    content = function(file) {
-      ggsave(file, plot = {
-        req(data_specimen(), sp_pen())
-        fig_wri_tous(data = data_specimen(), espece = sp_pen())
-      } , device = "png")
-    }
-  )
-  ## Wri byclass ggplot ------------------------------------------------
-  output$wri3plot <- renderPlot({
-    req(data_specimen(), sp_pen())
-    fig_wri_byclass(data = data_specimen(), espece = sp_pen())
-  }, res = 96)
-  output$download_wri3plot <- downloadHandler(
-    filename = function() {
-      paste("wri_byclass", '.png', sep = '')
-    },
-    content = function(file) {
-      ggsave(file, plot = {
-        req(data_specimen(), sp_pen())
-        fig_wri_byclass(data = data_specimen(), espece = sp_pen())
-      } , device = "png")
-    }
-  )
+  
+  # Affichage du tableau flextable
+  render_table_flextable("wri_table_ui", ft_wri)
+  
+  df_wri <- reactive({
+    req(specimen_valid())
+    indice_condition(data = specimen_valid(), format = "data.frame")
+  })
+  
+  # Téléchargement du tableau
+  render_download_table("download_wri_table", df_wri())
+  
+  # Graphique Wr par sexe
+  plot_wri_tous <- reactive({
+    req(specimen_valid())
+    indice_condition(data = specimen_valid(), format = "plot_tous")
+  })
+  render_plot_ggplot("wri_plot_tous", plot_wri_tous)
+  render_download_plot("download_wri_plot_tous", plot_wri_tous)
+  
+  # Graphique Wr par classe de taille
+  plot_wri_byclass <- reactive({
+    req(specimen_valid())
+    indice_condition(data = specimen_valid(), format = "plot_byclass")
+  })
+  render_plot_ggplot("wri_plot_byclass", plot_wri_byclass)
+  render_download_plot("download_wri_plot_byclass", plot_wri_byclass)
+  
+  
   # Croissance ------------------------------------------------
   croissance1 <- reactive({
     req(data_specimen(), sp_pen())  # S'assurer que les données nécessaires sont disponibles

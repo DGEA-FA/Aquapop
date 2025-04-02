@@ -1,6 +1,4 @@
 text_elements <- list(
-  titrewri2plot = "titre de la figure TBD", 
-  titrewri3plot =  "titre de la figure TBD", 
   titrecroissance1 =  "Table de sélection du modèle de croissance",
   titreselectedmodelL50minitable = "Présentation des parametres de la courbe TITRE TBD",
   titreselectedmodelcroissanceplot=  "Longueur à l’âge des spécimens capturés et modèle de croissance",

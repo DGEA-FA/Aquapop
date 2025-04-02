@@ -121,3 +121,18 @@ print(df_age_plot)
 
 # ----- 5. Affichage en flextable -----
 structure_age(data = specimen_valid, groupement = "sexe", format = "flextable")
+
+
+
+# Indice de condition -----------------------------------------------------
+
+# Exemple : Indice de condition (Wr)
+
+# Format tableau (data.frame ou flextable)
+indice_condition(data = specimen, format = "data.frame")
+indice_condition(data = specimen, format = "flextable")
+
+# Format graphique (Wr par sexe ou par classe de taille)
+indice_condition(data = specimen, format = "plot_tous")
+indice_condition(data = specimen, format = "plot_byclass")
+
