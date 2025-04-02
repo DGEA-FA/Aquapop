@@ -158,76 +158,36 @@ app_server <- function(input, output, session) {
   # 4. Bouton de téléchargement
   render_download_table("dl_taillemasseage", df_taillemasseage())
   
-  
-  # Structure taille ggplot ------------------------------------------------
 
-  output$structuretailleplot <- renderPlot({
-    req(specimen_valid(), sp_pen(), nomsp_reactive(), binwidth_reactive())
-    structure_taille(dfspecimen = specimen_valid(),
-                     espece = sp_pen(),
-                     binwidth = binwidth_reactive(),
-                     nomsp = nomsp_reactive(),
-                     groupement = input$groupetailleplot)
-  }, res = 96)
-  
-  
-  
-  output$download_groupetailleplot <- downloadHandler(
-    filename = function() {
-      paste("groupetailleplot", '.png', sep = '')
-    },
-    content = function(file) {
-      ggsave(file, plot = {
-        req(specimen_valid(), sp_pen(), binwidth_reactive(), nomsp_reactive())
-        if (input$groupetailleplot == "tous") {
-          structure_taille(dfspecimen = specimen_valid(),
-                           espece = sp_pen(),
-                           binwidth = binwidth_reactive(),
-                           nomsp = nomsp_reactive(),
-                           groupement = "tous")
-        } else if (input$groupetailleplot == "marquage") {
-          structure_taille(dfspecimen = specimen_valid(),
-                           espece = sp_pen(),
-                           binwidth = binwidth_reactive(),
-                           nomsp = nomsp_reactive(),
-                           groupement = "marquage")
-        } else if (input$groupetailleplot == "sexe") {
-          structure_taille(dfspecimen = specimen_valid(),
-                           espece = sp_pen(),
-                           binwidth = binwidth_reactive(),
-                           nomsp = nomsp_reactive(),
-                           groupement = "sexe")
-        } else if (input$groupetailleplot == "maturite") {
-          structure_taille(dfspecimen = specimen_valid(),
-                           espece = sp_pen(),
-                           binwidth = binwidth_reactive(),
-                           nomsp = nomsp_reactive(),
-                           groupement = "maturite")
-        }
-      }, width = 10, height = 7, dpi = 300)  # Specify width, height, and dpi if needed
-    },
-    contentType = 'image/png'  # Ensure the content type is set correctly for PNG files
-  )
-  
-
-  data4plot_taille <- reactive({
-    req(specimen_valid(), sp_pen(), binwidth_reactive(), nomsp_reactive())
-    
-    plot <- structure_taille(dfspecimen = specimen_valid(),
-                             espece = sp_pen(),
-                             binwidth = binwidth_reactive(),
-                             nomsp = nomsp_reactive(),
-                             groupement = input$groupetailleplot)
-    
-    get_df_from_plot(plot, groupement = input$groupetailleplot)
+# Structure de taille -----------------------------------------------------
+  # Reactive : retourne le ggplot
+  plot_structure_taille <- reactive({
+    req(specimen_valid(), input$groupetailleplot)
+    structure_taille(
+      data = specimen_valid(),
+      groupement = input$groupetailleplot,
+      format = "plot"
+    )
   })
   
+  # Rendu du graphique dans l'interface
+  render_plot_ggplot("structuretailleplot", plot_structure_taille)
   
+  # Bouton de téléchargement du graphique (PNG)
+  render_download_plot("download_groupetailleplot", plot_structure_taille)
   
+  # Reactive : données du graphique (data.frame)
+  df_structure_taille <- reactive({
+    req(specimen_valid(), input$groupetailleplot)
+    structure_taille(
+      data = specimen_valid(),
+      groupement = input$groupetailleplot,
+      format = "data.frame"
+    )
+  })
   
-  output$download_data4plot_taille <-
-    download_data_format_xlsx(nom_output = paste0("data4plot_taille_",input$groupetailleplot), data = data4plot_taille())
-  
+  # Téléchargement des données
+  render_download_table("download_data4plot_taille", df_structure_taille())
   
   
   # Structure age ggplot ------------------------------------------------

@@ -87,6 +87,55 @@ relation_masse_longueur(data = specimen, format = "data.frame")
 relation_masse_longueur(data = specimen, format = "flextable")
 relation_masse_longueur(data = specimen, format = "plot")
 
+# Structure de taille ---------------------------------------------------------------------
+# Exemple d'utilisation de la fonction structure_taille()
 
-x <- psd_byclass(data = specimen_valid, format = "plot")
-y <- relation_masse_longueur(data = specimen, format = "plot")
+# --- Variante 1 : Graphique global (tous les poissons)
+structure_taille(
+  data = specimen_valid,
+  groupement = "tous",
+  format = "plot"
+)
+
+# --- Variante 2 : Graphique par sexe
+structure_taille(
+  data = specimen_valid,
+  groupement = "sexe",
+  format = "plot"
+)
+
+# --- Variante 3 : Graphique par statut reproducteur
+structure_taille(
+  data = specimen_valid,
+  groupement = "maturite",
+  format = "plot"
+)
+
+# --- Variante 4 : Graphique par marquage
+structure_taille(
+  data = specimen_valid,
+  groupement = "marquage",
+  format = "plot"
+)
+
+# --- Variante 5 : Données brutes du graphique (data.frame) - groupement "sexe"
+df_sexe <- structure_taille(
+  data = specimen_valid,
+  groupement = "sexe",
+  format = "data.frame"
+)
+print(df_sexe)
+
+# --- Variante 6 : Tableau formaté (flextable) - groupement "maturite"
+ft_maturite <- structure_taille(
+  data = specimen_valid,
+  groupement = "maturite",
+  format = "flextable"
+)
+ft_maturite
+
+
+purrr::walk(
+  c("tous", "sexe", "maturite", "marquage"),
+  ~ print(structure_taille(data = specimen_valid, groupement = .x, format = "plot"))
+)

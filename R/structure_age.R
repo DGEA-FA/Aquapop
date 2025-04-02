@@ -1,8 +1,6 @@
 structure_age <- function(dfspecimen, espece, nomsp, groupement) {
   # Filtrer les données pour l'espèce sélectionnée
   df <- dfspecimen %>%
-    filter(sp == espece) %>%
-    droplevels() %>%
     mutate(age = as.numeric(age)) %>%
     filter(!is.na(age))
   

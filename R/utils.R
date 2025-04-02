@@ -29,6 +29,26 @@ pen_constants <- tibble::tibble(
 #' @export
 psd_classnames <- c("Sous-stock", "Stock", "Qualité", "Préférée", "Mémorable", "Trophée")
 
+# Couleur par défaut pour les graphiques (ex. lorsque groupement = "tous")
+couleur_default <- "#084594"
+
+# Constantes de libellés pour les groupements
+group_labels <- list(
+  "sexe"     = c("F" = "Femelle", "M" = "Mâle", "IND" = "Indéterminé"),
+  "maturite" = c("O" = "Mature", "N" = "Immature", "IND" = "Indéterminé"),
+  "marquage" = c("MA" = "Marqué", "NMA" = "Non marqué"),
+  "tous"     = c("TOUS" = "Tous")  # Catégorie unique
+)
+
+# Constantes de couleurs associées aux groupements
+group_colors <- list(
+  "sexe"     = c("F" = couleur_default, "M" = "#99CCFF", "IND" = "#4d4d4d"),
+  "maturite" = c("O" = couleur_default, "N" = "#99CCFF", "IND" = "#4d4d4d"),
+  "marquage" = c("MA" = couleur_default, "NMA" = "#99CCFF"),
+  "tous"     = c("TOUS" = couleur_default)
+)
+
+
 
 
 kable_wri <- function(data) {

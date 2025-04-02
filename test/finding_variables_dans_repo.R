@@ -6,7 +6,7 @@ library(fs)
 library(stringr)
 
 # Définir le terme à rechercher
-terme_a_chercher <- "render_download_plot_button"
+terme_a_chercher <- "get_df_from_plot_marquage"
 
 # Lister tous les fichiers R dans le projet (sauf ceux dans test/)
 # files <- dir_ls(path = ".", recurse = TRUE, glob = "*.R")

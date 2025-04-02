@@ -1,102 +1,117 @@
-structure_taille <- function(dfspecimen, espece, binwidth, nomsp, groupement) {
-  df <- dfspecimen %>%
-    filter(sp == espece) %>%
-    droplevels() %>%
-    mutate(ltm = as.numeric(ltm)) %>%
-    filter(!is.na(ltm))
+#' Génère la structure de taille en graphique ou tableau
+#'
+#' Produit un histogramme de la structure de taille d'une espèce donnée, ou un tableau
+#' de données associé. L'espèce doit être unique dans les données (pré-filtrée).
+#'
+#' @param data Un `data.frame` contenant les spécimens pour une seule espèce (colonnes `sp`, `ltm`, etc.)
+#' @param groupement Le groupement de couleur à utiliser : `"tous"` (par défaut), `"marquage"`, `"sexe"` ou `"maturite"`
+#' @param format Format de sortie : `"plot"` (par défaut), `"data.frame"`, ou `"flextable"`
+#'
+#' @return Un objet `ggplot`, un `data.frame` ou un `flextable` selon le format
+#' @export
+#'
+#' @examples
+#' structure_taille(data = df, groupement = "sexe", format = "plot")
+#' structure_taille(data = df, groupement = "maturite", format = "data.frame")
+#' structure_taille(data = df, groupement = "tous", format = "flextable")
+structure_taille <- function(data,
+                             groupement = "tous",
+                             format = c("plot", "data.frame", "flextable")) {
+  format <- match.arg(format)
   
-  if (nrow(df) == 0) return(NULL)
+  # Vérifications
+  espece <- unique(data$sp)
+  if (length(espece) != 1) stop("Les données doivent contenir une seule espèce.")
   
-  max_ltm <- max(df$ltm, na.rm = TRUE)
+  info <- get_info_pen(espece)
+  if (is.null(info)) stop("Espèce non reconnue.")
+  
+  nomsp <- info$nom_sp
+  binwidth <- info$binwidth
+  
+  data <- data %>%
+    dplyr::mutate(ltm = as.numeric(ltm)) %>%
+    dplyr::filter(!is.na(ltm))
+  
+  if (nrow(data) == 0) {
+    vide <- tibble::tibble()
+    return(switch(format,
+                  "plot" = ggplot2::ggplot(),
+                  "data.frame" = vide,
+                  "flextable" = flextable::flextable(vide)))
+  }
+  
+  # Création des intervalles
+  max_ltm <- max(data$ltm, na.rm = TRUE)
   breaks <- seq(0, max_ltm + binwidth, by = binwidth)
   labels <- paste0("[", head(breaks, -1), "-", tail(breaks, -1), "[")
-  df$ltm_interval <- cut(df$ltm, breaks = breaks, include.lowest = TRUE, right = FALSE, labels = labels)
-  df$ltm_interval <- factor(df$ltm_interval, levels = labels, ordered = TRUE)
-  df <- df %>% filter(!is.na(ltm_interval))
-  max_y <- ceiling(max(table(df$ltm_interval), na.rm = TRUE) * 1.1)
+  data$ltm_interval <- cut(data$ltm, breaks = breaks, include.lowest = TRUE, right = FALSE, labels = labels)
+  data$ltm_interval <- factor(data$ltm_interval, levels = labels, ordered = TRUE)
+  data <- dplyr::filter(data, !is.na(ltm_interval))
+  max_y <- ceiling(max(table(data$ltm_interval), na.rm = TRUE) * 1.1)
   
-  if (groupement == "tous") {
-    p <- ggplot(df, aes(x = ltm_interval)) +
-      geom_bar(
-        fill = "#084594",
-        color = "white",
-        alpha = 1,
-        na.rm = TRUE
-      ) +
-      xlab("Longueur totale maximale (mm)") +
-      ylab(paste0("Nb. ", nomsp, " échantillonnés")) +
-      theme_classic() +
-      theme(
-        panel.background = element_rect(fill = "white", colour = "black", linewidth = 0.5),
-        panel.grid = element_blank(),
-        axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),
-        axis.line = element_line(colour = "black")
-      ) +
-      scale_x_discrete(name = "Longueur totale maximale (mm)", drop = FALSE, limits = labels) +
-      scale_y_continuous(expand = c(0, 0), limits = c(0, max_y))
+  # ----- Sortie : data.frame ou flextable -----
+  if (format != "plot") {
+    plot <- structure_taille(data, groupement = groupement, format = "plot")
+    df <- get_df_from_plot(plot, groupement)
     
-    return(p)
+    if (format == "data.frame") return(df)
+    
+    return(
+      flextable::flextable(df) |>
+        flextable::set_caption("Structure de taille") |>
+        flextable::align(align = "center", part = "all")
+    )
   }
   
-  group_labels <- list(
-    "sexe" = c("F" = "Femelle", "M" = "Mâle", "IND" = "Indéterminé"),
-    "maturite" = c("O" = "Mature", "N" = "Immature", "IND" = "Indéterminé"),
-    "marquage" = c("MA" = "Marqué", "NMA" = "Non marqué")
-  )
-  
-  group_colors <- list(
-    "sexe" = c("F" = "#084594", "M" = "#99CCFF", "IND" = "#4d4d4d"),
-    "maturite" = c("O" = "#084594", "N" = "#99CCFF", "IND" = "#4d4d4d"),
-    "marquage" = c("MA" = "#084594", "NMA" = "#99CCFF")
-  )
-  
-  if (!(groupement %in% names(group_labels))) {
-    stop("Groupement invalide. Choisir parmi : 'tous', 'sexe', 'maturite', 'marquage'.")
+  # ----- Sortie : graphique -----
+  if (groupement == "tous") {
+    return(
+      ggplot2::ggplot(data, ggplot2::aes(x = ltm_interval)) +
+        ggplot2::geom_bar(fill = couleur_default, color = "white", alpha = 1, na.rm = TRUE) +
+        ggplot2::labs(x = "Longueur totale maximale (mm)", y = paste0("Nb. ", nomsp, " échantillonnés")) +
+        ggplot2::theme_classic() +
+        ggplot2::theme(
+          panel.background = ggplot2::element_rect(fill = "white", colour = "black", linewidth = 0.5),
+          axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
+          axis.line = ggplot2::element_line(colour = "black")
+        ) +
+        ggplot2::scale_x_discrete(drop = FALSE, limits = labels) +
+        ggplot2::scale_y_continuous(expand = c(0, 0), limits = c(0, max_y))
+    )
   }
   
-  df[[groupement]] <- fct_expand(as.factor(df[[groupement]]), names(group_labels[[groupement]]))
-  df[[groupement]] <- factor(df[[groupement]], levels = names(group_labels[[groupement]]), ordered = TRUE)
+  # Préparation de la légende
+  if (!groupement %in% names(group_labels) || !groupement %in% names(group_colors)) {
+    stop("Groupement non reconnu. Choisir parmi 'tous', 'sexe', 'maturite', 'marquage'")
+  }
   
-  # Création de df_legende avec noms complets et couleurs
-  df_legende <- data.frame(
+  data[[groupement]] <- factor(data[[groupement]], levels = names(group_labels[[groupement]]), ordered = TRUE)
+  
+  df_legende <- tibble::tibble(
     categorie = factor(names(group_labels[[groupement]]), levels = names(group_labels[[groupement]])),
     label = unname(group_labels[[groupement]]),
     color = unname(group_colors[[groupement]])
   )
-
-  p <- ggplot(df, aes(x = ltm_interval, fill = !!sym(groupement))) +
-    geom_bar(
-      position = position_stack(reverse = TRUE),
-      color = "white",
-      alpha = 1,
-      na.rm = TRUE
+  
+  ggplot2::ggplot(data, ggplot2::aes(x = ltm_interval, fill = !!rlang::sym(groupement))) +
+    ggplot2::geom_bar(position = ggplot2::position_stack(reverse = TRUE), color = "white", na.rm = TRUE) +
+    ggplot2::geom_bar(data = df_legende, ggplot2::aes(x = categorie, fill = categorie),
+                      alpha = 1, width = 0, show.legend = TRUE, na.rm = TRUE) +
+    ggplot2::labs(x = "Longueur totale maximale (mm)", y = paste0("Nb. ", nomsp, " échantillonnés")) +
+    ggplot2::theme_classic() +
+    ggplot2::theme(
+      panel.background = ggplot2::element_rect(fill = "white", colour = "black", linewidth = 0.5),
+      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
+      axis.line = ggplot2::element_line(colour = "black"),
+      legend.key = ggplot2::element_rect(colour = "white")
     ) +
-    
-    # Ajout d'une couche invisible pour forcer la légende
-    geom_bar(data = df_legende, aes(x = categorie, fill = categorie), 
-             alpha = 1, width = 0, show.legend = TRUE, na.rm = TRUE) +
-    
-    
-    xlab("Longueur totale maximale (mm)") +
-    ylab(paste0("Nb. ", nomsp, " échantillonnés")) +
-    theme_classic() +
-    theme(
-      panel.background = element_rect(fill = "white", colour = "black", linewidth = 0.5),
-      panel.grid = element_blank(),
-      axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),
-      axis.line = element_line(colour = "black"),
-      legend.key = element_rect(colour = "white")
-    ) +
-    scale_x_discrete(name = "Longueur totale maximale (mm)", drop = FALSE, limits = labels) +
-    scale_y_continuous(expand = c(0, 0), limits = c(0, max_y)) +
-    
-    scale_fill_manual(
+    ggplot2::scale_x_discrete(drop = FALSE, limits = labels) +
+    ggplot2::scale_y_continuous(expand = c(0, 0), limits = c(0, max_y)) +
+    ggplot2::scale_fill_manual(
       values = setNames(df_legende$color, df_legende$categorie),
       name = "",
       labels = setNames(df_legende$label, df_legende$categorie),
       drop = FALSE
     )
-  
-  
-  return(p)
 }

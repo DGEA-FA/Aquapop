@@ -146,6 +146,7 @@ app_ui <- function() {
           ## structure de taille -------------------------------------------------
           tabPanel(
             title = "Structure de taille",
+            
             sidebarPanel(
               radioButtons(
                 inputId = "groupetailleplot",
@@ -159,19 +160,25 @@ app_ui <- function() {
               ),
               downloadButton(outputId = "download_groupetailleplot", label = "Téléchargement du graphique")
             ),
+            
             mainPanel(
               htmltools::includeMarkdown(path = './texte/structuretaille_texte.rmd'),
+              
               withSpinner(
-                plotOutput("structuretailleplot", width = 600, height = 400),
+                plotOutput("structuretailleplot", width = "100%", height = "400px"),
                 type = myspinner
               ),
+              
               h3(text_elements$titrestructuretailleplot),
               
-              # textOutput(outputId = 'titrestructuretailleplot'), #titre plot
-              downloadButton(outputId = "download_data4plot_taille", label = "Téléchargement des données du graphique")
-              
+              downloadButton(
+                outputId = "download_data4plot_taille",
+                label = "Téléchargement des données du graphique"
+              )
             )
           ),
+          
+          
           ## PSD_subpanel -----------------------------------------------------------
           tabPanel(
             title = "PSD",
