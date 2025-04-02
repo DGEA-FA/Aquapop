@@ -1,7 +1,7 @@
 text_elements <- list(
   titrestructuretailleplot = "Histogramme de fréquence des longueurs",
   titrestructureageplot = "Histogramme de fréquence d’âge",
-  titrepsd1plot = "Distribution de fréquence de longueurs avec les classes de PSD",
+  # titrepsd1plot = "Distribution de fréquence de longueurs avec les classes de PSD",
   titregraph_relmasselongueur= "Relation masse-longueur",
   titrewri2plot = "titre de la figure TBD", 
   titrewri3plot =  "titre de la figure TBD", 

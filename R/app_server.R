@@ -153,10 +153,10 @@ app_server <- function(input, output, session) {
   })
   
   # 3. Affichage du tableau
-  render_flextable_ui("taillemasseage_ui", ft_taillemasseage)
+  render_table_flextable("taillemasseage_ui", ft_taillemasseage)
   
   # 4. Bouton de téléchargement
-  render_download_button_ui("dl_taillemasseage", df_taillemasseage())
+  render_download_table("dl_taillemasseage", df_taillemasseage())
   
   
   # Structure taille ggplot ------------------------------------------------
@@ -400,34 +400,33 @@ app_server <- function(input, output, session) {
     psd_indice(data = specimen_valid(), format = "flextable")
   })
   
-  render_flextable_ui("psd_indice_ui", ft_psd_indice)
+  render_table_flextable("psd_indice_ui", ft_psd_indice)
   
- 
-   psd2 <- reactive({
-    req(specimen_valid(), sp_pen())
-    psd_byclass(data = specimen_valid(), espece = sp_pen()) %>% as.data.frame()
+  df_psd_byclass <- reactive({
+    req(specimen_valid())
+    psd_byclass(data = specimen_valid(), format = "data.frame")
   })
-  output$psd2_table <-  function() {
-    kable_psd2(data = psd2())
-  }
-  output$download_psd2 <-
-    download_data_format_xlsx(nom_output = "psd_byclass", data = psd2())
+  
+  ft_psd_byclass <- reactive({
+    req(specimen_valid())
+    psd_byclass(data = specimen_valid(), format = "flextable")
+  })
+  
+  render_table_flextable("psd_byclass_ui", ft_psd_byclass)
+  
+  render_download_table("dl_psd_byclass", df_psd_byclass())
+  
 
-    output$psd1plot <- renderPlot({
-    req(psd2())
-    psd_plot(data = psd2())
-  }, res = 96)
-  output$download_psd1plot <- downloadHandler(
-    filename = function() {
-      paste("psd1plot", '.png', sep = '')
-    },
-    content = function(file) {
-      ggsave(file, plot = {
-        req(psd2(), sp_pen())
-        psd_plot(data = psd2())
-      } , device = "png")
-    }
-  )
+  plot_psd <- reactive({
+    req(specimen_valid())
+    psd_byclass(data = specimen_valid(), format = "plot")
+  })
+  
+  render_plot_ggplot("psd_byclass_plot", plot_psd)
+  render_download_plot("download_psd_byclass_plot", plot_psd)
+  
+  
+  
   # Relation masse-longueur -------------------------------------------------------
     relation_masse_longueur_data <- reactive({
     req(specimen(), sp_pen())

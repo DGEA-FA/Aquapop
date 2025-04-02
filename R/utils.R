@@ -3,7 +3,7 @@ myspinner <- 6
 #' Constantes associées aux espèces suivies par PEN
 #'
 #' Contient le nom commun, le binwidth recommandé pour les histogrammes,
-#' et les seuils de classes PSD (`breaks`) par espèce (`sp`).
+#' les seuils de classes PSD (`breaks`) et leurs libellés (`break_labels`) par espèce (`sp`).
 #'
 #' @export
 pen_constants <- tibble::tibble(
@@ -14,20 +14,20 @@ pen_constants <- tibble::tibble(
     c(0, 300, 500, 650, 800, 1000),
     c(0, 150, 250, 325, 400, 500),
     c(0, 250, 380, 510, 630, 760)
+  ),
+  break_labels = list(
+    c("<300", "300-499", "500-649", "650-799", "800-999", ">=1000"),
+    c("<150", "150-249", "250-324", "325-399", "400-499", ">=500"),
+    c("<250", "250-379", "380-509", "510-629", "630-759", ">=760")
   )
 )
 
-kable_psd2 <- function(data) {
-  req(data)
-  data %>% 
-    kable( align = c("r","c","c","r"),
-           caption = "Fréquence relative (%) de chaque classe de taille", 
-           row.names = FALSE) %>%
-    kable_styling(full_width = FALSE,
-                  font_size = 12,
-                  html_font="sans-serif", 
-                  position="left") 
-}
+#' Noms standardisés des classes PSD
+#'
+#' Utilisés dans les fonctions PSD (psd_indice, psd_byclass, psd_plot)
+#'
+#' @export
+psd_classnames <- c("Sous-stock", "Stock", "Qualité", "Préférée", "Mémorable", "Trophée")
 
 
 

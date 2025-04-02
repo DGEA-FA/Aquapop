@@ -1,6 +1,0 @@
----
-title: "psd_texte.rmd"
-author: "Caroline Brule"
-date: "5 nov 2023"
----
-Autrefois appelé *Proportional stock density*, l’indice *Proportional size distribution* est un descripteur numérique de la distribution de fréquence des longueurs. Il permet de comparer de manière objective la structure de taille de deux populations d’une même espèce (ou d’une même population lors de deux inventaires distincts). Les classes de taille sont établies en fonction de la taille record enregistrée pour une espèce et les autres classes sont dérivées à partir de celle-ci (Gabelhouse 1984). 

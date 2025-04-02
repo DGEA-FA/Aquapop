@@ -80,3 +80,9 @@ psd_indice(data = specimen_valid, format = "flextable")
 
 # Pour l'exportation Excel
 psd_indice(data = specimen_valid, format = "data.frame")
+
+
+df_psd_byclass <- psd_byclass(data = specimen_valid, format = "data.frame")
+ft_psd_byclass <- psd_byclass(data = specimen_valid, format = "flextable")
+ft_psd_byclass
+psd_byclass(data = specimen_valid, format = "plot")

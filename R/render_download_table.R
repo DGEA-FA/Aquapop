@@ -11,7 +11,7 @@
 #' @param label Texte à afficher sur le bouton. Par défaut : "Télécharger (.xlsx)".
 #'
 #' @export
-render_download_button_ui <- function(id,
+render_download_table <- function(id,
                                       data_reactive,
                                       filename = NULL,
                                       label = "Télécharger (.xlsx)") {

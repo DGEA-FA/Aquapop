@@ -175,15 +175,17 @@ app_ui <- function() {
           ## PSD_subpanel -----------------------------------------------------------
           tabPanel(
             title = "PSD",
-            htmltools::includeMarkdown(path = './texte/psd_texte.rmd'),
+            p("Autrefois appelé *Proportional stock density*, l’indice *Proportional size distribution* est un descripteur 
+              numérique de la distribution de fréquence des longueurs. Il permet de comparer de manière objective la 
+              structure de taille de deux populations d’une même espèce (ou d’une même population lors de deux inventaires 
+              distincts). Les classes de taille sont établies en fonction de la taille record enregistrée pour une espèce 
+              et les autres classes sont dérivées à partir de celle-ci (Gabelhouse 1984)."),
             withSpinner(uiOutput("psd_indice_ui"), type = myspinner),
-            
-            withSpinner(tableOutput(outputId = "psd2_table"), type = myspinner),
-            downloadButton(outputId = "download_psd2", label = "Téléchargement"),
-            plotOutput("psd1plot", width = 600, height = 400),
-            h3(text_elements$titrepsd1plot),
-            
-            downloadButton(outputId = "download_psd1plot", label = "Téléchargement du graphique")
+            uiOutput("psd_byclass_ui"),
+            uiOutput("dl_psd_byclass_ui"),
+            h3("Distribution de fréquence de longueurs avec les classes de PSD"),
+            plotOutput("psd_byclass_plot", width = 600, height = 400),
+            downloadButton("download_psd_byclass_plot", label = "Téléchargement du graphique")
           ),
           ## ggplot_age_subpanel ----------------------------------------------------
           tabPanel(

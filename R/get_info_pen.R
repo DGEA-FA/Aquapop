@@ -22,9 +22,11 @@ get_info_pen <- function(input) {
   if (nrow(info) == 0) return(NULL)
   
   list(
-    code_sp       = info$sp,
-    nom_sp   = info$nom_sp,
-    binwidth = info$binwidth,
-    breaks   = info$breaks[[1]]
+    code_sp     = info$sp,
+    nom_sp      = info$nom_sp,
+    binwidth    = info$binwidth,
+    breaks      = info$breaks[[1]],
+    break_labels = info$break_labels[[1]]
   )
+  
 }

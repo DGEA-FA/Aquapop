@@ -17,7 +17,7 @@
 #' \dontrun{
 #' # Dans le serveur :
 #' ft_resultats <- reactive({ mon_tableau %>% flextable::flextable() })
-#' render_flextable_ui("table_resultats", ft_resultats)
+#' render_table_flextable("table_resultats", ft_resultats)
 #'
 #' # Dans l’UI :
 #' uiOutput("table_resultats")
@@ -25,7 +25,7 @@
 #'
 #' @seealso [render_download_button()], [taille_masse_age()]
 #' @export
-render_flextable_ui <- function(output_id, flextable_reactive) {
+render_table_flextable <- function(output_id, flextable_reactive) {
   output <- get("output", envir = parent.frame())
   
   output[[output_id]] <- renderUI({
