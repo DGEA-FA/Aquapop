@@ -26,8 +26,8 @@ path <- "data/Extract IFA_R04_AquaPop.xlsx"
 
 # Paramètres d’identification du sous-ensemble de données à analyser
 typ_pech <- "PENT"
-no_lac   <- "00024"
-annee    <- 2015
+no_lac   <- "01058"
+annee    <- 2008
 
 
 
@@ -88,54 +88,36 @@ relation_masse_longueur(data = specimen, format = "flextable")
 relation_masse_longueur(data = specimen, format = "plot")
 
 # Structure de taille ---------------------------------------------------------------------
-# Exemple d'utilisation de la fonction structure_taille()
+# ----- 1. Graphique de base (aucun groupement) -----
+structure_taille(data = specimen_valid, format = "plot")
 
-# --- Variante 1 : Graphique global (tous les poissons)
-structure_taille(
-  data = specimen_valid,
-  groupement = "tous",
-  format = "plot"
-)
+# ----- 2. Graphique groupé par sexe -----
+structure_taille(data = specimen_valid, groupement = "sexe", format = "plot")
 
-# --- Variante 2 : Graphique par sexe
-structure_taille(
-  data = specimen_valid,
-  groupement = "sexe",
-  format = "plot"
-)
+# ----- 3. Graphique groupé par maturité -----
+structure_taille(data = specimen_valid, groupement = "maturite", format = "plot")
 
-# --- Variante 3 : Graphique par statut reproducteur
-structure_taille(
-  data = specimen_valid,
-  groupement = "maturite",
-  format = "plot"
-)
+# ----- 4. Export des données pour tableau -----
+df_taille_plot <- structure_taille(data = specimen_valid, groupement = "sexe", format = "data.frame")
+print(df_taille_plot)
 
-# --- Variante 4 : Graphique par marquage
-structure_taille(
-  data = specimen_valid,
-  groupement = "marquage",
-  format = "plot"
-)
+# ----- 5. Affichage en flextable -----
+structure_taille(data = specimen_valid, groupement = "marquage", format = "flextable")
 
-# --- Variante 5 : Données brutes du graphique (data.frame) - groupement "sexe"
-df_sexe <- structure_taille(
-  data = specimen_valid,
-  groupement = "sexe",
-  format = "data.frame"
-)
-print(df_sexe)
+# Structure d'âge ---------------------------------------------------------------------
 
-# --- Variante 6 : Tableau formaté (flextable) - groupement "maturite"
-ft_maturite <- structure_taille(
-  data = specimen_valid,
-  groupement = "maturite",
-  format = "flextable"
-)
-ft_maturite
+# ----- 1. Graphique de base (aucun groupement) -----
+structure_age(data = specimen_valid, format = "plot")
 
+# ----- 2. Graphique groupé par sexe -----
+structure_age(data = specimen_valid, groupement = "sexe", format = "plot")
 
-purrr::walk(
-  c("tous", "sexe", "maturite", "marquage"),
-  ~ print(structure_taille(data = specimen_valid, groupement = .x, format = "plot"))
-)
+# ----- 3. Graphique groupé par maturité -----
+structure_age(data = specimen_valid, groupement = "maturite", format = "plot")
+
+# ----- 4. Export des données pour tableau -----
+df_age_plot <- structure_age(data = specimen_valid, groupement = "sexe", format = "data.frame")
+print(df_age_plot)
+
+# ----- 5. Affichage en flextable -----
+structure_age(data = specimen_valid, groupement = "sexe", format = "flextable")

@@ -190,55 +190,35 @@ app_server <- function(input, output, session) {
   render_download_table("download_data4plot_taille", df_structure_taille())
   
   
-  # Structure age ggplot ------------------------------------------------
-  output$structureageplot <- renderPlot({
-    req(specimen_valid(), sp_pen(), nomsp_reactive())
-    
-    structure_age(dfspecimen = specimen_valid(),
-                  espece = sp_pen(),
-                  nomsp = nomsp_reactive(),
-                  groupement = input$groupeageplot)
-  }, res = 96)
-  
-
-  
-  output$download_groupeageplot <- downloadHandler(
-    filename = function() {
-      paste("groupeageplot", '.png', sep = '')
-    },
-    content = function(file) {
-      ggsave(file, plot = {
-        req(specimen_valid(), sp_pen(), nomsp_reactive())
-        
-        structure_age(dfspecimen = specimen_valid(),
-                      espece = sp_pen(),
-                      nomsp = nomsp_reactive(),
-                      groupement = input$groupeageplot)
-      }, width = 10, height = 7, dpi = 300)  # Specify width, height, and dpi if needed
-    },
-    contentType = 'image/png'
-  )
-  
-  
-  
-  data4plot_age <- reactive({
-    req(specimen_valid(), sp_pen(), nomsp_reactive())
-    
-    plot <- structure_age(dfspecimen = specimen_valid(),
-                          espece = sp_pen(),
-                          nomsp = nomsp_reactive(),
-                          groupement = input$groupeageplot)
-    
-    get_df_from_plot(plot, groupement = input$groupeageplot)
+  # Structure d'âge -----------------------------------------------------
+  # Reactive : retourne le ggplot
+  plot_structure_age <- reactive({
+    req(specimen_valid(), input$groupeageplot)
+    structure_age(
+      data = specimen_valid(),
+      groupement = input$groupeageplot,
+      format = "plot"
+    )
   })
   
+  # Rendu du graphique dans l'interface
+  render_plot_ggplot("structureageplot", plot_structure_age)
   
+  # Bouton de téléchargement du graphique (PNG)
+  render_download_plot("download_groupeageplot", plot_structure_age)
   
+  # Reactive : données du graphique (data.frame)
+  df_structure_age <- reactive({
+    req(specimen_valid(), input$groupeageplot)
+    structure_age(
+      data = specimen_valid(),
+      groupement = input$groupeageplot,
+      format = "data.frame"
+    )
+  })
   
-  output$download_data4plot_age <- download_data_format_xlsx(
-    nom_output = paste0("data4plot_age_", input$groupeageplot),
-    data = data4plot_age()
-  )
+  # Téléchargement des données
+  render_download_table("download_data4plot_age", df_structure_age())
   
   
   # CPUE ------------------------------------------------

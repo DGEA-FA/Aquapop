@@ -1,6 +1,4 @@
 text_elements <- list(
-  titrestructuretailleplot = "Histogramme de fréquence des longueurs",
-  titrestructureageplot = "Histogramme de fréquence d’âge",
   titrewri2plot = "titre de la figure TBD", 
   titrewri3plot =  "titre de la figure TBD", 
   titrecroissance1 =  "Table de sélection du modèle de croissance",

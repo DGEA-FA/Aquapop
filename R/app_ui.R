@@ -157,23 +157,27 @@ app_ui <- function() {
                   "Sexe" = "sexe",
                   "Statut reproducteur" = "maturite"
                 )
-              ),
-              downloadButton(outputId = "download_groupetailleplot", label = "Téléchargement du graphique")
+              )
             ),
             
             mainPanel(
-              htmltools::includeMarkdown(path = './texte/structuretaille_texte.rmd'),
-              
+              p("L’histogramme de fréquence des longueurs permettant de caractériser la structure
+                de taille de la population est réalisée avec la fonction geom_histogram de 
+                la librairie ggplot2 (Chang et al. 2021). La sélection des intervalles pour
+                les classes de taille est basée sur les recommandations de Anderson et Neumann (1996) 
+                et Neumann et al. (2012). Ainsi, des intervalles de 20 mm sont utilisés pour l’omble 
+                de fontaine, alors qu’ils sont de 50 mm pour le doré jaune et le touladi."),
+              h3("Histogramme de fréquence des longueurs"),
+              p("La figure ci-dessous représente l’histogramme de fréquence des
+                longueurs selon le filtre sélectionné à gauche."),
               withSpinner(
                 plotOutput("structuretailleplot", width = "100%", height = "400px"),
                 type = myspinner
               ),
-              
-              h3(text_elements$titrestructuretailleplot),
-              
-              downloadButton(
-                outputId = "download_data4plot_taille",
-                label = "Téléchargement des données du graphique"
+              downloadButton(outputId = "download_groupetailleplot", label = "Téléchargement du graphique"),
+
+              downloadButton(outputId = "download_data4plot_taille",
+                             label = "Téléchargement des données du graphique"
               )
             )
           ),
@@ -194,9 +198,10 @@ app_ui <- function() {
             plotOutput("psd_byclass_plot", width = 600, height = 400),
             downloadButton("download_psd_byclass_plot", label = "Téléchargement du graphique")
           ),
-          ## ggplot_age_subpanel ----------------------------------------------------
+          ## structure d'âge -------------------------------------------------
           tabPanel(
-            title = "Structure d’âge",
+            title = "Structure d'âge",
+            
             sidebarPanel(
               radioButtons(
                 inputId = "groupeageplot",
@@ -207,20 +212,29 @@ app_ui <- function() {
                   "Sexe" = "sexe",
                   "Statut reproducteur" = "maturite"
                 )
-              ),
-              downloadButton(outputId = "download_groupeageplot", label = "Téléchargement du graphique")
+              )
             ),
+            
             mainPanel(
-              htmltools::includeMarkdown(path = './texte/structureage_texte.rmd'),
+              p("L’histogramme de fréquence d'âge permettant de caractériser la structure d'âge 
+                de la population est réalisée avec la fonction geom_histogram de la librairie ggplot2 (Chang et al. 2021)."),
+              h3("Histogramme de fréquence des âges"),
+              p("La figure ci-dessous représente l’histogramme de fréquences des âges 
+                selon le filtre sélectionné à gauche."),
               withSpinner(
-                plotOutput("structureageplot", width = 600, height = 400),
+                plotOutput("structureageplot", width = "100%", height = "400px"),
                 type = myspinner
               ),
-              
-              h3(text_elements$titrestructureageplot),
-              downloadButton(outputId = "download_data4plot_age", label = "Téléchargement des données du graphique")
+              downloadButton(outputId = "download_groupeageplot",
+                             label = "Téléchargement du graphique"
+              ),
+              downloadButton(
+                outputId = "download_data4plot_age",
+                label = "Téléchargement des données du graphique"
+              )
             )
           ),
+          
           ## relation_masse_longueur_subpanel ---------------------------------------
           tabPanel(
             title = "Relation masse-longueur",
