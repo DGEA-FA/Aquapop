@@ -294,20 +294,54 @@ app_server <- function(input, output, session) {
   render_table_flextable("table_masselongueur_ui", ft_masselongueur)
   render_download_table("download_masselongueur_table", table_masselongueur())
   
+  # Indice de condition -------------------------------------------------------
+  
+  # Tableau Wr 
+  ft_wri <- reactive({
+    req(specimen_valid())
+    indice_condition(data = specimen_valid(), format = "flextable")
+  })
+  
+  # Affichage du tableau flextable
+  render_table_flextable("wri_table_ui", ft_wri)
+  
+  df_wri <- reactive({
+    req(specimen_valid())
+    indice_condition(data = specimen_valid(), format = "data.frame")
+  })
+  
+  # Téléchargement du tableau
+  render_download_table("download_wri_table", df_wri())
+  
+  # Graphique Wr par sexe
+  plot_wri_tous <- reactive({
+    req(specimen_valid())
+    indice_condition(data = specimen_valid(), format = "plot_tous")
+  })
+  render_plot_ggplot("wri_plot_tous", plot_wri_tous)
+  render_download_plot("download_wri_plot_tous", plot_wri_tous)
+  
+  # Graphique Wr par classe de taille
+  plot_wri_byclass <- reactive({
+    req(specimen_valid())
+    indice_condition(data = specimen_valid(), format = "plot_byclass")
+  })
+  render_plot_ggplot("wri_plot_byclass", plot_wri_byclass)
+  render_download_plot("download_wri_plot_byclass", plot_wri_byclass)
   
   
   # CPUE ------------------------------------------------
   ## verification du n de specimen ------------------------------------------------
-  verif_n_data <- reactive({
-    req(specimen(), sp_pen(), capture())
-    verif_n_recolte_specimen(
-      capture = capture(),
-      specimen = specimen(),
-      espece = sp_pen()
-    ) %>% as.data.frame()
-  })
-  output$verif_ntable <- renderTable(verif_n_data())
- 
+  # verif_n_data <- reactive({
+  #   req(specimen(), sp_pen(), capture())
+  #   verif_n_recolte_specimen(
+  #     capture = capture(),
+  #     specimen = specimen(),
+  #     espece = sp_pen()
+  #   ) %>% as.data.frame()
+  # })
+  # output$verif_ntable <- renderTable(verif_n_data())
+  # 
   ## tous --------------------------------------------------------------------
   selection_modele_CPUE_tous_data <- reactive({
     req(specimen(), sp_pen(), capture(), data_station())
@@ -410,103 +444,79 @@ app_server <- function(input, output, session) {
   output$download_biomasse1 <-
     download_data_format_xlsx(nom_output = "biomasse1", data = biomasse1())
  
-  # Indice de condition -------------------------------------------------------
-  
-  # Tableau Wr 
-  ft_wri <- reactive({
-    req(specimen_valid())
-    indice_condition(data = specimen_valid(), format = "flextable")
-  })
-  
-  # Affichage du tableau flextable
-  render_table_flextable("wri_table_ui", ft_wri)
-  
-  df_wri <- reactive({
-    req(specimen_valid())
-    indice_condition(data = specimen_valid(), format = "data.frame")
-  })
-  
-  # Téléchargement du tableau
-  render_download_table("download_wri_table", df_wri())
-  
-  # Graphique Wr par sexe
-  plot_wri_tous <- reactive({
-    req(specimen_valid())
-    indice_condition(data = specimen_valid(), format = "plot_tous")
-  })
-  render_plot_ggplot("wri_plot_tous", plot_wri_tous)
-  render_download_plot("download_wri_plot_tous", plot_wri_tous)
-  
-  # Graphique Wr par classe de taille
-  plot_wri_byclass <- reactive({
-    req(specimen_valid())
-    indice_condition(data = specimen_valid(), format = "plot_byclass")
-  })
-  render_plot_ggplot("wri_plot_byclass", plot_wri_byclass)
-  render_download_plot("download_wri_plot_byclass", plot_wri_byclass)
-  
+ 
   
   # Croissance ------------------------------------------------
-  croissance1 <- reactive({
-    req(data_specimen(), sp_pen())  # S'assurer que les données nécessaires sont disponibles
-    
-    # Appeler directement la fonction `courbe_croissance_comparaison`
-    courbe_croissance_comparaison(dfspecimen = data_specimen(), sp_pen = sp_pen()) %>% as.data.frame()
+  # 1. Réactif pour la table de modèles
+  table_modeles_croissance <- reactive({
+    req(specimen()) 
+    courbe_croissance_comparaison(data = specimen(), format = "data.frame")
   })
-
-  output$croissance1_table <- renderReactable(
+  
+  # 2. Réactif pour la ligne par défaut (le meilleur modèle)
+  default_model_index <- reactive({
+    req(table_modeles_croissance())
+    best_model <- select_best_croissance_model(table_modeles_croissance())
+    idx <- match(best_model, table_modeles_croissance()$methode)
+    validate(need(!is.na(idx), "Le meilleur modèle n'a pas été trouvé dans les résultats"))
+    idx
+  })
+  
+  
+  # 3. Table interactive avec sélection par défaut dynamique
+  output$table_modeles_croissance_table <- renderReactable({
+    req(default_model_index())
     reactable(
-      labelled_data(croissance1()),  
+      labelled_data(table_modeles_croissance()),  
       selection = "single",
       onClick = "select",
-      defaultSelected = 1,
+      defaultSelected = default_model_index(),
       defaultColDef = colDef(
-        align = "center",  # Centre les valeurs par défaut
-        headerStyle = list(textAlign = "center")  # Centre les titres par défaut
+        align = "center",
+        headerStyle = list(textAlign = "center")
       )
     )
-  )
-
-  selectedmodelcroissance <- reactive({ #selection du modele choisi dans le reactable
-    selected <- getReactableState("croissance1_table", "selected")
-    req(selected, croissance1())
-    details <- croissance1()[selected, 1]
   })
   
+  # 4. Modèle actuellement sélectionné
+  selectedmodelcroissance <- reactive({
+    selected <- getReactableState("table_modeles_croissance_table", "selected")
+    req(!is.null(selected), table_modeles_croissance())
+    table_modeles_croissance()[selected, 1]
+      })
   
-  
-  output$download_croissance1 <-
-    download_data_format_xlsx(nom_output = "courbe_croissance_comparaison", data = croissance1())
-  
-  output$selectedmodelcroissanceplot <- renderPlot({
-    req(selectedmodelcroissance(), data_specimen(), sp_pen(), croissance1())
-    
-    # Appeler la fonction générique en fonction du modèle sélectionné
-    courbe_croissance_plot(dfspecimen = data_specimen(), sp_pen = sp_pen(), tablemodele = croissance1(), modele = paste(selectedmodelcroissance()))
-  }, res = 96)
-  
-  
-  # download_selectedmodelcroissanceplot
-  output$download_selectedmodelcroissanceplot <- downloadHandler(
-    filename = function() {
-      req(selectedmodelcroissance())
-      if (selectedmodelcroissance() == "Von Bertalanffy") {
-        paste("croissance_vb", '.png', sep = '')
-      } else if (selectedmodelcroissance() == "Gompertz") {
-        paste("croissance_gomp", '.png', sep = '')
-      } else if (selectedmodelcroissance() == "Logistique") {
-        paste("croissance_logistique", '.png', sep = '')
-      }
-    },
-    content = function(file) {
-      ggsave(file, plot = {
-        req(selectedmodelcroissance(), data_specimen(), sp_pen(), croissance1())
-        
-        # Appeler la fonction générique en fonction du modèle sélectionné
-        courbe_croissance_plot(dfspecimen = data_specimen(), sp_pen = sp_pen(), tablemodele = croissance1(), modele = selectedmodelcroissance())
-      }, device = "png")
-    }
+  # 8. Bouton de téléchargement de la table des modèles
+  render_download_table(
+    id = "download_table_modeles_croissance",
+    data_reactive = table_modeles_croissance()
   )
+  
+  # 5. Réactif : graphique du modèle sélectionné
+  plot_selectedmodelcroissance <- reactive({
+    req(selectedmodelcroissance(), specimen(), table_modeles_croissance())
+    courbe_croissance_plot(
+      dfspecimen = specimen(),
+      tablemodele = table_modeles_croissance(),
+      modele = selectedmodelcroissance()
+    )
+  })
+  
+  # 6. Affichage du graphique dans Shiny
+  render_plot_ggplot(
+    output_id = "selectedmodelcroissanceplot",
+    plot_reactive = plot_selectedmodelcroissance,
+    width = 600, height = 400, res = 96
+  )
+  
+  # 7. Bouton de téléchargement du graphique
+  render_download_plot(
+    id = "download_selectedmodelcroissanceplot",
+    plot_reactive = plot_selectedmodelcroissance,
+    filename = "courbe_croissance",  # ou un reactive si tu veux le personnaliser
+    width = 7, height = 5, dpi = 300,
+    label = "Télécharger le graphique"
+  )
+  
   
   # Mortalite -------------------------------------------------------
   deathdf <- reactive({

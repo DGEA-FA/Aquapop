@@ -80,6 +80,13 @@ get_wr_constants <- function(sp) {
     dplyr::slice(1)
 }
 
+
+# Fonctions internes pour les modèles de croissance
+vb_function <- function(age, linf, k, t0) linf * (1 - exp(-k * (age - t0)))
+gompertz_function <- function(age, linf, k, t0) linf * exp(-exp(-k * (age - t0)))
+logistic_function <- function(age, linf, k, t0) linf / (1 + exp(-k * (age - t0)))
+
+
 gt_abondance <- function(data) {
   # Extraire les labels des colonnes
   column_labels <- sapply(data, function(col) attr(col, "label"))

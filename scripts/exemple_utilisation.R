@@ -26,7 +26,7 @@ path <- "data/Extract IFA_R04_AquaPop.xlsx"
 
 # Paramètres d’identification du sous-ensemble de données à analyser
 typ_pech <- "PENT"
-no_lac   <- "01058"
+no_lac   <- "01565"
 annee    <- 2008
 
 
@@ -72,6 +72,37 @@ taille_masse_age(data = specimen_valid, format = "flextable")
 
 # Exemple : Exporter manuellement un tableau
 # download_data(df_taillemasseage, path = "df_taillemasseage.xlsx")
+
+
+
+# Croissance --------------------------------------------------------------
+# 2. Ajuster les modèles et créer la table de comparaison
+table_modele <- courbe_croissance_comparaison(
+  data = specimen,
+  format = "data.frame"
+)
+
+# Afficher la table dans la console
+print(table_modele)
+
+
+# 3. Sélectionner le meilleur modèle automatiquement
+
+
+modele_best <- select_best_croissance_model(table_modele)
+cat("Meilleur modèle sélectionné :", modele_best, "\n")
+
+# 4. Générer le graphique du modèle choisi
+p <- courbe_croissance_plot(
+  dfspecimen = specimen,
+  tablemodele = table_modele,
+  modele = modele_best
+)
+
+# Afficher le graphique
+print(p)
+
+
 
 # PSD ---------------------------------------------------------------------
 
@@ -121,8 +152,6 @@ print(df_age_plot)
 
 # ----- 5. Affichage en flextable -----
 structure_age(data = specimen_valid, groupement = "sexe", format = "flextable")
-
-
 
 # Indice de condition -----------------------------------------------------
 

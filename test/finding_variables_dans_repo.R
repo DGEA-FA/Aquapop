@@ -6,7 +6,7 @@ library(fs)
 library(stringr)
 
 # Définir le terme à rechercher
-terme_a_chercher <- "verifier_doublons"
+terme_a_chercher <- "functions.R"
 
 # Lister tous les fichiers R dans le projet (sauf ceux dans test/)
 # files <- dir_ls(path = ".", recurse = TRUE, glob = "*.R")

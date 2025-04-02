@@ -1,6 +1,6 @@
 source("R/load_packages.R")
 
-source("functions.R")
+source("R/utils.R")
 source("./texte/text_elements.R", local = TRUE)   # Load the text elements
 
 

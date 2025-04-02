@@ -1,7 +1,0 @@
----
-title: "croissance_texte.rmd"
-author: "Caroline Brule"
-date: "6 novembre 2023"
----
-
-Si les trois modèles convergent, sélectionnez celui ayant le plus petit AICc. Prenez note également que le modèle de von Bertalanffy utilise la méthode pondérée avec t0 variable. Attention : les IC95% des prédictions ne peuvent pas être calculées à partir des IC95% des estimations des paramètres L, K et t0. 

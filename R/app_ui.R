@@ -101,8 +101,7 @@ app_ui <- function() {
                  tabPanel(
                    title = "CPUE",
                    htmltools::includeMarkdown(path = './texte/CPUE_texte.rmd'),
-                   withSpinner(tableOutput(outputId = "verif_ntable"),
-                              type = myspinner),
+                   # withSpinner(tableOutput(outputId = "verif_ntable"),                              type = myspinner),
                    withSpinner(
                      tableOutput(outputId = "selection_modele_CPUE_toustable"),
                      type = myspinner
@@ -285,24 +284,25 @@ app_ui <- function() {
       ),
       
       # croissance_panel --------------------------------------------------------
+      # --- UI pour le panneau Croissance ---
       tabPanel(
-        title = "Croissance",
-        htmltools::includeMarkdown(path = './texte/croissance_texte.rmd'),
-        h3(text_elements$titrecroissance1),
+        "Croissance",
+        p("Si les trois modèles convergent, sélectionnez celui ayant le plus petit AICc.
+          Prenez note également que le modèle de von Bertalanffy utilise la méthode
+          pondérée avec t0 variable. Attention : les IC95% des prédictions ne peuvent
+          pas être calculées à partir des IC95% des estimations des paramètres L, K et t0."),
         
-        withSpinner(reactableOutput(outputId = "croissance1_table"), type = myspinner),
-        downloadButton(outputId = "download_croissance1", label = "Téléchargement"),
+        h3("Table de sélection du modèle de croissance"),
+        withSpinner(reactableOutput("croissance1_table"),type=myspinner),
+        uiOutput("download_croissance1_ui"),
+        br(), br(),
         
-        # Supprimer le sidebarLayout
-        plotOutput(
-          outputId = "selectedmodelcroissanceplot",
-          width = 600,
-          height = 400
-        ),
-        h3(text_elements$titreselectedmodelcroissanceplot),
+        h3("Longueur à l’âge des spécimens capturés et modèle de croissance"),
         
-        downloadButton(outputId = "download_selectedmodelcroissanceplot", label = "Téléchargement")
+        plotOutput("selectedmodelcroissanceplot"),
+        downloadButton("download_selectedmodelcroissanceplot", "Télécharger le graphique")
       ),
+     
       # mortalite_panel ---------------------------------------------------------
       tabPanel(
         title = "Mortalité",
