@@ -212,47 +212,16 @@ gt_mortalite2 <- function(data) {
     )
 }
 
-
-# Copy report to temporary directory. This is mostly important when
-# deploying the app, since often the working directory won't be writable
-report_path <- tempfile(fileext = ".Rmd")
-file.copy("report.Rmd", report_path, overwrite = TRUE)
-
-render_report <- function(input, output, params) {
-  rmarkdown::render(input,
-                    output_file = output,
-                    params = params,
-                    envir = new.env(parent = globalenv())
-  )
-}
+# 
+# # Copy report to temporary directory. This is mostly important when
+# # deploying the app, since often the working directory won't be writable
+# report_path <- tempfile(fileext = ".Rmd")
+# file.copy("report.Rmd", report_path, overwrite = TRUE)
 
 
-# Fonction pour générer le rapport Word
-generate_report <- function(data_brut, output_file, data_comment = NULL, result_table = NULL) {
-  
-  # Créer une liste de paramètres pour le rapport
-  params_list <- list(
-    data_brut = data_brut   # Données brutes
-  )
-  
-  # Ajouter les commentaires s'ils sont fournis
-  if (!is.null(data_comment)) {
-    params_list$data_comment <- data_comment
-  }
-  
-  # Ajouter le tableau des résultats s'il est fourni
-  if (!is.null(result_table)) {
-    params_list$result_table <- result_table
-  }
-  
-  # Générer le rapport Word
-  rmarkdown::render(
-    input = "report_template.Rmd",  # Chemin vers le fichier R Markdown
-    output_file = output_file,
-    params = params_list,
-    envir = new.env(parent = globalenv())
-  )
-}
+
+
+
 
 calculate_mf_ratio <- function(male_count, female_count) {
   if (male_count == 0 && female_count == 0) {
