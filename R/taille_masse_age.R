@@ -4,12 +4,12 @@
 #' pour la longueur totale (LTMax), la masse et l'âge des spécimens, regroupés par sexe et statut reproducteur.
 #' Elle retourne soit un `data.frame`, soit un `flextable` mis en page selon l'argument `format`.
 #'
-#' @param data_specimen_valid Un data.frame contenant les colonnes `ltm`, `masse`, `age`, `sexe` et `maturite`.
+#' @param data Un data.frame contenant les colonnes `ltm`, `masse`, `age`, `sexe` et `maturite`.
 #' @param format Format de sortie : `"data.frame"` (par défaut) ou `"flextable"`.
 #'
 #' @return Un tableau de statistiques morphologiques au format spécifié.
 #' @export
-taille_masse_age <- function(data_specimen_valid, format = c("data.frame", "flextable")) {
+taille_masse_age <- function(data, format = c("data.frame", "flextable")) {
   format <- match.arg(format)
   
   calculate_stats <- function(data, var, group_var = NULL) {
@@ -29,12 +29,12 @@ taille_masse_age <- function(data_specimen_valid, format = c("data.frame", "flex
   
   # ---- Données LTMax ----
   ltm_df <- bind_rows(
-    calculate_stats(data_specimen_valid, "ltm", "sexe"),
-    calculate_stats(data_specimen_valid, "ltm") %>% mutate(sexe = NA),
-    calculate_stats(filter(data_specimen_valid, maturite == "O" & sexe == "M"), "ltm") %>% mutate(sexe = "Reprod. actifs mâles"),
-    calculate_stats(filter(data_specimen_valid, maturite == "N"), "ltm") %>% mutate(sexe = "Imm. ou reprod. inactifs"),
-    calculate_stats(filter(data_specimen_valid, maturite == "O" & sexe == "F"), "ltm") %>% mutate(sexe = "Reprod. actifs femelles"),
-    calculate_stats(filter(data_specimen_valid, maturite == "IND"), "ltm") %>% mutate(sexe = "Statut reprod. inconnu")
+    calculate_stats(data, "ltm", "sexe"),
+    calculate_stats(data, "ltm") %>% mutate(sexe = NA),
+    calculate_stats(filter(data, maturite == "O" & sexe == "M"), "ltm") %>% mutate(sexe = "Reprod. actifs mâles"),
+    calculate_stats(filter(data, maturite == "N"), "ltm") %>% mutate(sexe = "Imm. ou reprod. inactifs"),
+    calculate_stats(filter(data, maturite == "O" & sexe == "F"), "ltm") %>% mutate(sexe = "Reprod. actifs femelles"),
+    calculate_stats(filter(data, maturite == "IND"), "ltm") %>% mutate(sexe = "Statut reprod. inconnu")
   ) %>%
     mutate(
       sexe = as.character(sexe),
@@ -48,12 +48,12 @@ taille_masse_age <- function(data_specimen_valid, format = c("data.frame", "flex
   
   # ---- Masse ----
   masse_df <- bind_rows(
-    calculate_stats(data_specimen_valid, "masse", "sexe"),
-    calculate_stats(data_specimen_valid, "masse") %>% mutate(sexe = NA),
-    calculate_stats(filter(data_specimen_valid, maturite == "O" & sexe == "M"), "masse") %>% mutate(sexe = "Reprod. actifs mâles"),
-    calculate_stats(filter(data_specimen_valid, maturite == "N"), "masse") %>% mutate(sexe = "Imm. ou reprod. inactifs"),
-    calculate_stats(filter(data_specimen_valid, maturite == "O" & sexe == "F"), "masse") %>% mutate(sexe = "Reprod. actifs femelles"),
-    calculate_stats(filter(data_specimen_valid, maturite == "IND"), "masse") %>% mutate(sexe = "Statut reprod. inconnu")
+    calculate_stats(data, "masse", "sexe"),
+    calculate_stats(data, "masse") %>% mutate(sexe = NA),
+    calculate_stats(filter(data, maturite == "O" & sexe == "M"), "masse") %>% mutate(sexe = "Reprod. actifs mâles"),
+    calculate_stats(filter(data, maturite == "N"), "masse") %>% mutate(sexe = "Imm. ou reprod. inactifs"),
+    calculate_stats(filter(data, maturite == "O" & sexe == "F"), "masse") %>% mutate(sexe = "Reprod. actifs femelles"),
+    calculate_stats(filter(data, maturite == "IND"), "masse") %>% mutate(sexe = "Statut reprod. inconnu")
   ) %>%
     mutate(
       sexe = as.character(sexe),
@@ -65,12 +65,12 @@ taille_masse_age <- function(data_specimen_valid, format = c("data.frame", "flex
   
   # ---- Âge ----
   age_df <- bind_rows(
-    calculate_stats(data_specimen_valid, "age", "sexe"),
-    calculate_stats(data_specimen_valid, "age") %>% mutate(sexe = NA),
-    calculate_stats(filter(data_specimen_valid, maturite == "O" & sexe == "M"), "age") %>% mutate(sexe = "Reprod. actifs mâles"),
-    calculate_stats(filter(data_specimen_valid, maturite == "N"), "age") %>% mutate(sexe = "Imm. ou reprod. inactifs"),
-    calculate_stats(filter(data_specimen_valid, maturite == "O" & sexe == "F"), "age") %>% mutate(sexe = "Reprod. actifs femelles"),
-    calculate_stats(filter(data_specimen_valid, maturite == "IND"), "age") %>% mutate(sexe = "Statut reprod. inconnu")
+    calculate_stats(data, "age", "sexe"),
+    calculate_stats(data, "age") %>% mutate(sexe = NA),
+    calculate_stats(filter(data, maturite == "O" & sexe == "M"), "age") %>% mutate(sexe = "Reprod. actifs mâles"),
+    calculate_stats(filter(data, maturite == "N"), "age") %>% mutate(sexe = "Imm. ou reprod. inactifs"),
+    calculate_stats(filter(data, maturite == "O" & sexe == "F"), "age") %>% mutate(sexe = "Reprod. actifs femelles"),
+    calculate_stats(filter(data, maturite == "IND"), "age") %>% mutate(sexe = "Statut reprod. inconnu")
   ) %>%
     mutate(
       sexe = as.character(sexe),

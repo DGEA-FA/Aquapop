@@ -394,74 +394,80 @@ app_server <- function(input, output, session) {
   })
   output$download_biomasse1 <-
     download_data_format_xlsx(nom_output = "biomasse1", data = biomasse1())
-  # PSD -------------------------------------------------------
+  # === PSD (Proportional Size Distribution) ===================================
+  
+  # --- 1. Tableau : Indice PSD global -----------------------------------------
+  
+  # Reactive : retourne un tableau flextable avec l'indice PSD et IC95
   ft_psd_indice <- reactive({
     req(specimen_valid())
     psd_indice(data = specimen_valid(), format = "flextable")
   })
   
+  # Rendu du tableau dans l'interface
   render_table_flextable("psd_indice_ui", ft_psd_indice)
   
+  
+  # --- 2. Tableau : Répartition par classe de taille --------------------------
+  
+  # Reactive (brut) : pour téléchargement
   df_psd_byclass <- reactive({
     req(specimen_valid())
     psd_byclass(data = specimen_valid(), format = "data.frame")
   })
   
+  # Reactive (flextable) : pour affichage
   ft_psd_byclass <- reactive({
     req(specimen_valid())
     psd_byclass(data = specimen_valid(), format = "flextable")
   })
   
+  # Rendu du tableau formaté dans l'interface
   render_table_flextable("psd_byclass_ui", ft_psd_byclass)
   
+  # Bouton de téléchargement du tableau brut
   render_download_table("dl_psd_byclass", df_psd_byclass())
   
-
+  
+  # --- 3. Graphique : Histogramme par classe de taille ------------------------
+  
+  # Reactive : retourne un objet ggplot du graphique PSD
   plot_psd <- reactive({
     req(specimen_valid())
     psd_byclass(data = specimen_valid(), format = "plot")
   })
   
+  # Affichage du graphique dans l'interface
   render_plot_ggplot("psd_byclass_plot", plot_psd)
+  
+  # Bouton de téléchargement du graphique (PNG)
   render_download_plot("download_psd_byclass_plot", plot_psd)
   
-  
-  
   # Relation masse-longueur -------------------------------------------------------
-    relation_masse_longueur_data <- reactive({
-    req(specimen(), sp_pen())
-    relation_masse_longueur(specimen(), sp_pen())
+  
+  # --- Graphique ---
+  plot_masselongueur <- reactive({
+    req(specimen())
+    relation_masse_longueur(data = specimen(), format = "plot")
   })
   
-  # Affichage du tableau des coefficients
-  output$relation_masse_longueur_table <- renderTable({
-    relation_masse_longueur_data()$table
-  })
+  render_plot_ggplot("plot_masselongueur", plot_masselongueur)
+  render_download_plot("download_masselongueur_plot", plot_masselongueur)
   
-  # Bouton de téléchargement
-  output$download_relation_masse_longueur_table <-
-    download_data_format_xlsx(
-      nom_output = "relation_masse_longueur_coefficient",
-      data = relation_masse_longueur_data()$table)
-    
-  
-  output$masselongueur_plot <- plotly::renderPlotly({
-    req(relation_masse_longueur_data())
-    relation_masse_longueur_data()$graph %>%
-      plotly::ggplotly(tooltip = "text")
+  # --- Tableau des coefficients ---
+  table_masselongueur <- reactive({
+    req(specimen())
+    relation_masse_longueur(data = specimen(), format = "data.frame")
   })
- 
-  output$download_masselongueur_plot <- downloadHandler(
-    filename = function() {
-      paste("relation_masse_longueur", '.png', sep = '')
-    },
-    content = function(file) {
-      ggsave(file, plot = {
-        req(relation_masse_longueur_data())
-        relation_masse_longueur_data()$graph
-      } , device = "png")
-    }
-  )
+
+  ft_masselongueur <- reactive({
+    req(specimen())
+    relation_masse_longueur(data = specimen(), format = "flextable")
+  })
+
+  render_table_flextable("table_masselongueur_ui", ft_masselongueur)
+  render_download_table("download_masselongueur_table", table_masselongueur())
+
   
   # Indice de condition -------------------------------------------------------
   wri1data <- reactive({

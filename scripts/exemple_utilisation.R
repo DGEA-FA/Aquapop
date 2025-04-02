@@ -65,24 +65,28 @@ info_pen
 # TAILLE MASSE ÂGE  -------------------------------------------------------
 
 # Pour obtenir le tableau de données
-df_taillemasseage <- taille_masse_age(specimen_valid, format = "data.frame")
+df_taillemasseage <- taille_masse_age(data = specimen_valid, format = "data.frame")
 
 # Pour afficher le flextable
-taille_masse_age(specimen_valid, format = "flextable")
+taille_masse_age(data = specimen_valid, format = "flextable")
 
 # Exemple : Exporter manuellement un tableau
 # download_data(df_taillemasseage, path = "df_taillemasseage.xlsx")
 
 # PSD ---------------------------------------------------------------------
 
-# Pour l'affichage
 psd_indice(data = specimen_valid, format = "flextable")
-
-# Pour l'exportation Excel
 psd_indice(data = specimen_valid, format = "data.frame")
-
-
-df_psd_byclass <- psd_byclass(data = specimen_valid, format = "data.frame")
-ft_psd_byclass <- psd_byclass(data = specimen_valid, format = "flextable")
-ft_psd_byclass
+psd_byclass(data = specimen_valid, format = "data.frame")
+psd_byclass(data = specimen_valid, format = "flextable")
 psd_byclass(data = specimen_valid, format = "plot")
+
+# Relation masse-longueur ---------------------------------------------------------------------
+
+relation_masse_longueur(data = specimen, format = "data.frame")
+relation_masse_longueur(data = specimen, format = "flextable")
+relation_masse_longueur(data = specimen, format = "plot")
+
+
+x <- psd_byclass(data = specimen_valid, format = "plot")
+y <- relation_masse_longueur(data = specimen, format = "plot")

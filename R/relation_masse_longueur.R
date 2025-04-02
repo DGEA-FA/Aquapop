@@ -1,66 +1,75 @@
-relation_masse_longueur <- function(data, espece) {
-  # Filtrer les données pour l'espèce sélectionnée
-  dfAllometrie <- data %>%
-    filter(sp == espece) %>%
-    droplevels() %>%
-    filter(!is.na(ltm), !is.na(masse)) %>% # Retirer les valeurs manquantes
+#' Calcule et affiche la relation masse-longueur pour une espèce
+#'
+#' Cette fonction ajuste une régression linéaire sur les données log-transformées
+#' de masse et de longueur. Elle retourne soit :
+#' - un tableau des coefficients (`data.frame` ou `flextable`),
+#' - ou un graphique `ggplot`.
+#'
+#' @param data Un `data.frame` contenant `ltm`, `masse`, `sp` et `no_specimen`.
+#' @param format Format de sortie : `"data.frame"` (par défaut), `"flextable"` ou `"plot"`.
+#'
+#' @return Un tableau ou un graphique, selon le format spécifié.
+#' @export
+relation_masse_longueur <- function(data, format = c("data.frame", "flextable", "plot")) {
+  format <- match.arg(format)
+  
+  sp <- unique(data$sp)
+  if (length(sp) != 1) stop("Les données doivent être filtrées pour une seule espèce.")
+  
+  df <- data %>%
+    filter(!is.na(ltm), !is.na(masse)) %>%
     mutate(
-      logW = log10(masse), # Variable réponse en log10
-      logL = log10(ltm) # Variable explicative en log10
+      logW = log10(masse),
+      logL = log10(ltm)
     )
   
-  # Ajustement du modèle de régression
-  fit1 <- lm(logW ~ logL, data = dfAllometrie)
+  fit <- lm(logW ~ logL, data = df)
+  coef_summary <- summary(fit)$coefficients
+  conf_int <- confint(fit)
   
-  # Extraction des coefficients avec erreurs standard et IC95%
-  coef_summary <- summary(fit1)$coefficients
-  a <- coef_summary[1, 1] %>% round(3) # Intercept (log10(a))
-  b <- coef_summary[2, 1] %>% round(3) # Pente (b)
-  se_a <- coef_summary[1, 2] %>% round(3) # SE de log10(a)
-  se_b <- coef_summary[2, 2] %>% round(3) # SE de b
-  
-  # Calcul des intervalles de confiance à 95%
-  conf_int <- confint(fit1)
-  ic_a <- paste0("[", round(conf_int[1, 1], 3), " - ", round(conf_int[1, 2], 3), "]")
-  ic_b <- paste0("[", round(conf_int[2, 1], 3), " - ", round(conf_int[2, 2], 3), "]")
-  
-  # Création d'un tableau des coefficients
-  coef_table <- data.frame(
+  table_coef <- tibble::tibble(
     Coefficient = c("log10(a)", "b"),
-    Estimate = c(a, b),
-    SE = c(se_a, se_b),
-    IC95 = c(ic_a, ic_b)
+    Estimate = round(coef_summary[, 1], 3),
+    SE       = round(coef_summary[, 2], 3),
+    IC95     = c(
+      glue::glue("[{round(conf_int[1, 1], 3)} - {round(conf_int[1, 2], 3)}]"),
+      glue::glue("[{round(conf_int[2, 1], 3)} - {round(conf_int[2, 2], 3)}]")
+    )
   )
   
-  # Prédiction pour la courbe ajustée
-  tmp <- range(dfAllometrie$logL)
-  xs <- seq(tmp[1], tmp[2], length.out = 99)
-  ys <- predict(fit1, data.frame(logL = xs))
+  if (format == "data.frame") return(table_coef)
   
-  # Correction pour la transformation inverse
-  cf <- FSA::logbtcf(fit1, 10)
-  btys <- cf * 10 ^ predict(fit1, data.frame(logL = xs), interval = "prediction")
-  btxs <- 10 ^ xs
-  PREDICT <- data.frame(btxs, btys)
+  if (format == "flextable") {
+    return(
+      table_coef %>%
+        flextable::flextable() %>%
+        flextable::autofit() %>%
+        flextable::align(align = "center", part = "all")
+    )
+  }
   
- 
-  # Création du graphique
-  ggRelationML <- suppressWarnings(
-    ggplot() +
-      geom_point(data = dfAllometrie, aes(
-        x = ltm, y = masse,
-        text = paste0("<b># spécimen:</b> ", no_specimen, "<br>")
-      )) +
-      geom_line(data = PREDICT, aes(x = btxs, y = fit), color = "blue") +
-      geom_line(data = PREDICT, aes(x = btxs, y = lwr), linetype = 2, color = "red") +
-      geom_line(data = PREDICT, aes(x = btxs, y = upr), linetype = 2, color = "red") +
-      theme_classic() +
-      labs(
-        title = paste("Relation masse-longueur pour", espece),
-        x = "Longueur totale maximale (mm)",
-        y = "Masse (g)"
-      ) 
-  )
-  
-  return(list(graph = ggRelationML, table = coef_table))
+  if (format == "plot") {
+    xs <- seq(min(df$logL), max(df$logL), length.out = 100)
+    cf <- FSA::logbtcf(fit, 10)
+    preds <- cf * 10 ^ predict(fit, newdata = data.frame(logL = xs), interval = "prediction")
+    pred_df <- tibble::tibble(
+      ltm = 10 ^ xs,
+      fit = preds[, "fit"],
+      lwr = preds[, "lwr"],
+      upr = preds[, "upr"]
+    )
+    
+    return(
+      ggplot() +
+        geom_point(data = df, aes(x = ltm, y = masse)) +
+        geom_line(data = pred_df, aes(x = ltm, y = fit), color = "blue") +
+        geom_line(data = pred_df, aes(x = ltm, y = lwr), color = "red", linetype = 2) +
+        geom_line(data = pred_df, aes(x = ltm, y = upr), color = "red", linetype = 2) +
+        theme_classic() +
+        labs(
+          x = "Longueur totale maximale (mm)",
+          y = "Masse (g)"
+        )
+    )
+  }
 }
