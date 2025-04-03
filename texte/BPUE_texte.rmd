@@ -1,7 +1,0 @@
----
-title: "BPUE_texte.rmd"
-author: "Caroline Brule"
-date: "25 octobre 2023"
----
-
-Le tableau ci-dessous présente la répartition de la biomasse capturée selon la table *Spécimens*. 

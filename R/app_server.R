@@ -99,6 +99,9 @@ app_server <- function(input, output, session) {
   
   # Accès aux jeux préparés
   data_station <- reactive({ analysis_data()$data_station })
+  station_valides <- reactive({ analysis_data()$station_valides })
+  station_hasard_valide <- reactive({ analysis_data()$station_hasard_valide })
+  
   specimen     <- reactive({ analysis_data()$specimen })
   specimen_valid <- reactive({ analysis_data()$specimen_valid })
   capture      <- reactive({ analysis_data()$capture })
@@ -328,112 +331,131 @@ app_server <- function(input, output, session) {
   })
   render_plot_ggplot("wri_plot_byclass", plot_wri_byclass)
   render_download_plot("download_wri_plot_byclass", plot_wri_byclass)
+  # CPUE ---------------------------------------------------------------
   
+  ## Tous les spécimens ------------------------------------------------
+  cpue_table_tous <- reactive({
+    req(specimen(), capture())
+    prepare_cpue_data(capture = capture(), specimen = specimen(), group = "tous")
+  })
   
-  # CPUE ------------------------------------------------
-   ## tous --------------------------------------------------------------------
-  selection_modele_CPUE_tous_data <- reactive({
-    req(specimen(), sp_pen(), capture(), data_station())
-    selection_modele_CPUE(
-        capture = capture(),
-        specimen = specimen(),
-        espece = sp_pen(),
-        station = data_station()
-      )
+  cpue_modele_tous <- reactive({
+    req(cpue_table_tous())
+    cpue_modele_comparaison(cpue_table_tous(), format = "data.frame")
   })
-  output$selection_modele_CPUE_toustable <-  function() {
-    kable_CPUEtous(data = selection_modele_CPUE_tous_data())
-  }
-  output$download_selection_modele_CPUE_toustable <-
-    download_data_format_xlsx(nom_output = "selection_modele_CPUE_tous_data", data = selection_modele_CPUE_tous_data())
- 
-   CPUE_tous <- reactive({
-    req(selection_modele_CPUE_tous_data())
-    paste(selection_modele_CPUE_tous_data()[1 , "CPUE"]) #prendre le premier de la liste, car classe par ordre croissant de Ajustement
+  
+  cpue_modele_tous_flextable <- reactive({
+    req(cpue_table_tous())
+    cpue_modele_comparaison(cpue_table_tous(), format = "flextable")
   })
-  CPUEic_tous <- reactive({
-    req(selection_modele_CPUE_tous_data())
-    paste(selection_modele_CPUE_tous_data()[1 , 'IC 95%']) #prendre le premier de la liste, car classe par ordre croissant de Ajustement
+  
+  render_table_flextable("cpue_tous_table", cpue_modele_tous_flextable)
+  render_download_table(id = "cpue_tous_dl", data_reactive = cpue_modele_tous())
+  
+  ## Femelles matures --------------------------------------------------
+  cpue_table_femelles <- reactive({
+    req(specimen(), capture())
+    prepare_cpue_data(capture = capture(), specimen = specimen(), group = "femelles")
   })
-  ## femelle mature ----------------------------------------------------------
-  selection_modele_CPUE_Fmature_data <- reactive({
-    req(specimen(), sp_pen(), capture(), data_station())
-      selection_modele_CPUE(
-        capture = capture(),
-        specimen = specimen(),
-        espece = sp_pen(),
-        station = data_station(),
-        filtre_specimen = quo(maturite == "O" & sexe == "F")
-      ) 
+  
+  cpue_modele_femelles <- reactive({
+    req(cpue_table_femelles())
+    cpue_modele_comparaison(cpue_table_femelles(), format = "data.frame")
   })
-  output$selection_modele_CPUE_Fmaturetable <-  function() {
-    kable_CPUEFmature(data = selection_modele_CPUE_Fmature_data())
-  }
-  output$download_selection_modele_CPUE_Fmaturetable <-
-    download_data_format_xlsx(nom_output = "selection_modele_CPUE_Fmature_data", data = selection_modele_CPUE_Fmature_data())
-  CPUE_Fmature <- reactive({
-    req(selection_modele_CPUE_Fmature_data())
-    paste(selection_modele_CPUE_Fmature_data()[1 , "CPUE"]) #prendre le premier de la liste, car classe par ordre croissant de Ajustement
+  
+  cpue_modele_femelles_flextable <- reactive({
+    req(cpue_table_femelles())
+    cpue_modele_comparaison(cpue_table_femelles(), format = "flextable")
   })
-  CPUEic_Fmature <- reactive({
-    req(selection_modele_CPUE_Fmature_data())
-    paste(selection_modele_CPUE_Fmature_data()[1 , 'IC 95%']) #prendre le premier de la liste, car classe par ordre croissant de Ajustement
+  
+  render_table_flextable("cpue_femelles_table", cpue_modele_femelles_flextable)
+  render_download_table(id = "cpue_femelles_dl", data_reactive = cpue_modele_femelles())
+  
+  ## Tableau d’abondance ------------------------------------------------
+  # Meilleur modèle pour CPUE "tous" et "femelles"
+  best_model_tous <- reactive({
+    req(cpue_modele_tous())
+    select_best_cpue_model(cpue_modele_tous())
   })
-  ## abondance table ---------------------------------------------------------
- 
+  
+  best_model_femelles <- reactive({
+    req(cpue_modele_femelles())
+    select_best_cpue_model(cpue_modele_femelles())
+  })
+  
+  # Table d’abondance (data.frame)
   abondance1 <- reactive({
     req(
       specimen(),
-      sp_pen(),
-      CPUE_tous(),
-      CPUEic_tous(),
-      CPUE_Fmature(),
-      CPUEic_Fmature()
+      cpue_modele_tous(),
+      cpue_modele_femelles(),
+      best_model_tous(),
+      best_model_femelles()
     )
     
-    # Générer la table d'abondance de base
-    base_table <- abondance_table(
-      specimen_data = specimen(),
-      espece = sp_pen()
+    abondance_table(
+      data = specimen(),
+      cpue_table_tous = cpue_modele_tous(),
+      cpue_table_femelles = cpue_modele_femelles(),
+      best_model_tous = best_model_tous(),
+      best_model_femelles = best_model_femelles(),
+      format = "data.frame"
     )
-    
-    # Préparer la table pour la mise en page
-    final_abondance_table <- prepare_abondance_table(
-      abundance_table = base_table,
-      CPUE_tous = CPUE_tous(),
-      CPUEic_tous = CPUEic_tous(),
-      CPUE_Fmature = CPUE_Fmature(),
-      CPUEic_Fmature = CPUEic_Fmature()
-    )
-    
-    return(final_abondance_table)
   })
   
-  output$abondance1table <- render_gt({
-    gt_abondance(data = abondance1())
+  # Table d’abondance (flextable)
+  abondance1_flextable <- reactive({
+    req(
+      specimen(),
+      cpue_modele_tous(),
+      cpue_modele_femelles(),
+      best_model_tous(),
+      best_model_femelles()
+    )
+    
+    abondance_table(
+      data = specimen(),
+      cpue_table_tous = cpue_modele_tous(),
+      cpue_table_femelles = cpue_modele_femelles(),
+      best_model_tous = best_model_tous(),
+      best_model_femelles = best_model_femelles(),
+      format = "flextable"
+    )
   })
   
- 
-  output$download_abondance1 <-
-    download_data_format_xlsx(nom_output = "abondance1", data = abondance1())
+  # Affichage UI
+  render_table_flextable("abondance1_table", abondance1_flextable)
+  
+  # Téléchargement
+  render_download_table(id = "abondance1_dl", data_reactive = abondance1())
+  
   # BPUE ------------------------------------------------
+  # Panel Biomasse - BPUE -------------------------------------
   biomasse1 <- reactive({
-    req(specimen(), sp_pen(), data_station())
-    
-    # Appel de la fonction biomasse_table
+    req(specimen(), station_hasard_valide())
     biomasse_table(
-      specimen = specimen(),
-      sp_pen = sp_pen(),
-      data_station = data_station()
+      data_specimen     = specimen(),
+      data_station = station_hasard_valide(),
+      format       = "flextable"
     )
   })
-  output$biomasse1table <- render_gt({
-    gt_biomasse(data = biomasse1())
+  
+    # Affichage flextable
+  render_table_flextable("biomasse1table", biomasse1) #ICI
+  
+  df_biomasse <- reactive({
+    req(specimen(), station_hasard_valide())
+    biomasse_table(
+      data_specimen     = specimen(),
+      data_station = station_hasard_valide(),
+      format       = "data.frame"
+    )
   })
-  output$download_biomasse1 <-
-    download_data_format_xlsx(nom_output = "biomasse1", data = biomasse1())
- 
- 
+  
+
+  
+  # Téléchargement en .xlsx
+  render_download_table(id = "download_biomasse1", data_reactive = df_biomasse())
   
   # Croissance ------------------------------------------------
   # 1. Réactif pour la table de modèles
@@ -442,24 +464,28 @@ app_server <- function(input, output, session) {
     courbe_croissance_comparaison(data = specimen(), format = "data.frame")
   })
   
+  
+  
   # 2. Réactif pour la ligne par défaut (le meilleur modèle)
   default_model_index <- reactive({
-    req(table_modeles_croissance())
-    best_model <- select_best_croissance_model(table_modeles_croissance())
-    idx <- match(best_model, table_modeles_croissance()$methode)
+    table <- table_modeles_croissance()
+    req(nrow(table) > 0)
+    best_model <- select_best_croissance_model(table)
+    idx <- match(best_model, table$methode)
     validate(need(!is.na(idx), "Le meilleur modèle n'a pas été trouvé dans les résultats"))
     idx
   })
   
-  
   # 3. Table interactive avec sélection par défaut dynamique
   output$table_modeles_croissance_table <- renderReactable({
-    req(default_model_index())
+    table <- table_modeles_croissance()
+    idx <- default_model_index()
+    
     reactable(
-      labelled_data(table_modeles_croissance()),  
+      labelled_data(table),
       selection = "single",
       onClick = "select",
-      defaultSelected = default_model_index(),
+      defaultSelected = idx,
       defaultColDef = colDef(
         align = "center",
         headerStyle = list(textAlign = "center")
@@ -471,14 +497,16 @@ app_server <- function(input, output, session) {
   selectedmodelcroissance <- reactive({
     selected <- getReactableState("table_modeles_croissance_table", "selected")
     req(!is.null(selected), table_modeles_croissance())
-    table_modeles_croissance()[selected, 1]
-      })
+    table <- table_modeles_croissance()
+    table[selected, 1, drop = TRUE]
+  })
+  
   
   # 8. Bouton de téléchargement de la table des modèles
-  render_download_table(
-    id = "download_table_modeles_croissance",
-    data_reactive = table_modeles_croissance()
-  )
+
+  
+  render_download_table(id = "download_table_modeles_croissance", data_reactive = table_modeles_croissance())
+  
   
   # 5. Réactif : graphique du modèle sélectionné
   plot_selectedmodelcroissance <- reactive({

@@ -87,38 +87,6 @@ gompertz_function <- function(age, linf, k, t0) linf * exp(-exp(-k * (age - t0))
 logistic_function <- function(age, linf, k, t0) linf / (1 + exp(-k * (age - t0)))
 
 
-gt_abondance <- function(data) {
-  # Extraire les labels des colonnes
-  column_labels <- sapply(data, function(col) attr(col, "label"))
-  
-  data %>%
-    gt() %>%
-    tab_header(
-      title = md("**Tableau d'abondance**")
-    ) %>%
-    # Utiliser les labels extraits dans cols_label
-    cols_label(
-      group = column_labels["group"],
-      abundance = column_labels["abundance"],
-      proportion = column_labels["proportion"],
-      cpue = column_labels["cpue"],
-      ic95 = column_labels["ic95"],
-      mf_ratio = column_labels["mf_ratio"]
-    ) %>%
-    cols_align(
-      align = "center",
-      columns = everything()
-    ) %>%
-    fmt_number(
-      columns = c(proportion, cpue),
-      decimals = 2
-    ) %>%
-    tab_options(
-      table.width = "auto",  # Ajuster automatiquement la largeur du tableau
-      table.font.size = px(12)
-    )
-}
-
 gt_biomasse <- function(data) {
   # Extraire les labels des colonnes
   column_labels <- sapply(data, function(col) attr(col, "label"))
@@ -144,31 +112,6 @@ gt_biomasse <- function(data) {
       table.width = "auto",  # Ajuster automatiquement la largeur du tableau
       table.font.size = px(12)
     )
-}
-
-
-kable_CPUEtous <- function(data) {
-  req(data)
-  data %>% 
-    kable( align = c("r","c","c","c","r"),
-           caption = "Comparaison des modèles : tous les spécimens", 
-           row.names = FALSE    ) %>%
-    kable_styling(full_width = FALSE,
-                  font_size = 12,
-                  html_font="sans-serif", 
-                  position="center") 
-}
-
-kable_CPUEFmature <- function(data) {
-  req(data)
-  data %>% 
-    kable( align = c("r","c","c","c","r"),
-           caption = "Comparaison des modèles : femelles reproductrices actives", 
-           row.names = FALSE) %>%
-    kable_styling(full_width = FALSE,
-                  font_size = 12,
-                  html_font="sans-serif", 
-                  position="center") 
 }
 
 kable_mortalite1 <- function(data) {
@@ -217,20 +160,6 @@ gt_mortalite2 <- function(data) {
 # # deploying the app, since often the working directory won't be writable
 # report_path <- tempfile(fileext = ".Rmd")
 # file.copy("report.Rmd", report_path, overwrite = TRUE)
-
-
-
-
-
-
-calculate_mf_ratio <- function(male_count, female_count) {
-  if (male_count == 0 && female_count == 0) {
-    return(NA)  # Si les deux comptages sont 0, retourner NA
-  }
-  # Simplifier le ratio
-  ratio <- MASS::fractions(c(male_count, female_count))
-  return(paste0(ratio[1], ":", ratio[2]))
-}
 
 labelled_data <- function(data) {
   # Obtenir les labels des colonnes

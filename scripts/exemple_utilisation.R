@@ -43,9 +43,12 @@ df <- get_analysis_data(
 
 # Les objets retournés sont organisés en liste
 data_station     <- df$data_station
+station_valides     <- df$station_valides
+station_hasard_valide     <- df$station_hasard_valide
 specimen         <- df$specimen
 specimen_valid   <- df$specimen_valid
 capture          <- df$capture
+
 
 # Extraire et filtrer la feuille "Lac"
 data_lac <- load_lac(path, namesheet = "Lac") |>
@@ -61,19 +64,6 @@ table_recap(data_lac = data_lac, data_station = data_station)
 
 info_pen <- get_info_pen(typ_pech)
 info_pen
-
-# TAILLE MASSE ÂGE  -------------------------------------------------------
-
-# Pour obtenir le tableau de données
-df_taillemasseage <- taille_masse_age(data = specimen_valid, format = "data.frame")
-
-# Pour afficher le flextable
-taille_masse_age(data = specimen_valid, format = "flextable")
-
-# Exemple : Exporter manuellement un tableau
-# download_data(df_taillemasseage, path = "df_taillemasseage.xlsx")
-
-
 
 # Croissance --------------------------------------------------------------
 # 2. Ajuster les modèles et créer la table de comparaison
@@ -101,6 +91,61 @@ p <- courbe_croissance_plot(
 
 # Afficher le graphique
 print(p)
+
+
+# BPUE --------------------------------------------------------------------
+# Créer le tableau résumé de biomasse et BPUE par groupe biologique
+table_biomasse <- biomasse_table(
+  data_specimen     = specimen,
+  data_station = station_hasard_valide,
+  format       = "data.frame" # ou "data.frame"
+)
+table_biomasse <- biomasse_table(
+  data_specimen     = specimen,
+  data_station = station_hasard_valide,
+  format       = "flextable" # ou "data.frame"
+)
+
+# Afficher le résultat
+table_biomasse
+
+# CPUE --------------------------------------------------------------------
+
+# Calcul des CPUE par station
+df_cpue_tous <- prepare_cpue_data(capture = capture, specimen = specimen, group = "tous")
+df_cpue_femelles <- prepare_cpue_data(capture = capture, specimen = specimen, group = "femelles")
+
+# Comparaison des modèles CPUE
+cpue_table_modele_tous <- cpue_modele_comparaison(df_cpue_tous, format = "data.frame")
+cpue_table_modele_femelles <- cpue_modele_comparaison(df_cpue_femelles, format = "data.frame")
+
+# Meilleur modèle
+meilleur_modele_cpue_tous <- select_best_cpue_model(cpue_table_modele_tous)
+meilleur_modele_cpue_femelles <- select_best_cpue_model(cpue_table_modele_femelles)
+
+# Génération de la table d’abondance (avec CPUE intégrées)
+abondance <- abondance_table(
+  data = specimen,
+  cpue_table_tous = cpue_table_modele_tous,
+  cpue_table_femelles = cpue_table_modele_femelles,
+  best_model_tous = meilleur_modele_cpue_tous,
+  best_model_femelles = meilleur_modele_cpue_femelles,
+  format = "flextable"
+)
+abondance  # affiche le tableau flextable
+
+# TAILLE MASSE ÂGE  -------------------------------------------------------
+
+# Pour obtenir le tableau de données
+df_taillemasseage <- taille_masse_age(data = specimen_valid, format = "data.frame")
+
+# Pour afficher le flextable
+taille_masse_age(data = specimen_valid, format = "flextable")
+
+# Exemple : Exporter manuellement un tableau
+# download_data(df_taillemasseage, path = "df_taillemasseage.xlsx")
+
+
 
 
 

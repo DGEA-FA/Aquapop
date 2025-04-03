@@ -100,33 +100,39 @@ app_ui <- function() {
                tabsetPanel(
                  tabPanel(
                    title = "CPUE",
+                   p("Le tableau ci-dessous présente le nombre de captures de 
+                   l’espèce visée selon la table *Récolte* et le nombres d’individus
+                   dans la table *Spécimens*.  
+                   Si la récolte est plus élevée que le nombre de spécimens,
+                   il peut s’agir d’un poisson échappé ou trop magané pour
+                   prendre des mesures, etc. Si le nombre de spécimens est plus 
+                   élevé que la récolte, il y a erreur à corriger dans la base
+                   de données. Les modèles d’abondance globale (CPUE_tous)
+                   sont calculés à partir du nombre de captures indiqués 
+                   dans la *Récolte* alors que le tableau récapitulatif 
+                   est calculé à partir des données de la table *Spécimens*."),
+                   
                    htmltools::includeMarkdown(path = './texte/CPUE_texte.rmd'),
-                   # withSpinner(tableOutput(outputId = "verif_ntable"),                              type = myspinner),
-                   withSpinner(
-                     tableOutput(outputId = "selection_modele_CPUE_toustable"),
-                     type = myspinner
-                   ),
-                   downloadButton(outputId = "download_selection_modele_CPUE_toustable",
-                                  label = "Téléchargement"),
-                   withSpinner(
-                     tableOutput(outputId = "selection_modele_CPUE_Fmaturetable"),
-                     type = myspinner
-                  ),
-                   downloadButton(outputId = "download_selection_modele_CPUE_Fmaturetable",
-                                  label = "Téléchargement"),
-                   withSpinner(tableOutput(outputId = "abondance1table"),
-                               type = myspinner),
-                   downloadButton(outputId = "download_abondance1",
-                                  label = "Téléchargement")
+                   
+                   # Tableau CPUE - Tous
+                   withSpinner(uiOutput("cpue_tous_table"), type = myspinner),
+                   uiOutput("cpue_tous_dl_ui"),
+                   
+                   # Tableau CPUE - Femelles matures
+                   withSpinner(uiOutput("cpue_femelles_table"), type = myspinner),
+                   uiOutput("cpue_femelles_dl_ui"),
+                   
+                   # Tableau abondance
+                   withSpinner(uiOutput("abondance1_table"), type = myspinner),
+                   uiOutput("abondance1_dl_ui")
                  ),
                  tabPanel(
                    title = "BPUE",
-                   htmltools::includeMarkdown(path = './texte/BPUE_texte.rmd'),
-                   withSpinner(tableOutput(outputId = "biomasse1table"),
-                               type = myspinner),
-                   downloadButton(outputId = "download_biomasse1",
-                                  label = "Téléchargement")
+                   p("Le tableau ci-dessous présente la répartition de la biomasse capturée selon la table *Spécimens*."),
+                   withSpinner(uiOutput("biomasse1table"), type = myspinner),
+                   uiOutput("download_biomasse1_ui")
                  )
+                 
                )),
       # structure_population_panel ----------------------------------------------
       tabPanel(
@@ -293,9 +299,9 @@ app_ui <- function() {
           pas être calculées à partir des IC95% des estimations des paramètres L, K et t0."),
         
         h3("Table de sélection du modèle de croissance"),
-        withSpinner(reactableOutput("croissance1_table"),type=myspinner),
-        uiOutput("download_croissance1_ui"),
-        br(), br(),
+        withSpinner(reactableOutput("table_modeles_croissance_table"), type = myspinner),
+        uiOutput("download_table_modeles_croissance_ui"),
+        # br(), br(),
         
         h3("Longueur à l’âge des spécimens capturés et modèle de croissance"),
         
