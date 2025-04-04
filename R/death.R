@@ -3,3 +3,4 @@ death <- function(data, espece) {
   death <- subset(death,!is.na(age))
   death
 }
+

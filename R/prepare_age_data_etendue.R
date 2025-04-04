@@ -1,0 +1,30 @@
+#' Étendre artificiellement les données de fréquence d'âge avec des zéros
+#'
+#' Cette fonction ajoute des classes d’âge fictives avec un nombre de captures nul (`number = 0`)
+#' au-delà de l’âge maximal observé, jusqu’à trois fois cet âge. Cette étape est décrite
+#' dans Mainguy et Moral (2021) et permet d’améliorer l’ajustement des modèles.
+#'
+#' @param df_corrigee Un `data.frame` avec les colonnes `age` et `number` produit par
+#'                    `prepare_age_data_corrigee()`.
+#' @param age_max Âge maximal observé (typiquement obtenu avec `get_age_max()`).
+#'
+#' @return Un `data.frame` contenant les âges observés + les âges étendus avec `number = 0`.
+#' @export
+#'
+#' @examples
+#' df_etendue <- prepare_age_data_etendue(df_corrigee, age_max = 10)
+#' print(df_etendue)
+prepare_age_data_etendue <- function(df_corrigee, age_max) {
+  stopifnot(all(c("age", "number") %in% names(df_corrigee)))
+  
+  # Étendre jusqu’à 3 × âge max avec des zéros
+  ages_fictifs <- tibble::tibble(
+    age = (age_max + 1):(age_max * 3),
+    number = 0
+  )
+  
+  df_etendue <- dplyr::bind_rows(df_corrigee, ages_fictifs) %>%
+    dplyr::arrange(age)
+  
+  return(df_etendue)
+}

@@ -65,6 +65,67 @@ table_recap(data_lac = data_lac, data_station = data_station)
 info_pen <- get_info_pen(typ_pech)
 info_pen
 
+# Mortalite --------------------------------------------------------------
+
+pp <- get_peak_plus(specimen)
+age_max <- get_age_max(specimen)
+df_age_corrigee <- prepare_age_data_corrigee(specimen,pp,age_max)
+df_age_etendue <- prepare_age_data_etendue(df_corrigee = df_age_corrigee, age_max = age_max)
+
+# result_poisson <- ajuster_modele_mortalite_poisson(df_age_etendue)
+# print(result_poisson)
+# 
+# result_nb1 <- ajuster_modele_mortalite_nb1(df_age_etendue)
+# print(result_nb1)
+# 
+# result_nb2 <- ajuster_modele_mortalite_nb2(df_age_etendue)
+# print(result_nb2)
+# 
+# result_cmp <- ajuster_modele_mortalite_cmp(df_age_etendue)
+# print(result_cmp)
+# 
+# result_gp <- ajuster_modele_mortalite_gp(df_age_etendue)
+# print(result_gp)
+
+# 1. Exécuter la fonction
+res_disp <- test_surdispersion_poisson(df_age_corrigee)
+
+# 2. Afficher le message
+cat(res_disp$message)
+
+# 3. Visualiser le graphique (dans RStudio)
+print(res_disp$plot)
+
+# 4. Valeur de dispersion brute si besoin
+res_disp$dispersion
+
+
+
+# 3. Comparer les modèles de mortalité
+#    (a) en format tableau brut
+comparaison_mortalite_df <- mortalite_modele_comparaison(df_age_etendue, format = "data.frame")
+print(comparaison_mortalite_df)
+
+#    (b) en format flextable 
+# comparaison_mortalite_ft <- mortalite_modele_comparaison(df_age_etendue, format = "flextable")
+# print(comparaison_mortalite_ft)
+meilleur_modele <- select_best_mortalite_model(comparaison_mortalite_df)
+modele <- get_best_mortalite_model(df_age_etendue, methode = meilleur_modele)
+plot_mortalite_modele(specimen, modele, comparaison_mortalite_df)
+
+# Format data.frame
+res_chaprob_df <- mortalite_chaprob(specimen = specimen, pp = pp, age_max = age_max, format = "data.frame")
+print(res_chaprob_df)
+
+# Format flextable (à afficher dans un R Markdown ou RStudio Viewer)
+res_chaprob_ft <- mortalite_chaprob(specimen = specimen, pp = pp, age_max = age_max, format = "flextable")
+res_chaprob_ft  # s'affiche bien dans un environnement interactif
+
+
+# 5. Estimer la mortalité selon Chapman-Robson
+df_chaprob <- mortalite_chaprob(df_corr, pp = pp, age_max = age_max)
+print(df_chaprob)
+
 # Croissance --------------------------------------------------------------
 # 2. Ajuster les modèles et créer la table de comparaison
 table_modele <- courbe_croissance_comparaison(

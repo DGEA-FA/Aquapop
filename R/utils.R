@@ -87,74 +87,6 @@ gompertz_function <- function(age, linf, k, t0) linf * exp(-exp(-k * (age - t0))
 logistic_function <- function(age, linf, k, t0) linf / (1 + exp(-k * (age - t0)))
 
 
-gt_biomasse <- function(data) {
-  # Extraire les labels des colonnes
-  column_labels <- sapply(data, function(col) attr(col, "label"))
-  
-  data %>%
-    gt() %>%
-    tab_header(
-      title = md("**Tableau de biomasse**")
-    ) %>%
-    # Utiliser les labels extraits dans cols_label
-    cols_label(
-      groupe = column_labels["groupe"],
-      biomasse = column_labels["biomasse"],
-      percent = column_labels["percent"],
-      bpue = column_labels["bpue"],
-      ic95 = column_labels["ic95"]
-    ) %>%
-    cols_align(
-      align = "center",
-      columns = everything()
-    ) %>%
-    tab_options(
-      table.width = "auto",  # Ajuster automatiquement la largeur du tableau
-      table.font.size = px(12)
-    )
-}
-
-kable_mortalite1 <- function(data) {
-  req(data)
-  data %>% 
-    kable( #align = c("r","c","c","c","c","c","c","c","c","r"),
-           caption = "Table de sélection des modèles de l’estimation de la mortalité", 
-           row.names = FALSE    ) %>%
-    kable_styling(full_width = FALSE,
-                  font_size = 12,
-                  html_font="sans-serif", 
-                  position="center") 
-}
-
-gt_mortalite2 <- function(data) {
-  req(data)
-  
-  # Utilisation des labels comme noms de colonnes dans gt
-  data %>%
-    gt() %>%
-    tab_header(
-      title = md("**Estimations obtenues à partir du modèle de Robson-Chapman**"),
-      subtitle = "À titre comparatif seulement"
-    ) %>%
-    cols_label(
-      methode = var_label(data$methode),
-      z = var_label(data$z),
-      se = var_label(data$se),
-      a = var_label(data$a),
-      ic_95 = var_label(data$ic_95)
-    ) %>%
-    cols_align(
-      align = "center",
-      columns = everything()
-    ) %>%
-    tab_options(
-      table.width = pct(100),
-      table.font.size = px(12),
-      table.font.names = "sans-serif",
-      table.align = "center"
-    )
-}
-
 # 
 # # Copy report to temporary directory. This is mostly important when
 # # deploying the app, since often the working directory won't be writable
@@ -171,36 +103,6 @@ labelled_data <- function(data) {
   return(data)
 }
 
-agemax <- function(data) {
-  age_max <-
-    max(na.omit(data$age)) #Trouver le plus vieil âge et ignorer les NA de votre jeu de données s’il en contient (sinon = erreur)
-  age_max
-}
-
-
-death <- function(data, espece) {
-  data %>%
-    dplyr::filter(sp == espece) %>%
-    droplevels() %>%
-    dplyr::filter(!is.na(age))
-}
-
-get_zobs <- function(PP, death, agemax) {
-  # Calcul de la mortalité selon plusieurs méthodes
-  mortalite <- agesurv(
-    type = 1,
-    age = death$age,
-    full = PP,
-    last = agemax,
-    estimate = "z",
-    method = c("he", "lr", "wlr", "cr", "crcb", "pois")
-  )
-  
-  # Extraction de la valeur de Z pour la méthode "cr"
-  zobs <- mortalite$results[4, "Estimate"]
-  
-  return(zobs)
-}
 
 #Fonctions pour Maturite sexuelle
 

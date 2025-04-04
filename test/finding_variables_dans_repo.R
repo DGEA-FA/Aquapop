@@ -6,7 +6,7 @@ library(fs)
 library(stringr)
 
 # Définir le terme à rechercher
-terme_a_chercher <- "BPUE_texte"
+terme_a_chercher <- "prepare_abondance_table"
 
 # Lister tous les fichiers R dans le projet (sauf ceux dans test/)
 # files <- dir_ls(path = ".", recurse = TRUE, glob = "*.R")

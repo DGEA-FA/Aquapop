@@ -312,30 +312,37 @@ app_ui <- function() {
       # mortalite_panel ---------------------------------------------------------
       tabPanel(
         title = "Mortalité",
-        p("Voici un rappel du graphique de la structure d'âge, avec le Peak Plus mis en évidence. Le Peak Plus représente l'âge à partir duquel les indicateurs de mortalité devraient être estimés.'Comme on souhaite avoir la meilleure représentation possible des
-        classes d’âges pour estimer Z, il est préférable d’utiliser la classe d’âge suivant le Peak observé' (Mainguy et Moral, 2021), 
-        soit le Peak Plus."),
+        # p("Voici un rappel du graphique de la structure d'âge, avec le Peak Plus mis en évidence. Le Peak Plus représente l'âge à partir duquel les indicateurs de mortalité devraient être estimés.'Comme on souhaite avoir la meilleure représentation possible des
+        # classes d’âges pour estimer Z, il est préférable d’utiliser la classe d’âge suivant le Peak observé' (Mainguy et Moral, 2021), 
+        # soit le Peak Plus."),
+        h3("Test de sur-dispersion du modèle Poisson"),
         
-        plotOutput("structureageplot4death", width = 300, height = 200),
+        p("Ce test évalue si les données de mortalité par âge violent l’hypothèse d’équidispersion du modèle de Poisson. 
+    En cas de sur-dispersion, l’utilisation de modèles alternatifs est recommandée."),
         
-
-        verbatimTextOutput("pp_og"), #modifier ca pour que ce soit plus cute dans la mise en page
-
-        p("Pour lancer les estimations de mortalité, inscrivez ce nombre (ou celui que vous préférez) dans la boîte de texte ci-dessous."),
-        
-        numericInput("newPPtext", "Âge à partir duquel sera calculée la mortalité:", min = 0, max = 100, value = NA),
+        strong("Interprétation :"),
+        verbatimTextOutput("dispersion_msg"),
         br(),
+        withSpinner(plotOutput("plot_dispersion_poisson", width = "100%", height = "400px"), type = myspinner),
+        downloadButton("download_plot_dispersion_poisson", label = "Télécharger le graphique"),
         
-        actionButton("goButton", "C'est parti!"),
-        p("Cliquez sur le bouton pour mettre à jour l'âge à partir duquel sera calculée la mortalité."),
-        htmltools::includeMarkdown(path = './texte/mortalite_texte.rmd'),
+        p("Le tableau suivant présente les résultats pour l’ensemble des
+        modèles testés. Le modèle le mieux adapté aux données est celui 
+        avec le plus faible AICc."),
+        uiOutput("comparaison_mortalite_ui"),
+        uiOutput("download_comparaison_mortalite_table_ui"),
+        textOutput("phrase_mortalite"),
         
-        withSpinner(tableOutput(outputId = "mortalite1_table"), type = myspinner),
-        downloadButton(outputId = "download_mortalite1", label = "Téléchargement"),
-        p("Le modèle XYZ décrit le mieux la mortalité de la population de touladi (plus faible AICc).  La mortalité annuelle s’élève à XX% (libellé TBD)."),
-        br(),
-        p("Le modèle Chapman-Robson est également présenté à des fins comparatives."),
-        withSpinner(tableOutput(outputId = "mortalite2_table"), type = myspinner)
+        h3("Distribution d'âge et modèle de mortalité retenu"),
+        withSpinner(plotOutput("plot_mortalite"), type = myspinner),
+        downloadButton("download_plot_mortalite", "Télécharger le graphique"),
+        br(), br(),
+        p("La mortalité estimée selon le modèle de Chapman-Robson est 
+          présentée à titre comparatif seulement, car son utilisation
+          n’est pas recommandée."),
+        h3("Chapman-Robson"),
+        withSpinner(uiOutput("table_chaprob"), type = myspinner),
+        uiOutput("download_chaprob_df_ui")
       ),
       # maturite_sexuelle_panel -------------------------------------------------
       tabPanel(title = "Maturité sexuelle",

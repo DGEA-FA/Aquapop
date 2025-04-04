@@ -223,9 +223,9 @@ app_server <- function(input, output, session) {
   # Téléchargement des données
   render_download_table("download_data4plot_age", df_structure_age())
   
-  # === PSD (Proportional Size Distribution) ===================================
+  # === PSD  ===================================
   
-  # --- 1. Tableau : Indice PSD global -----------------------------------------
+  ## --- Indice PSD global : Tableau -----------------------------------------
   
   # Reactive : retourne un tableau flextable avec l'indice PSD et IC95
   ft_psd_indice <- reactive({
@@ -237,7 +237,7 @@ app_server <- function(input, output, session) {
   render_table_flextable("psd_indice_ui", ft_psd_indice)
   
   
-  # --- 2. Tableau : Répartition par classe de taille --------------------------
+  ## --- Répartition par classe de taille : Tableau --------------------------
   
   # Reactive (brut) : pour téléchargement
   df_psd_byclass <- reactive({
@@ -258,7 +258,7 @@ app_server <- function(input, output, session) {
   render_download_table("dl_psd_byclass", df_psd_byclass())
   
   
-  # --- 3. Graphique : Histogramme par classe de taille ------------------------
+  ## --- Histogramme par classe de taille : Graphique ------------------------
   
   # Reactive : retourne un objet ggplot du graphique PSD
   plot_psd <- reactive({
@@ -331,7 +331,7 @@ app_server <- function(input, output, session) {
   })
   render_plot_ggplot("wri_plot_byclass", plot_wri_byclass)
   render_download_plot("download_wri_plot_byclass", plot_wri_byclass)
-  # CPUE ---------------------------------------------------------------
+  # Abondance CPUE ---------------------------------------------------------------
   
   ## Tous les spécimens ------------------------------------------------
   cpue_table_tous <- reactive({
@@ -429,8 +429,7 @@ app_server <- function(input, output, session) {
   # Téléchargement
   render_download_table(id = "abondance1_dl", data_reactive = abondance1())
   
-  # BPUE ------------------------------------------------
-  # Panel Biomasse - BPUE -------------------------------------
+  # Biomasse - BPUE -------------------------------------
   biomasse1 <- reactive({
     req(specimen(), station_hasard_valide())
     biomasse_table(
@@ -536,98 +535,140 @@ app_server <- function(input, output, session) {
   
   
   # Mortalite -------------------------------------------------------
-  deathdf <- reactive({
-    req(data_specimen(), sp_pen())
-    death(data = data_specimen(), espece = sp_pen()) %>% as.data.frame()
-  })
+  # 1. Valeur PP (Peak Plus)
   pp <- reactive({
-    req(deathdf())
-    peakplus(data = deathdf())
+    req(specimen())
+    get_peak_plus(specimen())
   })
   
-  output$pp_og <- renderText({
-    pp()
+  # 2. Valeur âge maximum
+  age_max <- reactive({
+    req(specimen())
+    get_age_max(specimen())
   })
   
-  output$structureageplot4death <- renderPlot({ #potentiellement ici, est-ce que je devrais mettre data_specimen alors ? 
-    req(specimen(), sp_pen(), pp(), nomsp_reactive())
-    structure_age(dfspecimen = specimen(),
-                       espece = sp_pen(),
-                  nomsp = nomsp_reactive(), 
-                  groupement = "tous") + 
-        theme( legend.position = "none") +
-        gghighlight::gghighlight(age == pp(), use_group_by = FALSE, label_key= espece)
-    } )
+  # 3. Données corrigées pour la mortalité
+  df_age_corrigee <- reactive({
+    req(specimen(), pp(), age_max())
+    prepare_age_data_corrigee(specimen(), pp(), age_max())
+  })
+  
+  # 4. Données étendues
+  df_age_etendue <- reactive({
+    req(df_age_corrigee(), age_max())
+    prepare_age_data_etendue(df_corrigee = df_age_corrigee(), age_max = age_max())
+  })
+  
+  # 1. Réactif : test de sur-dispersion Poisson
+  res_test_surdisp <- reactive({
+    req(df_age_corrigee())  # doit être disponible
+    test_surdispersion_poisson(df_age_corrigee())
+  })
+  
+  # 2. Message textuel (interprétation du test)
+  output$dispersion_msg <- renderText({
+    req(res_test_surdisp())
+    res_test_surdisp()$message
+  })
+  
+  # 3. Graphique résidus vs ajustés
+  render_plot_ggplot(
+    output_id = "plot_dispersion_poisson",
+    plot_reactive = reactive(res_test_surdisp()$plot),
+    width = 600, height = 400, res = 96
+  )
+  
+  # 4. Téléchargement du graphique
+  render_download_plot(
+    id = "download_plot_dispersion_poisson",
+    plot_reactive = reactive(res_test_surdisp()$plot),
+    filename = "dispersion_poisson",
+    width = 7, height = 5, dpi = 300,
+    label = "Télécharger le graphique"
+  )
   
   
-  # builds a reactive expression that only invalidates 
-  # when the value of input$goButton becomes out of date 
-  # (i.e., when the button is pressed)
-  newPP <- eventReactive(input$goButton, {
-    req(input$newPPtext)  # Vérifie que l'entrée n'est pas vide ou NULL
-    input$newPPtext
+  # 5. Comparaison des modèles
+  comparaison_mortalite_df <- reactive({
+    req(df_age_etendue())
+    mortalite_modele_comparaison(df_age_etendue(), format = "data.frame")
+  })
+  
+  ft_comparaison_mortalite <- reactive({
+    req(df_age_etendue())
+    mortalite_modele_comparaison(df_age_etendue(), format = "flextable")
   })
   
   
-  output$newPP_veriftext <- renderText({
-    req(newPP())
-    newPP()
+  render_table_flextable("comparaison_mortalite_ui", ft_comparaison_mortalite)
+  render_download_table("download_comparaison_mortalite_table", comparaison_mortalite_df())
+  
+  # 6. Sélection du meilleur modèle
+  meilleur_modele <- reactive({
+    req(comparaison_mortalite_df())
+    select_best_mortalite_model(comparaison_mortalite_df())
+  })
+  
+  phrase_mortalite <- reactive({
+    req(comparaison_mortalite_df(), meilleur_modele())
+    
+    ligne <- comparaison_mortalite_df() |>
+      dplyr::filter(Méthode == meilleur_modele())
+    
+    modele_nom <- meilleur_modele() |> toupper()
+    mortalite_A <- ligne$A
+    
+    glue::glue("Le modèle {modele_nom} décrit le mieux la mortalité de la population. La mortalité annuelle s’élève à {mortalite_A} %.") |> as.character()
+  })
+  output$phrase_mortalite <- renderText({
+    phrase_mortalite()
+  })
+  
+  
+  # 7. Graphe du modèle retenu
+  plot_mortalite <- reactive({
+    req(specimen(), df_age_etendue(), comparaison_mortalite_df(), meilleur_modele())
+    modele <- get_best_mortalite_model(df_age_etendue(), methode = meilleur_modele())
+    plot_mortalite_modele(
+      specimen = specimen(),
+      modele = modele,
+      info_modele = comparaison_mortalite_df()
+    )
   })
   
  
-  agemax_val <- reactive({
-    req(deathdf())
-    agemax(data = deathdf())
+  
+  render_plot_ggplot(
+    output_id = "plot_mortalite",
+    plot_reactive = plot_mortalite,
+    width = 600, height = 400, res = 96
+  )
+  
+  render_download_plot(
+    id = "download_plot_mortalite",
+    plot_reactive = plot_mortalite,
+    filename = "courbe_mortalite",
+    width = 7, height = 5, dpi = 300
+    
+  )
+   # 8. Résultats Chapman-Robson (format flextable ou data.frame)
+  ft_chaprob <- reactive({
+    req(specimen(), pp(), age_max())
+    mortalite_chaprob(specimen = specimen(), pp = pp(), age_max = age_max(), format = "flextable")
   })
   
-  df_corr <- reactive({
-    req(deathdf(), newPP(), agemax_val())
-    creation_df_CORR(data = deathdf(),
-                     peakplus = newPP(),
-                     agemax = agemax_val()) %>% as.data.frame()
-  })
-  df_ext <- reactive({
-    req(df_corr(), newPP(), agemax_val())
-    creation_df_EXT(data = df_corr(),
-                    peakplus = newPP(),
-                    agemax = agemax_val()) %>% as.data.frame()
-  })
-  dispersion_result <- reactive({
-    req(df_corr())
-    dispersiontest(data = df_corr())
-  })
-  mortalite1 <- reactive({
-    req(df_ext())
-    mortalite_selection_modeles(df_EXT = df_ext()) %>% as.data.frame()
+  df_chaprob <- reactive({
+    req(specimen(), pp(), age_max())
+    mortalite_chaprob(specimen = specimen(), pp = pp(), age_max = age_max(), format = "data.frame")
   })
   
-  output$mortalite1_table <-  function() {
-    kable_mortalite1(data = mortalite1())
-  }
+  render_table_flextable("table_chaprob", ft_chaprob)
   
-  mortalite2 <- reactive({
-    req(newPP(), agemax_val(), deathdf())
-    mortalite_chaprob(data = deathdf(),
-                            pp = newPP(),
-                            agemax_val = agemax_val()) %>% as.data.frame()
-  })
+  render_download_table(
+    id = "download_chaprob_df",
+    data_reactive = df_chaprob()
+  )
   
-  output$mortalite2_table <-  function() {
-    gt_mortalite2(data = mortalite2())
-  }
- 
-   output$download_mortalite1 <-
-    download_data_format_xlsx(nom_output = "mortalite_selection_modeles", data = mortalite1())
-
-  
-  zobs <- reactive({
-    req(newPP(), deathdf(), agemax_val())
-    get_zobs(PP = newPP(),
-             death = deathdf(),
-             agemax = agemax_val())
-  })
- 
-   output$zobs_text <- renderText(zobs())
   # Maturite sexuelle -------------------------------------------------------
 
    df_maturiteltm <- reactive({
