@@ -100,19 +100,19 @@ age_max <- get_age_max(specimen)
 df_age_corrigee <- prepare_age_data_corrigee(specimen,pp,age_max)
 df_age_etendue <- prepare_age_data_etendue(df_corrigee = df_age_corrigee, age_max = age_max)
 
-# result_poisson <- ajuster_modele_mortalite_poisson(df_age_etendue)
+result_poisson <- ajuster_modele_mortalite_poisson(df_age_etendue)
 # print(result_poisson)
 # 
-# result_nb1 <- ajuster_modele_mortalite_nb1(df_age_etendue)
+result_nb1 <- ajuster_modele_mortalite_nb1(df_age_etendue)
 # print(result_nb1)
 # 
-# result_nb2 <- ajuster_modele_mortalite_nb2(df_age_etendue)
+result_nb2 <- ajuster_modele_mortalite_nb2(df_age_etendue)
 # print(result_nb2)
 # 
-# result_cmp <- ajuster_modele_mortalite_cmp(df_age_etendue)
+result_cmp <- ajuster_modele_mortalite_cmp(df_age_etendue)
 # print(result_cmp)
 # 
-# result_gp <- ajuster_modele_mortalite_gp(df_age_etendue)
+result_gp <- ajuster_modele_mortalite_gp(df_age_etendue)
 # print(result_gp)
 
 # 1. Exécuter la fonction
@@ -161,12 +161,12 @@ table_modele <- courbe_croissance_comparaison(
   format = "data.frame"
 )
 
+
 # Afficher la table dans la console
 print(table_modele)
 
 
 # 3. Sélectionner le meilleur modèle automatiquement
-
 
 modele_best <- select_best_croissance_model(table_modele)
 cat("Meilleur modèle sélectionné :", modele_best, "\n")
