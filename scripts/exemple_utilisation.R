@@ -65,6 +65,34 @@ table_recap(data_lac = data_lac, data_station = data_station)
 info_pen <- get_info_pen(typ_pech)
 info_pen
 
+# Longueur à maturité -------------------------------------------------------
+# Obtenir les résultats
+res <- table_L50_modeles(specimen, return_all = TRUE, format = "df")
+res <- table_L50_modeles(specimen, return_all = TRUE, format = "flextable")
+
+cat(res$message, "\n")
+print(res$table)  # table principale (séparé ou combiné selon logique)
+print(res$table_sep)  # toujours présent si return_all = TRUE
+print(res$table_comb) # idem
+res$best_model
+# Longueur à maturité - modèle TLO_cloglog (sexes combinés)
+res_cloglog <- modele_TLO_cloglog(specimen)
+print(res_cloglog$minitable)
+res_cloglog$minitable_flextable
+# Graphique ogive
+print(res_cloglog$plot)
+# Longueur à maturité - modèle TLO_logit (sexes combinés)
+res_logit <- modele_TLO_logit(specimen)
+print(res_logit$minitable)
+res_logit$minitable_flextable
+print(res_logit$plot)
+# Longueur à maturité - modèle TLO_probit (sexes combinés)
+res_probit <- modele_TLO_probit(specimen)
+print(res_probit$minitable)
+res_probit$minitable_flextable
+print(res_probit$plot)
+
+modele_INT_probit(specimen)
 # Mortalite --------------------------------------------------------------
 
 pp <- get_peak_plus(specimen)

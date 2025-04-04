@@ -28,7 +28,10 @@ packages_requis <- c(
   
   # Analyses statistiques et modélisation
   "FSA", "fishmethods", "nlstools", "hnp", "glmmTMB", "MASS", "MuMIn",
-  "pROC", "DescTools", "emdbook", "AICcmodavg", "investr", "car", "AER"
+  "pROC", "DescTools", "emdbook", "AICcmodavg", "investr", "car", "AER",
+  
+  # Pour les méthodes Monte Carlo
+  "mvtnorm"   # pour rmvnorm()
 )
 
 # Installation automatique des packages manquants ----------------------------

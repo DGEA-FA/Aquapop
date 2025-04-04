@@ -1,52 +1,71 @@
 #' Sélectionne les meilleurs modèles L50 pour chaque sexe
 #'
-#' @param evaluation_df Dataframe retourné par evaluate_L50_models()
+#' À partir du tableau d’évaluation, cette fonction sélectionne les modèles L50 qui convergent
+#' et qui ont un bon ajustement pour les mâles et les femelles, en choisissant celui avec le plus bas AICc.
+#' Si aucun modèle n’est valide pour un des deux sexes, elle recommande de passer à l’approche combinée.
 #'
-#' @return Une liste contenant les modèles sélectionnés pour M et F, 
-#'         un message descriptif, et un indicateur booléen use_combined.
+#' @param evaluation_df Un data.frame retourné par `evaluate_L50_models()`.
+#'                      Il doit inclure les colonnes `modele_id`, `convergence`, `commentaire`, et `aicc`.
+#'
+#' @return Une liste contenant :
+#' - `best_model_M`, `best_model_F` : identifiants des meilleurs modèles par sexe (si applicables)
+#' - `use_combined` : booléen indiquant si une approche combinée est requise
+#' - `message` : texte décrivant la décision
+#'
 #' @export
 select_best_L50_models <- function(evaluation_df) {
-  library(dplyr)
-  
-  # Filtrer les modèles qui convergent et qui ont un bon ajustement
+  # Filtrer les modèles valides : convergence et commentaire favorable
   valid_models <- evaluation_df %>%
-    filter(convergence == TRUE, !grepl("rejeter|choisir un autre modèle", commentaire))
+    dplyr::filter(
+      convergence == TRUE,
+      !grepl("rejeter|choisir un autre modèle", commentaire)
+    )
   
-  # Séparer les modèles pour les mâles et les femelles selon la colonne 'modele_id'
-  valid_M <- valid_models %>% filter(grepl("^M_", modele_id))
-  valid_F <- valid_models %>% filter(grepl("^F_", modele_id))
+  # Séparer les modèles par sexe
+  valid_M <- dplyr::filter(valid_models, grepl("^M_", modele_id))
+  valid_F <- dplyr::filter(valid_models, grepl("^F_", modele_id))
   
-  # Vérifier s'il y a au moins un modèle valide pour chaque sexe et générer le message approprié
-  if (nrow(valid_M) == 0 & nrow(valid_F) == 0) {
+  # Cas 1 — Aucun modèle valide
+  if (nrow(valid_M) == 0 && nrow(valid_F) == 0) {
     return(list(
       use_combined = TRUE,
-      message = " Aucun modèle valide n'a convergé pour les mâles et les femelles en approche séparée. Testez une approche sexes combinés."
+      message = "Aucun modèle valide n'a convergé pour les mâles et les femelles en approche séparée. Testez une approche sexes combinés."
     ))
-  } else if (nrow(valid_M) == 0) {
+  }
+  
+  # Cas 2 — Mâles absents
+  if (nrow(valid_M) == 0) {
     return(list(
       use_combined = TRUE,
       message = "Aucun modèle valide n'a convergé pour les mâles. Testez une approche sexes combinés."
     ))
-  } else if (nrow(valid_F) == 0) {
+  }
+  
+  # Cas 3 — Femelles absentes
+  if (nrow(valid_F) == 0) {
     return(list(
       use_combined = TRUE,
       message = "Aucun modèle valide n'a convergé pour les femelles. Testez une approche sexes combinés."
     ))
-  } else {
-    message_text <- "Les modèles sexes séparés ont été sélectionnés avec succès."
-    # Sélectionner pour chaque sexe le modèle avec le plus bas AICc
-    best_M <- valid_M %>% filter(aicc == min(aicc)) %>% pull(modele_id)
-    best_F <- valid_F %>% filter(aicc == min(aicc)) %>% pull(modele_id)
-    
-    return(list(
-      best_model_M = best_M,
-      best_model_F = best_F,
-      use_combined = FALSE,
-      message = paste0(
-        message_text, "\n",
-        "Modèle sélectionné pour les mâles : ", best_M, "\n",
-        "Modèle sélectionné pour les femelles : ", best_F
-      )
-    ))
   }
+  
+  # Cas 4 — Les deux sexes ont au moins un modèle valide
+  best_M <- valid_M %>%
+    dplyr::filter(aicc == min(aicc)) %>%
+    dplyr::pull(modele_id)
+  
+  best_F <- valid_F %>%
+    dplyr::filter(aicc == min(aicc)) %>%
+    dplyr::pull(modele_id)
+  
+  return(list(
+    best_model_M = best_M,
+    best_model_F = best_F,
+    use_combined = FALSE,
+    message = paste0(
+      "Les modèles sexes séparés ont été sélectionnés avec succès.\n",
+      "Modèle sélectionné pour les mâles : ", best_M, "\n",
+      "Modèle sélectionné pour les femelles : ", best_F
+    )
+  ))
 }

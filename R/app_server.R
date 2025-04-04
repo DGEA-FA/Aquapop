@@ -671,112 +671,46 @@ app_server <- function(input, output, session) {
   
   # Maturite sexuelle -------------------------------------------------------
 
-   df_maturiteltm <- reactive({
-     req(specimen(), sp_pen())  # Vérifie que specimen() et sp_pen() ne sont pas NULL
-     create_df_maturiteltm(specimen(), sp_pen())
-   })   
-
-
-   # df_maturiteage <- reactive({
-   #   req(specimen(), sp_pen())
-   #   specimen() %>%
-   #     filter(sp == sp_pen(), maturite != "IND", sexe != "IND", !is.na(age)) %>%
-   #     droplevels() %>%
-   #     mutate(maturite = factor(maturite, levels = c("N", "O"), ordered = TRUE))
-   # })
-
-   # 1. Ajustement des modèles séparés
-   L50_models <- reactive({
-     req(df_maturiteltm())
-     fit_L50_models(df_maturiteltm())
-   })
-   
-   # 1. Évaluation des modèles sexes séparés
-   L50_results <- reactive({
-     req(L50_models())  # Assurez-vous que les modèles sont disponibles
-     evaluate_L50_models(L50_models()) 
-   })
-   
-   # 2. Sélection des meilleurs modèles pour chaque sexe
-   best_L50 <- reactive({
-     req(L50_results())
-     select_best_L50_models(L50_results())
-   })
-   
-   # 3. Détection de la nécessité d'utiliser l'approche combinée
-   use_combined <- reactive({
-     best <- best_L50()
-     if ("use_combined" %in% names(best)) {
-       return(best$use_combined)
-     }
-     return(FALSE)
-   })
-   
-   # 1. Ajustement des modèles combinés
-   L50_combined_models <- reactive({
-     req(df_maturiteltm())
-     fit_L50_combined_models(df_maturiteltm())
-   })
-   
-   # 4. Évaluation des modèles combinés (si nécessaire)
-   L50_combined_evaluation <- reactive({
-     req(use_combined(), L50_combined_models())
-     evaluate_L50_models(L50_combined_models())
-   })
-   
-   # 5. Sélection du meilleur modèle combiné (si nécessaire)
-   best_L50_combined <- reactive({
-     req(use_combined(), L50_combined_evaluation())
-     select_best_L50_combined_model(L50_combined_evaluation())
-   })
-   
-   # 6. AFFICHAGE DANS L'APPLICATION
-   
-   # 6.1 Tableau des résultats des modèles sexes séparés (toujours visible)
-   output$separate_evaluation_table <- renderTable({
-     req(L50_results())
-     L50_results() %>% afficher_avec_labels()
-     }, striped = TRUE, bordered = TRUE, hover = FALSE)
-   
-   # 6.2 Message des meilleurs modèles séparés
-   output$best_separate_model_text <- renderText({
-     best <- best_L50()
-     if ("message" %in% names(best)) {
-       return(best$message)
-     } else {
-       return(paste0(
-         "Modèle sélectionné pour les mâles : ", best$best_model_M, "\n",
-         "Modèle sélectionné pour les femelles : ", best$best_model_F
-       ))
-     }
-   })
-   
-   output$combined_section <- renderUI({
-     req(use_combined())  # Empêche l'exécution si use_combined() est FALSE
-     
-     best_comb <- best_L50_combined()
-     
-     message_text <- if ("message" %in% names(best_comb)) {
-       best_comb$message
-     } else {
-       # Si plusieurs modèles sont sélectionnés, les afficher sous forme de liste
-       paste0("Modèle(s) combiné(s) sélectionné(s) : ", paste(best_comb$best_model, collapse = ", "))
-     }
-     
-     tagList(
-       h4("Approche combinée"),
-       p(message_text),
-       tableOutput("combined_evaluation_table")
-     )
-   })
-   
-   
-   
-   # 6.4 Tableau des résultats des modèles combinés (affiché uniquement si nécessaire)
-   output$combined_evaluation_table <- renderTable({
-     req(use_combined(), L50_combined_evaluation())
-     L50_combined_evaluation() %>% afficher_avec_labels()
-   }, striped = TRUE, bordered = TRUE, hover = FALSE)
+  # -- Résultat complet : modèle(s) et table(s)
+  table_modeles_L50_resultats <- reactive({
+    req(specimen())
+    table_L50_modeles(
+      specimen_data = specimen(),
+      prefer_combined = FALSE,
+      return_all = TRUE,
+      format = "flextable"  # ou "df" si besoin pour download
+    )
+  })
+  
+  # -- Texte explicatif
+  message_modeles_L50 <- reactive({
+    req(table_modeles_L50_resultats())
+    table_modeles_L50_resultats()$message
+  })
+  
+  # -- Table flextable
+  ft_modele_L50 <- reactive({
+    req(table_modeles_L50_resultats())
+    table_modeles_L50_resultats()$table
+  })
+  
+  # -- Table pour téléchargement (toujours data.frame)
+  df_modele_L50 <- reactive({
+    req(specimen())
+    table_L50_modeles(
+      specimen_data = specimen(),
+      return_all = FALSE,
+      format = "df"
+    )$table
+  })
+  
+  output$message_modeles_L50 <- renderText({
+    req(message_modeles_L50())
+    message_modeles_L50()
+  })
+  
+  render_table_flextable("table_modele_L50_ui", ft_modele_L50)
+  render_download_table("download_table_modele_L50", df_modele_L50())
   
    
   

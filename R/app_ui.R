@@ -349,17 +349,18 @@ app_ui <- function() {
                tabsetPanel(
                  tabPanel(
                    title = "Longueur à maturité",
-                   h4("Approche des sexes séparés"),
-                   tableOutput("separate_evaluation_table"),
-                   textOutput("best_separate_model_text"),
                    
+                   # Message explicatif
+                   h3("Sélection des modèles L50"),
+                   verbatimTextOutput("message_modeles_L50"),
                    br(),
-                   uiOutput("combined_section") # Afficher la section combinée seulement si nécessaire
                    
-                  
-                   
-                   
+                   # Table des modèles retenus
+                   h3("Tableau des modèles évalués"),
+                   uiOutput("table_modele_L50_ui"),
+                   uiOutput("download_table_modele_L50_ui")
                  ),
+                 
                  tabPanel(
                    title = "Âge à maturité",
                    htmltools::includeMarkdown(path = './texte/A50_texte.rmd'),

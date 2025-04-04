@@ -28,7 +28,8 @@ evaluate_L50_models <- function(models) {
     
     # Récupération de l'ID et du contenu de la formule
     modele_id <- id
-    modele <- deparse(mod$call$formula[[3]])
+    # modele <- deparse(mod$call$formula[[3]])
+    modele <- as.character(formula(mod))[3]
     
     # Vérifier la convergence
     conv <- mod$converged

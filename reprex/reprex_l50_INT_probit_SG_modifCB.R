@@ -1,112 +1,16 @@
-myspinner <- 6
+# Chargement des bibliothèques --------------------------------------------
 
-#' Constantes associées aux espèces suivies par PEN
-#'
-#' Contient le nom commun, le binwidth recommandé pour les histogrammes,
-#' les seuils de classes PSD (`breaks`) et leurs libellés (`break_labels`) par espèce (`sp`).
-#'
-#' @export
-pen_constants <- tibble::tibble(
-  sp       = c("SANA", "SAFO", "SAVI"),
-  nom_sp   = c("touladis", "ombles de fontaine", "dorés jaunes"),
-  binwidth = c(50, 20, 50),
-  breaks   = list(
-    c(0, 300, 500, 650, 800, 1000),
-    c(0, 150, 250, 325, 400, 500),
-    c(0, 250, 380, 510, 630, 760)
-  ),
-  break_labels = list(
-    c("<300", "300-499", "500-649", "650-799", "800-999", ">=1000"),
-    c("<150", "150-249", "250-324", "325-399", "400-499", ">=500"),
-    c("<250", "250-379", "380-509", "510-629", "630-759", ">=760")
-  )
-)
+library(tidyverse)
+library(MASS)    # Pour glm avec binomial
+library(MuMIn)   # Pour AICc
+library(mvtnorm) # Pour méthodes Monte Carlo
+library(FSA)     # Pour Summarize()
+library(glue)    # Pour mise en forme des chaînes de caractères
+library(ggplot2) # Pour visualisation des données
 
-#' Noms standardisés des classes PSD
-#'
-#' Utilisés dans les fonctions PSD (psd_indice, psd_byclass, psd_plot)
-#'
-#' @export
-psd_classnames <- c("Sous-stock", "Stock", "Qualité", "Préférée", "Mémorable", "Trophée")
+# Définition des fonctions ------------------------------------------------
 
-# Couleur par défaut pour les graphiques (ex. lorsque groupement = "tous")
-couleur_default <- "#084594"
-
-# Constantes de libellés pour les groupements
-group_labels <- list(
-  "sexe"     = c("F" = "Femelle", "M" = "Mâle", "IND" = "Indéterminé"),
-  "maturite" = c("O" = "Mature", "N" = "Immature", "IND" = "Indéterminé"),
-  "marquage" = c("MA" = "Marqué", "NMA" = "Non marqué"),
-  "tous"     = c("TOUS" = "Tous")  # Catégorie unique
-)
-
-# Constantes de couleurs associées aux groupements
-group_colors <- list(
-  "sexe"     = c("F" = couleur_default, "M" = "#99CCFF", "IND" = "#4d4d4d"),
-  "maturite" = c("O" = couleur_default, "N" = "#99CCFF", "IND" = "#4d4d4d"),
-  "marquage" = c("MA" = couleur_default, "NMA" = "#99CCFF"),
-  "tous"     = c("TOUS" = couleur_default)
-)
-
-
-#' Constantes pour le calcul de l'indice de condition (Wr)
-#'
-#' Source : FSA::wsVal() pour Lake Trout, Brook Trout, Walleye
-#'
-#' @format Un `tibble` avec les colonnes :
-#' - `sp` : Code d’espèce (SANA, SAFO, SAVI)
-#' - `species` : Nom anglais de l'espèce
-#' - `min_TL` : Longueur minimale (mm)
-#' - `int` : Intercept de la régression log-log
-#' - `slope` : Pente de la régression log-log
-#' - `source` : Référence source
-#' @export
-wr_constants <- tibble::tibble(
-  sp      = c("SANA", "SAFO", "SAVI"),
-  species = c("Lake Trout", "Brook Trout", "Walleye"),
-  min_TL  = c(280, 120, 150),
-  int     = c(-5.681, -5.186, -5.453),
-  slope   = c(3.246, 3.103, 3.180),
-  source  = c(
-    "Piccolo et al. (1993)",
-    "Hyatt and Hubert (2001a)",
-    "Murphy et al. (1990)"
-  )
-)
-
-get_wr_constants <- function(sp) {
-  wr_constants |>
-    dplyr::filter(sp == sp) |>
-    dplyr::slice(1)
-}
-
-
-# Fonctions internes pour les modèles de croissance
-vb_function <- function(age, linf, k, t0) linf * (1 - exp(-k * (age - t0)))
-gompertz_function <- function(age, linf, k, t0) linf * exp(-exp(-k * (age - t0)))
-logistic_function <- function(age, linf, k, t0) linf / (1 + exp(-k * (age - t0)))
-
-
-# 
-# # Copy report to temporary directory. This is mostly important when
-# # deploying the app, since often the working directory won't be writable
-# report_path <- tempfile(fileext = ".Rmd")
-# file.copy("report.Rmd", report_path, overwrite = TRUE)
-
-labelled_data <- function(data) {
-  # Obtenir les labels des colonnes
-  labels <- labelled::var_label(data)
-  
-  # Remplacer les noms des colonnes par leurs labels
-  colnames(data) <- unlist(labels)
-  
-  return(data)
-}
-
-
-#Fonctions pour Maturite sexuelle
-
-#' Test d'ajustement de Osius & Rojek
+## Osius and Rojek GOODNESS-OF-FIT test
 o.r.test <- function(obj) {
   mf <- obj$model
   trials <- rep(1, times = nrow(mf))
@@ -133,7 +37,7 @@ o.r.test <- function(obj) {
   return(p.value)
 }
 
-## Fonction IC
+#### Fonction IC ####
 confint_L <- function(object, p = 0.5, cf = 1:2, level = 0.95, nboot = 10000,
                       method = c("delta","fieller","proflik",
                                  "parboot","nonparboot",
@@ -155,7 +59,7 @@ confint_L <- function(object, p = 0.5, cf = 1:2, level = 0.95, nboot = 10000,
 
 ## Delta Method
 ld_delta <- function(object, p, cf, level) {
-  dose_object <- MASS::dose.p(object, p = p, cf = cf)
+  dose_object <- dose.p(object, p = p, cf = cf)
   parm <- seq_along(dose_object)
   nam <- names(dose_object)[parm]
   se <- attr(dose_object, "SE")[parm]
@@ -173,7 +77,6 @@ ld_delta <- function(object, p, cf, level) {
 fieller_ofun <- function(xt, b, xi, v, chi2) {
   (b[1] + b[2]*xt - xi)^2/(v[1,1] + 2*xt*v[1,2] + xt^2*v[2,2]) - chi2
 }
-
 
 fieller_ci <- function(b, xi, v, chi2) {
   xhat <- (xi - b[1])/b[2]
@@ -316,14 +219,14 @@ ld_boot <- function(object, p = 0.5, cf = 1:2, level = 0.95, nboot = 1000,
   data <- object$data
   fmla <- formula(delete.response(terms(formula(object))))
   X <- model.matrix(fmla, data = data)
-  original_d_hat <- MASS::dose.p(object, p = p, cf = cf)
+  original_d_hat <- dose.p(object, p = p, cf = cf)
   
   d_hat <- matrix(NA, ncol = length(p), nrow = nboot)
   
   for(i in 1:nboot) {
     new_y <- as.matrix(simulate(object))
     new_fit <- glm(new_y ~ 0 + X, family = object$family)
-    d_hat[i,] <- as.numeric(MASS::dose.p(new_fit, p = p, cf = cf))
+    d_hat[i,] <- as.numeric(dose.p(new_fit, p = p, cf = cf))
   }
   
   res <- switch(interval_type,
@@ -397,7 +300,7 @@ ld_boot_nonpar <- function(object, p = 0.5, cf = 1:2, level = 0.95, nboot = 1000
   data <- object$data
   fmla <- formula(delete.response(terms(formula(object))))
   X <- model.matrix(fmla, data = data)
-  original_d_hat <- MASS::dose.p(object, p = p, cf = cf)
+  original_d_hat <- dose.p(object, p = p, cf = cf)
   
   d_hat <- matrix(NA, ncol = length(p), nrow = nboot)
   
@@ -405,7 +308,7 @@ ld_boot_nonpar <- function(object, p = 0.5, cf = 1:2, level = 0.95, nboot = 1000
     sampled_rows <- sample(1:nrow(data), nrow(data), replace = TRUE)
     new_data <- data[sampled_rows,]
     new_fit <- update(object, data = new_data)
-    d_hat[i,] <- as.numeric(MASS::dose.p(new_fit, p = p, cf = cf))
+    d_hat[i,] <- as.numeric(dose.p(new_fit, p = p, cf = cf))
   }
   
   res <- switch(interval_type,
@@ -583,11 +486,11 @@ print.ld_bayesian <- function(x, ...) {
 
 ld_montecarlo <- function(object, p = 0.5, cf = 1:2, level = 0.95, nboot = 1000,
                           interval_type = c("eti","hdi","bca","all")) {
-  original_d_hat <- MASS::dose.p(object, p = p, cf = cf)
+  original_d_hat <- dose.p(object, p = p, cf = cf)
   varcovar_mat <- vcov(object)[cf,cf]
   mean_vec <- coef(object)[cf]
   
-  beta_sim <- mvtnorm::rmvnorm(n = nboot, mean = mean_vec, sigma = varcovar_mat)
+  beta_sim <- rmvnorm(n = nboot, mean = mean_vec, sigma = varcovar_mat)
   
   linkfun <- object$family$linkfun
   p_const <- linkfun(p)
@@ -667,7 +570,7 @@ get_bca <- function(object, p, cf, d_hat, original_d_hat, nboot, level) {
   n <- nrow(object$data)
   u <- rep(0, n)
   for(i in 1:n) {
-    u[i] <- as.numeric(MASS::dose.p(update(object, data = object$data[-i,]), p = p, cf = cf))
+    u[i] <- as.numeric(dose.p(update(object, data = object$data[-i,]), p = p, cf = cf))
   }
   z0 <- qnorm(sum(d_hat < original_d_hat)/nboot)
   uu <- mean(u) - u
@@ -679,23 +582,210 @@ get_bca <- function(object, p, cf, d_hat, original_d_hat, nboot, level) {
 }
 
 
-get_best_L50_model <- function(best_L50, sexe = "M") {
-  # Vérification de l'entrée
-  if (!sexe %in% c("M", "F")) {
-    stop("Le paramètre 'sexe' doit être soit 'M' soit 'F'.")
-  }
-  
-  # Construction du nom de l'élément à récupérer
-  model_name <- paste0("best_model_", sexe)
-  
-  # Extraction du modèle correspondant
-  if (model_name %in% names(best_L50)) {
-    return(best_L50[[model_name]])
-  } else {
-    stop("Le modèle spécifié n'existe pas dans la liste fournie.")
-  }
+# donnees ------------------------------------------------------------------
+
+# Jeu de données fourni
+# Création du dataframe df_l50 # Répartition exacte de PENOF 05533 2009
+df_l50 <- data.frame(
+  ltm = c(277, 256, 175, 167, 146, 156, 157, 143, 160, 151, 155, 132, 
+          139, 150, 170, 147, 237, 195, 245, 172, 150, 145, 178, 226,
+          175, 164, 162, 167, 211, 224, 199, 143, 147, 231, 157, 155,  
+          168, 140, 159, 147, 159, 233, 145, 147, 167, 164, 167, 148,  
+          142, 143, 158, 162, 160, 141, 150, 144, 149, 138, 147, 152,  
+          225, 169, 247, 215, 164, 158, 197, 183, 151, 163, 175, 246,  
+          137, 214, 263, 142, 152, 153, 148, 150, 145, 146, 150, 155, 
+          160, 132, 151, 150, 183, 172, 167, 268, 170, 265, 130, 146, 
+          206, 162, 135, 141, 160, 225, 168, 140, 236, 159, 175, 153, 
+          130, 233, 222, 241, 194, 186, 145, 210, 166, 228, 173, 218, 
+          191, 150, 264, 153, 140, 134, 156, 160, 150, 204, 218, 158, 
+          256, 266, 227, 261, 161, 238, 184, 170, 142, 160, 227, 240,
+          175, 160, 141,
+          150, 196, 187, 137, 149, 216, 147, 142, 133, 129, 134, 149, 
+          149, 200, 155, 250, 137, 154, 144, 137, 234, 141, 168, 189, 
+          124, 161, 148, 146, 131, 151, 133, 130, 225, 211, 150, 210, 
+          150, 250, 201, 332, 207, 159, 245, 245, 210, 210, 200, 226, 
+          250, 214, 158, 144, 280, 232, 183, 237, 199, 240, 189, 185, 
+          200, 143, 252, 194, 214, 248, 200, 242, 202, 222, 220, 295,
+          145, 246, 269, 256, 193, 253, 207, 268, 250, 152, 141, 164,
+          198, 154, 155, 135, 157, 140, 184, 160, 157, 177, 178, 180,
+          140, 110, 128, 153, 157, 134, 136, 230, 152, 205, 243, 217,
+          247, 222, 168, 237, 153, 277, 146, 268, 215, 249, 134, 200,
+          218, 262, 151, 235, 267, 153, 150, 170, 137, 155, 244, 215, 
+          260, 198, 220, 198, 245, 209, 260, 217, 209, 197, 236, 172,
+          270, 274, 213, 236, 232, 225, 210, 160, 160, 169, 150, 210,
+          208, 176, 180, 155, 149, 159, 133, 147, 150, 140, 183, 152, 
+          210, 185, 141, 252, 142, 137, 155, 135, 144, 156, 138, 225, 
+          264, 231, 225),
+  sexe = c(rep( "M", times = 147),rep( "F", times = 183)), 
+  maturite = c("O", "O", "O", "N", "O", "N", "N", "N", "N", "N", "N", "N", 
+               "O", "N", "O", "N", "O", "O", "O", "O", "N", "N", "O", "O", 
+               "N", "N", "N", "N", "N", "O", "O", "N", "N", "N", "N", "N",
+               "N", "O", "N", "N", "N", "O", "N", "O", "N", "N", "N", "N",
+               "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "O", "N", 
+               "O", "O", "O", "O", "N", "N", "O", "N", "N", "N", "N", "O", 
+               "N", "O", "O", "O", "O", "N", "N", "N", "N", "N", "N", "N", 
+               "N", "O", "N", "N", "O", "N", "N", "O", "O", "O", "N", "N", 
+               "O", "N", "O", "O", "N", "O", "N", "O", "O", "N", "O", "N",
+               "O", "N", "O", "O", "O", "N", "N", "N", "N", "O", "N", "O",
+               "N", "N", "O", "N", "N", "N", "O", "O", "O", "O", "N", "N",
+               "O", "O", "N", "O", "N", "O", "N", "N", "N", "N", "N", "O",
+               "O", "N", "N",
+               "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", 
+               "N", "O", "N", "O", "N", "N", "N", "N", "O", "N", "N", "N",
+               "N", "N", "N", "N", "N", "N", "N", "N", "O", "O", "N", "N",
+               "N", "O", "O", "O", "O", "N", "O", "N", "N", "O", "N", "N",
+               "N", "O", "N", "N", "O", "O", "N", "N", "O", "O", "O", "O",
+               "N", "N", "O", "N", "N", "O", "N", "O", "N", "O", "N", "O",
+               "N", "O", "O", "O", "N", "O", "O", "O", "O", "N", "N", "N",
+               "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N",
+               "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "O", "N",
+               "O", "O", "N", "O", "N", "O", "N", "O", "O", "N", "N", "O",
+               "O", "O", "N", "O", "O", "N", "N", "N", "N", "N", "O", "N",
+               "O", "N", "N", "N", "O", "O", "O", "O", "O", "N", "N", "N",
+               "O", "O", "O", "O", "O", "O", "O", "N", "N", "N", "N", "N",
+               "O", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N",
+               "N", "N", "N", "O", "N", "N", "N", "N", "N", "O", "N", "O",
+               "O", "O", "O") 
+)
+
+# Organisation des niveaux du facteur maturité ---------------------------------
+
+# Immature = niveau de référence
+df_l50 <- df_l50 %>%
+  mutate(
+    maturite = factor(maturite, levels = c("N", "O"), ordered = TRUE),
+    ltm = as.numeric(ltm),
+    sexe = as.factor(sexe)
+  )
+
+# Ajustement du modèle INT avec lien probit ----------------------------------------
+
+modele <- glm(maturite ~ ltm * sexe, family = binomial(link=probit), data=df_l50)
+
+# Tests d'ajustement du modèle ------------------------------------------------
+
+## B.1 Osius and Rojek Standardizec Pearson X2 GOODNESS-OF-FIT test
+pval.fit <- o.r.test(modele)
+
+## B.2 GOODNESS-OF-LINK test of McCullagh and Nelder (1989) 
+eta2 <- predict(modele)^2
+model_eta2 <- update(modele, . ~ . + eta2)
+pval.link <- anova(modele, model_eta2, test = "Chisq")$`Pr(>Chi)`[2]
+
+# Vérification de la convergence du modèle et ajustement ----------------------
+
+comment<-NA
+if (modele$converged == FALSE) {
+  comment <- "Ce modèle ne converge pas et devrait être rejeté."
 }
 
+if (is.na(comment) && (pval.fit < 0.05 || pval.link < 0.05)) {
+  comment <- "Ce modèle ne s'ajuste pas bien aux données. Il est préférable de choisir un autre modèle"
+}
 
+# Sélection du modèle via AIC -------------------------------------------------
+
+aicc<-AICc(modele)
+
+### Détermination des valeurs de l50 ----------------------------------------------
+
+# Extraction des coefficients du modèle 
+
+b0 <- coef(modele)[["(Intercept)"]]
+b1 <- coef(modele)[["ltm"]]
+b2 <- coef(modele)[["sexeM"]]
+b3 <- coef(modele)[["ltm:sexeM"]]
+
+# Estimation de l50 à partir des coefficients
+
+l50_F <- (-b0/b1)
+l50_M <- (-b0-b2)/(b1+b3)
+
+# Calcul des valeurs prédites pour la visualisation ----------------------------
+
+ltmminM <- Summarize(ltm ~ sexe, data = df_l50) %>% filter(sexe == "M") %>% dplyr::select("min") %>% as.numeric()
+ltmmaxM <- Summarize(ltm ~ sexe, data = df_l50) %>% filter(sexe == "M") %>% dplyr::select("max") %>% as.numeric()
+ltmminF <- Summarize(ltm ~ sexe, data = df_l50) %>% filter(sexe == "F") %>% dplyr::select("min") %>% as.numeric()
+ltmmaxF <- Summarize(ltm ~ sexe, data = df_l50) %>% filter(sexe == "F") %>% dplyr::select("max") %>% as.numeric()
+
+newDFM <- data.frame(sexe = "M", ltm = seq(from = ltmminM, to = ltmmaxM, by = 1))
+newDFF <- data.frame(sexe = "F", ltm = seq(from = ltmminF, to = ltmmaxF, by = 1))
+newDF <- rbind(newDFM, newDFF)
+
+newDFpred <- predict(modele,
+                     newDF,
+                     full=TRUE,
+                     type = "link",
+                     se.fit = TRUE)
+
+DATAogive <- newDF %>%
+  mutate(
+    maturite = pnorm(newDFpred$fit),
+    lim_inf = pnorm(newDFpred$fit - (1.96 * newDFpred$se.fit)),
+    lim_sup = pnorm(newDFpred$fit + (1.96 * newDFpred$se.fit))
+  )
+
+
+
+# Création d'une table récapitulative -----------------------------------------
+
+minitable<- rbind(
+  c("L50 - Mâle (mm)", round(l50_M, digits = 0)),
+  c("L50 - Femelle (mm)", round(l50_F, digits = 0)),
+  c("b0", round(b0, digits = 3)),
+  c("b1", round(b1, digits = 3)),
+  c("sexe", round(b2, digits = 3)),
+  c("interaction",round(b3, digits = 3))) %>% as.data.frame()
+
+
+# Génération du graphique ----------------------------------------------------
+
+plot <- ggplot(data = DATAogive, aes(x = ltm, y = maturite, color = sexe)) +
+  scale_color_manual(values = c("red", "black")) +
+  geom_line() +
+  geom_ribbon(aes(ymin = lim_inf, ymax = lim_sup), alpha = 0.1, fill = "blue") +
+  annotate("segment", x = l50_M, xend = l50_M, y = 0, yend = 0.5, color = "black", lty = 2) +
+  annotate("segment", x = ltmminM, xend = l50_M, y = 0.5, yend = 0.5, color = "black", lty = 2) +
+  annotate("segment", x = l50_F, xend = l50_F, y = 0, yend = 0.5, color = "red", lty = 2) +
+  annotate("segment", x = ltmminF, xend = l50_F, y = 0.5, yend = 0.5, color = "red", lty = 2) +
+  geom_point(data = df_l50 ,
+             mapping = aes(x = ltm, y = as.numeric(maturite)-1, color = sexe), alpha = 0.5) +
+  theme_classic() +
+  labs(x = "Longueur totale maximale (mm)", y = "Proportion reproducteurs actifs", 
+       title = glue("Ogive de maturité")) +
+  theme(panel.background = element_rect(fill = "white", colour = "black"),
+        legend.position = "none")
+
+plot
+
+# Incoherence L50 ----------------------------------------------------
+
+
+# L50 calculé à partir des coefficients b0 et b1
+L50M_coeff <- round(l50_M)
+L50F_coeff <- round(l50_F)
+
+cat("L50 MALE estimé à partir des coefficients : ", L50M_coeff, "\n")
+cat("L50 FEMELLE estimé à partir des coefficients : ", L50F_coeff, "\n")
+
+# L50 estimé vl50_M# L50 estimé visuellement (en cherchant l'intersection y = 0.5 sur le graphique) 
+L50M_manual <- DATAogive[DATAogive$sexe=="M",] %>%
+  filter(abs(maturite - 0.5) == min(abs(maturite - 0.5))) %>%
+  pull(ltm) %>%
+  mean()  # Moyenne si plusieurs valeurs sont proches de 0.5
+
+cat("L50 MALE estimé visuellement : ", round(L50M_manual, 2), "\n")
+
+L50F_manual <- DATAogive[DATAogive$sexe=="F",] %>%
+  filter(abs(maturite - 0.5) == min(abs(maturite - 0.5))) %>%
+  pull(ltm) %>%
+  mean()  # Moyenne si plusieurs valeurs sont proches de 0.5
+
+cat("L50 FEMELLE estimé visuellement : ", round(L50F_manual, 2), "\n")
+
+# Comparaison
+if (L50M_coeff != L50M_manual || L50F_coeff != L50F_manual) {
+  cat("\n ⚠  Incohérence détectée entre les L50 estimés selon les différentes méthodes. \n")
+}
 
 
