@@ -15,4 +15,9 @@ shinyApp(
 )
 
 # reactlogShow()
-
+# # 
+# data = specimen
+# variable = "ltm"
+# modele = "INT"
+# lien = "logit"
+# nboot = 10000

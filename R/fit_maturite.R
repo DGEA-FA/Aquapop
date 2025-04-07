@@ -84,193 +84,63 @@ fit_maturite <- function(data, variable = c("ltm", "age"), modele = c("TLO", "AD
     commentaire <- "Ce modèle ne s’ajuste pas bien aux données. Il est préférable de choisir un autre modèle."
   }
   
-  # Estimation du point de 50 % ------------------------------------------------
-  if (modele == "TLO" && variable == "ltm" && lien == "logit") {
-    point50_ic <- confint_L(modele_glm, method = "montecarlo", interval_type = "bca", nboot = nboot)
-    point50 <- round(point50_ic[2])
-    point50_inf <- round(point50_ic[1])
-    point50_sup <- round(point50_ic[3])
+  
+  # Estimation des coefficients ------------------------------------------------
+  if (modele == "TLO") {
+    b0 <- coef(modele_glm)[["(Intercept)"]]
+    b1 <- coef(modele_glm)[[variable]]
     
-  } else if (modele == "TLO" && variable == "ltm" && lien == "probit") {
-    point50_ic <- confint_L(modele_glm, method = "montecarlo", interval_type = "bca", nboot = nboot)
-    point50 <- round(point50_ic[2])
-    point50_inf <- round(point50_ic[1])
-    point50_sup <- round(point50_ic[3])
-    
-  } else if (modele == "TLO" && variable == "ltm" && lien == "cloglog") {
-    point50_ic <- confint_L(modele_glm, method = "montecarlo", interval_type = "bca", nboot = nboot)
-    point50 <- round(point50_ic[2])
-    point50_inf <- round(point50_ic[1])
-    point50_sup <- round(point50_ic[3])
-    
-  } else if (modele == "TLO" && variable == "age" && lien == "logit") {
-    point50_ic <- confint_L(modele_glm, method = "montecarlo", interval_type = "bca", nboot = nboot)
-    point50 <- round(point50_ic[2])
-    point50_inf <- round(point50_ic[1])
-    point50_sup <- round(point50_ic[3])
-    
-  } else if (modele == "TLO" && variable == "age" && lien == "probit") {
-    point50_ic <- confint_L(modele_glm, method = "montecarlo", interval_type = "bca", nboot = nboot)
-    point50 <- round(point50_ic[2])
-    point50_inf <- round(point50_ic[1])
-    point50_sup <- round(point50_ic[3])
-    
-  } else if (modele == "TLO" && variable == "age" && lien == "cloglog") {
-    point50_ic <- confint_L(modele_glm, method = "montecarlo", interval_type = "bca", nboot = nboot)
-    point50 <- round(point50_ic[2])
-    point50_inf <- round(point50_ic[1])
-    point50_sup <- round(point50_ic[3])
   } else if (modele == "ADD") {
-    coef_mod <- coef(modele_glm)
-    
-    if (variable == "ltm" && lien == "logit") {
-      b0 <- coef_mod["(Intercept)"]
-      b1 <- coef_mod["ltm"]
-      b2 <- coef_mod["sexeM"]
-      v50_f <- round((-b0) / b1)
-      v50_m <- round((-b0 - b2) / b1)
-      
-    } else if (variable == "ltm" && lien == "probit") {
-      b0 <- coef_mod["(Intercept)"]
-      b1 <- coef_mod["ltm"]
-      b2 <- coef_mod["sexeM"]
-      v50_f <- round((-b0) / b1)
-      v50_m <- round((-b0 - b2) / b1)
-      
-    } else if (variable == "ltm" && lien == "cloglog") {
-      b0 <- coef_mod["(Intercept)"]
-      b1 <- coef_mod["ltm"]
-      b2 <- coef_mod["sexeM"]
-      kappa <- 0.3665129
-      v50_f <- round((-(b0) - kappa) / b1)
-      v50_m <- round((-(b0 + b2) - kappa) / b1)
-      
-    } else if (variable == "age" && lien == "logit") {
-      b0 <- coef_mod["(Intercept)"]
-      b1 <- coef_mod["age"]
-      b2 <- coef_mod["sexeM"]
-      v50_f <- round((-b0) / b1)
-      v50_m <- round((-b0 - b2) / b1)
-      
-    } else if (variable == "age" && lien == "probit") {
-      b0 <- coef_mod["(Intercept)"]
-      b1 <- coef_mod["age"]
-      b2 <- coef_mod["sexeM"]
-      v50_f <- round((-b0) / b1)
-      v50_m <- round((-b0 - b2) / b1)
-      
-    } else if (variable == "age" && lien == "cloglog") {
-      b0 <- coef_mod["(Intercept)"]
-      b1 <- coef_mod["age"]
-      b2 <- coef_mod["sexeM"]
-      kappa <- 0.3665129
-      v50_f <- round((-(b0) - kappa) / b1)
-      v50_m <- round((-(b0 + b2) - kappa) / b1)
-    }
-    
-    point50 <- list(fem = v50_f, male = v50_m)
-    point50_inf <- point50_sup <- NA
-    
-  } else if (modele == "INT") {
-    coef_mod <- coef(modele_glm)
-    
-    if (variable == "ltm" && lien == "logit") {
-      b0 <- coef_mod["(Intercept)"]
-      b1 <- coef_mod["ltm"]
-      b2 <- coef_mod["sexeM"]
-      b3 <- coef_mod["ltm:sexeM"]
-      v50_f <- round((-b0) / b1)
-      v50_m <- round((-b0 - b2) / (b1 + b3))
-      
-    } else if (variable == "ltm" && lien == "probit") {
-      b0 <- coef_mod["(Intercept)"]
-      b1 <- coef_mod["ltm"]
-      b2 <- coef_mod["sexeM"]
-      b3 <- coef_mod["ltm:sexeM"]
-      v50_f <- round((-b0) / b1)
-      v50_m <- round((-b0 - b2) / (b1 + b3))
-      
-    } else if (variable == "ltm" && lien == "cloglog") {
-      b0 <- coef_mod["(Intercept)"]
-      b1 <- coef_mod["ltm"]
-      b2 <- coef_mod["sexeM"]
-      b3 <- coef_mod["ltm:sexeM"]
-      kappa <- 0.3665129
-      v50_f <- round((-b0 - kappa) / b1)
-      v50_m <- round((-b0 - b2 - kappa) / (b1 + b3))
-      
-    } else if (variable == "age" && lien == "logit") {
-      b0 <- coef_mod["(Intercept)"]
-      b1 <- coef_mod["age"]
-      b2 <- coef_mod["sexeM"]
-      b3 <- coef_mod["age:sexeM"]
-      v50_f <- round((-b0) / b1)
-      v50_m <- round((-b0 - b2) / (b1 + b3))
-      
-    } else if (variable == "age" && lien == "probit") {
-      b0 <- coef_mod["(Intercept)"]
-      b1 <- coef_mod["age"]
-      b2 <- coef_mod["sexeM"]
-      b3 <- coef_mod["age:sexeM"]
-      v50_f <- round((-b0) / b1)
-      v50_m <- round((-b0 - b2) / (b1 + b3))
-      
-    } else if (variable == "age" && lien == "cloglog") {
-      b0 <- coef_mod["(Intercept)"]
-      b1 <- coef_mod["age"]
-      b2 <- coef_mod["sexeM"]
-      b3 <- coef_mod["age:sexeM"]
-      kappa <- 0.3665129
-      v50_f <- round((-b0 - kappa) / b1)
-      v50_m <- round((-b0 - b2 - kappa) / (b1 + b3))
-    }
-    
-    point50 <- list(fem = v50_f, male = v50_m)
-    point50_inf <- point50_sup <- NA
+    b0 <- coef(modele_glm)[["(Intercept)"]]
+    b1 <- coef(modele_glm)[[variable]]
+    b2 <- coef(modele_glm)[["sexeM"]]
     
   } else if (modele == "COM") {
-    coef_mod <- coef(modele_glm)
+    b0 <- coef(modele_glm)[["(Intercept)"]]
+    b1 <- coef_par_nom(modele_glm, "sexeF")
+    b2 <- coef_par_nom(modele_glm, "sexeM")
     
-    if (variable == "ltm" && lien == "logit") {
-      b1 <- coef_mod["ltm:sexeF"]
-      b2 <- coef_mod["ltm:sexeM"]
-      v50_f <- round(-log(2) / b1)
-      v50_m <- round(-log(2) / b2)
-      
-    } else if (variable == "ltm" && lien == "probit") {
-      b1 <- coef_mod["ltm:sexeF"]
-      b2 <- coef_mod["ltm:sexeM"]
-      v50_f <- round(-qnorm(0.5) / b1)
-      v50_m <- round(-qnorm(0.5) / b2)
-      
-    } else if (variable == "ltm" && lien == "cloglog") {
-      kappa <- 0.3665129
-      b1 <- coef_mod["ltm:sexeF"]
-      b2 <- coef_mod["ltm:sexeM"]
-      v50_f <- round(-kappa / b1)
-      v50_m <- round(-kappa / b2)
-      
-    } else if (variable == "age" && lien == "logit") {
-      b1 <- coef_mod["age:sexeF"]
-      b2 <- coef_mod["age:sexeM"]
-      v50_f <- round(-log(2) / b1)
-      v50_m <- round(-log(2) / b2)
-      
-    } else if (variable == "age" && lien == "probit") {
-      b1 <- coef_mod["age:sexeF"]
-      b2 <- coef_mod["age:sexeM"]
-      v50_f <- round(-qnorm(0.5) / b1)
-      v50_m <- round(-qnorm(0.5) / b2)
-      
-    } else if (variable == "age" && lien == "cloglog") {
-      kappa <- 0.3665129
-      b1 <- coef_mod["age:sexeF"]
-      b2 <- coef_mod["age:sexeM"]
-      v50_f <- round(-kappa / b1)
-      v50_m <- round(-kappa / b2)
-    }
+  } else if (modele == "INT") {
+    b0 <- coef(modele_glm)[["(Intercept)"]]
+    b1 <- coef(modele_glm)[[variable]]
+    b2 <- coef(modele_glm)[["sexeM"]]
+    b3 <- coef_par_nom(modele_glm, sexe = "sexeM", interaction = TRUE)  # ✅ clé mise à jour
     
-    point50 <- list(fem = v50_f, male = v50_m)
+  } else {
+    stop("❌ Modèle non reconnu.")
+  }
+  
+  
+  
+  # Estimation du point de 50 % (L50 ou A50) -----------------------------------
+  if (modele == "TLO") {
+    # Calcul de l'intervalle de confiance via confint_L
+    ic <- confint_L(modele_glm, method = "montecarlo", interval_type = "bca", nboot = nboot)
+    
+    # Extraction des valeurs centrales et bornes
+    point50 <- round(ic[2])
+    point50_inf <- round(ic[1])
+    point50_sup <- round(ic[3])
+    
+  } else {
+    kappa <- if (lien == "cloglog") 0.3665129 else 0
+    
+    point50 <- switch(modele,
+                      "ADD" = list(
+                        fem = round((-b0 - kappa) / b1),
+                        male = round((-b0 - b2 - kappa) / b1)
+                      ),
+                      "COM" = list(
+                        fem = round((-b0 - kappa) / b1),
+                        male = round((-b0 - kappa) / b2)
+                      ),
+                      "INT" = list(
+                        fem = round((-b0 - kappa) / b1),
+                        male = round((-b0 - b2 - kappa) / (b1 + b3))
+                      ),
+                      stop("❌ Modèle non supporté pour le calcul du point50.")
+    )
+    
     point50_inf <- point50_sup <- NA
   }
   
@@ -309,55 +179,42 @@ fit_maturite <- function(data, variable = c("ltm", "age"), modele = c("TLO", "AD
     )
   
   # Table récapitulative --------------------------------------------------------
-  # Déduction de l’étiquette principale
   etiquette <- if (variable == "ltm") "L" else "A"
   
   if (modele == "TLO") {
-    intercept <- coef(modele_glm)["(Intercept)"]
-    pente <- coef(modele_glm)[[variable]]
-    
     table_resultats <- data.frame(
       intervalle = glue::glue("[{point50_inf}-{point50_sup}]"),
-      b0 = round(intercept, 3),
-      b1 = round(pente, 3)
+      b0 = round(b0, 3),
+      b1 = round(b1, 3)
     )
     
-    # Ajout dynamique de la colonne "ltm50" ou "age50"
     col_point50 <- paste0(tolower(etiquette), "50")
     table_resultats[[col_point50]] <- point50
     table_resultats <- table_resultats[, c(col_point50, "intervalle", "b0", "b1")]
     
   } else {
-    table_resultats <- data.frame(
-      b0 = round(b0, 3),
-      b1 = round(b1, 3)
-    )
-    
     col_point50_f <- paste0(tolower(etiquette), "50_f")
     col_point50_m <- paste0(tolower(etiquette), "50_m")
     
-    table_resultats[[col_point50_f]] <- v50_f
-    table_resultats[[col_point50_m]] <- v50_m
+    table_resultats <- data.frame(
+      b0 = round(b0, 3),
+      b1 = round(b1, 3),
+      sexe = if (exists("b2")) round(b2, 3) else NA,
+      interaction = if (exists("b3")) round(b3, 3) else NA
+    )
     
-    if (modele %in% c("ADD", "INT","COM")) {
-      table_resultats[["sexe"]] <- round(b2, 3)
-    }
-    if (modele == "INT") {
-      table_resultats[["interaction"]] <- round(b3, 3)
-    }
+    table_resultats[[col_point50_f]] <- point50$fem
+    table_resultats[[col_point50_m]] <- point50$male
+    
+    # Réorganisation des colonnes dans l’ordre voulu
+    ordre_cols <- switch(modele,
+                         "ADD" = c(col_point50_m, col_point50_f, "b0", "b1", "sexe"),
+                         "COM" = c(col_point50_m, col_point50_f, "b0", "b1", "sexe"),
+                         "INT" = c(col_point50_m, col_point50_f, "b0", "b1", "sexe", "interaction"))
+    table_resultats <- table_resultats[, ordre_cols]
   }
   
-  # Réorganisation des colonnes dans l’ordre voulu
-  ordre_cols <- switch(modele,
-                       "TLO" = c(col_point50, "intervalle", "b0", "b1"),
-                       "ADD" = c(col_point50_m, col_point50_f, "b0", "b1", "sexe"),
-                       "COM" = c(col_point50_m, col_point50_f, "b0", "b1", "sexe"),
-                       "INT" = c(col_point50_m, col_point50_f, "b0", "b1", "sexe", "interaction")
-  )
-  
-  table_resultats <- table_resultats[, ordre_cols]
-  
-  
+  # Table flextable --------------------------------------------------------
   
   # Création du flextable
   ft <- flextable(table_resultats)
@@ -422,57 +279,63 @@ fit_maturite <- function(data, variable = c("ltm", "age"), modele = c("TLO", "AD
     align(align = "center", part = "all") %>%
     bold(part = "header")
   
+  ft <- add_footer_lines(ft, values = glue("Modèle: {modele}, lien: {lien}"))
+  
+  
   # Résultat
   table_resultats_flextable <- ft
   # table_resultats_flextable
   
   
   # Graphique -------------------------------------------------------------------
+  # Graphique -------------------------------------------------------------------
   color_by_sex <- "sexe" %in% names(donnees_ogive)
+  
   graphique <- ggplot(data = donnees_ogive, aes(x = .data[[variable]], y = maturite)) +
-    { if (color_by_sex) geom_line(aes(color = sexe)) else geom_line(color = "black") } +
-    geom_ribbon(aes(ymin = lim_inf, ymax = lim_sup), alpha = 0.1, fill = "blue") +
-    { if (color_by_sex) scale_color_manual(values = c("F" = "red", "M" = "black")) else NULL } +
+    { if (color_by_sex) geom_line(aes(color = sexe)) else geom_line(color = couleur_default) } +
+    geom_ribbon(aes(ymin = lim_inf, ymax = lim_sup), alpha = 0.1, fill = couleur_default) +
+    { 
+      if (color_by_sex) scale_color_manual(
+        values = group_colors$sexe,
+        labels = group_labels$sexe
+      ) else NULL 
+    } +
     theme_classic() +
     labs(
       x = ifelse(variable == "ltm", "Longueur totale maximale (mm)", "Âge"),
       y = "Proportion reproducteurs actifs",
-      title = "Ogive de maturité"
+      title = "Ogive de maturité",
+      color = "Sexe"
     ) +
-    theme(panel.background = element_rect(fill = "white", colour = "black"),
-          legend.position = "none")
+    theme(panel.background = element_rect(fill = "white", colour = "black"))
   
+  # Ajout des lignes horizontales/verticales de point50
   if (modele == "TLO") {
     graphique <- graphique +
-      annotate("segment", x = point50, xend = point50, y = 0, yend = 0.5, color = "black", lty = 2) +
-      annotate("segment", x = x_min, xend = point50, y = 0.5, yend = 0.5, color = "black", lty = 2)
+      annotate("segment", x = point50, xend = point50, y = 0, yend = 0.5, color = couleur_default, lty = 2) +
+      annotate("segment", x = x_min, xend = point50, y = 0.5, yend = 0.5, color = couleur_default, lty = 2)
   }
   
-  if (modele == "COM") {
-    # Pour COM : les prédictions doivent être faites séparément pour chaque sexe
-    vmin_m <- min(donnees_modeles %>% filter(sexe == "M") %>% pull(.data[[variable]]))
-    vmin_f <- min(donnees_modeles %>% filter(sexe == "F") %>% pull(.data[[variable]]))
+  if (modele %in% c("COM", "ADD", "INT")) {
+    if (modele == "COM") {
+      vmin_m <- min(donnees_modeles %>% filter(sexe == "M") %>% pull(.data[[variable]]))
+      vmin_f <- min(donnees_modeles %>% filter(sexe == "F") %>% pull(.data[[variable]]))
+    } else {
+      form <- as.formula(glue::glue("{variable} ~ sexe"))
+      var_minmax <- FSA::Summarize(form, data = donnees_modeles)
+      vmin_m <- var_minmax %>% filter(sexe == "M") %>% pull(min)
+      vmin_f <- var_minmax %>% filter(sexe == "F") %>% pull(min)
+    }
     
     graphique <- graphique +
-      annotate("segment", x = v50_m, xend = v50_m, y = 0, yend = 0.5, color = "black", lty = 2) +
-      annotate("segment", x = vmin_m, xend = v50_m, y = 0.5, yend = 0.5, color = "black", lty = 2) +
-      annotate("segment", x = v50_f, xend = v50_f, y = 0, yend = 0.5, color = "red", lty = 2) +
-      annotate("segment", x = vmin_f, xend = v50_f, y = 0.5, yend = 0.5, color = "red", lty = 2)
-  }
-  
-  if (modele %in% c("ADD",  "INT")) {
-    form <- as.formula(glue::glue("{variable} ~ sexe"))
-    var_minmax <- FSA::Summarize(form, data = donnees_modeles)
-    vmin_m <- var_minmax %>% filter(sexe == "M") %>% pull(min)
-    vmin_f <- var_minmax %>% filter(sexe == "F") %>% pull(min)
+      annotate("segment", x = point50$male, xend = point50$male, y = 0, yend = 0.5, color = group_colors$sexe["M"], lty = 2) +
+      annotate("segment", x = vmin_m, xend = point50$male, y = 0.5, yend = 0.5, color = group_colors$sexe["M"], lty = 2) +
+      annotate("segment", x = point50$fem, xend = point50$fem, y = 0, yend = 0.5, color = group_colors$sexe["F"], lty = 2) +
+      annotate("segment", x = vmin_f, xend = point50$fem, y = 0.5, yend = 0.5, color = group_colors$sexe["F"], lty = 2)
     
-    graphique <- graphique +
-      annotate("segment", x = v50_m, xend = v50_m, y = 0, yend = 0.5, color = "black", lty = 2) +
-      annotate("segment", x = vmin_m, xend = v50_m, y = 0.5, yend = 0.5, color = "black", lty = 2) +
-      annotate("segment", x = v50_f, xend = v50_f, y = 0, yend = 0.5, color = "red", lty = 2) +
-      annotate("segment", x = vmin_f, xend = v50_f, y = 0.5, yend = 0.5, color = "red", lty = 2)
   }
   
+  # Points bruts
   graphique <- graphique +
     geom_point(
       data = donnees_modeles,
@@ -483,6 +346,11 @@ fit_maturite <- function(data, variable = c("ltm", "age"), modele = c("TLO", "AD
       ),
       alpha = 0.5
     )
+  
+  graphique <- graphique +
+    labs(caption = glue::glue("Modèle : {modele}, lien : {lien}"))
+  
+  
   
   return(list(
     table_resultats = table_resultats,

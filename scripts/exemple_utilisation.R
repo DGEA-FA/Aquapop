@@ -137,9 +137,6 @@ res_com_logit_ltm$table_resultats_flextable
 
 
 
-
-
-
 # COM - logit - age
 res_com_logit_age <- fit_maturite(data = specimen, variable = "age", modele = "COM", lien = "logit")
 res_com_logit_age$table_resultats
