@@ -697,5 +697,20 @@ get_best_L50_model <- function(best_L50, sexe = "M") {
 }
 
 
+#' Exécute une expression glm() en filtrant le warning "probabilités ajustées à 0 ou 1"
+#'
+#' @param expr Une expression glm() passée sans guillemets
+#'
+#' @return Le résultat de glm()
+sans_warning_proba <- function(expr) {
+  withCallingHandlers(
+    expr = force(expr),
+    warning = function(w) {
+      if (grepl("probabilités ont été ajustées numériquement à 0 ou 1", conditionMessage(w))) {
+        invokeRestart("muffleWarning")
+      }
+    }
+  )
+}
 
 

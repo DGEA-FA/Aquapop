@@ -730,8 +730,8 @@ DATAogive <- newDF %>%
 # Création d'une table récapitulative -----------------------------------------
 
 minitable<- rbind(
-  c("L50 - Mâle (mm)", round(L50_M, digits = 0)),
-  c("L50 - Femelle (mm)", round(L50_F, digits = 0)),
+  c("L50 - Mâle (mm)", round(l50_M, digits = 0)),
+  c("L50 - Femelle (mm)", round(l50_F, digits = 0)),
   c("b0", round(b0, digits = 3)),
   c("b1", round(b1, digits = 3)),
   c("sexe", round(b2, digits = 3)),

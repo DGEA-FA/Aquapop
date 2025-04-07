@@ -65,34 +65,159 @@ table_recap(data_lac = data_lac, data_station = data_station)
 info_pen <- get_info_pen(typ_pech)
 info_pen
 
-# Longueur à maturité -------------------------------------------------------
-# Obtenir les résultats
-res <- table_L50_modeles(specimen, return_all = TRUE, format = "df")
-res <- table_L50_modeles(specimen, return_all = TRUE, format = "flextable")
+# Maturité sexuelle -------------------------------------------------------
 
-cat(res$message, "\n")
-print(res$table)  # table principale (séparé ou combiné selon logique)
-print(res$table_sep)  # toujours présent si return_all = TRUE
-print(res$table_comb) # idem
-res$best_model
-# Longueur à maturité - modèle TLO_cloglog (sexes combinés)
-res_cloglog <- modele_TLO_cloglog(specimen)
-print(res_cloglog$minitable)
-res_cloglog$minitable_flextable
-# Graphique ogive
-print(res_cloglog$plot)
-# Longueur à maturité - modèle TLO_logit (sexes combinés)
-res_logit <- modele_TLO_logit(specimen)
-print(res_logit$minitable)
-res_logit$minitable_flextable
-print(res_logit$plot)
-# Longueur à maturité - modèle TLO_probit (sexes combinés)
-res_probit <- modele_TLO_probit(specimen)
-print(res_probit$minitable)
-res_probit$minitable_flextable
-print(res_probit$plot)
+# TLO - probit - ltm
+res_tlo_probit_ltm <- fit_maturite(data = specimen, variable = "ltm", modele = "TLO", lien = "probit")
+res_tlo_probit_ltm$table_resultats
+res_tlo_probit_ltm$graphique
+res_tlo_probit_ltm$table_resultats_flextable
 
-modele_INT_probit(specimen)
+# TLO - probit - age
+res_tlo_probit_age <- fit_maturite(data = specimen, variable = "age", modele = "TLO", lien = "probit")
+res_tlo_probit_age$table_resultats
+res_tlo_probit_age$graphique
+res_tlo_probit_age$table_resultats_flextable
+
+# TLO - logit - ltm
+res_tlo_logit_ltm <- fit_maturite(data = specimen, variable = "ltm", modele = "TLO", lien = "logit")
+res_tlo_logit_ltm$table_resultats
+res_tlo_logit_ltm$graphique
+res_tlo_logit_ltm$table_resultats_flextable
+
+# TLO - logit - age
+res_tlo_logit_age <- fit_maturite(data = specimen, variable = "age", modele = "TLO", lien = "logit")
+res_tlo_logit_age$table_resultats
+res_tlo_logit_age$graphique
+res_tlo_logit_age$table_resultats_flextable
+
+# TLO - cloglog - ltm
+res_tlo_cloglog_ltm <- fit_maturite(data = specimen, variable = "ltm", modele = "TLO", lien = "cloglog")
+res_tlo_cloglog_ltm$table_resultats
+res_tlo_cloglog_ltm$graphique
+res_tlo_cloglog_ltm$table_resultats_flextable
+
+# TLO - cloglog - age
+res_tlo_cloglog_age <- fit_maturite(data = specimen, variable = "age", modele = "TLO", lien = "cloglog")
+res_tlo_cloglog_age$table_resultats
+res_tlo_cloglog_age$graphique
+res_tlo_cloglog_age$table_resultats_flextable
+
+
+# ADD - logit - ltm
+res_add_logit_ltm <- fit_maturite(data = specimen, variable = "ltm", modele = "ADD", lien = "logit")
+res_add_logit_ltm$table_resultats
+res_add_logit_ltm$graphique
+res_add_logit_ltm$table_resultats_flextable
+
+
+# ADD - logit - age
+res_add_logit_age <- fit_maturite(data = specimen, variable = "age", modele = "ADD", lien = "logit")
+res_add_logit_age$table_resultats
+res_add_logit_age$graphique
+res_add_logit_age$table_resultats_flextable
+
+# ADD - cloglog - ltm
+res_add_cloglog_ltm <- fit_maturite(data = specimen, variable = "ltm", modele = "ADD", lien = "cloglog")
+res_add_cloglog_ltm$table_resultats
+res_add_cloglog_ltm$graphique
+res_add_cloglog_ltm$table_resultats_flextable
+
+# ADD - cloglog - age
+res_add_cloglog_age <- fit_maturite(data = specimen, variable = "age", modele = "ADD", lien = "cloglog")
+res_add_cloglog_age$table_resultats
+res_add_cloglog_age$graphique
+res_add_cloglog_age$table_resultats_flextable
+
+# COM - logit - ltm
+res_com_logit_ltm <- fit_maturite(data = specimen, variable = "ltm", modele = "COM", lien = "logit")
+res_com_logit_ltm$table_resultats
+res_com_logit_ltm$graphique
+res_com_logit_ltm$table_resultats_flextable
+
+
+
+
+
+
+# COM - logit - age
+res_com_logit_age <- fit_maturite(data = specimen, variable = "age", modele = "COM", lien = "logit")
+res_com_logit_age$table_resultats
+res_com_logit_age$graphique
+res_com_logit_age$table_resultats_flextable
+
+# COM - cloglog - ltm
+res_com_cloglog_ltm <- fit_maturite(data = specimen, variable = "ltm", modele = "COM", lien = "cloglog")
+res_com_cloglog_ltm$table_resultats
+res_com_cloglog_ltm$graphique
+res_com_cloglog_ltm$table_resultats_flextable
+
+# COM - cloglog - age
+res_com_cloglog_age <- fit_maturite(data = specimen, variable = "age", modele = "COM", lien = "cloglog")
+res_com_cloglog_age$table_resultats
+res_com_cloglog_age$graphique
+res_com_cloglog_age$table_resultats_flextable
+
+# INT - logit - ltm
+res_int_logit_ltm <- fit_maturite(data = specimen, variable = "ltm", modele = "INT", lien = "logit")
+res_int_logit_ltm$table_resultats
+res_int_logit_ltm$graphique
+res_int_logit_ltm$table_resultats_flextable
+
+# INT - logit - age
+res_int_logit_age <- fit_maturite(data = specimen, variable = "age", modele = "INT", lien = "logit")
+res_int_logit_age$table_resultats
+res_int_logit_age$graphique
+res_int_logit_age$table_resultats_flextable
+
+# INT - cloglog - ltm
+res_int_cloglog_ltm <- fit_maturite(data = specimen, variable = "ltm", modele = "INT", lien = "cloglog")
+res_int_cloglog_ltm$table_resultats
+res_int_cloglog_ltm$graphique
+res_int_cloglog_ltm$table_resultats_flextable
+
+# INT - cloglog - age
+res_int_cloglog_age <- fit_maturite(data = specimen, variable = "age", modele = "INT", lien = "cloglog")
+res_int_cloglog_age$table_resultats
+res_int_cloglog_age$graphique
+res_int_cloglog_age$table_resultats_flextable
+
+# ADD - probit - ltm
+res_add_probit_ltm <- fit_maturite(data = specimen, variable = "ltm", modele = "ADD", lien = "probit")
+res_add_probit_ltm$table_resultats
+res_add_probit_ltm$graphique
+res_add_probit_ltm$table_resultats_flextable
+
+# ADD - probit - age
+res_add_probit_age <- fit_maturite(data = specimen, variable = "age", modele = "ADD", lien = "probit")
+res_add_probit_age$table_resultats
+res_add_probit_age$graphique
+res_add_probit_age$table_resultats_flextable
+
+# COM - probit - ltm
+res_com_probit_ltm <- fit_maturite(data = specimen, variable = "ltm", modele = "COM", lien = "probit")
+res_com_probit_ltm$table_resultats
+res_com_probit_ltm$graphique
+res_com_probit_ltm$table_resultats_flextable
+
+# COM - probit - age
+res_com_probit_age <- fit_maturite(data = specimen, variable = "age", modele = "COM", lien = "probit")
+res_com_probit_age$table_resultats
+res_com_probit_age$graphique
+res_com_probit_age$table_resultats_flextable
+
+# INT - probit - ltm
+res_int_probit_ltm <- fit_maturite(data = specimen, variable = "ltm", modele = "INT", lien = "probit")
+res_int_probit_ltm$table_resultats
+res_int_probit_ltm$graphique
+res_int_probit_ltm$table_resultats_flextable
+
+# INT - probit - age
+res_int_probit_age <- fit_maturite(data = specimen, variable = "age", modele = "INT", lien = "probit")
+res_int_probit_age$table_resultats
+res_int_probit_age$graphique
+res_int_probit_age$table_resultats_flextable
+
 # Mortalite --------------------------------------------------------------
 
 pp <- get_peak_plus(specimen)
