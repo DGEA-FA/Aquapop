@@ -67,6 +67,36 @@ info_pen
 
 # Maturité sexuelle -------------------------------------------------------
 
+# Longueur à maturité -------------------------------------------------------
+# Obtenir les résultats
+res <- table_maturite_modeles(specimen, variable = "ltm")
+
+# Tableau principal recommandé
+res$table$df
+res$table$flextable
+res$message
+# # Tous les modèles séparés
+# res$table_sep$df
+# res$table_sep$flextable
+# 
+# # Tous les modèles combinés
+# res$table_comb$df
+# res$table_comb$flextable
+
+best <- res$best_model
+
+# Si c’est un modèle combiné
+x <- fit_maturite(
+  data = specimen,
+  variable = best$variable,
+  modele = best$modele,
+  lien = best$lien
+)
+x$table_resultats
+x$table_resultats_flextable
+x$commentaire
+x$graphique
+
 # TLO - probit - ltm
 res_tlo_probit_ltm <- fit_maturite(data = specimen, variable = "ltm", modele = "TLO", lien = "probit")
 res_tlo_probit_ltm$table_resultats
@@ -109,7 +139,6 @@ res_add_logit_ltm <- fit_maturite(data = specimen, variable = "ltm", modele = "A
 res_add_logit_ltm$table_resultats
 res_add_logit_ltm$graphique
 res_add_logit_ltm$table_resultats_flextable
-
 
 # ADD - logit - age
 res_add_logit_age <- fit_maturite(data = specimen, variable = "age", modele = "ADD", lien = "logit")

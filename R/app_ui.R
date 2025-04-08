@@ -350,16 +350,27 @@ app_ui <- function() {
                  tabPanel(
                    title = "Longueur à maturité",
                    
-                   # Message explicatif
                    h3("Sélection des modèles L50"),
                    verbatimTextOutput("message_modeles_L50"),
                    br(),
                    
-                   # Table des modèles retenus
                    h3("Tableau des modèles évalués"),
                    uiOutput("table_modele_L50_ui"),
-                   uiOutput("download_table_modele_L50_ui")
+                   uiOutput("download_table_modele_L50_ui"),
+                   br(),
+                   
+                   h3("Résultats du meilleur modèle retenu"),
+                   
+                   # Tableau
+                   uiOutput("table_ogive_maturite_ui"),
+                   uiOutput("download_ogive_maturite_table_ui"),
+                   
+                   # Graphique
+                   
+                   withSpinner(plotOutput("plot_ogive_maturite"), type = myspinner),
+                   downloadButton("download_ogive_maturite_plot", label = "Téléchargement du graphique")
                  ),
+                 
                  
                  tabPanel(
                    title = "Âge à maturité",

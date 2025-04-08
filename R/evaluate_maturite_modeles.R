@@ -4,7 +4,7 @@
 #'
 #' @return Un dataframe avec les critères de convergence et d'ajustement, trié par ordre croissant d'AICc.
 #' @export
-evaluate_L50_models <- function(models) {
+evaluate_maturite_modeles <- function(models) {
   library(dplyr)
   library(MuMIn)      # Pour AICc
   library(DescTools)  # Pour o.r.test

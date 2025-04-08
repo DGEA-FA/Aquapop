@@ -13,7 +13,7 @@
 #' - `message` : texte décrivant la décision
 #'
 #' @export
-select_best_L50_models <- function(evaluation_df) {
+select_best_maturite_separated_modele <- function(evaluation_df) {
   # Filtrer les modèles valides : convergence et commentaire favorable
   valid_models <- evaluation_df %>%
     dplyr::filter(
