@@ -671,7 +671,110 @@ app_server <- function(input, output, session) {
   
   # Maturité sexuelle -------------------------------------------------------
   
-  # -- Résultat complet : modèle(s) et table(s)
+  # # -- Résultat complet : modèle(s) et table(s)
+  # table_modeles_maturite_resultats <- reactive({
+  #   req(specimen())
+  #   table_maturite_modeles(
+  #     specimen_data = specimen(),
+  #     prefer_combined = FALSE,
+  #     variable = "ltm"
+  #   )
+  # })
+  # 
+  # # -- Texte explicatif
+  # message_modeles_maturite <- reactive({
+  #   req(table_modeles_maturite_resultats())
+  #   table_modeles_maturite_resultats()$message
+  # })
+  # 
+  # # -- Table principale (flextable)
+  # ft_modele_maturite <- reactive({
+  #   req(table_modeles_maturite_resultats())
+  #   table_modeles_maturite_resultats()$table$flextable
+  # })
+  # 
+  # # -- Table principale (data.frame) pour téléchargement
+  # df_modele_maturite <- reactive({
+  #   req(table_modeles_maturite_resultats())
+  #   table_modeles_maturite_resultats()$table$df
+  # })
+  # 
+  # # -- Affichage
+  # output$message_modeles_L50 <- renderText({
+  #   req(message_modeles_maturite())
+  #   message_modeles_maturite()
+  # })
+  # 
+  # render_table_flextable("table_modele_L50_ui", ft_modele_maturite)
+  # render_download_table("download_table_modele_L50", df_modele_maturite())
+  # 
+  # fit_maturite_resultat <- reactive({
+  #   req(specimen(), table_modeles_maturite_resultats())
+  #   
+  #   best <- table_modeles_maturite_resultats()$best_model
+  #   
+  #   # Si modèle combiné (structure plate)
+  #   if (!is.null(best$modele)) {
+  #     fit_maturite(
+  #       data = specimen(),
+  #       variable = best$variable,
+  #       modele = best$modele,
+  #       lien = best$lien
+  #     )
+  #   } else {
+  #     # Sinon, on prend le modèle Femelle par défaut (à adapter si besoin)
+  #     fit_maturite(
+  #       data = specimen(),
+  #       variable = best$best_model_F$variable,
+  #       modele = best$best_model_F$modele,
+  #       lien = best$best_model_F$lien
+  #     )
+  #   }
+  # })
+  # 
+  # output$table_resultats_maturite <- renderTable({
+  #   req(fit_maturite_resultat())
+  #   fit_maturite_resultat()$table_resultats
+  # })
+  # 
+  # output$ft_resultats_maturite <- renderUI({
+  #   req(fit_maturite_resultat())
+  #   flextable::htmltools_value(fit_maturite_resultat()$table_resultats_flextable)
+  # })
+  # 
+  # output$graphique_maturite <- renderPlot({
+  #   req(fit_maturite_resultat())
+  #   fit_maturite_resultat()$graphique
+  # })
+  # 
+  # # --- Graphique ogive maturité ---
+  # plot_ogive_maturite <- reactive({
+  #   req(fit_maturite_resultat())
+  #   fit_maturite_resultat()$graphique
+  # })
+  # 
+  # render_plot_ggplot("plot_ogive_maturite", plot_ogive_maturite)
+  # render_download_plot("download_ogive_maturite_plot", plot_ogive_maturite)
+  # 
+  # 
+  # 
+  # # --- Tableau des résultats (flextable) ---
+  # table_ogive_maturite_df <- reactive({
+  #   req(fit_maturite_resultat())
+  #   fit_maturite_resultat()$table_resultats
+  # })
+  # 
+  # ft_ogive_maturite <- reactive({
+  #   req(fit_maturite_resultat())
+  #   fit_maturite_resultat()$table_resultats_flextable
+  # })
+  # 
+  # render_table_flextable("table_ogive_maturite_ui", ft_ogive_maturite)
+  # render_download_table("download_ogive_maturite_table", table_ogive_maturite_df())
+  # 
+  # 
+  
+  # -- Résultat complet : modèles et tables
   table_modeles_maturite_resultats <- reactive({
     req(specimen())
     table_maturite_modeles(
@@ -681,73 +784,67 @@ app_server <- function(input, output, session) {
     )
   })
   
-  # -- Texte explicatif
-  message_modeles_maturite <- reactive({
+  # -- Index du meilleur modèle pour sélection par défaut
+  default_model_index_maturite <- reactive({
+    table <- table_modeles_maturite_resultats()$table$df
+    req(nrow(table) > 0)
+    idx <- which(table$recommande)
+    if (length(idx) == 0) idx <- 1
+    idx
+  })
+  
+  # -- Tableau interactif des modèles
+  output$table_modeles_maturite_table <- renderReactable({
+    req(table_modeles_maturite_resultats())
+    table <- table_modeles_maturite_resultats()$table$df
+    idx <- default_model_index_maturite()
+    
+    reactable(
+      labelled_data(table),
+      selection = "single",
+      onClick = "select",
+      defaultSelected = idx,
+      defaultColDef = colDef(
+        align = "center",
+        headerStyle = list(textAlign = "center")
+      )
+    )
+  })
+  
+  # -- Modèle actuellement sélectionné
+  selected_model_info_maturite <- reactive({
+    selected <- getReactableState("table_modeles_maturite_table", "selected")
+    req(!is.null(selected), table_modeles_maturite_resultats())
+    table <- table_modeles_maturite_resultats()$table$df
+    model_id <- table[selected, "modele_id", drop = TRUE]
+    
+    list(
+      modele = stringr::str_extract(model_id, "TLO|ADD|INT|COM"),
+      lien = stringr::str_extract(model_id, "logit|probit|cloglog"),
+      variable = "ltm"
+    )
+  })
+  
+  # -- Résultat du modèle sélectionné
+  fit_maturite_resultat <- reactive({
+    req(specimen(), selected_model_info_maturite())
+    best <- selected_model_info_maturite()
+    
+    fit_maturite(
+      data = specimen(),
+      variable = best$variable,
+      modele = best$modele,
+      lien = best$lien
+    )
+  })
+  
+  # -- Message explicatif
+  output$message_modeles_L50 <- renderText({
     req(table_modeles_maturite_resultats())
     table_modeles_maturite_resultats()$message
   })
   
-  # -- Table principale (flextable)
-  ft_modele_maturite <- reactive({
-    req(table_modeles_maturite_resultats())
-    table_modeles_maturite_resultats()$table$flextable
-  })
-  
-  # -- Table principale (data.frame) pour téléchargement
-  df_modele_maturite <- reactive({
-    req(table_modeles_maturite_resultats())
-    table_modeles_maturite_resultats()$table$df
-  })
-  
-  # -- Affichage
-  output$message_modeles_L50 <- renderText({
-    req(message_modeles_maturite())
-    message_modeles_maturite()
-  })
-  
-  render_table_flextable("table_modele_L50_ui", ft_modele_maturite)
-  render_download_table("download_table_modele_L50", df_modele_maturite())
-  
-  fit_maturite_resultat <- reactive({
-    req(specimen(), table_modeles_maturite_resultats())
-    
-    best <- table_modeles_maturite_resultats()$best_model
-    
-    # Si modèle combiné (structure plate)
-    if (!is.null(best$modele)) {
-      fit_maturite(
-        data = specimen(),
-        variable = best$variable,
-        modele = best$modele,
-        lien = best$lien
-      )
-    } else {
-      # Sinon, on prend le modèle Femelle par défaut (à adapter si besoin)
-      fit_maturite(
-        data = specimen(),
-        variable = best$best_model_F$variable,
-        modele = best$best_model_F$modele,
-        lien = best$best_model_F$lien
-      )
-    }
-  })
-  
-  output$table_resultats_maturite <- renderTable({
-    req(fit_maturite_resultat())
-    fit_maturite_resultat()$table_resultats
-  })
-  
-  output$ft_resultats_maturite <- renderUI({
-    req(fit_maturite_resultat())
-    flextable::htmltools_value(fit_maturite_resultat()$table_resultats_flextable)
-  })
-  
-  output$graphique_maturite <- renderPlot({
-    req(fit_maturite_resultat())
-    fit_maturite_resultat()$graphique
-  })
-  
-  # --- Graphique ogive maturité ---
+  # -- Graphique du modèle sélectionné
   plot_ogive_maturite <- reactive({
     req(fit_maturite_resultat())
     fit_maturite_resultat()$graphique
@@ -756,9 +853,7 @@ app_server <- function(input, output, session) {
   render_plot_ggplot("plot_ogive_maturite", plot_ogive_maturite)
   render_download_plot("download_ogive_maturite_plot", plot_ogive_maturite)
   
-  
-  
-  # --- Tableau des résultats (flextable) ---
+  # -- Tableau du modèle sélectionné
   table_ogive_maturite_df <- reactive({
     req(fit_maturite_resultat())
     fit_maturite_resultat()$table_resultats
@@ -771,7 +866,5 @@ app_server <- function(input, output, session) {
   
   render_table_flextable("table_ogive_maturite_ui", ft_ogive_maturite)
   render_download_table("download_ogive_maturite_table", table_ogive_maturite_df())
-  
-  
   
 }

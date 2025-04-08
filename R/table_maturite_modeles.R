@@ -25,13 +25,47 @@ table_maturite_modeles <- function(specimen_data, prefer_combined = FALSE, varia
     )
   }
   
+  # # Fonction interne pour ajouter les labels
+  # add_labels_maturite <- function(df) {
+  #   labelled::var_label(df) <- list(
+  #     modele_id  = "Modèle",
+  #     aicc       = "AICc",
+  #     converged  = "Convergence",
+  #     recommande = "✔ Recommandé",
+  #     type       = "Type de modèle"
+  #   )
+  #   df
+  # }
+  # Fonction interne pour ajouter les labels aux colonnes de modèles de maturité
+  add_labels_maturite <- function(df) {
+    # Vérifie dynamiquement les colonnes existantes avant d'ajouter des labels
+    var_labels <- list()
+    
+    if ("modele_id" %in% names(df)) var_labels$modele_id <- "Modèle"
+    if ("modele" %in% names(df))    var_labels$modele    <- "Type"
+    if ("lien" %in% names(df))      var_labels$lien      <- "Lien"
+    if ("convergence" %in% names(df)) var_labels$convergence <- "Convergence"
+    if ("aicc" %in% names(df))      var_labels$aicc      <- "AICc"
+    if ("pearson_x2_pval" %in% names(df)) var_labels$pearson_x2_pval <- "p (χ² de Pearson)"
+    if ("goodness_of_link_pval" %in% names(df)) var_labels$goodness_of_link_pval <- "p (test du lien)"
+    if ("commentaire" %in% names(df)) var_labels$commentaire <- "Commentaire"
+    if ("type" %in% names(df))      var_labels$type      <- "Type de modèle"
+    if ("recommande" %in% names(df)) var_labels$recommande <- "✔ Recommandé"
+    
+    labelled::var_label(df) <- var_labels
+    return(df)
+  }
+  
+  # Préparation des données
   df <- prepare_maturite_data(specimen_data, variable = variable)
   
+  # Ajustement des modèles séparés
   models_sep <- fit_maturite_separated_models(df, variable = variable)
   eval_sep <- evaluate_maturite_modeles(models_sep)
   best_sep <- select_best_maturite_separated_modele(eval_sep)
   eval_sep$type <- ifelse(grepl("^M_", eval_sep$modele_id), "séparé_M", "séparé_F")
   
+  # Ajustement des modèles combinés
   models_comb <- fit_maturite_combined_models(df, variable = variable)
   eval_comb <- evaluate_maturite_modeles(models_comb)
   eval_comb$type <- "combiné"
@@ -39,6 +73,7 @@ table_maturite_modeles <- function(specimen_data, prefer_combined = FALSE, varia
   best_comb <- select_best_maturite_combined_modele(eval_comb)
   eval_comb$recommande <- eval_comb$modele_id == best_comb$best_model
   
+  # Message explicatif
   message <- paste0(best_sep$message, "\n", best_comb$message)
   
   if (is.null(best_comb$best_model) && (is.null(best_sep$best_model_M) || is.null(best_sep$best_model_F))) {
@@ -46,6 +81,11 @@ table_maturite_modeles <- function(specimen_data, prefer_combined = FALSE, varia
     warning("Aucun modèle utilisable trouvé.")
   }
   
+  # Ajouter les labels
+  eval_sep <- add_labels_maturite(eval_sep)
+  eval_comb <- add_labels_maturite(eval_comb)
+  
+  # Structure des sorties
   if (prefer_combined || best_sep$use_combined) {
     table_main <- to_dual_format(eval_comb)
     best_model <- if (!is.null(best_comb$best_model)) {
@@ -78,9 +118,11 @@ table_maturite_modeles <- function(specimen_data, prefer_combined = FALSE, varia
     table_main <- to_dual_format(eval_sep)
   }
   
+  # Valeur par défaut pour la colonne `recommande` si elle est absente
   eval_sep$recommande <- eval_sep$recommande %||% FALSE
   eval_comb$recommande <- eval_comb$recommande %||% FALSE
   
+  # Résultat final
   list(
     table = table_main,
     best_model = best_model,

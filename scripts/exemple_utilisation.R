@@ -70,7 +70,7 @@ info_pen
 # Longueur à maturité -------------------------------------------------------
 # Obtenir les résultats
 res <- table_maturite_modeles(specimen, variable = "ltm")
-
+specimen_data = specimen
 # Tableau principal recommandé
 res$table$df
 res$table$flextable
