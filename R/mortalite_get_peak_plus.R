@@ -7,11 +7,7 @@
 #'
 #' @return Un entier correspondant au Peak Plus
 #' @export
-#'
-#' @examples
-#' data_filtered <- dplyr::filter(specimen, sp == "SANA")
-#' get_peak_plus(data_filtered)
-get_peak_plus <- function(data) {
+mortalite_get_peak_plus <- function(data) {
   if (!"age" %in% names(data)) stop("La colonne `age` est manquante.")
   if (nrow(data) == 0) return(NA_integer_)
   

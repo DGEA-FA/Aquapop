@@ -536,28 +536,28 @@ app_server <- function(input, output, session) {
   
   # Mortalite -------------------------------------------------------
   # Valeur âge maximum
-  age_max <- reactive({
+  mortalite_get_age_max_res <- reactive({
     req(specimen())
-    get_age_max(specimen())
+    mortalite_get_age_max(data = specimen())
   })
   
   
-  # 1. Valeur PP (Peak Plus)
+  # Valeur pp (Peak Plus)
   pp <- reactive({
     req(specimen())
-    get_peak_plus(specimen())
+    mortalite_get_peak_plus(data = specimen())
   })
   
-  # 3. Données corrigées pour la mortalité
+  # Données corrigées pour la mortalité
   df_age_corrigee <- reactive({
-    req(specimen(), pp(), age_max())
-    prepare_age_data_corrigee(specimen(), pp(), age_max())
+    req(specimen(), pp(), mortalite_get_age_max_res())
+    prepare_age_data_corrigee(specimen(), pp(), mortalite_get_age_max_res())
   })
   
   # 4. Données étendues
   df_age_etendue <- reactive({
-    req(df_age_corrigee(), age_max())
-    prepare_age_data_etendue(df_corrigee = df_age_corrigee(), age_max = age_max())
+    req(df_age_corrigee(), mortalite_get_age_max_res())
+    prepare_age_data_etendue(df_corrigee = df_age_corrigee(), age_max = mortalite_get_age_max_res())
   })
   
   # 1. Réactif : test de sur-dispersion Poisson
@@ -653,13 +653,13 @@ app_server <- function(input, output, session) {
   )
    # 8. Résultats Chapman-Robson (format flextable ou data.frame)
   ft_chaprob <- reactive({
-    req(specimen(), pp(), age_max())
-    mortalite_chaprob(specimen = specimen(), pp = pp(), age_max = age_max(), format = "flextable")
+    req(specimen(), pp(), mortalite_get_age_max_res())
+    mortalite_chaprob(specimen = specimen(), pp = pp(), age_max = mortalite_get_age_max_res(), format = "flextable")
   })
   
   df_chaprob <- reactive({
-    req(specimen(), pp(), age_max())
-    mortalite_chaprob(specimen = specimen(), pp = pp(), age_max = age_max(), format = "data.frame")
+    req(specimen(), pp(), mortalite_get_age_max_res())
+    mortalite_chaprob(specimen = specimen(), pp = pp(), age_max = mortalite_get_age_max_res(), format = "data.frame")
   })
   
   render_table_flextable("table_chaprob", ft_chaprob)

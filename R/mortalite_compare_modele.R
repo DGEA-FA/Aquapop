@@ -25,7 +25,7 @@ mortalite_compare_modele <- function(data) {
   result_nb1     <- ajuster_modele_mortalite_nb1(data)
   result_nb2     <- ajuster_modele_mortalite_nb2(data)
   result_cmp     <- ajuster_modele_mortalite_cmp(data)
-  result_gp      <- ajuster_modele_mortalite_gp(data)
+  result_gp      <- mortalite_fit_modele_gp(data)
   
   # Regroupement
   resultats <- dplyr::bind_rows(result_poisson, result_nb1, result_nb2, result_cmp, result_gp)

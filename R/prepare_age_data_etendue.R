@@ -6,7 +6,7 @@
 #'
 #' @param df_corrigee Un `data.frame` avec les colonnes `age` et `number` produit par
 #'                    `prepare_age_data_corrigee()`.
-#' @param age_max Âge maximal observé (typiquement obtenu avec `get_age_max()`).
+#' @param age_max Âge maximal observé (typiquement obtenu avec `mortalite_get_age_max()`).
 #'
 #' @return Un `data.frame` contenant les âges observés + les âges étendus avec `number = 0`.
 #' @export

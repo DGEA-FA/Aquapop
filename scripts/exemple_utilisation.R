@@ -246,10 +246,10 @@ res_int_probit_age$table_resultats_flextable
 
 # Mortalite --------------------------------------------------------------
 
-pp <- get_peak_plus(specimen)
-age_max <- get_age_max(specimen)
-df_age_corrigee <- prepare_age_data_corrigee(specimen,pp,age_max)
-df_age_etendue <- prepare_age_data_etendue(df_corrigee = df_age_corrigee, age_max = age_max)
+pp <- mortalite_get_peak_plus(data = specimen)
+mortalite_get_age_max_res <- mortalite_get_age_max(data = specimen)
+df_age_corrigee <- prepare_age_data_corrigee(specimen,pp,mortalite_get_age_max_res)
+df_age_etendue <- prepare_age_data_etendue(df_corrigee = df_age_corrigee, age_max = mortalite_get_age_max_res)
 
 # result_poisson <- ajuster_modele_mortalite_poisson(df_age_etendue)
 # # print(result_poisson)
@@ -263,7 +263,7 @@ df_age_etendue <- prepare_age_data_etendue(df_corrigee = df_age_corrigee, age_ma
 # result_cmp <- ajuster_modele_mortalite_cmp(df_age_etendue)
 # # print(result_cmp)
 # # 
-# result_gp <- ajuster_modele_mortalite_gp(df_age_etendue)
+# result_gp <- mortalite_fit_modele_gp(df_age_etendue)
 # # print(result_gp)
 
 # 1. Exécuter la fonction
@@ -290,16 +290,16 @@ modele <- get_best_mortalite_model(df_age_etendue, methode = meilleur_modele)
 plot_mortalite_modele(specimen, modele, mortalite_compare_modele_res$data)
 
 # Format data.frame
-res_chaprob_df <- mortalite_chaprob(specimen = specimen, pp = pp, age_max = age_max, format = "data.frame")
+res_chaprob_df <- mortalite_chaprob(specimen = specimen, pp = pp, age_max = mortalite_get_age_max_res, format = "data.frame")
 print(res_chaprob_df)
 
 # Format flextable (à afficher dans un R Markdown ou RStudio Viewer)
-res_chaprob_ft <- mortalite_chaprob(specimen = specimen, pp = pp, age_max = age_max, format = "flextable")
+res_chaprob_ft <- mortalite_chaprob(specimen = specimen, pp = pp, age_max = mortalite_get_age_max_res, format = "flextable")
 res_chaprob_ft  # s'affiche bien dans un environnement interactif
 
 
 # 5. Estimer la mortalité selon Chapman-Robson
-df_chaprob <- mortalite_chaprob(df_corr, pp = pp, age_max = age_max)
+df_chaprob <- mortalite_chaprob(df_corr, pp = pp, age_max = mortalite_get_age_max_res)
 print(df_chaprob)
 
 # Croissance --------------------------------------------------------------

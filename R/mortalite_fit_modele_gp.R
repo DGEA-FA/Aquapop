@@ -9,8 +9,8 @@
 #' @export
 #'
 #' @examples
-#' ajuster_modele_mortalite_gp(df_age_etendue)
-ajuster_modele_mortalite_gp <- function(df_age_etendue) {
+#' mortalite_fit_modele_gp(df_age_etendue)
+mortalite_fit_modele_gp <- function(df_age_etendue) {
   stopifnot(all(c("age", "number") %in% names(df_age_etendue)))
   
   # 1. Ajustement du modèle GP
