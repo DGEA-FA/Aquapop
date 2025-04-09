@@ -5,7 +5,7 @@
 #' colonnes de CPUE et d’intervalle de confiance (IC 95%) en extrayant les données des meilleurs modèles.
 #'
 #' @param data Un `data.frame` de spécimens filtrés pour le lac, année, etc.
-#' @param cpue_table_tous Un `data.frame` issu de `cpue_modele_comparaison(..., format = "data.frame")` (tous spécimens)
+#' @param cpue_table_tous Un `data.frame` issu de `cpue_compare_modele(..., format = "data.frame")` (tous spécimens)
 #' @param cpue_table_femelles Idem pour les femelles matures
 #' @param best_model_tous Nom du meilleur modèle (ex: "nb1") pour tous
 #' @param best_model_femelles Nom du meilleur modèle (ex: "nb2") pour femelles

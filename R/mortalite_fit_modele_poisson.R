@@ -4,14 +4,14 @@
 #' à l’aide d’un GLM Poisson. Elle applique aussi un test HNP (Half-Normal Plot)
 #' pour évaluer l’ajustement et retourne un tableau avec les principales statistiques.
 #'
-#' @param df_age_etendue Un `data.frame` contenant les colonnes `age` et `number`, produit par `prepare_age_data_etendue()`.
+#' @param df_age_etendue Un `data.frame` contenant les colonnes `age` et `number`, produit par `mortalite_prepare_extended()`.
 #'
 #' @return Un `data.frame` d’une ligne résumant le modèle ajusté, incluant Z, SE, A, IC95 et HNP.
 #' @export
 #'
 #' @examples
-#' ajuster_modele_mortalite_poisson(df_age_etendue)
-ajuster_modele_mortalite_poisson <- function(df_age_etendue) {
+#' mortalite_fit_modele_poisson(df_age_etendue)
+mortalite_fit_modele_poisson <- function(df_age_etendue) {
   stopifnot(all(c("age", "number") %in% names(df_age_etendue)))
   
   # 1. Ajustement du modèle Poisson

@@ -3,20 +3,20 @@
 #' Cette fonction ajuste cinq modèles (Poisson, NB1, NB2, CMP, GP) sur les données de CPUE
 #' et retourne un tableau comparatif avec AICc, ajustement HNP et recommandation.
 #'
-#' @param cpue_data Un `data.frame` produit par `prepare_cpue_data()` contenant les colonnes `no_station` et `CPUE`.
+#' @param cpue_data Un `data.frame` produit par `cpue_prepare()` contenant les colonnes `no_station` et `CPUE`.
 #' @param format Format de sortie : `"data.frame"` (défaut) ou `"flextable"`.
 #'
 #' @return Un tableau comparatif des modèles, au format `data.frame` ou `flextable`.
 #' @export
-cpue_modele_comparaison <- function(cpue_data, format = c("data.frame", "flextable")) {
+cpue_compare_modele <- function(cpue_data, format = c("data.frame", "flextable")) {
   format <- match.arg(format)
   
   # Ajustement des modèles
-  result_poisson <- ajuster_modele_cpue_poisson(cpue_data)
-  result_nb1     <- ajuster_modele_cpue_nb1(cpue_data)
-  result_nb2     <- ajuster_modele_cpue_nb2(cpue_data)
-  result_cmp     <- ajuster_modele_cpue_cmp(cpue_data)
-  result_gp      <- ajuster_modele_cpue_gp(cpue_data)
+  result_poisson <- cpue_fit_modele_poisson(cpue_data)
+  result_nb1     <- cpue_fit_modele_nb1(cpue_data)
+  result_nb2     <- cpue_fit_modele_nb2(cpue_data)
+  result_cmp     <- cpue_fit_modele_cmp(cpue_data)
+  result_gp      <- cpue_fit_modele_gp(cpue_data)
   
   results <- dplyr::bind_rows(result_poisson, result_nb1, result_nb2, result_cmp, result_gp)
   results_bien_ajuste <- results %>% dplyr::filter(ajustement_hnp < 10)

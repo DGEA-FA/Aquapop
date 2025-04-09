@@ -1,7 +1,7 @@
 #' Extraire le modèle de mortalité correspondant à la meilleure méthode sélectionnée
 #'
 #' Cette fonction ajuste les 5 modèles de mortalité, sélectionne le meilleur
-#' via `select_best_mortalite_model()` et retourne l’objet `modele` correspondant.
+#' via `mortalite_select_best_modele()` et retourne l’objet `modele` correspondant.
 #'
 #' @param df_age_etendue Un data.frame contenant `age` et `number`
 #' @param methode Optionnel. Si fourni (e.g. "NB2"), retourne ce modèle directement.
@@ -11,7 +11,7 @@
 get_best_mortalite_model <- function(df_age_etendue, methode = NULL) {
   if (is.null(methode)) {
     mortalite_compare_modele_res_data <- mortalite_compare_modele(data = df_age_etendue)$data
-    methode <- select_best_mortalite_model(mortalite_compare_modele_res_data)
+    methode <- mortalite_select_best_modele(mortalite_compare_modele_res_data)
   }
   
   stopifnot(!is.null(methode), methode %in% c("poisson", "nb1", "nb2", "cmp", "gp"))

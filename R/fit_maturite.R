@@ -17,7 +17,7 @@ fit_maturite <- function(data, variable = c("ltm", "age"), modele = c("TLO", "AD
     stop(glue::glue("❌ Le jeu de données doit contenir les colonnes `{variable}`, `maturite` et `sexe`."))
   }
   
-  donnees_modeles <- prepare_maturite_data(data, variable = variable)
+  donnees_modeles <- maturite_prepare(data, variable = variable)
   
   if (nrow(donnees_modeles) < 10) {
     stop(glue::glue("❌ Trop peu d’individus après nettoyage (n = {nrow(donnees_modeles)})."))

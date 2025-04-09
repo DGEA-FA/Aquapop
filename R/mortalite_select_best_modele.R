@@ -12,8 +12,8 @@
 #'
 #' @examples
 #' mortalite_compare_modele_res_data <- mortalite_compare_modele(data = df_age_etendue)$data
-#' select_best_mortalite_model(mortalite_compare_modele_res_data)
-select_best_mortalite_model <- function(tablemodele) {
+#' mortalite_select_best_modele(mortalite_compare_modele_res_data)
+mortalite_select_best_modele <- function(tablemodele) {
   if (!"Méthode" %in% names(tablemodele) || !"AICc" %in% names(tablemodele)) {
     stop("Le tableau fourni n’est pas valide. Assurez-vous qu’il provient de `mortalite_compare_modele()$data`.")
   }

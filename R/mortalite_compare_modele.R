@@ -4,7 +4,7 @@
 #' et retourne un tableau comparatif avec AICc, HNP, estimation de Z et A (%), etc.
 #'
 #' @param data Un `data.frame` contenant les colonnes `age` et `number`,
-#'             tel que produit par la fonction `prepare_age_data_etendue()`.
+#'             tel que produit par la fonction `mortalite_prepare_extended()`.
 #'
 #' @return Une liste contenant :
 #' \describe{
@@ -15,16 +15,16 @@
 #' @export
 #'
 #' @examples
-#' df_corr <- prepare_age_data_corrigee(...)
-#' df_etendue <- prepare_age_data_etendue(df_corr, age_max = 10)
+#' df_corr <- mortalite_prepare_corr(...)
+#' df_etendue <- mortalite_prepare_extended(df_corr, age_max = 10)
 #' mortalite_compare_modele_res <- mortalite_compare_modele(data = df_etendue)
 mortalite_compare_modele <- function(data) {
   
   # Ajustement des modèles
-  result_poisson <- ajuster_modele_mortalite_poisson(data)
-  result_nb1     <- ajuster_modele_mortalite_nb1(data)
-  result_nb2     <- ajuster_modele_mortalite_nb2(data)
-  result_cmp     <- ajuster_modele_mortalite_cmp(data)
+  result_poisson <- mortalite_fit_modele_poisson(data)
+  result_nb1     <- mortalite_fit_modele_nb1(data)
+  result_nb2     <- mortalite_fit_modele_nb2(data)
+  result_cmp     <- mortalite_fit_modele_cmp(data)
   result_gp      <- mortalite_fit_modele_gp(data)
   
   # Regroupement

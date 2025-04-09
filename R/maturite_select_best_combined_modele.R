@@ -12,7 +12,7 @@
 #' }
 #'
 #' @export
-select_best_maturite_combined_modele <- function(evaluation_df) {
+maturite_select_best_combined_modele <- function(evaluation_df) {
   valid_models <- evaluation_df %>%
     dplyr::filter(
       convergence == TRUE,

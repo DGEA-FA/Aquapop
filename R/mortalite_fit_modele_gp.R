@@ -3,7 +3,7 @@
 #' Cette fonction ajuste un modèle GP via `glmmTMB` sur les données de fréquence d'âge étendues.
 #' Elle applique aussi un test HNP (Half-Normal Plot) pour évaluer la qualité de l'ajustement.
 #'
-#' @param df_age_etendue Un `data.frame` contenant les colonnes `age` et `number`, produit par `prepare_age_data_etendue()`.
+#' @param df_age_etendue Un `data.frame` contenant les colonnes `age` et `number`, produit par `mortalite_prepare_extended()`.
 #'
 #' @return Un `data.frame` d’une ligne résumant le modèle ajusté.
 #' @export

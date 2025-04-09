@@ -11,9 +11,9 @@
 #' @export
 #'
 #' @examples
-#' courbe_croissance_comparaison(data = specimen, format = "data.frame")
-#' courbe_croissance_comparaison(data = specimen, format = "flextable")
-courbe_croissance_comparaison <- function(data, format = c("data.frame", "flextable")) {
+#' croissance_compare_modele(data = specimen, format = "data.frame")
+#' croissance_compare_modele(data = specimen, format = "flextable")
+croissance_compare_modele <- function(data, format = c("data.frame", "flextable")) {
   format <- match.arg(format)
   
   # Filtrer et préparer les données

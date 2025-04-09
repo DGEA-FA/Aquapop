@@ -11,10 +11,10 @@
 #' @export
 #'
 #' @examples
-#' cpue <- prepare_cpue_data(capture, specimen, group = "tous")
+#' cpue <- cpue_prepare(capture, specimen, group = "tous")
 #' tableau <- modele_cpue_comparaison(cpue, format = "data.frame")
-#' select_best_cpue_model(tableau)
-select_best_cpue_model <- function(tablemodele) {
+#' cpue_select_best_modele(tableau)
+cpue_select_best_modele <- function(tablemodele) {
   if (!"Méthode" %in% names(tablemodele) || !"AICc" %in% names(tablemodele)) {
     stop("Le tableau fourni n’est pas valide. Assurez-vous qu’il provient de `modele_cpue_comparaison()`.")
   }

@@ -3,7 +3,7 @@
 #' Cette fonction applique la méthode Chapman-Robson via `fishmethods::agesurv()`
 #' et retourne un tableau résumant Z, A (%) et IC95%.
 #'
-#' @param specimen Un `data.frame` produit par `prepare_age_data_corrigee()`, contenant une colonne `age`.
+#' @param specimen Un `data.frame` produit par `mortalite_prepare_corr()`, contenant une colonne `age`.
 #' @param pp Valeur du peak-plus.
 #' @param age_max Âge maximum observé.
 #' @param format Format de sortie : `"data.frame"` (défaut) ou `"flextable"`.

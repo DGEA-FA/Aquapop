@@ -4,14 +4,14 @@
 #' Elle effectue également un test HNP pour évaluer l'ajustement du modèle et retourne les valeurs de Z, A,
 #' ainsi que l’IC 95% autour de A.
 #'
-#' @param df_age_etendue Un `data.frame` contenant les colonnes `age` et `number`, produit par `prepare_age_data_etendue()`.
+#' @param df_age_etendue Un `data.frame` contenant les colonnes `age` et `number`, produit par `mortalite_prepare_extended()`.
 #'
 #' @return Un `data.frame` d’une ligne résumant le modèle ajusté.
 #' @export
 #'
 #' @examples
-#' ajuster_modele_mortalite_nb1(df_age_etendue)
-ajuster_modele_mortalite_nb1 <- function(df_age_etendue) {
+#' mortalite_fit_modele_nb1(df_age_etendue)
+mortalite_fit_modele_nb1 <- function(df_age_etendue) {
   stopifnot(all(c("age", "number") %in% names(df_age_etendue)))
   
   # 1. Ajustement du modèle NB1

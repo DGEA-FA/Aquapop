@@ -1,25 +1,28 @@
-#' Ajuster un modèle de CPUE de type NB2 (Negative Binomial 2)
+#' Ajuster un modèle de CPUE de type NB1 (Negative Binomial 1)
 #'
-#' Cette fonction ajuste un modèle de régression NB2 (`glm.nb`) sur les données de CPUE par station,
-#' puis applique un test HNP (Half-Normal Plot) pour évaluer la qualité de l’ajustement.
+#' Cette fonction ajuste un modèle glmmTMB avec distribution NB1 sur les données de CPUE par station.
+#' Elle réalise aussi un test HNP (Half-Normal Plot) pour vérifier l’ajustement du modèle.
 #'
-#' @param cpue_data Un `data.frame` produit par `prepare_cpue_data()` contenant au minimum :
+#' @param cpue_data Un `data.frame` produit par `cpue_prepare()` contenant au minimum :
 #'                  `no_station`, `CPUE`.
 #'
 #' @return Un `data.frame` d’une ligne résumant le modèle ajusté.
 #' @export
-ajuster_modele_cpue_nb2 <- function(cpue_data) {
-  # 1. Ajustement du modèle NB2 (avec glm.nb)
-  model <- MASS::glm.nb(CPUE ~ 1, data = cpue_data)
+cpue_fit_modele_nb1 <- function(cpue_data) {
+  # 1. Ajustement du modèle NB1
+  model <- glmmTMB::glmmTMB(CPUE ~ 1, family = glmmTMB::nbinom1(), data = cpue_data)
   
   # 2. Test HNP initial (2 itérations)
-  message("Test HNP : Modèle NB2 (2 simulations initiales)...")
+  message("Test HNP : Modèle NB1 (2 simulations initiales)...")
   set.seed(2023)
   hnp_results <- replicate(
     2,
     hnp::hnp(
       model,
-      resid.type = "pearson",
+      newclass = TRUE,
+      diagfun = stats::residuals,
+      simfun = function(n, obj) stats::simulate(obj)[[1]],
+      fitfun = function(y) try(glmmTMB::glmmTMB(y ~ 1, family = glmmTMB::nbinom1(), data = cpue_data)),
       how.many.out = TRUE,
       plot.sim = FALSE
     ),
@@ -29,14 +32,17 @@ ajuster_modele_cpue_nb2 <- function(cpue_data) {
   ajustement <- mean(hnp_out) %>% round(2)
   nb_iter <- 2
   
-  # 3. Ajouter 3 itérations si ajustement marginal
+  # 3. Ajout de simulations si ajustement marginal
   if (ajustement >= 10 && ajustement < 15) {
-    message("Ajustement marginal : Ajout de 3 simulations HNP supplémentaires...")
+    message("Ajustement marginal : Ajout de 3 simulations HNP...")
     hnp_extra <- replicate(
       3,
       hnp::hnp(
         model,
-        resid.type = "pearson",
+        newclass = TRUE,
+        diagfun = stats::residuals,
+        simfun = function(n, obj) stats::simulate(obj)[[1]],
+        fitfun = function(y) try(glmmTMB::glmmTMB(y ~ 1, family = glmmTMB::nbinom1(), data = cpue_data)),
         how.many.out = TRUE,
         plot.sim = FALSE
       ),
@@ -60,15 +66,15 @@ ajuster_modele_cpue_nb2 <- function(cpue_data) {
     TRUE ~ "Mauvais ajustement"
   )
   
-  # 6. Résultat
+  # 6. Résultat final
   result <- tibble::tibble(
-    methode = "nb2",
+    methode = "nb1",
     ajustement_hnp = ajustement,
     aicc = MuMIn::AICc(model),
     cpue_moyenne = round(fit_mean, 2),
     ic_95 = ic95,
     commentaire = commentaire,
-    convergence = TRUE,  # glm.nb n’a pas d'attribut "converged", mais retourne erreur sinon
+    convergence = model$fit$convergence == 0,
     nb_iterations_hnp = nb_iter
   )
   

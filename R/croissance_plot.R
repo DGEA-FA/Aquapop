@@ -12,7 +12,7 @@
 #'
 #' @return Un objet `ggplot` affichant la courbe de croissance ajustée avec les intervalles de confiance.
 #' @export
-courbe_croissance_plot <- function(dfspecimen, tablemodele, modele) {
+croissance_plot <- function(dfspecimen, tablemodele, modele) {
   # # Fonctions internes pour les modèles de croissance
   # vb_function <- function(age, linf, k, t0) linf * (1 - exp(-k * (age - t0)))
   # gompertz_function <- function(age, linf, k, t0) linf * exp(-exp(-k * (age - t0)))

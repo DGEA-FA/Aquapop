@@ -142,24 +142,20 @@ app_server <- function(input, output, session) {
   output$table_specimen_valid  <- renderDataTable(specimen_valid(), options = list(pageLength = 10, autoWidth = TRUE, searching = FALSE))
   output$table_capture <- renderDataTable(capture(), options = list(pageLength = 10, autoWidth = TRUE, searching = FALSE))
   
-  # Taille masse age -------------------------------------------------------
-  # 1. Données brutes
-  df_taillemasseage <- reactive({
+  # Taille masse âge -------------------------------------------------------
+  
+  # 1. Résultat combiné (data + flextable)
+  taille_masse_age_res <- reactive({
     req(specimen_valid())
-    taille_masse_age(specimen_valid(), format = "data.frame")
+    taille_masse_age(specimen_valid())
   })
   
-  # 2. Tableau mis en forme
-  ft_taillemasseage <- reactive({
-    req(specimen_valid())
-    taille_masse_age(specimen_valid(), format = "flextable")
-  })
+  # 2. Affichage du tableau flextable
+  render_table_flextable("taillemasseage_ui", reactive(taille_masse_age_res()$flextable))
   
-  # 3. Affichage du tableau
-  render_table_flextable("taillemasseage_ui", ft_taillemasseage)
+  # 3. Bouton de téléchargement des données brutes
+  render_download_table("dl_taillemasseage", taille_masse_age_res()$data)
   
-  # 4. Bouton de téléchargement
-  render_download_table("dl_taillemasseage", df_taillemasseage())
   
 
 # Structure de taille -----------------------------------------------------
@@ -336,17 +332,17 @@ app_server <- function(input, output, session) {
   ## Tous les spécimens ------------------------------------------------
   cpue_table_tous <- reactive({
     req(specimen(), capture())
-    prepare_cpue_data(capture = capture(), specimen = specimen(), group = "tous")
+    cpue_prepare(capture = capture(), specimen = specimen(), group = "tous")
   })
   
   cpue_modele_tous <- reactive({
     req(cpue_table_tous())
-    cpue_modele_comparaison(cpue_table_tous(), format = "data.frame")
+    cpue_compare_modele(cpue_table_tous(), format = "data.frame")
   })
   
   cpue_modele_tous_flextable <- reactive({
     req(cpue_table_tous())
-    cpue_modele_comparaison(cpue_table_tous(), format = "flextable")
+    cpue_compare_modele(cpue_table_tous(), format = "flextable")
   })
   
   render_table_flextable("cpue_tous_table", cpue_modele_tous_flextable)
@@ -355,17 +351,17 @@ app_server <- function(input, output, session) {
   ## Femelles matures --------------------------------------------------
   cpue_table_femelles <- reactive({
     req(specimen(), capture())
-    prepare_cpue_data(capture = capture(), specimen = specimen(), group = "femelles")
+    cpue_prepare(capture = capture(), specimen = specimen(), group = "femelles")
   })
   
   cpue_modele_femelles <- reactive({
     req(cpue_table_femelles())
-    cpue_modele_comparaison(cpue_table_femelles(), format = "data.frame")
+    cpue_compare_modele(cpue_table_femelles(), format = "data.frame")
   })
   
   cpue_modele_femelles_flextable <- reactive({
     req(cpue_table_femelles())
-    cpue_modele_comparaison(cpue_table_femelles(), format = "flextable")
+    cpue_compare_modele(cpue_table_femelles(), format = "flextable")
   })
   
   render_table_flextable("cpue_femelles_table", cpue_modele_femelles_flextable)
@@ -375,12 +371,12 @@ app_server <- function(input, output, session) {
   # Meilleur modèle pour CPUE "tous" et "femelles"
   best_model_tous <- reactive({
     req(cpue_modele_tous())
-    select_best_cpue_model(cpue_modele_tous())
+    cpue_select_best_modele(cpue_modele_tous())
   })
   
   best_model_femelles <- reactive({
     req(cpue_modele_femelles())
-    select_best_cpue_model(cpue_modele_femelles())
+    cpue_select_best_modele(cpue_modele_femelles())
   })
   
   # Table d’abondance (data.frame)
@@ -460,7 +456,7 @@ app_server <- function(input, output, session) {
   # 1. Réactif pour la table de modèles
   table_modeles_croissance <- reactive({
     req(specimen()) 
-    courbe_croissance_comparaison(data = specimen(), format = "data.frame")
+    croissance_compare_modele(data = specimen(), format = "data.frame")
   })
   
   
@@ -469,7 +465,7 @@ app_server <- function(input, output, session) {
   default_model_index <- reactive({
     table <- table_modeles_croissance()
     req(nrow(table) > 0)
-    best_model <- select_best_croissance_model(table)
+    best_model <- croissance_select_best_modele(table)
     idx <- match(best_model, table$methode)
     validate(need(!is.na(idx), "Le meilleur modèle n'a pas été trouvé dans les résultats"))
     idx
@@ -510,7 +506,7 @@ app_server <- function(input, output, session) {
   # 5. Réactif : graphique du modèle sélectionné
   plot_selectedmodelcroissance <- reactive({
     req(selectedmodelcroissance(), specimen(), table_modeles_croissance())
-    courbe_croissance_plot(
+    croissance_plot(
       dfspecimen = specimen(),
       tablemodele = table_modeles_croissance(),
       modele = selectedmodelcroissance()
@@ -551,19 +547,19 @@ app_server <- function(input, output, session) {
   # Données corrigées pour la mortalité
   df_age_corrigee <- reactive({
     req(specimen(), pp(), mortalite_get_age_max_res())
-    prepare_age_data_corrigee(specimen(), pp(), mortalite_get_age_max_res())
+    mortalite_prepare_corr(specimen(), pp(), mortalite_get_age_max_res())
   })
   
   # 4. Données étendues
   df_age_etendue <- reactive({
     req(df_age_corrigee(), mortalite_get_age_max_res())
-    prepare_age_data_etendue(df_corrigee = df_age_corrigee(), age_max = mortalite_get_age_max_res())
+    mortalite_prepare_extended(df_corrigee = df_age_corrigee(), age_max = mortalite_get_age_max_res())
   })
   
   # 1. Réactif : test de sur-dispersion Poisson
   res_test_surdisp <- reactive({
     req(df_age_corrigee())  # doit être disponible
-    test_surdispersion_poisson(df_age_corrigee())
+    mortalite_test_surdispersion_poisson(df_age_corrigee())
   })
   
   # 2. Message textuel (interprétation du test)
@@ -602,7 +598,7 @@ app_server <- function(input, output, session) {
   # 6. Sélection du meilleur modèle
   meilleur_modele <- reactive({
     req(mortalite_compare_modele_res())
-    select_best_mortalite_model(mortalite_compare_modele_res()$data)
+    mortalite_select_best_modele(mortalite_compare_modele_res()$data)
   })
   
   phrase_mortalite <- reactive({

@@ -5,7 +5,7 @@
 #'
 #' @return Un data.frame filtré et transformé prêt pour le modèle
 #' @export
-prepare_maturite_data <- function(specimen_data, variable = c("ltm", "age")) {
+maturite_prepare <- function(specimen_data, variable = c("ltm", "age")) {
   variable <- match.arg(variable)
   
   specimen_data %>%

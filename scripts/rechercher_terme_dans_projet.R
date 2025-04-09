@@ -69,9 +69,4 @@ rechercher_terme_dans_projet <- function(terme, dossier = ".") {
 }
 
 # Exemple d'exécution
-rechercher_terme_dans_projet("mortalite_compare_modele")
-
-
-
-
-file_move("R/plot_mortalite_modele.R", "R/mortalite_plot_modele.R")
+rechercher_terme_dans_projet("maturite_eval_modele")

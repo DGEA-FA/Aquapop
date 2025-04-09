@@ -1,32 +1,34 @@
-#' Ajuster un modèle de CPUE de type CMP (Conway-Maxwell-Poisson)
+#' Ajuster un modèle de CPUE de type GP (Generalized Poisson)
 #'
-#' Cette fonction ajuste un modèle CMP via `glmmTMB` sur les données de CPUE par station.
-#' Elle effectue également un test HNP pour évaluer la qualité de l’ajustement.
+#' Cette fonction ajuste un modèle glmmTMB avec distribution Generalized Poisson (GP)
+#' sur les données de CPUE par station. Elle applique aussi un test HNP
+#' (Half-Normal Plot) pour évaluer la qualité de l’ajustement.
 #'
-#' @param cpue_data Un `data.frame` produit par `prepare_cpue_data()` contenant au minimum :
+#' @param cpue_data Un `data.frame` produit par `cpue_prepare()` contenant au minimum :
 #'                  `no_station`, `CPUE`.
 #'
 #' @return Un `data.frame` d’une ligne résumant le modèle ajusté.
 #' @export
-ajuster_modele_cpue_cmp <- function(cpue_data) {
-  # 1. Ajustement du modèle CMP
-  model <- glmmTMB::glmmTMB(CPUE ~ 1, family = glmmTMB::compois(link = "log"), data = cpue_data)
+cpue_fit_modele_gp <- function(cpue_data) {
+  # 1. Ajustement du modèle GP
+  model <- glmmTMB::glmmTMB(CPUE ~ 1, family = glmmTMB::genpois(link = "log"), data = cpue_data)
   
-  # 2. Test HNP initial (2 itérations)
-  message("Test HNP : Modèle CMP (2 simulations initiales)...")
+  # 2. Test HNP initial (2 simulations)
+  message("Test HNP : Modèle GP (2 simulations initiales)...")
   set.seed(2023)
+  nb_iter <- 2
   hnp_results <- replicate(
     2,
     hnp::hnp(
       model,
       newclass = TRUE,
-      diagfun = function(obj) residuals(obj, type = "pearson"),
+      diagfun = stats::residuals,
       simfun = function(n, obj) stats::simulate(obj)[[1]],
       fitfun = function(y) {
-        fit <- try(glmmTMB::glmmTMB(y ~ 1, family = glmmTMB::compois(link = "log"), data = cpue_data), silent = TRUE)
+        fit <- try(glmmTMB::glmmTMB(y ~ 1, family = glmmTMB::genpois(link = "log"), data = cpue_data), silent = TRUE)
         while (inherits(fit, "try-error")) {
-          y_retry <- stats::simulate(model)[[1]]
-          fit <- try(glmmTMB::glmmTMB(y_retry ~ 1, family = glmmTMB::compois(link = "log"), data = cpue_data), silent = TRUE)
+          y <- stats::simulate(model)[[1]]
+          fit <- try(glmmTMB::glmmTMB(y ~ 1, family = glmmTMB::genpois(link = "log"), data = cpue_data), silent = TRUE)
         }
         return(fit)
       },
@@ -38,9 +40,8 @@ ajuster_modele_cpue_cmp <- function(cpue_data) {
   
   hnp_out <- sapply(hnp_results, function(x) x$out / x$total * 100)
   ajustement <- mean(hnp_out) %>% round(2)
-  nb_iter <- 2
   
-  # 3. Simulations supplémentaires si ajustement marginal
+  # 3. Refaire 3 simulations si ajustement marginal
   if (ajustement >= 10 && ajustement < 15) {
     message("Ajustement marginal : Ajout de 3 simulations HNP...")
     hnp_extra <- replicate(
@@ -48,13 +49,13 @@ ajuster_modele_cpue_cmp <- function(cpue_data) {
       hnp::hnp(
         model,
         newclass = TRUE,
-        diagfun = function(obj) residuals(obj, type = "pearson"),
+        diagfun = stats::residuals,
         simfun = function(n, obj) stats::simulate(obj)[[1]],
         fitfun = function(y) {
-          fit <- try(glmmTMB::glmmTMB(y ~ 1, family = glmmTMB::compois(link = "log"), data = cpue_data), silent = TRUE)
+          fit <- try(glmmTMB::glmmTMB(y ~ 1, family = glmmTMB::genpois(link = "log"), data = cpue_data), silent = TRUE)
           while (inherits(fit, "try-error")) {
-            y_retry <- stats::simulate(model)[[1]]
-            fit <- try(glmmTMB::glmmTMB(y_retry ~ 1, family = glmmTMB::compois(link = "log"), data = cpue_data), silent = TRUE)
+            y <- stats::simulate(model)[[1]]
+            fit <- try(glmmTMB::glmmTMB(y ~ 1, family = glmmTMB::genpois(link = "log"), data = cpue_data), silent = TRUE)
           }
           return(fit)
         },
@@ -81,9 +82,9 @@ ajuster_modele_cpue_cmp <- function(cpue_data) {
     TRUE ~ "Mauvais ajustement"
   )
   
-  # 6. Résultat
+  # 6. Résultat final
   result <- tibble::tibble(
-    methode = "cmp",
+    methode = "gp",
     ajustement_hnp = ajustement,
     aicc = MuMIn::AICc(model),
     cpue_moyenne = round(fit_mean, 2),

@@ -12,8 +12,8 @@
 #' @export
 #'
 #' @examples
-#' test_surdispersion_poisson(df)
-test_surdispersion_poisson <- function(df) {
+#' mortalite_test_surdispersion_poisson(df)
+mortalite_test_surdispersion_poisson <- function(df) {
   stopifnot(all(c("age", "number") %in% names(df)))
   
   # Nettoyage et résumé

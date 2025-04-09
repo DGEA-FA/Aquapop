@@ -19,7 +19,7 @@
 #' }
 #'
 #' @export
-prepare_cpue_data <- function(capture, specimen, group = c("tous", "femelles")) {
+cpue_prepare <- function(capture, specimen, group = c("tous", "femelles")) {
   group <- match.arg(group)
   
   # Appliquer le filtre si on veut seulement les femelles

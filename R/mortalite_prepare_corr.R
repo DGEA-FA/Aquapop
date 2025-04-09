@@ -13,9 +13,9 @@
 #' @export
 #'
 #' @examples
-#' df_corr <- prepare_age_data_corrigee(data_specimen = specimen_sana, age_peak_plus = 5, age_max = 10)
+#' df_corr <- mortalite_prepare_corr(data_specimen = specimen_sana, age_peak_plus = 5, age_max = 10)
 #' print(df_corr)
-prepare_age_data_corrigee <- function(data_specimen, age_peak_plus, age_max) {
+mortalite_prepare_corr <- function(data_specimen, age_peak_plus, age_max) {
   stopifnot("age" %in% names(data_specimen))
   
   # Étape 1 : estimation initiale (type = 1) pour obtenir la descending limb

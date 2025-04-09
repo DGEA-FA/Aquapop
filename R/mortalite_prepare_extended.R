@@ -5,16 +5,16 @@
 #' dans Mainguy et Moral (2021) et permet d’améliorer l’ajustement des modèles.
 #'
 #' @param df_corrigee Un `data.frame` avec les colonnes `age` et `number` produit par
-#'                    `prepare_age_data_corrigee()`.
+#'                    `mortalite_prepare_corr()`.
 #' @param age_max Âge maximal observé (typiquement obtenu avec `mortalite_get_age_max()`).
 #'
 #' @return Un `data.frame` contenant les âges observés + les âges étendus avec `number = 0`.
 #' @export
 #'
 #' @examples
-#' df_etendue <- prepare_age_data_etendue(df_corrigee, age_max = 10)
+#' df_etendue <- mortalite_prepare_extended(df_corrigee, age_max = 10)
 #' print(df_etendue)
-prepare_age_data_etendue <- function(df_corrigee, age_max) {
+mortalite_prepare_extended <- function(df_corrigee, age_max) {
   stopifnot(all(c("age", "number") %in% names(df_corrigee)))
   
   # Étendre jusqu’à 3 × âge max avec des zéros

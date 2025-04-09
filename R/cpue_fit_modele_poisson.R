@@ -4,7 +4,7 @@
 #' sur les données de CPUE par station. Elle effectue également un test HNP
 #' (Half-Normal Plot) pour évaluer la qualité de l’ajustement.
 #'
-#' @param cpue_data Un `data.frame` produit par `prepare_cpue_data()` contenant au minimum :
+#' @param cpue_data Un `data.frame` produit par `cpue_prepare()` contenant au minimum :
 #'                  `no_station`, `CPUE`.
 #'
 #' @return Un `data.frame` d’une ligne résumant le modèle ajusté, avec les colonnes :
@@ -20,7 +20,7 @@
 #' }
 #'
 #' @export
-ajuster_modele_cpue_poisson <- function(cpue_data) {
+cpue_fit_modele_poisson <- function(cpue_data) {
   # 1. Ajustement du modèle
   model <- stats::glm(CPUE ~ 1, family = poisson, data = cpue_data)
   

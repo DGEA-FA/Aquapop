@@ -1,8 +1,7 @@
-# ============================================================================
 # Script : exemple_utilisation.R
 # Rôle   : Démonstration simple de l’utilisation des fonctions métier AquaPop
 #          hors de l'application Shiny
-# ============================================================================
+
 
 # CHARGER LES DÉPENDANCES ET LES FONCTIONS MÉTIER -------------------------
 
@@ -248,26 +247,26 @@ res_int_probit_age$table_resultats_flextable
 
 pp <- mortalite_get_peak_plus(data = specimen)
 mortalite_get_age_max_res <- mortalite_get_age_max(data = specimen)
-df_age_corrigee <- prepare_age_data_corrigee(specimen,pp,mortalite_get_age_max_res)
-df_age_etendue <- prepare_age_data_etendue(df_corrigee = df_age_corrigee, age_max = mortalite_get_age_max_res)
+df_age_corrigee <- mortalite_prepare_corr(specimen,pp,mortalite_get_age_max_res)
+df_age_etendue <- mortalite_prepare_extended(df_corrigee = df_age_corrigee, age_max = mortalite_get_age_max_res)
 
-# result_poisson <- ajuster_modele_mortalite_poisson(df_age_etendue)
+# result_poisson <- mortalite_fit_modele_poisson(df_age_etendue)
 # # print(result_poisson)
 # # 
-# result_nb1 <- ajuster_modele_mortalite_nb1(df_age_etendue)
+# result_nb1 <- mortalite_fit_modele_nb1(df_age_etendue)
 # # print(result_nb1)
 # # 
-# result_nb2 <- ajuster_modele_mortalite_nb2(df_age_etendue)
+# result_nb2 <- mortalite_fit_modele_nb2(df_age_etendue)
 # # print(result_nb2)
 # # 
-# result_cmp <- ajuster_modele_mortalite_cmp(df_age_etendue)
+# result_cmp <- mortalite_fit_modele_cmp(df_age_etendue)
 # # print(result_cmp)
 # # 
 # result_gp <- mortalite_fit_modele_gp(df_age_etendue)
 # # print(result_gp)
 
 # 1. Exécuter la fonction
-res_disp <- test_surdispersion_poisson(df_age_corrigee)
+res_disp <- mortalite_test_surdispersion_poisson(df_age_corrigee)
 
 # 2. Afficher le message
 cat(res_disp$message)
@@ -285,7 +284,7 @@ mortalite_compare_modele_res <- mortalite_compare_modele(data = df_age_etendue)
 print(mortalite_compare_modele_res$data)
 print(mortalite_compare_modele_res$flextable)
 
-meilleur_modele <- select_best_mortalite_model(mortalite_compare_modele_res$data)
+meilleur_modele <- mortalite_select_best_modele(mortalite_compare_modele_res$data)
 modele <- get_best_mortalite_model(df_age_etendue, methode = meilleur_modele)
 plot_mortalite_modele(specimen, modele, mortalite_compare_modele_res$data)
 
@@ -304,7 +303,7 @@ print(df_chaprob)
 
 # Croissance --------------------------------------------------------------
 # 2. Ajuster les modèles et créer la table de comparaison
-table_modele <- courbe_croissance_comparaison(
+table_modele <- croissance_compare_modele(
   data = specimen,
   format = "data.frame"
 )
@@ -316,11 +315,11 @@ print(table_modele)
 
 # 3. Sélectionner le meilleur modèle automatiquement
 
-modele_best <- select_best_croissance_model(table_modele)
+modele_best <- croissance_select_best_modele(table_modele)
 cat("Meilleur modèle sélectionné :", modele_best, "\n")
 
 # 4. Générer le graphique du modèle choisi
-p <- courbe_croissance_plot(
+p <- croissance_plot(
   dfspecimen = specimen,
   tablemodele = table_modele,
   modele = modele_best
@@ -349,16 +348,16 @@ table_biomasse
 # CPUE --------------------------------------------------------------------
 
 # Calcul des CPUE par station
-df_cpue_tous <- prepare_cpue_data(capture = capture, specimen = specimen, group = "tous")
-df_cpue_femelles <- prepare_cpue_data(capture = capture, specimen = specimen, group = "femelles")
+df_cpue_tous <- cpue_prepare(capture = capture, specimen = specimen, group = "tous")
+df_cpue_femelles <- cpue_prepare(capture = capture, specimen = specimen, group = "femelles")
 
 # Comparaison des modèles CPUE
-cpue_table_modele_tous <- cpue_modele_comparaison(df_cpue_tous, format = "data.frame")
-cpue_table_modele_femelles <- cpue_modele_comparaison(df_cpue_femelles, format = "data.frame")
+cpue_table_modele_tous <- cpue_compare_modele(df_cpue_tous, format = "data.frame")
+cpue_table_modele_femelles <- cpue_compare_modele(df_cpue_femelles, format = "data.frame")
 
 # Meilleur modèle
-meilleur_modele_cpue_tous <- select_best_cpue_model(cpue_table_modele_tous)
-meilleur_modele_cpue_femelles <- select_best_cpue_model(cpue_table_modele_femelles)
+meilleur_modele_cpue_tous <- cpue_select_best_modele(cpue_table_modele_tous)
+meilleur_modele_cpue_femelles <- cpue_select_best_modele(cpue_table_modele_femelles)
 
 # Génération de la table d’abondance (avec CPUE intégrées)
 abondance <- abondance_table(
@@ -374,14 +373,9 @@ abondance  # affiche le tableau flextable
 # TAILLE MASSE ÂGE  -------------------------------------------------------
 
 # Pour obtenir le tableau de données
-df_taillemasseage <- taille_masse_age(data = specimen_valid, format = "data.frame")
-
-# Pour afficher le flextable
-taille_masse_age(data = specimen_valid, format = "flextable")
-
-# Exemple : Exporter manuellement un tableau
-# download_data(df_taillemasseage, path = "df_taillemasseage.xlsx")
-
+taille_masse_age_res <- taille_masse_age(data = specimen_valid)
+taille_masse_age_res$data
+taille_masse_age_res$flextable
 
 
 

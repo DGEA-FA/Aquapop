@@ -57,20 +57,20 @@ table_maturite_modeles <- function(specimen_data, prefer_combined = FALSE, varia
   }
   
   # Préparation des données
-  df <- prepare_maturite_data(specimen_data, variable = variable)
+  df <- maturite_prepare(specimen_data, variable = variable)
   
   # Ajustement des modèles séparés
   models_sep <- fit_maturite_separated_models(df, variable = variable)
-  eval_sep <- evaluate_maturite_modeles(models_sep)
-  best_sep <- select_best_maturite_separated_modele(eval_sep)
+  eval_sep <- maturite_eval_modele(models_sep)
+  best_sep <- maturite_select_best_separated_modele(eval_sep)
   eval_sep$type <- ifelse(grepl("^M_", eval_sep$modele_id), "séparé_M", "séparé_F")
   
   # Ajustement des modèles combinés
   models_comb <- fit_maturite_combined_models(df, variable = variable)
-  eval_comb <- evaluate_maturite_modeles(models_comb)
+  eval_comb <- maturite_eval_modele(models_comb)
   eval_comb$type <- "combiné"
   
-  best_comb <- select_best_maturite_combined_modele(eval_comb)
+  best_comb <- maturite_select_best_combined_modele(eval_comb)
   eval_comb$recommande <- eval_comb$modele_id == best_comb$best_model
   
   # Message explicatif

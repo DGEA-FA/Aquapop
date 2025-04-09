@@ -3,17 +3,17 @@
 #' Cette fonction identifie automatiquement le meilleur modèle (parmi Von Bertalanffy, Gompertz ou Logistique)
 #' selon le critère d’AICc le plus faible.
 #'
-#' @param tablemodele Un `data.frame` retourné par `courbe_croissance_comparaison()`
+#' @param tablemodele Un `data.frame` retourné par `croissance_compare_modele()`
 #'
 #' @return Une chaîne de caractères (nom du meilleur modèle) ou un message en cas d'erreur
 #' @export
 #'
 #' @examples
-#' mod <- courbe_croissance_comparaison(specimen)
-#' select_best_croissance_model(mod)
-select_best_croissance_model <- function(tablemodele) {
+#' mod <- croissance_compare_modele(specimen)
+#' croissance_select_best_modele(mod)
+croissance_select_best_modele <- function(tablemodele) {
   if (!"methode" %in% names(tablemodele) || !"AICc" %in% names(tablemodele)) {
-    stop("Le tableau de modèle n’est pas valide. Assurez-vous qu’il provient bien de `courbe_croissance_comparaison()`.")
+    stop("Le tableau de modèle n’est pas valide. Assurez-vous qu’il provient bien de `croissance_compare_modele()`.")
   }
   
   best_row <- tablemodele |>
