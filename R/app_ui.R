@@ -347,41 +347,18 @@ app_ui <- function() {
       # maturite_sexuelle_panel -------------------------------------------------
       tabPanel(title = "Maturité sexuelle",
                tabsetPanel(
-                 # tabPanel(
-                 #   title = "Longueur à maturité",
-                 #   
-                 #   h3("Sélection des modèles L50"),
-                 #   verbatimTextOutput("message_modeles_L50"),
-                 #   br(),
-                 #   
-                 #   h3("Tableau des modèles évalués"),
-                 #   uiOutput("table_modele_L50_ui"),
-                 #   uiOutput("download_table_modele_L50_ui"),
-                 #   br(),
-                 #   
-                 #   h3("Résultats du meilleur modèle retenu"),
-                 #   
-                 #   # Tableau
-                 #   uiOutput("table_ogive_maturite_ui"),
-                 #   uiOutput("download_ogive_maturite_table_ui"),
-                 #   
-                 #   # Graphique
-                 #   
-                 #   withSpinner(plotOutput("plot_ogive_maturite"), type = myspinner),
-                 #   downloadButton("download_ogive_maturite_plot", label = "Téléchargement du graphique")
-                 # ),
                  tabPanel(
                    title = "Longueur à maturité",
                    
                    # Message explicatif
-                   h3("Sélection des modèles L50"),
-                   verbatimTextOutput("message_modeles_L50"),
+                   h3(HTML("Sélection des modèles L<sub>50</sub>")),
+                   verbatimTextOutput("message_l50"),
                    br(),
                    
                    # Tableau des modèles évalués
                    h3("Tableau interactif des modèles évalués"),
                    withSpinner(reactableOutput("table_modeles_maturite_table"), type = myspinner),
-                   uiOutput("download_ogive_maturite_table_ui"),  # facultatif ici si tu veux permettre le téléchargement de la table complète
+                   uiOutput("download_ogive_maturite_table_ui"),  
                    
                    br(),
                    h3("Résultats du modèle sélectionné"),
@@ -391,13 +368,15 @@ app_ui <- function() {
                    uiOutput("download_ogive_maturite_table_ui"),
                    
                    # Graphique des résultats
-                   withSpinner(plotOutput("plot_ogive_maturite"), type = myspinner),
+                   plotOutput("plot_ogive_maturite"),
                    downloadButton("download_ogive_maturite_plot", label = "Télécharger le graphique")
                  ),
                  
                  
                  tabPanel(
                    title = "Âge à maturité",
+                   h3(HTML("Sélection des modèles A<sub>50</sub>")),
+                   
                    htmltools::includeMarkdown(path = './texte/A50_texte.rmd'),
                    
                  )

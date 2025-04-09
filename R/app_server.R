@@ -256,38 +256,24 @@ app_server <- function(input, output, session) {
   )
   # Indice de condition -------------------------------------------------------
   
-  # Tableau Wr 
-  ft_wri <- reactive({
+  # Reactive : retourne la liste {data, flextable, plot_tous, plot_byclass}
+  wri_res <- reactive({
     req(specimen_valid())
-    indice_condition(data = specimen_valid(), format = "flextable")
+    wri(data = specimen_valid())
   })
   
-  # Affichage du tableau flextable
-  render_table_flextable("wri_table_ui", ft_wri)
+  # --- Tableau Wr ---
+  render_table_flextable("wri_table_ui", reactive(wri_res()$flextable))
+  render_download_table("download_wri_table", reactive(wri_res()$data))
   
-  df_wri <- reactive({
-    req(specimen_valid())
-    indice_condition(data = specimen_valid(), format = "data.frame")
-  })
+  # --- Graphique Wr par sexe (plot_tous) ---
+  render_plot_ggplot("wri_plot_tous", reactive(wri_res()$plot_tous))
+  render_download_plot("download_wri_plot_tous", reactive(wri_res()$plot_tous))
   
-  # Téléchargement du tableau
-  render_download_table("download_wri_table", df_wri())
+  # --- Graphique Wr par classe de taille (plot_byclass) ---
+  render_plot_ggplot("wri_plot_byclass", reactive(wri_res()$plot_byclass))
+  render_download_plot("download_wri_plot_byclass", reactive(wri_res()$plot_byclass))
   
-  # Graphique Wr par sexe
-  plot_wri_tous <- reactive({
-    req(specimen_valid())
-    indice_condition(data = specimen_valid(), format = "plot_tous")
-  })
-  render_plot_ggplot("wri_plot_tous", plot_wri_tous)
-  render_download_plot("download_wri_plot_tous", plot_wri_tous)
-  
-  # Graphique Wr par classe de taille
-  plot_wri_byclass <- reactive({
-    req(specimen_valid())
-    indice_condition(data = specimen_valid(), format = "plot_byclass")
-  })
-  render_plot_ggplot("wri_plot_byclass", plot_wri_byclass)
-  render_download_plot("download_wri_plot_byclass", plot_wri_byclass)
   # Abondance CPUE ---------------------------------------------------------------
   
   ## Tous les spécimens ------------------------------------------------
@@ -373,7 +359,7 @@ app_server <- function(input, output, session) {
   # 1. Réactif pour la table de modèles
   table_modeles_croissance <- reactive({
     req(specimen()) 
-    croissance_compare_modele(data = specimen(), format = "data.frame")
+    croissance_compare_modele(data = specimen())$data
   })
   
   
@@ -609,7 +595,10 @@ app_server <- function(input, output, session) {
     reactable(
       labelled_data(table),
       selection = "single",
+      sortable = FALSE,
       onClick = "select",
+      highlight = TRUE,
+      defaultPageSize = 20,
       defaultSelected = idx,
       defaultColDef = colDef(
         align = "center",
@@ -632,46 +621,30 @@ app_server <- function(input, output, session) {
     )
   })
   
-  # -- Résultat du modèle sélectionné
-  fit_maturite_resultat <- reactive({
-    req(specimen(), selected_model_info_maturite())
-    best <- selected_model_info_maturite()
-    
-    maturite_generate_modele(
-      data = specimen(),
-      variable = best$variable,
-      modele = best$modele,
-      lien = best$lien
-    )
-  })
   
-  # -- Message explicatif
-  output$message_modeles_L50 <- renderText({
+  # -- Message explicatif sur les modèles évalués
+  output$message_l50 <- renderText({
     req(table_modeles_maturite_resultats())
     table_modeles_maturite_resultats()$message
   })
   
-  # -- Graphique du modèle sélectionné
-  plot_ogive_maturite <- reactive({
-    req(fit_maturite_resultat())
-    fit_maturite_resultat()$graphique
+  # -- Résultat du modèle sélectionné
+  maturite_generate_modele_res <- reactive({
+    req(specimen(), selected_model_info_maturite())
+    maturite_generate_modele(
+      data = specimen(),
+      variable = selected_model_info_maturite()$variable,
+      modele = selected_model_info_maturite()$modele,
+      lien = selected_model_info_maturite()$lien
+    )
   })
   
-  render_plot_ggplot("plot_ogive_maturite", plot_ogive_maturite)
-  render_download_plot("download_ogive_maturite_plot", plot_ogive_maturite)
+  # -- Graphique
+  render_plot_ggplot("plot_ogive_maturite", reactive(maturite_generate_modele_res()$graphique))
+  render_download_plot("download_ogive_maturite_plot", reactive(maturite_generate_modele_res()$graphique))
   
-  # -- Tableau du modèle sélectionné
-  table_ogive_maturite_df <- reactive({
-    req(fit_maturite_resultat())
-    fit_maturite_resultat()$table_resultats
-  })
-  
-  ft_ogive_maturite <- reactive({
-    req(fit_maturite_resultat())
-    fit_maturite_resultat()$table_resultats_flextable
-  })
-  
-  render_table_flextable("table_ogive_maturite_ui", ft_ogive_maturite)
-  render_download_table("download_ogive_maturite_table", table_ogive_maturite_df())
+  # -- Tableaux
+  render_table_flextable("table_ogive_maturite_ui", reactive(maturite_generate_modele_res()$table_resultats_flextable))
+  render_download_table("download_ogive_maturite_table", reactive(maturite_generate_modele_res()$table_resultats))
   
 }

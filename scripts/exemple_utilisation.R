@@ -279,9 +279,8 @@ mortalite_chaprob_res$flextable   # Tableau formaté (flextable)
 # Croissance --------------------------------------------------------------
 # 2. Ajuster les modèles et créer la table de comparaison
 table_modele <- croissance_compare_modele(
-  data = specimen,
-  format = "data.frame"
-)
+  data = specimen
+)$data
 
 
 # Afficher la table dans la console
@@ -350,7 +349,6 @@ psd_q_res <- psd_q(data = specimen_valid)
 psd_q_res$data
 psd_q_res$flextable
 
-
 psd_byclass_res <- psd_byclass(data = specimen_valid)
 psd_byclass_res$data
 psd_byclass_res$flextable
@@ -361,9 +359,9 @@ masse_longueur_fit_res <- masse_longueur_fit(data = specimen)
 masse_longueur_fit_res$data
 masse_longueur_fit_res$plot
 masse_longueur_fit_res$flextable
+
 # Structure de taille ---------------------------------------------------------------------
 structure_taille_res <- structure_taille(data = specimen, groupement = "maturite")
-
 structure_taille_res$plot       # <- ggplot
 structure_taille_res$data       # <- data.frame
 structure_taille_res$flextable  # <- flextable
@@ -378,13 +376,9 @@ structure_age_res$flextable  # <- flextable
 
 # Indice de condition -----------------------------------------------------
 
-# Exemple : Indice de condition (Wr)
-
-# Format tableau (data.frame ou flextable)
-indice_condition(data = specimen, format = "data.frame")
-indice_condition(data = specimen, format = "flextable")
-
-# Format graphique (Wr par sexe ou par classe de taille)
-indice_condition(data = specimen, format = "plot_tous")
-indice_condition(data = specimen, format = "plot_byclass")
+wri_res <- wri(data = specimen)
+wri_res$data
+wri_res$flextable
+wri_res$plot_tous
+wri_res$plot_byclass
 

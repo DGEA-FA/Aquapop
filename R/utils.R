@@ -713,62 +713,6 @@ sans_warning_proba <- function(expr) {
   )
 }
 
-
-# TLO: même logique peu importe variable/lien
-calcul_v50_TLO <- function(modele_glm, nboot) {
-  ic <- confint_L(modele_glm, method = "montecarlo", interval_type = "bca", nboot = nboot)
-  list(
-    point50 = round(ic[2]),
-    point50_inf = round(ic[1]),
-    point50_sup = round(ic[3])
-  )
-}
-
-# ADD: avec intercept, pente, effet du sexe
-calcul_v50_ADD <- function(coef_mod, variable, lien) {
-  b0 <- coef_mod["(Intercept)"]
-  b1 <- coef_mod[variable]
-  b2 <- coef_mod["sexeM"]
-  kappa <- if (lien == "cloglog") 0.3665129 else 0
-  
-  v50_f <- round((-b0 - kappa) / b1)
-  v50_m <- round((-b0 - b2 - kappa) / b1)
-  
-  list(fem = v50_f, male = v50_m)
-}
-
-# INT: avec interaction sexe*variable
-calcul_v50_INT <- function(coef_mod, variable, lien) {
-  b0 <- coef_mod["(Intercept)"]
-  b1 <- coef_mod[variable]
-  b2 <- coef_mod["sexeM"]
-  b3 <- coef_mod[paste0(variable, ":sexeM")]
-  kappa <- if (lien == "cloglog") 0.3665129 else 0
-  
-  v50_f <- round((-b0 - kappa) / b1)
-  v50_m <- round((-b0 - b2 - kappa) / (b1 + b3))
-  
-  list(fem = v50_f, male = v50_m)
-}
-
-# COM: pente propre à chaque sexe
-calcul_v50_COM <- function(coef_mod, variable, lien) {
-  b1 <- coef_mod[paste0(variable, ":sexeF")]
-  b2 <- coef_mod[paste0(variable, ":sexeM")]
-  
-  v50_f <- switch(lien,
-                  "logit" = round(-log(2) / b1),
-                  "probit" = round(-qnorm(0.5) / b1),
-                  "cloglog" = round(-0.3665129 / b1))
-  
-  v50_m <- switch(lien,
-                  "logit" = round(-log(2) / b2),
-                  "probit" = round(-qnorm(0.5) / b2),
-                  "cloglog" = round(-0.3665129 / b2))
-  
-  list(fem = v50_f, male = v50_m)
-}
-
 coef_par_nom <- function(modele_glm, sexe = c("sexeF", "sexeM"), interaction = FALSE) {
   sexe <- match.arg(sexe)
   pattern <- if (interaction) paste0(":", sexe) else sexe

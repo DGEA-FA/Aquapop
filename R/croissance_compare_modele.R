@@ -7,25 +7,22 @@
 #' @param data Un `data.frame` contenant les spécimens (doit inclure les colonnes `sp`, `ltm`, `age`, `no_specimen`)
 #' @param format Format de sortie : `"data.frame"` (par défaut) ou `"flextable"`
 #'
-#' @return Un tableau comparatif (`data.frame` ou `flextable`) des modèles de croissance ajustés
+#' @return Une liste contenant : `data` (`data.frame`) et `flextable` (`flextable`)
 #' @export
 #'
 #' @examples
-#' croissance_compare_modele(data = specimen, format = "data.frame")
-#' croissance_compare_modele(data = specimen, format = "flextable")
+#' croissance_compare_modele(data = specimen)$data
+#' croissance_compare_modele(data = specimen)$flextable
 croissance_compare_modele <- function(data, format = c("data.frame", "flextable")) {
   format <- match.arg(format)
   
-  # Filtrer et préparer les données
   df <- data |>
-    dplyr::filter( !is.na(ltm), !is.na(age)) |>
+    dplyr::filter(!is.na(ltm), !is.na(age)) |>
     dplyr::select(ltm, age, no_specimen)
-  rownames(df) <- seq_len(nrow(df))  # assure un nommage séquentiel
+  rownames(df) <- seq_len(nrow(df))
   
-  # Estimation initiale des paramètres pour les 3 modèles
   pi <- FSA::vbStarts(ltm ~ age, data = df)
   
-  # Ajuster les modèles avec fishmethods::growth()
   result <- fishmethods::growth(
     intype = 1, unit = 1, size = df$ltm, age = df$age,
     calctype = 1, wgtby = 1, error = 1,
@@ -34,11 +31,10 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
     control = list(maxiter = 10000, minFactor = 1 / 1024, tol = 1e-5)
   )
   
-  # Gestion des erreurs silencieuse
   handle_error <- function(e) conditionMessage(e)
   
-  # Extraire les paramètres des modèles
   modele_names <- c("Von Bertalanffy", "Gompertz", "Logistique")
+  
   extract_param <- function(res, index) {
     tryCatch(stats::confint(res, level = 0.95)[index, , drop = TRUE], error = handle_error)
   }
@@ -92,7 +88,6 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
     )
   )
   
-  # Comparaison des modèles avec AICc
   aic_tab <- AICcmodavg::aictab(
     list(result[["vout"]], result[["gout"]], result[["lout"]]),
     modnames = modele_names
@@ -100,7 +95,6 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
     dplyr::rename(methode = Modnames) |>
     dplyr::select(-c("K", "LL", "Cum.Wt", "ModelLik"))
   
-  # Fusion et mise en forme finale
   final <- dplyr::left_join(tableresult, aic_tab, by = "methode") |>
     dplyr::mutate(
       converged = dplyr::if_else(converged == "converged", "convergé", converged),
@@ -129,17 +123,10 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
     ) |>
     dplyr::arrange(AICc)
   
-  # Retour selon format demandé
-  if (format == "flextable") {
-    return(
-      flextable::flextable(final) |>
-        flextable::set_caption("Paramètres des modèles de croissance (VB, Gompertz, Logistique)") |>
-        flextable::align(align = "center", part = "all") |>
-        flextable::autofit()
-    )
-  }
+  ft <- flextable::flextable(final) |>
+    flextable::set_caption("Paramètres des modèles de croissance (VB, Gompertz, Logistique)") |>
+    flextable::align(align = "center", part = "all") |>
+    flextable::autofit()
   
-  return(final)
+  return(list(data = final, flextable = ft))
 }
-
-  

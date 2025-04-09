@@ -25,22 +25,15 @@ maturite_compare_modele <- function(specimen_data, prefer_combined = FALSE, vari
     )
   }
   
-  # # Fonction interne pour ajouter les labels
-  # add_labels_maturite <- function(df) {
-  #   labelled::var_label(df) <- list(
-  #     modele_id  = "Modèle",
-  #     aicc       = "AICc",
-  #     converged  = "Convergence",
-  #     recommande = "✔ Recommandé",
-  #     type       = "Type de modèle"
-  #   )
-  #   df
-  # }
+  # Fonction pour arrondir et formater les valeurs p
+  format_pval <- function(p) {
+    ifelse(is.na(p), NA_character_,
+           ifelse(p < 0.001, "< 0.001", formatC(round(p, 3), format = "f", digits = 3)))
+  }
+  
   # Fonction interne pour ajouter les labels aux colonnes de modèles de maturité
   add_labels_maturite <- function(df) {
-    # Vérifie dynamiquement les colonnes existantes avant d'ajouter des labels
     var_labels <- list()
-    
     if ("modele_id" %in% names(df)) var_labels$modele_id <- "Modèle"
     if ("modele" %in% names(df))    var_labels$modele    <- "Type"
     if ("lien" %in% names(df))      var_labels$lien      <- "Lien"
@@ -73,9 +66,14 @@ maturite_compare_modele <- function(specimen_data, prefer_combined = FALSE, vari
   best_comb <- maturite_select_best_combined_modele(eval_comb)
   eval_comb$recommande <- eval_comb$modele_id == best_comb$best_model
   
+  # Formatage des p-values
+  eval_sep$pearson_x2_pval <- format_pval(eval_sep$pearson_x2_pval)
+  eval_sep$goodness_of_link_pval <- format_pval(eval_sep$goodness_of_link_pval)
+  eval_comb$pearson_x2_pval <- format_pval(eval_comb$pearson_x2_pval)
+  eval_comb$goodness_of_link_pval <- format_pval(eval_comb$goodness_of_link_pval)
+  
   # Message explicatif
   message <- paste0(best_sep$message, "\n", best_comb$message)
-  
   if (is.null(best_comb$best_model) && (is.null(best_sep$best_model_M) || is.null(best_sep$best_model_F))) {
     message <- paste0(message, "\n⚠️ Aucun modèle utilisable n’a pu être sélectionné.")
     warning("Aucun modèle utilisable trouvé.")
