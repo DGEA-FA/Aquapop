@@ -251,20 +251,20 @@ age_max <- get_age_max(specimen)
 df_age_corrigee <- prepare_age_data_corrigee(specimen,pp,age_max)
 df_age_etendue <- prepare_age_data_etendue(df_corrigee = df_age_corrigee, age_max = age_max)
 
-result_poisson <- ajuster_modele_mortalite_poisson(df_age_etendue)
-# print(result_poisson)
-# 
-result_nb1 <- ajuster_modele_mortalite_nb1(df_age_etendue)
-# print(result_nb1)
-# 
-result_nb2 <- ajuster_modele_mortalite_nb2(df_age_etendue)
-# print(result_nb2)
-# 
-result_cmp <- ajuster_modele_mortalite_cmp(df_age_etendue)
-# print(result_cmp)
-# 
-result_gp <- ajuster_modele_mortalite_gp(df_age_etendue)
-# print(result_gp)
+# result_poisson <- ajuster_modele_mortalite_poisson(df_age_etendue)
+# # print(result_poisson)
+# # 
+# result_nb1 <- ajuster_modele_mortalite_nb1(df_age_etendue)
+# # print(result_nb1)
+# # 
+# result_nb2 <- ajuster_modele_mortalite_nb2(df_age_etendue)
+# # print(result_nb2)
+# # 
+# result_cmp <- ajuster_modele_mortalite_cmp(df_age_etendue)
+# # print(result_cmp)
+# # 
+# result_gp <- ajuster_modele_mortalite_gp(df_age_etendue)
+# # print(result_gp)
 
 # 1. Exécuter la fonction
 res_disp <- test_surdispersion_poisson(df_age_corrigee)
@@ -282,15 +282,16 @@ res_disp$dispersion
 
 # 3. Comparer les modèles de mortalité
 #    (a) en format tableau brut
-comparaison_mortalite_df <- mortalite_modele_comparaison(df_age_etendue, format = "data.frame")
-print(comparaison_mortalite_df)
+comparaison_mortalite <- mortalite_modele_comparaison(df_age_etendue)
+print(comparaison_mortalite$data)
+print(comparaison_mortalite$flextable)
 
 #    (b) en format flextable 
 # comparaison_mortalite_ft <- mortalite_modele_comparaison(df_age_etendue, format = "flextable")
 # print(comparaison_mortalite_ft)
-meilleur_modele <- select_best_mortalite_model(comparaison_mortalite_df)
+meilleur_modele <- select_best_mortalite_model(comparaison_mortalite$data)
 modele <- get_best_mortalite_model(df_age_etendue, methode = meilleur_modele)
-plot_mortalite_modele(specimen, modele, comparaison_mortalite_df)
+plot_mortalite_modele(specimen, modele, comparaison_mortalite$data)
 
 # Format data.frame
 res_chaprob_df <- mortalite_chaprob(specimen = specimen, pp = pp, age_max = age_max, format = "data.frame")

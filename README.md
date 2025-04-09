@@ -114,3 +114,66 @@ shiny::runApp()
 ## Licence
 
  Cette application est sous licence MIT. Consultez le fichier `LICENSE` pour plus de détails.
+
+
+## Convention de style dans ce package
+
+Le code du package adopte un style hybride français/anglais, pensé pour favoriser la clarté pour les biologistes francophones tout en assurant une compatibilité à long terme avec les standards de développement R.
+
+### Objectifs
+
+- Être compréhensible par les collègues non programmeurs
+- Rester cohérent avec les conventions du tidyverse
+- Faciliter la collaboration, le débogage et la diffusion
+- Maintenir une base de code cohérente, lisible et durable
+
+---
+
+### Règles de nommage
+
+| Élément                     | Règle                                                                 |
+|-----------------------------|-----------------------------------------------------------------------|
+| **Nom des fonctions**       | Verbe en anglais + nom du concept en français (ex. `select_mortalite()`) |
+| **Arguments**               | En anglais, simples et compatibles tidyverse (`data`, `method`, `group`) |
+| **Nom du concept "modèle"** | Toujours écrit `modele`, au singulier, dans tous les contextes        |
+| **Documentation**           | Entièrement en français                                               |
+| **Commentaires**            | En français ou bilingues selon le contexte                           |
+
+---
+
+### Convention spécifique : `modele`
+
+Le mot `modele` est utilisé **systématiquement**, au **singulier**, dans tous les noms de fonctions, variables, objets ou colonnes.  
+Cela permet d’éviter toute confusion liée aux variantes comme `model`, `models`, `modèle` ou `modèles`.
+
+Exemples corrects :  
+- `select_modele()`  
+- `meilleur_modele`  
+- `info_modele`  
+- `ajuster_modele_cpue_poisson()`
+
+---
+
+### Exemples de noms de fonctions conformes
+
+```r
+# Fonction principale
+compare_mortalite_modele <- function(data) {
+  ...
+}
+
+# Sélection du meilleur modèle
+select_mortalite_modele <- function(data) {
+  ...
+}
+
+# Fonction d'ajustement interne
+ajuster_modele_mortalite_nb1 <- function(data) {
+  ...
+}
+
+# Affichage dans l'application
+render_table_mortalite <- function(data) {
+  ...
+}
+```

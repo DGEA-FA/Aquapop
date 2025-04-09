@@ -535,16 +535,17 @@ app_server <- function(input, output, session) {
   
   
   # Mortalite -------------------------------------------------------
+  # Valeur âge maximum
+  age_max <- reactive({
+    req(specimen())
+    get_age_max(specimen())
+  })
+  
+  
   # 1. Valeur PP (Peak Plus)
   pp <- reactive({
     req(specimen())
     get_peak_plus(specimen())
-  })
-  
-  # 2. Valeur âge maximum
-  age_max <- reactive({
-    req(specimen())
-    get_age_max(specimen())
   })
   
   # 3. Données corrigées pour la mortalité
@@ -586,33 +587,28 @@ app_server <- function(input, output, session) {
     width = 7, height = 5, dpi = 300,
     label = "Télécharger le graphique"
   )
-  
-  
-  # 5. Comparaison des modèles
-  comparaison_mortalite_df <- reactive({
+  # 5. Comparaison des modèles (une seule fois)
+  comparaison_mortalite <- reactive({
     req(df_age_etendue())
-    mortalite_modele_comparaison(df_age_etendue(), format = "data.frame")
+    mortalite_modele_comparaison(df_age_etendue())
   })
   
-  ft_comparaison_mortalite <- reactive({
-    req(df_age_etendue())
-    mortalite_modele_comparaison(df_age_etendue(), format = "flextable")
-  })
+  # Affichage dans l'UI
+  render_table_flextable("comparaison_mortalite_ui", reactive(comparaison_mortalite()$flextable))
   
-  
-  render_table_flextable("comparaison_mortalite_ui", ft_comparaison_mortalite)
-  render_download_table("download_comparaison_mortalite_table", comparaison_mortalite_df())
+  # Téléchargement du tableau brut
+  render_download_table("download_comparaison_mortalite_table", comparaison_mortalite()$data)
   
   # 6. Sélection du meilleur modèle
   meilleur_modele <- reactive({
-    req(comparaison_mortalite_df())
-    select_best_mortalite_model(comparaison_mortalite_df())
+    req(comparaison_mortalite())
+    select_best_mortalite_model(comparaison_mortalite()$data)
   })
   
   phrase_mortalite <- reactive({
-    req(comparaison_mortalite_df(), meilleur_modele())
+    req(comparaison_mortalite(), meilleur_modele())
     
-    ligne <- comparaison_mortalite_df() |>
+    ligne <- comparaison_mortalite()$data |>
       dplyr::filter(Méthode == meilleur_modele())
     
     modele_nom <- meilleur_modele() |> toupper()
@@ -620,21 +616,76 @@ app_server <- function(input, output, session) {
     
     glue::glue("Le modèle {modele_nom} décrit le mieux la mortalité de la population. La mortalité annuelle s’élève à {mortalite_A} %.") |> as.character()
   })
+  
   output$phrase_mortalite <- renderText({
     phrase_mortalite()
   })
   
-  
   # 7. Graphe du modèle retenu
   plot_mortalite <- reactive({
-    req(specimen(), df_age_etendue(), comparaison_mortalite_df(), meilleur_modele())
-    modele <- get_best_mortalite_model(df_age_etendue(), methode = meilleur_modele())
+    req(specimen(), df_age_etendue(), comparaison_mortalite(), meilleur_modele())
+    
+    modele <- get_best_mortalite_model(
+      df_age_etendue(),
+      methode = meilleur_modele()
+    )
+    
     plot_mortalite_modele(
       specimen = specimen(),
       modele = modele,
-      info_modele = comparaison_mortalite_df()
+      info_modele = comparaison_mortalite()$data
     )
   })
+  
+  
+  # 
+  # # 5. Comparaison des modèles
+  # comparaison_mortalite_df <- reactive({
+  #   req(df_age_etendue())
+  #   mortalite_modele_comparaison(df_age_etendue(), format = "data.frame")
+  # })
+  # 
+  # ft_comparaison_mortalite <- reactive({
+  #   req(df_age_etendue())
+  #   mortalite_modele_comparaison(df_age_etendue(), format = "flextable")
+  # })
+  # 
+  # 
+  # render_table_flextable("comparaison_mortalite_ui", ft_comparaison_mortalite)
+  # render_download_table("download_comparaison_mortalite_table", comparaison_mortalite_df())
+  # 
+  # 6. Sélection du meilleur modèle
+  # meilleur_modele <- reactive({
+  #   req(comparaison_mortalite_df())
+  #   select_best_mortalite_model(comparaison_mortalite_df())
+  # })
+  # 
+  # phrase_mortalite <- reactive({
+  #   req(comparaison_mortalite_df(), meilleur_modele())
+  #   
+  #   ligne <- comparaison_mortalite_df() |>
+  #     dplyr::filter(Méthode == meilleur_modele())
+  #   
+  #   modele_nom <- meilleur_modele() |> toupper()
+  #   mortalite_A <- ligne$A
+  #   
+  #   glue::glue("Le modèle {modele_nom} décrit le mieux la mortalité de la population. La mortalité annuelle s’élève à {mortalite_A} %.") |> as.character()
+  # })
+  # output$phrase_mortalite <- renderText({
+  #   phrase_mortalite()
+  # })
+  # 
+  # 
+  # # 7. Graphe du modèle retenu
+  # plot_mortalite <- reactive({
+  #   req(specimen(), df_age_etendue(), comparaison_mortalite_df(), meilleur_modele())
+  #   modele <- get_best_mortalite_model(df_age_etendue(), methode = meilleur_modele())
+  #   plot_mortalite_modele(
+  #     specimen = specimen(),
+  #     modele = modele,
+  #     info_modele = comparaison_mortalite_df()
+  #   )
+  # })
   
  
   
@@ -670,109 +721,7 @@ app_server <- function(input, output, session) {
   )
   
   # Maturité sexuelle -------------------------------------------------------
-  
-  # # -- Résultat complet : modèle(s) et table(s)
-  # table_modeles_maturite_resultats <- reactive({
-  #   req(specimen())
-  #   table_maturite_modeles(
-  #     specimen_data = specimen(),
-  #     prefer_combined = FALSE,
-  #     variable = "ltm"
-  #   )
-  # })
-  # 
-  # # -- Texte explicatif
-  # message_modeles_maturite <- reactive({
-  #   req(table_modeles_maturite_resultats())
-  #   table_modeles_maturite_resultats()$message
-  # })
-  # 
-  # # -- Table principale (flextable)
-  # ft_modele_maturite <- reactive({
-  #   req(table_modeles_maturite_resultats())
-  #   table_modeles_maturite_resultats()$table$flextable
-  # })
-  # 
-  # # -- Table principale (data.frame) pour téléchargement
-  # df_modele_maturite <- reactive({
-  #   req(table_modeles_maturite_resultats())
-  #   table_modeles_maturite_resultats()$table$df
-  # })
-  # 
-  # # -- Affichage
-  # output$message_modeles_L50 <- renderText({
-  #   req(message_modeles_maturite())
-  #   message_modeles_maturite()
-  # })
-  # 
-  # render_table_flextable("table_modele_L50_ui", ft_modele_maturite)
-  # render_download_table("download_table_modele_L50", df_modele_maturite())
-  # 
-  # fit_maturite_resultat <- reactive({
-  #   req(specimen(), table_modeles_maturite_resultats())
-  #   
-  #   best <- table_modeles_maturite_resultats()$best_model
-  #   
-  #   # Si modèle combiné (structure plate)
-  #   if (!is.null(best$modele)) {
-  #     fit_maturite(
-  #       data = specimen(),
-  #       variable = best$variable,
-  #       modele = best$modele,
-  #       lien = best$lien
-  #     )
-  #   } else {
-  #     # Sinon, on prend le modèle Femelle par défaut (à adapter si besoin)
-  #     fit_maturite(
-  #       data = specimen(),
-  #       variable = best$best_model_F$variable,
-  #       modele = best$best_model_F$modele,
-  #       lien = best$best_model_F$lien
-  #     )
-  #   }
-  # })
-  # 
-  # output$table_resultats_maturite <- renderTable({
-  #   req(fit_maturite_resultat())
-  #   fit_maturite_resultat()$table_resultats
-  # })
-  # 
-  # output$ft_resultats_maturite <- renderUI({
-  #   req(fit_maturite_resultat())
-  #   flextable::htmltools_value(fit_maturite_resultat()$table_resultats_flextable)
-  # })
-  # 
-  # output$graphique_maturite <- renderPlot({
-  #   req(fit_maturite_resultat())
-  #   fit_maturite_resultat()$graphique
-  # })
-  # 
-  # # --- Graphique ogive maturité ---
-  # plot_ogive_maturite <- reactive({
-  #   req(fit_maturite_resultat())
-  #   fit_maturite_resultat()$graphique
-  # })
-  # 
-  # render_plot_ggplot("plot_ogive_maturite", plot_ogive_maturite)
-  # render_download_plot("download_ogive_maturite_plot", plot_ogive_maturite)
-  # 
-  # 
-  # 
-  # # --- Tableau des résultats (flextable) ---
-  # table_ogive_maturite_df <- reactive({
-  #   req(fit_maturite_resultat())
-  #   fit_maturite_resultat()$table_resultats
-  # })
-  # 
-  # ft_ogive_maturite <- reactive({
-  #   req(fit_maturite_resultat())
-  #   fit_maturite_resultat()$table_resultats_flextable
-  # })
-  # 
-  # render_table_flextable("table_ogive_maturite_ui", ft_ogive_maturite)
-  # render_download_table("download_ogive_maturite_table", table_ogive_maturite_df())
-  # 
-  # 
+
   
   # -- Résultat complet : modèles et tables
   table_modeles_maturite_resultats <- reactive({

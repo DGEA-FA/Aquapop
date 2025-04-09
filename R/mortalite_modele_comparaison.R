@@ -3,31 +3,34 @@
 #' Ajuste cinq modèles (Poisson, NB1, NB2, CMP, GP) sur les fréquences d’âge
 #' et retourne un tableau comparatif avec AICc, HNP, estimation de Z et A (%), etc.
 #'
-#' @param df_age_etendue Un `data.frame` produit par `prepare_age_data_etendue()`,
-#'                       contenant les colonnes `age` et `number`.
-#' @param format Format de sortie : `"data.frame"` (défaut) ou `"flextable"`.
+#' @param data Un `data.frame` contenant les colonnes `age` et `number`,
+#'             tel que produit par la fonction `prepare_age_data_etendue()`.
 #'
-#' @return Un tableau comparatif des modèles.
+#' @return Une liste contenant :
+#' \describe{
+#'   \item{data}{Le tableau comparatif des modèles sous forme de `data.frame`}
+#'   \item{flextable}{Le même tableau formaté avec `flextable` pour affichage}
+#' }
+#'
 #' @export
 #'
 #' @examples
 #' df_corr <- prepare_age_data_corrigee(...)
 #' df_etendue <- prepare_age_data_etendue(df_corr, age_max = 10)
-#' mort <- mortalite_modele_comparaison(df_etendue, format = "flextable")
-mortalite_modele_comparaison <- function(df_age_etendue, format = c("data.frame", "flextable")) {
-  format <- match.arg(format)
+#' mort <- mortalite_modele_comparaison(df_etendue)
+mortalite_modele_comparaison <- function(data) {
   
-  # Appel des fonctions d’ajustement spécifiques à chaque modèle
-  result_poisson <- ajuster_modele_mortalite_poisson(df_age_etendue)
-  result_nb1     <- ajuster_modele_mortalite_nb1(df_age_etendue)
-  result_nb2     <- ajuster_modele_mortalite_nb2(df_age_etendue)
-  result_cmp     <- ajuster_modele_mortalite_cmp(df_age_etendue)
-  result_gp      <- ajuster_modele_mortalite_gp(df_age_etendue)
+  # Ajustement des modèles
+  result_poisson <- ajuster_modele_mortalite_poisson(data)
+  result_nb1     <- ajuster_modele_mortalite_nb1(data)
+  result_nb2     <- ajuster_modele_mortalite_nb2(data)
+  result_cmp     <- ajuster_modele_mortalite_cmp(data)
+  result_gp      <- ajuster_modele_mortalite_gp(data)
   
   # Regroupement
   resultats <- dplyr::bind_rows(result_poisson, result_nb1, result_nb2, result_cmp, result_gp)
   
-  # Tri et calcul du Δ AICc
+  # Calcul du Δ AICc et ajustement du commentaire
   resultats <- resultats %>%
     dplyr::mutate(`Δ AICc` = round(aicc - min(aicc, na.rm = TRUE), 2)) %>%
     dplyr::mutate(commentaire = dplyr::case_when(
@@ -38,8 +41,9 @@ mortalite_modele_comparaison <- function(df_age_etendue, format = c("data.frame"
       TRUE ~ commentaire
     ))
   
-  # Colonnes finales
+  # Colonnes finales (data.frame)
   df_final <- resultats %>%
+    dplyr::arrange(aicc) %>%
     dplyr::select(
       Méthode = methode,
       `Ajustement HNP (%)` = ajustement_hnp,
@@ -48,20 +52,19 @@ mortalite_modele_comparaison <- function(df_age_etendue, format = c("data.frame"
       Z, SE, A, `IC 95%`,
       Convergence = convergence,
       Commentaires = commentaire
-    )%>%
-    dplyr::arrange(aicc)  # <- Tri ici
-  
-  # Format de sortie
-  if (format == "data.frame") {
-    return(df_final)
-  } else {
-    return(
-      flextable::flextable(df_final) |>
-        flextable::set_caption("Comparaison des modèles de mortalité") |>
-        flextable::fontsize(size = 12, part = "all") |>
-        flextable::font(fontname = "Arial", part = "all") |>
-        flextable::align(align = "center", part = "all") |>
-        flextable::autofit()
     )
-  }
+  
+  # Création du flextable
+  ft <- flextable::flextable(df_final) |>
+    flextable::set_caption("Comparaison des modèles de mortalité") |>
+    flextable::fontsize(size = 12, part = "all") |>
+    flextable::font(fontname = "Arial", part = "all") |>
+    flextable::align(align = "center", part = "all") |>
+    flextable::autofit()
+  
+  # Retourner les deux formats
+  return(list(
+    data = df_final,
+    flextable = ft
+  ))
 }
