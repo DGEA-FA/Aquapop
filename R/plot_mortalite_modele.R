@@ -6,7 +6,7 @@
 #'
 #' @param specimen Un `data.frame` contenant au moins les colonnes `sp` et `age`.
 #' @param modele Un modèle ajusté de type `glm`, `glm.nb`, `glmmTMB`, etc.
-#' @param info_modele Le tableau produit par `mortalite_modele_comparaison(format = "data.frame")`
+#' @param info_modele Le tableau produit par `mortalite_compare_modele()$data`
 #'
 #' @return Un objet `ggplot` combinant histogramme + courbe prédite.
 #' @export

@@ -17,8 +17,8 @@
 #' @examples
 #' df_corr <- prepare_age_data_corrigee(...)
 #' df_etendue <- prepare_age_data_etendue(df_corr, age_max = 10)
-#' mort <- mortalite_modele_comparaison(df_etendue)
-mortalite_modele_comparaison <- function(data) {
+#' mortalite_compare_modele_res <- mortalite_compare_modele(data = df_etendue)
+mortalite_compare_modele <- function(data) {
   
   # Ajustement des modèles
   result_poisson <- ajuster_modele_mortalite_poisson(data)

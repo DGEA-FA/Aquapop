@@ -5,17 +5,17 @@
 #' les modèles bien ajustés (ajustement HNP < 10). Si aucun modèle n’est
 #' bien ajusté, elle sélectionne celui avec le plus bas AICc global.
 #'
-#' @param tablemodele Un `data.frame` retourné par `mortalite_modele_comparaison(format = "data.frame")`
+#' @param tablemodele Un `data.frame` retourné par `mortalite_compare_modele()$data`
 #'
 #' @return Une chaîne de caractères (`Méthode`) correspondant au meilleur modèle.
 #' @export
 #'
 #' @examples
-#' tableau <- mortalite_modele_comparaison(df_age_etendue, format = "data.frame")
-#' select_best_mortalite_model(tableau)
+#' mortalite_compare_modele_res_data <- mortalite_compare_modele(data = df_age_etendue)$data
+#' select_best_mortalite_model(mortalite_compare_modele_res_data)
 select_best_mortalite_model <- function(tablemodele) {
   if (!"Méthode" %in% names(tablemodele) || !"AICc" %in% names(tablemodele)) {
-    stop("Le tableau fourni n’est pas valide. Assurez-vous qu’il provient de `mortalite_modele_comparaison()`.")
+    stop("Le tableau fourni n’est pas valide. Assurez-vous qu’il provient de `mortalite_compare_modele()$data`.")
   }
   
   bien_ajuste <- tablemodele |>

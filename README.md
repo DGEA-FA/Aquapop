@@ -133,7 +133,7 @@ Le code du package adopte un style hybride français/anglais, pensé pour favori
 
 | Élément                     | Règle                                                                 |
 |-----------------------------|-----------------------------------------------------------------------|
-| **Nom des fonctions**       | Verbe en anglais + nom du concept en français (ex. `select_mortalite()`) |
+| **Nom des fonctions**       | Concept métier en premier (`mortalite_`, `croissance_`, etc.), suivi d’un verbe en anglais (ex. `mortalite_compare_modele()`) |
 | **Arguments**               | En anglais, simples et compatibles tidyverse (`data`, `method`, `group`) |
 | **Nom du concept "modèle"** | Toujours écrit `modele`, au singulier, dans tous les contextes        |
 | **Documentation**           | Entièrement en français                                               |
@@ -146,34 +146,21 @@ Le code du package adopte un style hybride français/anglais, pensé pour favori
 Le mot `modele` est utilisé **systématiquement**, au **singulier**, dans tous les noms de fonctions, variables, objets ou colonnes.  
 Cela permet d’éviter toute confusion liée aux variantes comme `model`, `models`, `modèle` ou `modèles`.
 
-Exemples corrects :  
-- `select_modele()`  
-- `meilleur_modele`  
-- `info_modele`  
-- `ajuster_modele_cpue_poisson()`
+### Convention pour les objets retournés
 
----
+> Le nom de l’objet retourné correspond au **nom de la fonction** suivi de **`_res`**.
 
-### Exemples de noms de fonctions conformes
+Cela garantit une relation claire et traçable entre la fonction et son résultat, tout en évitant toute ambiguïté.
+
+#### Exemples
 
 ```r
-# Fonction principale
-compare_mortalite_modele <- function(data) {
-  ...
-}
+# Appel d’une fonction métier
+mortalite_compare_modele_res <- mortalite_compare_modele(data)
 
-# Sélection du meilleur modèle
-select_mortalite_modele <- function(data) {
-  ...
-}
+# Accès à la composante brute (data.frame)
+mortalite_compare_modele_res_data <- mortalite_compare_modele_res$data
 
-# Fonction d'ajustement interne
-ajuster_modele_mortalite_nb1 <- function(data) {
-  ...
-}
-
-# Affichage dans l'application
-render_table_mortalite <- function(data) {
-  ...
-}
+# Tableau formaté
+mortalite_compare_modele_res_flextable <- mortalite_compare_modele_res$flextable
 ```

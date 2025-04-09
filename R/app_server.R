@@ -588,27 +588,27 @@ app_server <- function(input, output, session) {
     label = "Télécharger le graphique"
   )
   # 5. Comparaison des modèles (une seule fois)
-  comparaison_mortalite <- reactive({
+  mortalite_compare_modele_res <- reactive({
     req(df_age_etendue())
-    mortalite_modele_comparaison(df_age_etendue())
+    mortalite_compare_modele(data = df_age_etendue())
   })
   
   # Affichage dans l'UI
-  render_table_flextable("comparaison_mortalite_ui", reactive(comparaison_mortalite()$flextable))
+  render_table_flextable("comparaison_mortalite_ui", reactive(mortalite_compare_modele_res()$flextable))
   
   # Téléchargement du tableau brut
-  render_download_table("download_comparaison_mortalite_table", comparaison_mortalite()$data)
+  render_download_table("download_comparaison_mortalite_table", mortalite_compare_modele_res()$data)
   
   # 6. Sélection du meilleur modèle
   meilleur_modele <- reactive({
-    req(comparaison_mortalite())
-    select_best_mortalite_model(comparaison_mortalite()$data)
+    req(mortalite_compare_modele_res())
+    select_best_mortalite_model(mortalite_compare_modele_res()$data)
   })
   
   phrase_mortalite <- reactive({
-    req(comparaison_mortalite(), meilleur_modele())
+    req(mortalite_compare_modele_res(), meilleur_modele())
     
-    ligne <- comparaison_mortalite()$data |>
+    ligne <- mortalite_compare_modele_res()$data |>
       dplyr::filter(Méthode == meilleur_modele())
     
     modele_nom <- meilleur_modele() |> toupper()
@@ -623,7 +623,7 @@ app_server <- function(input, output, session) {
   
   # 7. Graphe du modèle retenu
   plot_mortalite <- reactive({
-    req(specimen(), df_age_etendue(), comparaison_mortalite(), meilleur_modele())
+    req(specimen(), df_age_etendue(), mortalite_compare_modele_res(), meilleur_modele())
     
     modele <- get_best_mortalite_model(
       df_age_etendue(),
@@ -633,61 +633,10 @@ app_server <- function(input, output, session) {
     plot_mortalite_modele(
       specimen = specimen(),
       modele = modele,
-      info_modele = comparaison_mortalite()$data
+      info_modele = mortalite_compare_modele_res()$data
     )
   })
   
-  
-  # 
-  # # 5. Comparaison des modèles
-  # comparaison_mortalite_df <- reactive({
-  #   req(df_age_etendue())
-  #   mortalite_modele_comparaison(df_age_etendue(), format = "data.frame")
-  # })
-  # 
-  # ft_comparaison_mortalite <- reactive({
-  #   req(df_age_etendue())
-  #   mortalite_modele_comparaison(df_age_etendue(), format = "flextable")
-  # })
-  # 
-  # 
-  # render_table_flextable("comparaison_mortalite_ui", ft_comparaison_mortalite)
-  # render_download_table("download_comparaison_mortalite_table", comparaison_mortalite_df())
-  # 
-  # 6. Sélection du meilleur modèle
-  # meilleur_modele <- reactive({
-  #   req(comparaison_mortalite_df())
-  #   select_best_mortalite_model(comparaison_mortalite_df())
-  # })
-  # 
-  # phrase_mortalite <- reactive({
-  #   req(comparaison_mortalite_df(), meilleur_modele())
-  #   
-  #   ligne <- comparaison_mortalite_df() |>
-  #     dplyr::filter(Méthode == meilleur_modele())
-  #   
-  #   modele_nom <- meilleur_modele() |> toupper()
-  #   mortalite_A <- ligne$A
-  #   
-  #   glue::glue("Le modèle {modele_nom} décrit le mieux la mortalité de la population. La mortalité annuelle s’élève à {mortalite_A} %.") |> as.character()
-  # })
-  # output$phrase_mortalite <- renderText({
-  #   phrase_mortalite()
-  # })
-  # 
-  # 
-  # # 7. Graphe du modèle retenu
-  # plot_mortalite <- reactive({
-  #   req(specimen(), df_age_etendue(), comparaison_mortalite_df(), meilleur_modele())
-  #   modele <- get_best_mortalite_model(df_age_etendue(), methode = meilleur_modele())
-  #   plot_mortalite_modele(
-  #     specimen = specimen(),
-  #     modele = modele,
-  #     info_modele = comparaison_mortalite_df()
-  #   )
-  # })
-  
- 
   
   render_plot_ggplot(
     output_id = "plot_mortalite",

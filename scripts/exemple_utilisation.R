@@ -281,17 +281,13 @@ res_disp$dispersion
 
 
 # 3. Comparer les modèles de mortalité
-#    (a) en format tableau brut
-comparaison_mortalite <- mortalite_modele_comparaison(df_age_etendue)
-print(comparaison_mortalite$data)
-print(comparaison_mortalite$flextable)
+mortalite_compare_modele_res <- mortalite_compare_modele(data = df_age_etendue)
+print(mortalite_compare_modele_res$data)
+print(mortalite_compare_modele_res$flextable)
 
-#    (b) en format flextable 
-# comparaison_mortalite_ft <- mortalite_modele_comparaison(df_age_etendue, format = "flextable")
-# print(comparaison_mortalite_ft)
-meilleur_modele <- select_best_mortalite_model(comparaison_mortalite$data)
+meilleur_modele <- select_best_mortalite_model(mortalite_compare_modele_res$data)
 modele <- get_best_mortalite_model(df_age_etendue, methode = meilleur_modele)
-plot_mortalite_modele(specimen, modele, comparaison_mortalite$data)
+plot_mortalite_modele(specimen, modele, mortalite_compare_modele_res$data)
 
 # Format data.frame
 res_chaprob_df <- mortalite_chaprob(specimen = specimen, pp = pp, age_max = age_max, format = "data.frame")

@@ -10,8 +10,8 @@
 #' @export
 get_best_mortalite_model <- function(df_age_etendue, methode = NULL) {
   if (is.null(methode)) {
-    resume <- mortalite_modele_comparaison(df_age_etendue, format = "data.frame")
-    methode <- select_best_mortalite_model(resume)
+    mortalite_compare_modele_res_data <- mortalite_compare_modele(data = df_age_etendue)$data
+    methode <- select_best_mortalite_model(mortalite_compare_modele_res_data)
   }
   
   stopifnot(!is.null(methode), methode %in% c("poisson", "nb1", "nb2", "cmp", "gp"))
