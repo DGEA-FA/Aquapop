@@ -199,80 +199,61 @@ app_server <- function(input, output, session) {
   # Téléchargement des données
   render_download_table("download_data4plot_age", res_structure_age()$data)
   
-  # === PSD  ===================================
-  
   ## --- Indice PSD global : Tableau -----------------------------------------
   
-  # Reactive : retourne un tableau flextable avec l'indice PSD et IC95
-  ft_psd_indice <- reactive({
+  # Reactive : retourne la liste {data, flextable}
+  psd_q_res <- reactive({
     req(specimen_valid())
-    psd_indice(data = specimen_valid(), format = "flextable")
+    psd_q(data = specimen_valid())
   })
   
-  # Rendu du tableau dans l'interface
-  render_table_flextable("psd_indice_ui", ft_psd_indice)
+  # Rendu du tableau flextable dans l'interface
+  render_table_flextable("psd_indice_ui", reactive(psd_q_res()$flextable))
   
   
-  ## --- Répartition par classe de taille : Tableau --------------------------
+  ## --- Répartition par classe de taille : Tableau + Graphique ----------------
   
-  # Reactive (brut) : pour téléchargement
-  df_psd_byclass <- reactive({
+  # Reactive : retourne la liste {data, flextable, plot}
+  psd_byclass_res <- reactive({
     req(specimen_valid())
-    psd_byclass(data = specimen_valid(), format = "data.frame")
+    psd_byclass(data = specimen_valid())
   })
   
-  # Reactive (flextable) : pour affichage
-  ft_psd_byclass <- reactive({
-    req(specimen_valid())
-    psd_byclass(data = specimen_valid(), format = "flextable")
-  })
-  
-  # Rendu du tableau formaté dans l'interface
-  render_table_flextable("psd_byclass_ui", ft_psd_byclass)
+  # Rendu du tableau flextable dans l'interface
+  render_table_flextable("psd_byclass_ui", reactive(psd_byclass_res()$flextable))
   
   # Bouton de téléchargement du tableau brut
-  render_download_table("dl_psd_byclass", df_psd_byclass())
-  
-  
-  ## --- Histogramme par classe de taille : Graphique ------------------------
-  
-  # Reactive : retourne un objet ggplot du graphique PSD
-  plot_psd <- reactive({
-    req(specimen_valid())
-    psd_byclass(data = specimen_valid(), format = "plot")
-  })
+  render_download_table("dl_psd_byclass", reactive(psd_byclass_res()$data))
   
   # Affichage du graphique dans l'interface
-  render_plot_ggplot("psd_byclass_plot", plot_psd)
+  render_plot_ggplot("psd_byclass_plot", reactive(psd_byclass_res()$plot))
   
   # Bouton de téléchargement du graphique (PNG)
-  render_download_plot("download_psd_byclass_plot", plot_psd)
+  render_download_plot("download_psd_byclass_plot", reactive(psd_byclass_res()$plot))
   
   # Relation masse-longueur -------------------------------------------------------
   
-  # --- Graphique ---
-  plot_masselongueur <- reactive({
+  # Reactive : retourne la liste {data, flextable, plot}
+  masse_longueur_fit_res <- reactive({
     req(specimen())
-    relation_masse_longueur(data = specimen(), format = "plot")
+    masse_longueur_fit(data = specimen())
   })
   
-  render_plot_ggplot("plot_masselongueur", plot_masselongueur)
-  render_download_plot("download_masselongueur_plot", plot_masselongueur)
+  # --- Graphique ---
+  render_plot_ggplot("plot_masselongueur", reactive(masse_longueur_fit_res()$plot))
+  
+  render_download_plot(
+    id = "download_masselongueur_plot",
+    plot_reactive = reactive(masse_longueur_fit_res()$plot)
+  )
   
   # --- Tableau des coefficients ---
-  table_masselongueur <- reactive({
-    req(specimen())
-    relation_masse_longueur(data = specimen(), format = "data.frame")
-  })
+  render_table_flextable("table_masselongueur_ui", reactive(masse_longueur_fit_res()$flextable))
   
-  ft_masselongueur <- reactive({
-    req(specimen())
-    relation_masse_longueur(data = specimen(), format = "flextable")
-  })
-  
-  render_table_flextable("table_masselongueur_ui", ft_masselongueur)
-  render_download_table("download_masselongueur_table", table_masselongueur())
-  
+  render_download_table(
+    id = "download_masselongueur_table",
+    data_reactive = reactive(masse_longueur_fit_res()$data)
+  )
   # Indice de condition -------------------------------------------------------
   
   # Tableau Wr 
@@ -562,7 +543,7 @@ app_server <- function(input, output, session) {
   plot_mortalite <- reactive({
     req(specimen(), meilleur_modele_fit(), mortalite_compare_modele_res())
   
-    plot_mortalite_modele(
+    mortalite_plot_modele(
       specimen = specimen(),
       modele = meilleur_modele_fit(),
       info_modele = mortalite_compare_modele_res()$data

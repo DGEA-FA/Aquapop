@@ -1,18 +1,19 @@
-#' Calcule l’indice PSD global pour une espèce cible
+#' Calculer l’indice PSD-Q global pour une espèce cible
 #'
-#' Cette fonction calcule l’indice PSD (Proportional Size Distribution) pour une espèce donnée.
-#' Elle retourne un tableau contenant la valeur de l’indice PSD et son intervalle de confiance.
-#' Le résultat peut être retourné sous forme brute (`data.frame`) ou mise en forme (`flextable`).
+#' Cette fonction calcule l’indice PSD (Proportional Size Distribution de type Q) pour une espèce donnée.
+#' Elle retourne un tableau contenant la valeur de l’indice PSD-Q et son intervalle de confiance à 95 %,
+#' à la fois sous forme brute (`data.frame`) et sous forme formatée (`flextable`).
 #'
 #' @param data Un `data.frame` contenant au moins les colonnes `ltm` (longueur totale en mm) et `sp`.
 #'             Les données doivent être filtrées pour une seule espèce.
-#' @param format Format de sortie : `"data.frame"` (par défaut) ou `"flextable"`.
 #'
-#' @return Un tableau contenant la valeur du PSD (Q) et son intervalle de confiance 95 %, au format spécifié.
+#' @return Une liste contenant :
+#' \describe{
+#'   \item{`data`}{Un `data.frame` avec la valeur de l’indice PSD-Q et l’intervalle de confiance 95 %.}
+#'   \item{`flextable`}{Une version formatée du tableau pour affichage ou export (Word, Shiny, etc.).}
+#' }
 #' @export
-psd_indice <- function(data, format = c("data.frame", "flextable")) {
-  format <- match.arg(format)
-  
+psd_q <- function(data) {
   sp <- unique(data$sp)
   if (length(sp) != 1) stop("Les données doivent être filtrées pour une seule espèce.")
   
@@ -48,11 +49,12 @@ psd_indice <- function(data, format = c("data.frame", "flextable")) {
     dplyr::mutate(`IC 95%` = glue::glue("[{round(LCI, 1)}-{round(UCI, 1)}]")) %>%
     dplyr::select(Q, `IC 95%`)
   
-  if (format == "flextable") {
-    PSDresult <- flextable::flextable(PSDresult) %>%
-      flextable::autofit() %>%
-      flextable::align(align = "center", part = "all") 
-  }
+  PSD_flex <- flextable::flextable(PSDresult) %>%
+    flextable::autofit() %>%
+    flextable::align(align = "center", part = "all")
   
-  return(PSDresult)
+  return(list(
+    data = PSDresult,
+    flextable = PSD_flex
+  ))
 }

@@ -12,8 +12,8 @@
 #' @export
 #'
 #' @examples
-#' plot_mortalite_modele(specimen, modele, comparaison_mortalite_df)
-plot_mortalite_modele <- function(specimen, modele, info_modele) {
+#' mortalite_plot_modele(specimen, modele, comparaison_mortalite_df)
+mortalite_plot_modele <- function(specimen, modele, info_modele) {
   # Validation
   stopifnot(all(c("sp", "age") %in% names(specimen)))
   

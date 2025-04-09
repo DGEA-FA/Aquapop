@@ -240,7 +240,7 @@ app_ui <- function() {
             )
           ),
           
-          ## relation_masse_longueur_subpanel ---------------------------------------
+          ## masse_longueur_fit_subpanel ---------------------------------------
           tabPanel(
             title = "Relation masse-longueur",
             

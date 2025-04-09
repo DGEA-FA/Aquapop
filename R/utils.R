@@ -24,7 +24,7 @@ pen_constants <- tibble::tibble(
 
 #' Noms standardisés des classes PSD
 #'
-#' Utilisés dans les fonctions PSD (psd_indice, psd_byclass, psd_plot)
+#' Utilisés dans les fonctions PSD (psd_q, psd_byclass, psd_plot)
 #'
 #' @export
 psd_classnames <- c("Sous-stock", "Stock", "Qualité", "Préférée", "Mémorable", "Trophée")

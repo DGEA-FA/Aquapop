@@ -268,7 +268,7 @@ print(mortalite_compare_modele_res$flextable)
 meilleur_modele_nom <- mortalite_select_best_modele(mortalite_compare_modele_res$data)
 meilleur_modele_nom
 modele <- mortalite_fit_best_modele(df_age_etendue, methode = meilleur_modele_nom)
-plot_mortalite_modele(specimen, modele, mortalite_compare_modele_res$data)
+mortalite_plot_modele(specimen, modele, mortalite_compare_modele_res$data)
 
 # Estimer la mortalité selon Chapman-Robson
 mortalite_chaprob_res <- mortalite_chaprob(specimen = specimen, pp = pp, age_max = mortalite_get_age_max_res)
@@ -344,23 +344,23 @@ taille_masse_age_res <- taille_masse_age(data = specimen_valid)
 taille_masse_age_res$data
 taille_masse_age_res$flextable
 
-
-
-
 # PSD ---------------------------------------------------------------------
 
-psd_indice(data = specimen_valid, format = "flextable")
-psd_indice(data = specimen_valid, format = "data.frame")
-psd_byclass(data = specimen_valid, format = "data.frame")
-psd_byclass(data = specimen_valid, format = "flextable")
-psd_byclass(data = specimen_valid, format = "plot")
+psd_q_res <- psd_q(data = specimen_valid)
+psd_q_res$data
+psd_q_res$flextable
+
+
+psd_byclass_res <- psd_byclass(data = specimen_valid)
+psd_byclass_res$data
+psd_byclass_res$flextable
+psd_byclass_res$plot
 
 # Relation masse-longueur ---------------------------------------------------------------------
-
-relation_masse_longueur(data = specimen, format = "data.frame")
-relation_masse_longueur(data = specimen, format = "flextable")
-relation_masse_longueur(data = specimen, format = "plot")
-
+masse_longueur_fit_res <- masse_longueur_fit(data = specimen)
+masse_longueur_fit_res$data
+masse_longueur_fit_res$plot
+masse_longueur_fit_res$flextable
 # Structure de taille ---------------------------------------------------------------------
 structure_taille_res <- structure_taille(data = specimen, groupement = "maturite")
 

@@ -1,17 +1,18 @@
-#' Calcule la fréquence par classe PSD pour une espèce donnée
+#' Calculer la fréquence par classe PSD pour une espèce donnée
 #'
 #' Cette fonction retourne le nombre de poissons et leur fréquence relative (%) pour chaque
 #' classe de taille du PSD. Les données doivent être filtrées pour une seule espèce.
-#' Le résultat peut être retourné sous forme brute (`data.frame`), en tableau formaté (`flextable`), ou en graphique (`plot`).
 #'
 #' @param data Un `data.frame` contenant au moins les colonnes `ltm` et `sp`.
-#' @param format Format de sortie : `"data.frame"` (par défaut), `"flextable"`, ou `"plot"`.
 #'
-#' @return Un tableau ou un graphique selon l'option choisie.
+#' @return Une liste contenant :
+#' \describe{
+#'   \item{`data`}{Un `data.frame` résumant les fréquences par classe PSD.}
+#'   \item{`flextable`}{Une version formatée du tableau (pour Word, Shiny, etc.).}
+#'   \item{`plot`}{Un graphique en barres montrant la fréquence relative par classe.}
+#' }
 #' @export
-psd_byclass <- function(data, format = c("data.frame", "flextable", "plot")) {
-  format <- match.arg(format)
-  
+psd_byclass <- function(data) {
   espece <- unique(data$sp)
   if (length(espece) != 1) stop("Les données doivent être filtrées pour une seule espèce.")
   
@@ -48,7 +49,7 @@ psd_byclass <- function(data, format = c("data.frame", "flextable", "plot")) {
     group_by(Classe, intervalle, n, Freq) %>%
     summarise(.groups = "keep")
   
-  structure_complete <- tibble(
+  structure_complete <- tibble::tibble(
     Classe = noms_classes,
     intervalle = etiquettes
   )
@@ -74,49 +75,35 @@ psd_byclass <- function(data, format = c("data.frame", "flextable", "plot")) {
   
   colnames(table_finale)[2:4] <- c("Intervalle (mm)", "n", "%")
   
-  # ----- Sortie : plot -----
-  if (format == "plot") {
-    table_finale$`%` <- as.numeric(table_finale$`%`)
-    
-    return(
-      ggplot(table_finale, aes(x = Classe, y = `%`)) +
-        geom_bar(stat = "identity") +
-        geom_text(aes(label = paste0("n = ", n)), nudge_y = 3) +
-        xlab("Classe de taille") +
-        ylab("Fréquence relative (%)") +
-        theme_minimal(base_size = 11) +
-        theme(
-          panel.background = element_rect(
-            fill = "white",
-            colour = "white",
-            linewidth = 0.5
-          ),
-          panel.grid.minor.x = element_blank(),
-          panel.grid.major.x = element_blank(),
-          panel.grid.minor.y = element_blank(),
-          panel.grid.major.y = element_blank(),
-          axis.text.y.left = element_text(color = "black"),
-          axis.text.x = element_text(color = "black"),
-          axis.title.y.left = element_text(color = "black", hjust = 0.5),
-          axis.title.x = element_text(color = "black", hjust = 0.5),
-          plot.margin = unit(c(0.5, 0.1, 0.2, 0.1), "cm"),
-          axis.line = element_line(colour = "black")
-        ) +
-        scale_y_continuous(expand = c(0, 0.1),
-                           limits = c(0, 100)) +
-        scale_x_discrete(limits = noms_classes)
-    )
-  }
+  # -- Graphique
+  table_finale$`%` <- as.numeric(table_finale$`%`)
+  fig <- ggplot2::ggplot(table_finale, ggplot2::aes(x = Classe, y = `%`)) +
+    ggplot2::geom_bar(stat = "identity") +
+    ggplot2::geom_text(ggplot2::aes(label = paste0("n = ", n)), nudge_y = 3) +
+    ggplot2::xlab("Classe de taille") +
+    ggplot2::ylab("Fréquence relative (%)") +
+    ggplot2::theme_minimal(base_size = 11) +
+    ggplot2::theme(
+      panel.background = ggplot2::element_rect(
+        fill = "white", colour = "white", linewidth = 0.5
+      ),
+      panel.grid = ggplot2::element_blank(),
+      axis.text = ggplot2::element_text(color = "black"),
+      axis.title = ggplot2::element_text(color = "black", hjust = 0.5),
+      plot.margin = grid::unit(c(0.5, 0.1, 0.2, 0.1), "cm"),
+      axis.line = ggplot2::element_line(colour = "black")
+    ) +
+    ggplot2::scale_y_continuous(expand = c(0, 0.1), limits = c(0, 100)) +
+    ggplot2::scale_x_discrete(limits = noms_classes)
   
-  # ----- Sortie : flextable -----
-  if (format == "flextable") {
-    return(
-      flextable::flextable(table_finale) %>%
-        flextable::autofit() %>%
-        flextable::align(align = "center", part = "all")
-    )
-  }
+  # -- Flextable
+  ft <- flextable::flextable(table_finale) %>%
+    flextable::autofit() %>%
+    flextable::align(align = "center", part = "all")
   
-  # ----- Sortie : data.frame -----
-  return(table_finale)
+  return(list(
+    data = table_finale,
+    flextable = ft,
+    plot = fig
+  ))
 }
