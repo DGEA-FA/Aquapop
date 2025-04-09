@@ -14,7 +14,7 @@
 #' }
 #'
 #' @export
-table_maturite_modeles <- function(specimen_data, prefer_combined = FALSE, variable = c("ltm", "age")) {
+maturite_compare_modele <- function(specimen_data, prefer_combined = FALSE, variable = c("ltm", "age")) {
   variable <- match.arg(variable)
   
   # Fonction interne de conversion
@@ -60,13 +60,13 @@ table_maturite_modeles <- function(specimen_data, prefer_combined = FALSE, varia
   df <- maturite_prepare(specimen_data, variable = variable)
   
   # Ajustement des modèles séparés
-  models_sep <- fit_maturite_separated_models(df, variable = variable)
+  models_sep <- maturite_fit_separated_modele(df, variable = variable)
   eval_sep <- maturite_eval_modele(models_sep)
   best_sep <- maturite_select_best_separated_modele(eval_sep)
   eval_sep$type <- ifelse(grepl("^M_", eval_sep$modele_id), "séparé_M", "séparé_F")
   
   # Ajustement des modèles combinés
-  models_comb <- fit_maturite_combined_models(df, variable = variable)
+  models_comb <- maturite_fit_combined_modele(df, variable = variable)
   eval_comb <- maturite_eval_modele(models_comb)
   eval_comb$type <- "combiné"
   

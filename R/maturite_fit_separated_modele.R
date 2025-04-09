@@ -5,7 +5,7 @@
 #'
 #' @return Une liste contenant les modèles logistiques (`logit`, `probit`, `cloglog`) pour M et F.
 #' @export
-fit_maturite_separated_models <- function(df, variable = c("ltm", "age")) {
+maturite_fit_separated_modele <- function(df, variable = c("ltm", "age")) {
   variable <- match.arg(variable)
   
   # Vérification des colonnes requises

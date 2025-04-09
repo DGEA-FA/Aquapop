@@ -1,16 +1,13 @@
 #' Comparer les modèles de CPUE et recommander le meilleur
 #'
 #' Cette fonction ajuste cinq modèles (Poisson, NB1, NB2, CMP, GP) sur les données de CPUE
-#' et retourne un tableau comparatif avec AICc, ajustement HNP et recommandation.
+#' et retourne une liste contenant un tableau comparatif brut (`data.frame`) et sa version formatée (`flextable`).
 #'
 #' @param cpue_data Un `data.frame` produit par `cpue_prepare()` contenant les colonnes `no_station` et `CPUE`.
-#' @param format Format de sortie : `"data.frame"` (défaut) ou `"flextable"`.
 #'
-#' @return Un tableau comparatif des modèles, au format `data.frame` ou `flextable`.
+#' @return Une liste avec deux éléments : `data` (tableau brut) et `flextable` (tableau formaté).
 #' @export
-cpue_compare_modele <- function(cpue_data, format = c("data.frame", "flextable")) {
-  format <- match.arg(format)
-  
+cpue_compare_modele <- function(cpue_data) {
   # Ajustement des modèles
   result_poisson <- cpue_fit_modele_poisson(cpue_data)
   result_nb1     <- cpue_fit_modele_nb1(cpue_data)
@@ -41,7 +38,7 @@ cpue_compare_modele <- function(cpue_data, format = c("data.frame", "flextable")
     dplyr::mutate(delta_aicc = tidyr::replace_na(delta_aicc, NA_real_)) %>%
     dplyr::arrange(ajustement_hnp >= 10, aicc)
   
-  # Mise à jour des commentaires selon le meilleur modèle
+  # Mise à jour des commentaires
   if (nrow(results_bien_ajuste) > 0) {
     best <- results_bien_ajuste %>% dplyr::filter(delta_aicc == 0)
     results <- results %>%
@@ -74,24 +71,22 @@ cpue_compare_modele <- function(cpue_data, format = c("data.frame", "flextable")
     ) %>%
     as.data.frame()
   
-  if (format == "data.frame") {
-    return(df_final)
-  } else {
-    # Titre par défaut
-    titre_caption <- "Comparaison des modèles : tous les spécimens"
-    
-    # Si on détecte le mot Femelles dans la colonne Group du cpue_data
-    if ("Group" %in% names(cpue_data) && any(grepl("Femelles", cpue_data$Group))) {
-      titre_caption <- "Comparaison des modèles : femelles reproductrices actives"
-    }
-    
-    return(
-      flextable::flextable(df_final) |>
-        flextable::set_caption(titre_caption) |>
-        flextable::fontsize(size = 12, part = "all") |>
-        flextable::font(fontname = "Arial", part = "all") |>
-        flextable::align(align = "center", part = "all") |>
-        flextable::autofit()
-    )
+  # Déterminer le titre
+  titre_caption <- "Comparaison des modèles : tous les spécimens"
+  if ("Group" %in% names(cpue_data) && any(grepl("Femelles", cpue_data$Group))) {
+    titre_caption <- "Comparaison des modèles : femelles reproductrices actives"
   }
+  
+  # Créer le flextable
+  ft_final <- flextable::flextable(df_final) |>
+    flextable::set_caption(titre_caption) |>
+    flextable::fontsize(size = 12, part = "all") |>
+    flextable::font(fontname = "Arial", part = "all") |>
+    flextable::align(align = "center", part = "all") |>
+    flextable::autofit()
+  
+  return(list(
+    data = df_final,
+    flextable = ft_final
+  ))
 }

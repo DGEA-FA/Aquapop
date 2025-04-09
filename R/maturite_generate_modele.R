@@ -8,7 +8,7 @@
 #'
 #' @return Liste avec `table_resultats`, `table_resultats_flextable`, `commentaire`, `graphique`, `donnees_ogive`
 #' @export
-fit_maturite <- function(data, variable = c("ltm", "age"), modele = c("TLO", "ADD", "COM", "INT"), lien = c("probit", "logit", "cloglog"), nboot = 10000) {
+maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = c("TLO", "ADD", "COM", "INT"), lien = c("probit", "logit", "cloglog"), nboot = 10000) {
   variable <- match.arg(variable)
   modele <- match.arg(modele)
   lien <- match.arg(lien)

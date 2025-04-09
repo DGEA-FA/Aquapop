@@ -781,3 +781,65 @@ coef_par_nom <- function(modele_glm, sexe = c("sexeF", "sexeM"), interaction = F
   
   coef(modele_glm)[[nom_cible]]
 }
+
+#' Calculer le ratio mâles:femelles sous forme simplifiée
+#'
+#' Cette fonction prend en entrée un nombre de mâles et de femelles, puis retourne un
+#' ratio \eqn{M:F} (mâles pour femelles) sous forme réduite à ses plus simples expressions,
+#' comme `"3:2"` ou `"1:1"`. Si les deux valeurs sont nulles, la fonction retourne `NA`.
+#'
+#' @param male_count Nombre d’individus de sexe masculin (entier)
+#' @param female_count Nombre d’individus de sexe féminin (entier)
+#'
+#' @return Une chaîne de caractères représentant le ratio simplifié (ex: `"3:2"`), ou `NA_character_` si les deux valeurs sont nulles.
+#'
+#' @examples
+#' calculate_mf_ratio(6, 4)   # Retourne "3:2"
+#' calculate_mf_ratio(5, 5)   # Retourne "1:1"
+#' calculate_mf_ratio(0, 0)   # Retourne NA
+#' calculate_mf_ratio(0, 7)   # Retourne "0:1"
+#'
+#' @export
+calculate_mf_ratio <- function(male_count, female_count) {
+  if (male_count == 0 && female_count == 0) {
+    return(NA_character_)  # Retourne NA explicite de type character
+  }
+  # Simplifier le ratio avec fractions()
+  ratio <- MASS::fractions(c(male_count, female_count))
+  return(paste0(ratio[1], ":", ratio[2]))
+}
+
+
+#' Extraire les données d'un histogramme ggplot de structure de taille
+#'
+#' Cette fonction permet de récupérer les données brutes utilisées dans un graphique généré
+#' par la fonction `structure_taille()`. Elle est utile pour créer un tableau correspondant
+#' à l'histogramme, en associant les couleurs aux catégories (sexe, maturité, marquage, etc.).
+#'
+#' @param plot Un objet `ggplot` généré par `structure_taille(..., format = "plot")`
+#' @param groupement Le groupement utilisé dans le graphique : `"tous"`, `"marquage"`, `"sexe"` ou `"maturite"`
+#'
+#' @return Un `data.frame` avec les colonnes `categorie`, `count`, et `x` (classe de taille)
+#' @export
+#'
+#' @examples
+#' p <- structure_taille(data = df, groupement = "sexe", format = "plot")
+#' get_df_from_plot(p, groupement = "sexe")
+get_df_from_plot <- function(plot, groupement) {
+  # Vérification
+  if (!groupement %in% names(group_colors)) {
+    stop("Groupement invalide : choisir parmi 'tous', 'marquage', 'sexe', 'maturite'")
+  }
+  
+  # Inverser le dictionnaire de couleurs pour faire : couleur → nom court
+  color_map <- group_colors[[groupement]]
+  fill_to_category <- setNames(names(color_map), color_map)
+  
+  # Extraire les données du graphique
+  temp <- ggplot_build(plot)$data[[1]] |>
+    dplyr::select(fill, count, x) |>
+    dplyr::mutate(categorie = fill_to_category[fill])
+  
+  # Résultat final
+  temp |> dplyr::select(categorie, count, x)
+}

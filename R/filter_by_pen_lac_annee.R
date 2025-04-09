@@ -7,7 +7,7 @@
 #'
 #' @return Un data.frame filtré
 #' @export
-filtrer_par_pen_lac_annee <- function(data, typ_pech = NULL, no_lac = NULL, annee = NULL) {
+filter_by_pen_lac_annee <- function(data, typ_pech = NULL, no_lac = NULL, annee = NULL) {
   df <- data
 
   if (!is.null(typ_pech) && length(typ_pech) > 0) {

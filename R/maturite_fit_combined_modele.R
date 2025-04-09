@@ -5,7 +5,7 @@
 #'
 #' @return Une liste contenant les 12 modèles combinés
 #' @export
-fit_maturite_combined_models <- function(df, variable = c("ltm", "age")) {
+maturite_fit_combined_modele <- function(df, variable = c("ltm", "age")) {
   variable <- match.arg(variable)
   
   # Vérification des colonnes requises

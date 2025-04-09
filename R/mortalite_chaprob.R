@@ -1,22 +1,20 @@
 #' Appliquer la méthode de Chapman-Robson pour estimer Z et A
 #'
 #' Cette fonction applique la méthode Chapman-Robson via `fishmethods::agesurv()`
-#' et retourne un tableau résumant Z, A (%) et IC95%.
+#' et retourne une liste contenant un tableau brut (`data.frame`) et une version formatée (`flextable`).
 #'
 #' @param specimen Un `data.frame` produit par `mortalite_prepare_corr()`, contenant une colonne `age`.
 #' @param pp Valeur du peak-plus.
 #' @param age_max Âge maximum observé.
-#' @param format Format de sortie : `"data.frame"` (défaut) ou `"flextable"`.
 #'
-#' @return Un tableau résumé avec une seule ligne.
+#' @return Une liste avec deux éléments : `data` (tableau brut), `flextable` (tableau formaté).
 #' @export
 #'
 #' @examples
-#' mortalite_chaprob(specimen, pp = 2, age_max = 8, format = "data.frame")
-#' mortalite_chaprob(specimen, pp = 2, age_max = 8, format = "flextable")
-mortalite_chaprob <- function(specimen, pp, age_max, format = c("data.frame", "flextable")) {
-  format <- match.arg(format)
-  
+#' res <- mortalite_chaprob(specimen, pp = 2, age_max = 8)
+#' res$data
+#' res$flextable
+mortalite_chaprob <- function(specimen, pp, age_max) {
   df <- subset(specimen, !is.na(age))
   
   res <- fishmethods::agesurv(
@@ -25,7 +23,7 @@ mortalite_chaprob <- function(specimen, pp, age_max, format = c("data.frame", "f
     full = pp,
     last = age_max,
     estimate = "z",
-    method = "cr"  # plus rapide et précis
+    method = "cr"
   )
   
   result <- res$results |>
@@ -37,9 +35,6 @@ mortalite_chaprob <- function(specimen, pp, age_max, format = c("data.frame", "f
       ic_95 = glue::glue("[{round((1 - exp(-(z - se))) * 100, 1)}-{round((1 - exp(-(z + se))) * 100, 1)}]")
     )
   
-  if (format == "data.frame") return(result)
-  
-  # Format flextable
   ft <- flextable::flextable(result) |>
     flextable::set_caption("Estimation de la mortalité par la méthode de Chapman-Robson") |>
     flextable::set_header_labels(
@@ -54,5 +49,8 @@ mortalite_chaprob <- function(specimen, pp, age_max, format = c("data.frame", "f
     flextable::fontsize(size = 12, part = "all") |>
     flextable::autofit()
   
-  return(ft)
+  return(list(
+    data = result,
+    flextable = ft
+  ))
 }

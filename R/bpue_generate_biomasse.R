@@ -5,13 +5,14 @@
 #'
 #' @param data_specimen Un `data.frame` de spécimens filtrés (issu de `load_specimen()`).
 #' @param data_station Un `data.frame` des stations valides (issu de `load_station()`).
-#' @param format Format de sortie : `"data.frame"` (défaut) ou `"flextable"`.
 #'
-#' @return Un tableau résumant la biomasse totale, la proportion, la BPUE et les IC pour chaque groupe biologique.
+#' @return Une liste contenant :
+#' \describe{
+#'   \item{`data`}{Un `data.frame` résumant la biomasse totale, la proportion, la BPUE et les intervalles de confiance pour chaque groupe biologique.}
+#'   \item{`flextable`}{Une version formatée du tableau pour l’exportation (Word, Shiny, etc.) à l’aide du package `flextable`.}
+#' }
 #' @export
-biomasse_table <- function(data_specimen, data_station,
-                           format = c("data.frame", "flextable")) {
-  format <- match.arg(format)
+bpue_generate_biomasse <- function(data_specimen, data_station) {
   n_stations <- nrow(data_station)
   
   # ---- Groupe "Tous" ----
@@ -147,24 +148,23 @@ biomasse_table <- function(data_specimen, data_station,
       bpue     = round(bpue, 1)
     )
   
-  if (format == "data.frame") {
-    return(table_biomasse)
-  } else {
-    return(
-      flextable::flextable(table_biomasse) |>
-        flextable::set_caption("Tableau de biomasse") |>
-        flextable::set_header_labels(
-          groupe   = "Groupe",
-          biomasse = "Biomasse totale (kg)",
-          percent  = "Proportion (%)",
-          bpue     = "BPUE (kg/station)",
-          ic95     = "IC 95%"
-        ) |>
-        flextable::fontsize(size = 12, part = "all") |>
-        flextable::font(fontname = "Arial", part = "all") |>
-        flextable::align(align = "center", part = "all") |>
-        flextable::autofit() |>
-        flextable::hline(i = 3, border = officer::fp_border(color = "black", width = 0.5))
-    )
-  }
+  table_flex <- flextable::flextable(table_biomasse) |>
+    flextable::set_caption("Tableau de biomasse") |>
+    flextable::set_header_labels(
+      groupe   = "Groupe",
+      biomasse = "Biomasse totale (kg)",
+      percent  = "Proportion (%)",
+      bpue     = "BPUE (kg/station)",
+      ic95     = "IC 95%"
+    ) |>
+    flextable::fontsize(size = 12, part = "all") |>
+    flextable::font(fontname = "Arial", part = "all") |>
+    flextable::align(align = "center", part = "all") |>
+    flextable::autofit() |>
+    flextable::hline(i = 3, border = officer::fp_border(color = "black", width = 0.5))
+  
+  return(list(
+    data = table_biomasse,
+    flextable = table_flex
+  ))
 }

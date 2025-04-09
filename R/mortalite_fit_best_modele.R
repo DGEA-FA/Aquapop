@@ -8,7 +8,7 @@
 #'
 #' @return Un objet de classe `glm`, `glm.nb` ou `glmmTMB`
 #' @export
-get_best_mortalite_model <- function(df_age_etendue, methode = NULL) {
+mortalite_fit_best_modele <- function(df_age_etendue, methode = NULL) {
   if (is.null(methode)) {
     mortalite_compare_modele_res_data <- mortalite_compare_modele(data = df_age_etendue)$data
     methode <- mortalite_select_best_modele(mortalite_compare_modele_res_data)

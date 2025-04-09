@@ -36,7 +36,7 @@ get_analysis_data <- function(path, typ_pech, no_lac, annee,
   
   # Charger et filtrer les stations par lac, type de pêche et année
   data_station <- load_station(path, sheet_station) |>
-    filtrer_par_pen_lac_annee(
+    filter_by_pen_lac_annee(
       typ_pech = typ_pech,
       no_lac   = no_lac,
       annee    = annee
@@ -48,7 +48,7 @@ get_analysis_data <- function(path, typ_pech, no_lac, annee,
   
   # Charger les spécimens filtrés par espèce, lac, type de pêche et année
   data_specimen <- load_specimen(path, sheet_specimen) |>
-    filtrer_par_pen_lac_annee(
+    filter_by_pen_lac_annee(
       typ_pech = typ_pech,
       no_lac   = no_lac,
       annee    = annee
@@ -57,7 +57,7 @@ get_analysis_data <- function(path, typ_pech, no_lac, annee,
   
   # Charger les récoltes filtrées
   data_recolte <- load_recolte(path, sheet_recolte) |>
-    filtrer_par_pen_lac_annee(
+    filter_by_pen_lac_annee(
       typ_pech = typ_pech,
       no_lac   = no_lac,
       annee    = annee

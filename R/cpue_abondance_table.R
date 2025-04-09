@@ -5,21 +5,19 @@
 #' colonnes de CPUE et d’intervalle de confiance (IC 95%) en extrayant les données des meilleurs modèles.
 #'
 #' @param data Un `data.frame` de spécimens filtrés pour le lac, année, etc.
-#' @param cpue_table_tous Un `data.frame` issu de `cpue_compare_modele(..., format = "data.frame")` (tous spécimens)
+#' @param cpue_table_tous Un `data.frame` issu de `cpue_compare_modele(...)$data` (tous spécimens)
 #' @param cpue_table_femelles Idem pour les femelles matures
 #' @param best_model_tous Nom du meilleur modèle (ex: "nb1") pour tous
 #' @param best_model_femelles Nom du meilleur modèle (ex: "nb2") pour femelles
-#' @param format Format de sortie : `"data.frame"` (défaut) ou `"flextable"`
 #'
-#' @return Un tableau résumé des groupes biologiques avec CPUE, au format `data.frame` ou `flextable`.
+#' @return Une liste avec deux éléments : `data` (tableau brut) et `flextable` (tableau formaté).
 #' @export
-abondance_table <- function(data,
+cpue_abondance_table <- function(data,
                             cpue_table_tous,
                             cpue_table_femelles,
                             best_model_tous,
-                            best_model_femelles,
-                            format = c("data.frame", "flextable")) {
-  format <- match.arg(format)
+                            best_model_femelles) {
+  
   total <- nrow(data)
   
   # Extraire CPUE pour groupe "Tous"
@@ -122,16 +120,15 @@ abondance_table <- function(data,
     mf_ratio = "Ratio M:F"
   )
   
-  if (format == "data.frame") {
-    return(table)
-  } else {
-    return(
-      flextable::flextable(table) |>
-        flextable::set_caption("Tableau d'abondance") |>
-        flextable::fontsize(size = 12, part = "all") |>
-        flextable::font(fontname = "Arial", part = "all") |>
-        flextable::align(align = "center", part = "all") |>
-        flextable::autofit()
-    )
-  }
+  ft <- flextable::flextable(table) |>
+    flextable::set_caption("Tableau d'abondance") |>
+    flextable::fontsize(size = 12, part = "all") |>
+    flextable::font(fontname = "Arial", part = "all") |>
+    flextable::align(align = "center", part = "all") |>
+    flextable::autofit()
+  
+  return(list(
+    data = table,
+    flextable = ft
+  ))
 }
