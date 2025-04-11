@@ -11,7 +11,7 @@ maturite_eval_modele <- function(models) {
   library(glue)
   library(labelled)   # Pour ajouter des labels d'affichage
   
-  eval_mod <- function(mod, id) {
+  build_individual_model_row <- function(mod, id) {
     if (is.null(mod)) {
       return(data.frame(
         modele_id = id,
@@ -68,7 +68,7 @@ maturite_eval_modele <- function(models) {
     )
   }
   
-  results <- lapply(names(models), function(n) eval_mod(models[[n]], n)) %>% 
+  results <- lapply(names(models), function(n) build_individual_model_row(models[[n]], n)) %>% 
     bind_rows() %>%     arrange(desc(convergence), aicc)
 
     # arrange(aicc)

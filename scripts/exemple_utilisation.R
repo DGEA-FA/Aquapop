@@ -57,7 +57,7 @@ data_lac <- load_lac(path, namesheet = "Lac") |>
                             annee = annee)
 
 # Générer un tableau synthèse (optionnel)
-table_recap(data_lac = data_lac, data_station = data_station)
+generate_recapitulatif_inventaire(data_lac = data_lac, data_station = data_station)
 
 # EXTRAIRE LES MÉTADONNÉES LIÉES AU TYPE DE PÊCHE -------------------------
 

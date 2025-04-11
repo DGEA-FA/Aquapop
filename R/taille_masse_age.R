@@ -10,7 +10,7 @@
 #' @export
 taille_masse_age <- function(data) {
   
-  calculate_stats <- function(data, var, group_var = NULL) {
+  stats_morpho <- function(data, var, group_var = NULL) {
     if (!is.null(group_var)) {
       data <- data %>% group_by(!!sym(group_var), .drop = FALSE)
     }
@@ -25,14 +25,14 @@ taille_masse_age <- function(data) {
       )
   }
   
-  regrouper_stat <- function(var) {
+  regrouper_stats_morpho <- function(var) {
     bind_rows(
-      calculate_stats(data, var, "sexe"),
-      calculate_stats(data, var) %>% mutate(sexe = NA),
-      calculate_stats(filter(data, maturite == "O" & sexe == "M"), var) %>% mutate(sexe = "Reprod. actifs mâles"),
-      calculate_stats(filter(data, maturite == "N"), var) %>% mutate(sexe = "Imm. ou reprod. inactifs"),
-      calculate_stats(filter(data, maturite == "O" & sexe == "F"), var) %>% mutate(sexe = "Reprod. actifs femelles"),
-      calculate_stats(filter(data, maturite == "IND"), var) %>% mutate(sexe = "Statut reprod. inconnu")
+      stats_morpho(data, var, "sexe"),
+      stats_morpho(data, var) %>% mutate(sexe = NA),
+      stats_morpho(filter(data, maturite == "O" & sexe == "M"), var) %>% mutate(sexe = "Reprod. actifs mâles"),
+      stats_morpho(filter(data, maturite == "N"), var) %>% mutate(sexe = "Imm. ou reprod. inactifs"),
+      stats_morpho(filter(data, maturite == "O" & sexe == "F"), var) %>% mutate(sexe = "Reprod. actifs femelles"),
+      stats_morpho(filter(data, maturite == "IND"), var) %>% mutate(sexe = "Statut reprod. inconnu")
     ) %>%
       mutate(
         sexe = as.character(sexe),
@@ -45,9 +45,9 @@ taille_masse_age <- function(data) {
       arrange(sexe)
   }
   
-  ltm_df   <- regrouper_stat("ltm")   %>% rename_with(~ paste0("ltm_", .), -sexe)
-  masse_df <- regrouper_stat("masse") %>% rename_with(~ paste0("masse_", .), -sexe)
-  age_df   <- regrouper_stat("age")   %>% rename_with(~ paste0("age_", .), -sexe)
+  ltm_df   <- regrouper_stats_morpho("ltm")   %>% rename_with(~ paste0("ltm_", .), -sexe)
+  masse_df <- regrouper_stats_morpho("masse") %>% rename_with(~ paste0("masse_", .), -sexe)
+  age_df   <- regrouper_stats_morpho("age")   %>% rename_with(~ paste0("age_", .), -sexe)
   
   complet_df <- ltm_df %>%
     inner_join(masse_df, by = "sexe") %>%

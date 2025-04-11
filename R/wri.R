@@ -118,7 +118,7 @@ wri <- function(data) {
                       linewidth = 0.5, color = "black", linetype = 2)
   
   # --- Table synthèse ---
-  synth <- function(mod, var) {
+  resumer_wr_par_groupe <- function(mod, var) {
     valeurs <- unique(as.character(data[[var]]))
     nd <- tibble::tibble(!!rlang::sym(var) := valeurs)
     
@@ -148,11 +148,11 @@ wri <- function(data) {
     ) |>
     dplyr::select(Groupe, Wr, IC95, n)
   
-  tab_sexe <- synth(lm(Wri ~ sexe, data = data), "sexe") |>
+  tab_sexe <- resumer_wr_par_groupe(lm(Wri ~ sexe, data = data), "sexe") |>
     dplyr::filter(Groupe %in% c("F", "M")) |>
     dplyr::mutate(Groupe = plyr::mapvalues(Groupe, c("F", "M"), c("Femelle", "Mâle")))
   
-  tab_class <- synth(lm(Wri ~ Classe, data = data), "Classe") |>
+  tab_class <- resumer_wr_par_groupe(lm(Wri ~ Classe, data = data), "Classe") |>
     tidyr::complete(Groupe = psd_classnames, fill = list(Wr = 0, IC95 = "0", n = 0)) |>
     dplyr::mutate(Groupe = factor(Groupe, levels = psd_classnames)) |>
     dplyr::arrange(Groupe)

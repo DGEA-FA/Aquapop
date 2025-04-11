@@ -5,7 +5,7 @@
 #'
 #' @return Un tableau (data.frame) avec une ligne par type de variable et une colonne par type de pêche.
 #' @export
-table_recap <- function(data_lac, data_station) {
+generate_recapitulatif_inventaire <- function(data_lac, data_station) {
   
   # Informations issues du feuillet "Lac"
   info_lac <- data_lac %>% reframe(

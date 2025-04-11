@@ -31,8 +31,6 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
     control = list(maxiter = 10000, minFactor = 1 / 1024, tol = 1e-5)
   )
   
-  handle_error <- function(e) conditionMessage(e)
-  
   modele_names <- c("Von Bertalanffy", "Gompertz", "Logistique")
   
   extract_param <- function(res, index) {

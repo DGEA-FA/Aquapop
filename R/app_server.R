@@ -110,7 +110,7 @@ app_server <- function(input, output, session) {
   
   output$recap_intro_table <- renderTable({
     req(data_lac(), data_station())
-    table_recap(data_lac = data_lac(), data_station = data_station())
+    generate_recapitulatif_inventaire(data_lac = data_lac(), data_station = data_station())
   })
 
   #UI dynamique – visualisation des données téléchargées
