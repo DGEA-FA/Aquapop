@@ -272,7 +272,14 @@ app_server <- function(input, output, session) {
   })
   
   # Affichage du graphique
-  render_plot_ggplot("structureageplot", reactive(res_structure_age()$plot))
+  
+  render_plot_ggplot(
+    output_id = "structureageplot",
+    plot_reactive = reactive(res_structure_age()$plot),
+    message_si_vide = "Aucun graphique n’a pu être généré : données d’âge manquantes ou inexploitables."
+  )
+  
+  
   
   # Téléchargement PNG
   render_download_plot("download_groupeageplot", reactive(res_structure_age()$plot))
