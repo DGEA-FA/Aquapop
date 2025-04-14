@@ -97,14 +97,14 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
     
   } else if (modele == "COM") {
     b0 <- coef(modele_glm)[["(Intercept)"]]
-    b1 <- coef_par_nom(modele_glm, "sexeF")
-    b2 <- coef_par_nom(modele_glm, "sexeM")
+    b1 <- maturite_get_coef(modele_glm, "sexeF")
+    b2 <- maturite_get_coef(modele_glm, "sexeM")
     
   } else if (modele == "INT") {
     b0 <- coef(modele_glm)[["(Intercept)"]]
     b1 <- coef(modele_glm)[[variable]]
     b2 <- coef(modele_glm)[["sexeM"]]
-    b3 <- coef_par_nom(modele_glm, sexe = "sexeM", interaction = TRUE)  # ✅ clé mise à jour
+    b3 <- maturite_get_coef(modele_glm, sexe = "sexeM", interaction = TRUE)  # ✅ clé mise à jour
     
   } else {
     stop("❌ Modèle non reconnu.")

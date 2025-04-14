@@ -119,7 +119,7 @@ sans_warning_proba <- function(expr) {
   )
 }
 
-coef_par_nom <- function(modele_glm, sexe = c("sexeF", "sexeM"), interaction = FALSE) {
+maturite_get_coef <- function(modele_glm, sexe = c("sexeF", "sexeM"), interaction = FALSE) {
   sexe <- match.arg(sexe)
   pattern <- if (interaction) paste0(":", sexe) else sexe
   coef_nom <- names(coef(modele_glm))
@@ -170,4 +170,21 @@ calculate_mf_ratio <- function(male_count, female_count) {
 #' @export
 handle_error <- function(e) {
   conditionMessage(e)
+}
+
+
+#' Enregistre un data.frame en fichier Excel (.xlsx)
+#'
+#' @param data Un data.frame ou une liste de data.frames
+#' @param path Chemin de sortie du fichier .xlsx
+#'
+#' @return NULL (fichier écrit sur disque)
+#' @export
+download_data <- function(data, path) {
+  writexl::write_xlsx(
+    x = data,
+    path = path,
+    col_names = TRUE,
+    format_headers = TRUE
+  )
 }

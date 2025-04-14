@@ -1,10 +1,30 @@
-#' Résumé des métadonnées d'un inventaire
+#' Générer un tableau récapitulatif d’un inventaire ichtyologique
 #'
-#' @param data_lac Un data.frame filtré sur un lac/type de pêche/année, contenant les données du feuillet "Lac".
-#' @param data_station Un data.frame correspondant au feuillet "Stations", déjà filtré sur le même jeu.
+#' Cette fonction produit un tableau synthèse des métadonnées d’un inventaire ichtyologique
+#' réalisé sur un lac donné, pour un type de pêche et une ou plusieurs années. Le tableau inclut :
+#' - le nom et le numéro du lac, la superficie, les années couvertes ;
+#' - les dates de début et de fin d’inventaire ;
+#' - le nombre de stations selon leur type (aléatoire, dirigée) et leur statut (valide, invalide).
 #'
-#' @return Un tableau (data.frame) avec une ligne par type de variable et une colonne par type de pêche.
+#' Le tableau retourné est structuré verticalement (type d'information en ligne, type de pêche en colonne),
+#' ce qui le rend adapté à une présentation en en-tête de rapport ou d’onglet introductif d’une application.
+#'
+#' @param data_lac Un `data.frame` contenant les métadonnées du lac (feuillet "Lac"),
+#' déjà filtré sur un seul lac, un type de pêche et une ou plusieurs années. Doit inclure les colonnes
+#' `typ_pech`, `no_lac`, `nom_lac`, `superficie_ha` et `annee`.
+#'
+#' @param data_station Un `data.frame` contenant les données de stations (feuillet "Stations"),
+#' filtré sur les mêmes critères. Doit inclure les colonnes `date_pose`, `date_leve`, `st_hasard`, `st_valide`.
+#'
+#' @return Un tableau (`data.frame`) structuré avec une ligne par type d'information et
+#' une colonne par type de pêche. La première colonne est nommée `"Type de pêche"`.
+#'
 #' @export
+#'
+#' @examples
+#' # Exemple fictif :
+#' recap <- generate_recapitulatif_inventaire(data_lac = lac_filtre, data_station = stations_filtrees)
+#' print(recap)
 generate_recapitulatif_inventaire <- function(data_lac, data_station) {
   
   # Informations issues du feuillet "Lac"
