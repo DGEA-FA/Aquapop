@@ -1,41 +1,75 @@
-#' Préparer les données corrigées de fréquence d'âge pour la mortalité
+#' Préparer les données corrigées de fréquence d'âge pour l'estimation de la mortalité
 #'
-#' Cette fonction utilise `fishmethods::agesurv()` avec `type = 1` pour générer
-#' les données individuelles de la courbe de capture (descending limb),
-#' puis complète les classes d'âge manquantes avec des zéros.
+#' Cette fonction applique `fishmethods::agesurv()` avec `type = 1` pour générer
+#' les données individuelles de fréquence d’âge sur la *descending limb* (partie descendante de la courbe de capture).
+#' Elle filtre d’abord les spécimens ayant un âge valide (`data_valid`), applique l’estimation (`data_agesurv`),
+#' puis complète les classes d’âge manquantes avec des zéros pour produire une table uniforme (`data_final`).
 #'
-#' @param data_specimen Un `data.frame` contenant au moins une colonne `age`.
-#'                      Doit être déjà filtré pour une seule espèce.
-#' @param age_peak_plus Âge à partir duquel la mortalité est estimée.
-#' @param age_max Âge maximal observé dans les spécimens.
+#' @param data Un `data.frame` contenant les spécimens d'une seule espèce, avec une colonne nommée `age`
+#'             (valeurs numériques entières ≥ 0). Les valeurs manquantes (`NA`) seront automatiquement exclues.
+#' @param age_peak_plus Un entier indiquant l’âge à partir duquel commence l’analyse de mortalité
+#'                      (souvent le pic d’abondance + 1).
+#' @param age_max Un entier indiquant l’âge maximum à considérer pour l’estimation de la mortalité.
 #'
-#' @return Un `data.frame` avec les colonnes `age` et `number`, incluant les âges manquants.
+#' @return Un `data.frame` nommé `data_final` contenant :
+#' \describe{
+#'   \item{`age`}{Âge (entier)}
+#'   \item{`number`}{Nombre d’individus observés à cet âge, incluant les zéros pour les classes absentes}
+#' }
+#' Toutes les classes entre les âges extrêmes sont incluses, même celles absentes dans les données sources.
+#'
 #' @export
 #'
 #' @examples
-#' df_corr <- mortalite_prepare_corr(data_specimen = specimen_sana, age_peak_plus = 5, age_max = 10)
-#' print(df_corr)
-mortalite_prepare_corr <- function(data_specimen, age_peak_plus, age_max) {
-  stopifnot("age" %in% names(data_specimen))
+#' data_exemple <- data.frame(age = c(2, 3, 3, 4, 5, 5, 5, 6, 7, NA))
+#' mortalite_prepare_corr(data = data_exemple, age_peak_plus = 5, age_max = 7)
+mortalite_prepare_corr <- function(data, age_peak_plus, age_max) {
+  # Validations ----
+  checkmate::assert_data_frame(data)
+  checkmate::assert_names(names(data), must.include = "age")
+  checkmate::assert_numeric(data$age, any.missing = TRUE)
+  checkmate::assert_int(age_peak_plus, lower = 0)
+  checkmate::assert_int(age_max, lower = 0)
   
-  # Étape 1 : estimation initiale (type = 1) pour obtenir la descending limb
-  resultat_agesurv <- fishmethods::agesurv(
+  data_valid <- dplyr::filter(data, !is.na(age))
+  
+  checkmate::assert(
+    nrow(data_valid) > 0,
+    "Aucune valeur d’âge valide après suppression des NA."
+  )
+  
+  checkmate::assert(
+    age_peak_plus <= max(data_valid$age),
+    "`age_peak_plus` est supérieur à l’âge maximum observé dans les données."
+  )
+  
+  checkmate::assert(
+    age_max >= age_peak_plus,
+    "`age_max` doit être supérieur ou égal à `age_peak_plus`."
+  )
+  
+  # Estimation avec agesurv ----
+  resultat <- fishmethods::agesurv(
     type = 1,
-    age = data_specimen$age,
+    age = data_valid$age,
     full = age_peak_plus,
     last = age_max,
     estimate = "z",
     method = "cr"
   )
   
-  # Étape 2 : récupérer les fréquences d'âge observées
-  df_initial <- resultat_agesurv$data
+  data_agesurv <- resultat$data
   
-  # Étape 3 : insérer les classes manquantes avec des zéros
-  df_complet <- tibble::tibble(age = seq(min(df_initial$age), max(df_initial$age), by = 1)) %>%
-    dplyr::left_join(df_initial, by = "age") %>%
-    dplyr::mutate(number = tidyr::replace_na(number, 0)) %>%
+  checkmate::assert(
+    nrow(data_agesurv) >= 2,
+    "L’ajustement agesurv() a retourné un jeu de données trop incomplet (moins de 2 âges)."
+  )
+  
+  # Complétion des classes d'âge ----
+  data_final <- tibble::tibble(age = seq(min(data_agesurv$age), max(data_agesurv$age))) %>%
+    dplyr::left_join(data_agesurv, by = "age") %>%
+    dplyr::mutate(number = tidyr::replace_na(number, 0L)) %>%
     dplyr::arrange(age)
   
-  return(df_complet)
+  return(data_final)
 }

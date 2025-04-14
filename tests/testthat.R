@@ -1,6 +1,4 @@
-# tests/testthat.R
-
 library(testthat)
-library(aquapop)  # remplace par le nom réel de ton package
+library(aquapop)
 
 test_check("aquapop")
