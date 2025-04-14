@@ -18,7 +18,7 @@ packages_requis <- c(
   "htmltools", "markdown",
   
   # Manipulation de données
-  "readxl", "writexl", "dplyr", "tidyr", "stringr", "purrr", "forcats", "lubridate", "glue", "labelled", "checkmate",
+  "readxl", "writexl", "dplyr", "tidyr", "stringr", "purrr", "forcats", "lubridate", "glue", "labelled", "checkmate", "janitor", "here",
   
   # Graphiques
   "ggplot2", "scales", "patchwork", "gghighlight", "gt",

@@ -50,7 +50,7 @@ capture          <- df$capture
 
 
 # Extraire et filtrer la feuille "Lac"
-data_lac <- load_lac(path, namesheet = "Lac") |>
+data_lac <- load_lac(path, namesheet = "Lac", verbose = TRUE) |>
   # appliquer les filtres 
   filter_by_pen_lac_annee(typ_pech = typ_pech,
                             no_lac = no_lac,
