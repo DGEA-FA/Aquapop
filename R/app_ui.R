@@ -2,6 +2,8 @@
 # INTERFACE UTILISATEUR – FONCTION PRINCIPALE app_ui()
 # ════════════════════════════════════════════════════════════════════════
 
+
+
 app_ui <- function() {
   
   # Chargement des éléments textuels (ex. : titres, instructions, etc.)
@@ -9,17 +11,16 @@ app_ui <- function() {
   
   fluidPage(
     
-    
-    # TITRE DE L’APPLICATION -------------------------------------------------
+    # Titre de l'application
     titlePanel(
       title = "AquaPop : Outil d'aide à l'analyse de données d'inventaire ichtyologique"
       ),
     
-    # NAVIGATION PAR ONGLET --------------------------------------------------
+    # Navigation par onglet
     navbarPage(
       "",
       
-      # ONGLET 1 – Page d’accueil --------------------------------------------
+      # Page d’accueil ----
       tabPanel(
         icon("home"),
         tags$iframe(
@@ -30,24 +31,24 @@ app_ui <- function() {
         )
       ),
       
-      # ONGLET 2 – Téléchargement des données --------------------------------
+      # Téléchargement des données ----
       tabPanel(
         title = "Téléchargement",
         icon = icon("upload"),
         
         sidebarLayout(
           
-          # PANNEAU LATÉRAL – Téléversement et filtres -----------------------
+          # Panneau latéral - Téléversement et filtres
           sidebarPanel(
             
             # Texte d’instructions utilisateur
+            
             tags$div(
               htmltools::includeMarkdown(path = './texte/instruction_texte.rmd'),
               style = "font-size: 85%; color: #555;"
             ),
             
-            
-            # Bouton de téléchargement de fichier .xlsx ----------------------
+            # Bouton de téléchargement de fichier .xlsx
             tags$head(
               tags$style(HTML("
                 .btn-file {
@@ -65,22 +66,23 @@ app_ui <- function() {
               accept = c(".xlsx")
             ),
             
-            # Filtres dynamiques (pêche, lac, année) --------------------------
+            # Filtres dynamiques (pêche, lac, année)
             uiOutput(outputId = "ui_typ_pech"),
             uiOutput(outputId = "ui_no_lac"),
             uiOutput(outputId = "ui_annee"),
             
-            # Sélecteur pour visualisation des jeux de données ---------------
+            # Sélecteur pour visualisation des jeux de données
             uiOutput(outputId = "visualiser")
           ),
           
-          # PANNEAU PRINCIPAL – Affichage brut des données ------------------
+          # Panneau principal - Affichage brut des données
           mainPanel(
             
             # Tableau de synthèse introductif
             tableOutput(outputId = "recap_intro_table"),
             
             # Affichage tabulaire conditionnel selon sélection utilisateur
+
             tabsetPanel(
               id = "switcher",
               type = "hidden",
@@ -95,9 +97,13 @@ app_ui <- function() {
         )
       ),
       
-      # abondance_biomasse_panel ------------------------------------------------
+      # Panel 1 Abondance et biomasse
+      
       tabPanel(title = "Abondance et biomasse",
                tabsetPanel(
+                 
+                 # CPUE - Abondance ----
+                 
                  tabPanel(
                    title = "CPUE",
                    p("Le tableau ci-dessous présente le nombre de captures de 
@@ -114,18 +120,22 @@ app_ui <- function() {
                    
                    htmltools::includeMarkdown(path = './texte/CPUE_texte.rmd'),
                    
-                   # Tableau CPUE - Tous
+                   ## Tableau CPUE - Tous ----
+                   
                    withSpinner(uiOutput("cpue_tous_table"), type = myspinner),
                    uiOutput("cpue_tous_dl_ui"),
                    
-                   # Tableau CPUE - Femelles matures
+                   ## Tableau CPUE - Femelles matures ----
                    withSpinner(uiOutput("cpue_femelles_table"), type = myspinner),
                    uiOutput("cpue_femelles_dl_ui"),
                    
-                   # Tableau abondance
+                   ## Tableau d’abondance ----
                    withSpinner(uiOutput("abondance1_table"), type = myspinner),
                    uiOutput("abondance1_dl_ui")
                  ),
+                 
+                 # BPUE - Biomasse ----
+                 
                  tabPanel(
                    title = "BPUE",
                    p("Le tableau ci-dessous présente la répartition de la biomasse capturée selon la table *Spécimens*."),
@@ -134,11 +144,15 @@ app_ui <- function() {
                  )
                  
                )),
-      # structure_population_panel ----------------------------------------------
+      
+      # Panel 2 Structure de population
+      
       tabPanel(
         title = "Structure de population",
         tabsetPanel(
-          ## taille_masse_age_subpanel ----------------------------------------------
+          
+          # Taille, masse, âge ----
+          
           tabPanel(
             title = "Taille, masse et âge moyens",
             p("Le tableau suivant reprend les statistiques descriptives, soit le nombre de spécimens mesurés/pesés/âgés (N) 
@@ -148,7 +162,8 @@ app_ui <- function() {
             withSpinner(uiOutput("taillemasseage_ui"), type = myspinner),
             uiOutput("dl_taillemasseage_ui")
           ),
-          ## structure de taille -------------------------------------------------
+          
+          # Structure de taille ----
           tabPanel(
             title = "Structure de taille",
             
@@ -187,23 +202,7 @@ app_ui <- function() {
             )
           ),
           
-          
-          ## PSD_subpanel -----------------------------------------------------------
-          tabPanel(
-            title = "PSD",
-            p("Autrefois appelé *Proportional stock density*, l’indice *Proportional size distribution* est un descripteur 
-              numérique de la distribution de fréquence des longueurs. Il permet de comparer de manière objective la 
-              structure de taille de deux populations d’une même espèce (ou d’une même population lors de deux inventaires 
-              distincts). Les classes de taille sont établies en fonction de la taille record enregistrée pour une espèce 
-              et les autres classes sont dérivées à partir de celle-ci (Gabelhouse 1984)."),
-            withSpinner(uiOutput("psd_indice_ui"), type = myspinner),
-            uiOutput("psd_byclass_ui"),
-            uiOutput("dl_psd_byclass_ui"),
-            h3("Distribution de fréquence de longueurs avec les classes de PSD"),
-            plotOutput("psd_byclass_plot", width = 600, height = 400),
-            downloadButton("download_psd_byclass_plot", label = "Téléchargement du graphique")
-          ),
-          ## structure d'âge -------------------------------------------------
+          # Structure d'âge ----
           tabPanel(
             title = "Structure d'âge",
             
@@ -240,7 +239,33 @@ app_ui <- function() {
             )
           ),
           
-          ## masse_longueur_fit_subpanel ---------------------------------------
+          # PSD ----
+          tabPanel(
+            title = "PSD",
+            p("Autrefois appelé *Proportional stock density*, l’indice *Proportional size distribution* est un descripteur 
+              numérique de la distribution de fréquence des longueurs. Il permet de comparer de manière objective la 
+              structure de taille de deux populations d’une même espèce (ou d’une même population lors de deux inventaires 
+              distincts). Les classes de taille sont établies en fonction de la taille record enregistrée pour une espèce 
+              et les autres classes sont dérivées à partir de celle-ci (Gabelhouse 1984)."),
+            
+            ## Indice Q ----
+            
+            withSpinner(uiOutput("psd_indice_ui"), type = myspinner),
+            
+            ## Répartition par classe de taille – Tableau ----
+            
+            uiOutput("psd_byclass_ui"),
+            uiOutput("dl_psd_byclass_ui"),
+            
+            ## Répartition par classe de taille – Graphique ----
+            
+            h3("Distribution de fréquence de longueurs avec les classes de PSD"),
+            plotOutput("psd_byclass_plot", width = 600, height = 400),
+            downloadButton("download_psd_byclass_plot", label = "Téléchargement du graphique")
+          ),
+         
+          
+          # Relation masse-longueur ----
           tabPanel(
             title = "Relation masse-longueur",
             
@@ -249,28 +274,35 @@ app_ui <- function() {
               maximale (mm) et la masse (g). L’équation et la valeur des paramètres sont indiqués sur 
               le graphique."),
             
-            # Graphique
+            ## Graphique ----
             h3("Relation masse-longueur"),
 
             withSpinner(plotOutput("plot_masselongueur"), type = myspinner),
             downloadButton("download_masselongueur_plot", label = "Téléchargement du graphique"),
             # br(), br(),
 
-            # Tableau des coefficients
+            ## Tableau des coefficients ----
             h3("Tableau des coefficients"),
             uiOutput("table_masselongueur_ui"),
             uiOutput("download_masselongueur_table_ui")
           )
         )
       ),
-      # indice_condition_panel --------------------------------------------------
+      # Panel 3 
+      
+      # Indice de condition ----
       tabPanel(
         title = "Indice de condition",
+        
+        ## Tableau Wr ----
+        
         p("Le tableau ci-dessous présente l’indice de masse relative (Wr) et son intervalle de confiance 
           à 95 % pour l’ensemble de la population, par sexe et par classe de PSD (classe selon
           Gabelhouse 1984)."),
         uiOutput("wri_table_ui"),
         uiOutput("download_wri_table_ui"),
+        
+        ## Graphique Wr par sexe ----
         
         p("Le graphique suivant illustre, pour chaque spécimen capturé, l’indice de condition en 
           fonction de la longueur totale maximale et du sexe. La valeur moyenne est indiquée par une 
@@ -281,6 +313,9 @@ app_ui <- function() {
         
         withSpinner(plotOutput("wri_plot_tous", height = "400px"), type = myspinner),
         downloadButton("download_wri_plot_tous", "Téléchargement du graphique"),
+        
+        ## Graphique Wr par classe de taille ----
+        
         p("Ce graphique présente la variation de l’indice de condition selon les classes de PSD. Les 
           valeurs moyenne et les intervalles de confiance sont illustrés."),
         h3("Indice de condition (Wr) moyen par classe de taille"),
@@ -288,11 +323,15 @@ app_ui <- function() {
         plotOutput("wri_plot_byclass", height = "400px"),
         downloadButton("download_wri_plot_byclass", "Téléchargement du graphique")
       ),
+      # Panel 4
       
-      # croissance_panel --------------------------------------------------------
-      # --- UI pour le panneau Croissance ---
+      # Croissance ----
+     
       tabPanel(
         "Croissance",
+        
+        ## Tableau de sélection de modèles ----
+        
         p("Si les trois modèles convergent, sélectionnez celui ayant le plus petit AICc.
           Prenez note également que le modèle de von Bertalanffy utilise la méthode
           pondérée avec t0 variable. Attention : les IC95% des prédictions ne peuvent
@@ -303,15 +342,21 @@ app_ui <- function() {
         uiOutput("download_table_modeles_croissance_ui"),
         # br(), br(),
         
+        ## Graphique du modèle choisi ----
+        
         h3("Longueur à l’âge des spécimens capturés et modèle de croissance"),
         
         plotOutput("selectedmodelcroissanceplot"),
         downloadButton("download_selectedmodelcroissanceplot", "Télécharger le graphique")
       ),
-     
-      # mortalite_panel ---------------------------------------------------------
+      # Panel 5 
+      
+      # Mortalité ----
       tabPanel(
         title = "Mortalité",
+        
+        ## Tableau de sélection de modèles ----
+        
         # p("Voici un rappel du graphique de la structure d'âge, avec le Peak Plus mis en évidence. Le Peak Plus représente l'âge à partir duquel les indicateurs de mortalité devraient être estimés.'Comme on souhaite avoir la meilleure représentation possible des
         # classes d’âges pour estimer Z, il est préférable d’utiliser la classe d’âge suivant le Peak observé' (Mainguy et Moral, 2021), 
         # soit le Peak Plus."),
@@ -333,10 +378,17 @@ app_ui <- function() {
         uiOutput("download_comparaison_mortalite_table_ui"),
         textOutput("phrase_mortalite"),
         
+        
+        ## Graphique du modèle choisi ----
+        
         h3("Distribution d'âge et modèle de mortalité retenu"),
         withSpinner(plotOutput("plot_mortalite"), type = myspinner),
         downloadButton("download_plot_mortalite", "Télécharger le graphique"),
         br(), br(),
+        
+        
+        ## Chapman-Robson ----
+        
         p("La mortalité estimée selon le modèle de Chapman-Robson est 
           présentée à titre comparatif seulement, car son utilisation
           n’est pas recommandée."),
@@ -344,11 +396,19 @@ app_ui <- function() {
         withSpinner(uiOutput("table_chaprob"), type = myspinner),
         uiOutput("download_chaprob_df_ui")
       ),
-      # maturite_sexuelle_panel -------------------------------------------------
+      # Panel 6
+      
+      # Maturité sexuelle ----
       tabPanel(title = "Maturité sexuelle",
                tabsetPanel(
+                 ## Longueur à maturité ----
+                 
                  tabPanel(
                    title = "Longueur à maturité",
+                   
+                   ### Tableau de sélection de modèles ----
+                   
+                   
                    
                    # Message explicatif
                    h3(HTML("Sélection des modèles L<sub>50</sub>")),
@@ -363,21 +423,37 @@ app_ui <- function() {
                    br(),
                    h3("Résultats du modèle sélectionné"),
                    
+                   ### Tableau du modèle choisi ----
+                   
+                   
                    # Tableau des résultats
                    uiOutput("table_ogive_maturite_ui"),
                    uiOutput("download_ogive_maturite_table_ui"),
+                   
+                   ### Graphique du modèle choisi ----
+                   
                    
                    # Graphique des résultats
                    plotOutput("plot_ogive_maturite"),
                    downloadButton("download_ogive_maturite_plot", label = "Télécharger le graphique")
                  ),
                  
+                 ## Âge à maturité ----
                  
                  tabPanel(
                    title = "Âge à maturité",
+                   
+                   ### Tableau de sélection de modèles ----
+                   
                    h3(HTML("Sélection des modèles A<sub>50</sub>")),
                    
                    htmltools::includeMarkdown(path = './texte/A50_texte.rmd'),
+                   
+                   ### Tableau du modèle choisi ----
+                   
+                   
+                   ### Graphique du modèle choisi ----
+                   
                    
                  )
                ))

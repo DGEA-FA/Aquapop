@@ -123,3 +123,42 @@ Les fichiers de tests (si présents) doivent être placés dans un répertoire `
 
 - Les appels à des fonctions de packages externes doivent être faits de façon explicite (`ggplot2::ggplot()`), sauf si le package est chargé dans le namespace (ex: via `library(dplyr)` au début d’un script indépendant)
 - Les noms d’objets ne doivent pas entrer en conflit avec les noms de fonctions connues
+
+
+## Structuration des scripts avec des titres reconnaissables par RStudio
+
+Pour faciliter la navigation dans les scripts `.R`, chaque section doit être délimitée par des titres de commentaires reconnus automatiquement par RStudio dans le *Document Outline*.  
+
+Utilisez la syntaxe suivante, selon la hiérarchie :
+
+```r
+# Section principale ----
+## Sous-section ----
+### Sous-sous-section ----
+```
+
+### Exemples
+
+```r
+# Croissance ----
+## Tableau de sélection de modèles ----
+## Graphique du modèle choisi ----
+
+# Mortalité ----
+## Tableau de sélection de modèles ----
+## Graphique du modèle choisi ----
+## Chapman-Robson ----
+```
+
+### Bonnes pratiques
+
+- Ne pas utiliser uniquement des lignes décoratives (`# ====`) : elles ne sont pas reconnues par l’éditeur.
+- Évitez les titres vides ou ambigus, pour éviter des entrées `(Untitled)` dans la navigation.
+- Préférez des noms explicites et concis.
+- Ces titres peuvent être extraits automatiquement pour créer une table des matières ou structurer une documentation technique.
+
+### Pourquoi cette convention ?
+
+- RStudio détecte automatiquement les titres avec `----`.
+- Cela permet de plier/déplier les blocs de code.
+- La navigation est plus fluide dans les fichiers longs.
