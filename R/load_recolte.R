@@ -1,85 +1,118 @@
-#' Charger et structurer les données du feuillet "Récolte"
+#' Charger et structurer les données du feuillet "Récolte" (version robuste)
 #'
-#' Cette fonction importe les données brutes du feuillet "Récolte" d’un fichier Excel,
-#' applique des transformations pour nettoyer et convertir les colonnes au bon format,
-#' puis retourne un tableau prêt à l’analyse.
+#' Cette fonction importe les données brutes du feuillet "Récolte" d’un fichier Excel
+#' formaté selon les standards AquaPop. Elle applique des transformations pour nettoyer
+#' les colonnes, corriger les années (Excel ou texte), et produire un tableau structuré.
 #'
 #' @param path Chemin complet vers le fichier Excel (.xlsx) à importer.
-#' @param namesheet Nom du feuillet contenant les données de récolte (par défaut `"Recolte"`).
+#' @param namesheet Nom du feuillet contenant les données de récolte (défaut : "Recolte").
+#' @param verbose Afficher les messages de transformation ? (défaut : TRUE)
 #'
-#' @return Un `data.frame` contenant :
+#' @return Un `data.frame` structuré contenant :
 #' \describe{
 #'   \item{no_lac, typ_pech, no_station, sp}{Facteurs}
-#'   \item{annee}{Année numérique, convertie à partir du format Excel si nécessaire}
+#'   \item{annee}{Numérique (entier), année de récolte}
 #'   \item{nb_capture, nb_pese}{Numériques}
-#'   \item{comments}{Chaîne de caractères}
+#'   \item{comments_recolte}{Texte, si présente}
 #' }
 #'
 #' @details
-#' La fonction effectue les étapes suivantes :
-#' \enumerate{
-#'   \item Lecture du fichier Excel avec toutes les colonnes en texte
-#'   \item Renommage des colonnes selon le format attendu
-#'   \item Conversion des colonnes en types appropriés (facteurs, numériques, caractères)
-#'   \item Conversion de l’année au format Excel si nécessaire
-#'   \item Suppression des doublons
-#' }
+#' Colonnes obligatoires attendues : `no_lac`, `typ_pech`, `no_station`, `sp`,
+#' `annee`, `nb_capture`, `nb_pese`.  
+#' Colonnes optionnelles : `comments`, qui sera renommée `comments_recolte` si présente.
+#'
+#' Les colonnes peuvent apparaître dans n'importe quel ordre. La colonne `nom_lac`, si présente, est supprimée.
 #'
 #' @importFrom readxl read_excel
+#' @importFrom dplyr mutate select distinct across any_of
 #' @importFrom lubridate year
-#' @importFrom dplyr mutate distinct
+#' @importFrom checkmate assert_file_exists assert_character assert_flag assert_names
+#' @importFrom janitor make_clean_names
 #' @export
-load_recolte <- function(path, namesheet) {
+load_recolte <- function(path,
+                         namesheet = "Recolte",
+                         verbose = TRUE) {
   
-  # 1. Lecture du fichier Excel
-  recolte <- readxl::read_excel(
+  # --- Validation des arguments ---
+  checkmate::assert_file_exists(path, extension = "xlsx")
+  checkmate::assert_character(namesheet, len = 1)
+  checkmate::assert_flag(verbose)
+  
+  # --- Lecture brute du fichier Excel ---
+  recolte_raw <- readxl::read_excel(
     path,
-    col_names = TRUE,
     sheet = namesheet,
-    na = c("", "NULL", "NA", " ", "-"),
-    col_types = "text"
-  ) %>%
-    as.data.frame()
+    col_names = TRUE,
+    col_types = "text",
+    na = c("", "NULL", "NA", " ", "-")
+  ) %>% as.data.frame()
   
-  # 2. Renommage des colonnes
-  colnames(recolte) <- c(
-    'no_lac',        # 1ère colonne : No plan d'eau
-    'nom_lac',       # 2ème colonne : Nom plan d'eau
-    'typ_pech',      # 3ème colonne : Type de pêche
-    'annee',         # 4ème colonne : Année
-    'no_station',    # 5ème colonne : No station
-    'sp',            # 6ème colonne : Espèce
-    'nb_capture',    # 7ème colonne : Nbre capturé
-    'nb_pese',       # 8ème colonne : Nbre pesé
-    'comments'       # 9ème colonne : Commentaires
+  # --- Table de synonymes avec noms déjà clean_names() ---
+  synonymes_clean <- list(
+    no_lac     = c("no_lac", "numero_lce", "id_lac", "no_plan_deau" ),
+    nom_lac    = c("nom_lac", "nom_du_lac", "nom_plan_d_eau",  "nom_plan_deau"),
+    typ_pech   = c("typ_pech", "type_peche", "type_de_peche" ),
+    annee      = c("annee", "year"),
+    no_station = c("no_station", "station", "no_stn" ),
+    sp         = c("sp", "espece"),
+    nb_capture = c("nb_capture", "n_captur", "nbre_capture", "nbre_capturee"),
+    nb_pese    = c("nb_pese", "n_pese", "nbre_pese", "nbre_pesee", "nbre_pesé"),
+    comments   = c("comments", "commentaires", "remarques", "notes")
   )
   
-  # 3. Suppression de la colonne nom_lac
-  recolte <- recolte %>% dplyr::select(-nom_lac)
+  # --- Nettoyage des noms des colonnes du fichier ---
+  noms_originaux <- names(recolte_raw)
+  noms_clean <- janitor::make_clean_names(noms_originaux)
   
-  # 4. Conversion de l'année (Excel → entier si nécessaire)
-  recolte$annee <- as.integer(recolte$annee)
-  recolte$annee <- ifelse(
-    nchar(recolte$annee) == 5,
-    as.integer(lubridate::year(as.Date(recolte$annee, origin = "1899-12-30"))),
-    recolte$annee
+  # --- Création du mapping canonique → nom original ---
+  mapping <- sapply(names(synonymes_clean), function(canonique) {
+    idx <- match(synonymes_clean[[canonique]], noms_clean)
+    idx <- idx[!is.na(idx)]
+    if (length(idx) > 0) {
+      return(noms_originaux[idx[1]])
+    } else {
+      return(NA)
+    }
+  }, USE.NAMES = TRUE)
+  
+  # --- Construction du tableau avec noms canoniques ---
+  n <- nrow(recolte_raw)
+  recolte <- as.data.frame(matrix(NA_character_, nrow = n, ncol = 0))
+  for (col in names(mapping)) {
+    col_source <- mapping[[col]]
+    if (!is.na(col_source)) {
+      recolte[[col]] <- recolte_raw[[col_source]]
+      if (verbose) message("[load_recolte] Colonne ‘", col_source, "’ reconnue comme ‘", col, "’.")
+    }
+  }
+  
+  # --- Validation des colonnes essentielles ---
+  colonnes_obligatoires <- c("no_lac", "typ_pech", "annee", "no_station", "sp", "nb_capture", "nb_pese")
+  checkmate::assert_names(names(recolte), must.include = colonnes_obligatoires)
+  
+  # --- Suppression optionnelle de nom_lac ---
+  if ("nom_lac" %in% names(recolte)) {
+    recolte <- dplyr::select(recolte, -nom_lac)
+    if (verbose) message("[load_recolte] Colonne ‘nom_lac’ supprimée.")
+  }
+  
+  # --- Conversion de l'année Excel ou texte ---
+  recolte$annee <- dplyr::case_when(
+    nchar(recolte$annee) == 5 ~ as.integer(lubridate::year(as.Date(as.numeric(recolte$annee), origin = "1899-12-30"))),
+    TRUE                      ~ suppressWarnings(as.integer(recolte$annee))
   )
   
-  # 5. Conversion des types et renommage de comments
+  # --- Conversion des types ---
   recolte <- recolte %>%
     dplyr::mutate(
-      no_lac     = as.factor(no_lac),
-      typ_pech   = as.factor(typ_pech),
-      no_station = as.factor(no_station),
-      sp         = as.factor(sp),
-      nb_capture = as.numeric(nb_capture),
-      nb_pese    = as.numeric(nb_pese),
-      comments_recolte   = as.character(comments)
+      dplyr::across(c(no_lac, typ_pech, no_station, sp), as.factor),
+      dplyr::across(c(nb_capture, nb_pese), as.numeric),
+      comments_recolte = if ("comments" %in% names(recolte)) as.character(recolte$comments) else NA_character_
     ) %>%
-    dplyr::select(-comments)
+    dplyr::select(-any_of("comments"))
   
-  # 6. Suppression des doublons
-  recolte <- recolte %>% dplyr::distinct()
+  # --- Suppression des doublons ---
+  recolte <- dplyr::distinct(recolte)
   
   return(recolte)
 }
