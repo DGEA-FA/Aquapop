@@ -258,8 +258,6 @@ print(res_disp$plot)
 
 res_disp$dispersion
 
-
-
 # Comparer les modèles de mortalité
 mortalite_compare_modele_res <- mortalite_compare_modele(data = df_age_etendue)
 print(mortalite_compare_modele_res$data)

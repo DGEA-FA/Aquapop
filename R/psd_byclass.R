@@ -79,27 +79,17 @@ psd_byclass <- function(data) {
   table_finale$`%` <- as.numeric(table_finale$`%`)
   fig <- ggplot2::ggplot(table_finale, ggplot2::aes(x = Classe, y = `%`)) +
     ggplot2::geom_bar(stat = "identity") +
-    ggplot2::geom_text(ggplot2::aes(label = paste0("n = ", n)), nudge_y = 3) +
+    geom_text_aquapop(aes(label = paste0("n = ", n)), nudge_y = 3) +
     ggplot2::xlab("Classe de taille") +
     ggplot2::ylab("Fréquence relative (%)") +
-    ggplot2::theme_minimal(base_size = 11) +
-    ggplot2::theme(
-      panel.background = ggplot2::element_rect(
-        fill = "white", colour = "white", linewidth = 0.5
-      ),
-      panel.grid = ggplot2::element_blank(),
-      axis.text = ggplot2::element_text(color = "black"),
-      axis.title = ggplot2::element_text(color = "black", hjust = 0.5),
-      plot.margin = grid::unit(c(0.5, 0.1, 0.2, 0.1), "cm"),
-      axis.line = ggplot2::element_line(colour = "black")
-    ) +
-    ggplot2::scale_y_continuous(expand = c(0, 0.1), limits = c(0, 100)) +
+    theme_aquapop() +
+    ggplot2::scale_y_continuous(expand = c(0, 0.1), limits = c(0, 110)) +
     ggplot2::scale_x_discrete(limits = noms_classes)
   
+
   # -- Flextable
   ft <- flextable::flextable(table_finale) %>%
-    flextable::autofit() %>%
-    flextable::align(align = "center", part = "all")
+    style_flextable_aquapop()
   
   return(list(
     data = table_finale,

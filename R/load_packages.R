@@ -21,8 +21,8 @@ packages_requis <- c(
   "readxl", "writexl", "dplyr", "tidyr", "stringr", "purrr", "forcats", "lubridate", "glue", "labelled", "checkmate", "janitor", "here",
   
   # Graphiques
-  "ggplot2", "scales", "patchwork", "gghighlight", "gt",
-  
+  "ggplot2", "scales", "patchwork", "gghighlight", "gt", "grid", "showtext", "sysfonts",
+ 
   # Exportation de résultats
   "flextable", "officer",
   

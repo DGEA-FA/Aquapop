@@ -5,3 +5,4 @@ devtools::load_all()
 
 # Exécuter tous les tests unitaires
 devtools::test()
+
