@@ -1,142 +1,157 @@
-#' Charger et structurer les données du feuillet "Stations"
+#' Charger et structurer les données du feuillet "Stations" (version robuste)
 #'
 #' Cette fonction importe les données brutes du feuillet "Stations" d’un fichier Excel,
-#' applique des transformations pour nettoyer et standardiser les colonnes,
+#' applique des transformations pour nettoyer et standardiser les colonnes essentielles,
 #' et calcule des variables supplémentaires utiles pour l’analyse (ex. date/heure de pose/levée, durée).
 #'
 #' @param path Chemin complet vers le fichier Excel (.xlsx) à importer.
 #' @param namesheet Nom du feuillet contenant les données de stations (par défaut `"Stations"`).
+#' @param verbose Afficher les messages de diagnostic ? (défaut `TRUE`)
 #'
-#' @return Un `data.frame` contenant :
+#' @return Un `data.frame` structuré avec au minimum :
 #' \describe{
 #'   \item{no_lac, typ_pech, no_station, st_valide, st_hasard, type_maill}{Facteurs}
-#'   \item{annee}{Année numérique, convertie à partir du format Excel si nécessaire}
+#'   \item{annee}{Année (entier)}
 #'   \item{lat_dd.dec, long_dd.dec, prof_deb, prof_fin}{Numériques}
-#'   \item{date_pose, date_leve}{Dates calculées (pose = veille de la levée)}
-#'   \item{heure_pose, min_pose, heure_leve, min_leve}{Chaînes formatées à deux chiffres}
-#'   \item{h_pose, h_leve}{Heures complètes au format texte ("HH:MM:SS")}
-#'   \item{pose, leve}{Date/heure combinées (`POSIXct`)}
-#'   \item{duree}{Durée entre pose et levée (`difftime`)}
-#'   \item{comments}{Chaîne de caractères}
+#'   \item{date_pose, date_leve, h_pose, h_leve, pose, leve, duree}{Variables temporelles}
+#'   \item{comments_station}{Chaîne de caractères}
 #' }
-#'
-#' @details
-#' La fonction effectue les étapes suivantes :
-#' \enumerate{
-#'   \item Lecture du fichier Excel avec toutes les colonnes en texte.
-#'   \item Renommage des colonnes selon le format attendu.
-#'   \item Nettoyage des colonnes `st_valide` et `st_hasard`, remplacement des valeurs manquantes.
-#'   \item Conversion des types (facteurs, numériques, dates).
-#'   \item Construction des variables de temps `pose`, `leve`, et `duree`.
-#'   \item Suppression des doublons.
-#' }
-#'
-#' Cette fonction peut être utilisée dans une application interactive ou dans un script classique.
 #'
 #' @importFrom readxl read_excel
-#' @importFrom lubridate year
-#' @importFrom dplyr mutate across case_when distinct
+#' @importFrom janitor make_clean_names
+#' @importFrom lubridate year days
+#' @importFrom dplyr mutate across distinct case_when select
+#' @importFrom checkmate assert_file_exists assert_character assert_flag
 #' @importFrom stringr str_pad
 #' @export
-
-load_station <- function(path, namesheet) {
- 
-  # 1. Lecture du fichier Excel
-  station <- readxl::read_excel(
-    path,
-    col_names = TRUE,
-    sheet = namesheet,
-    na = c("", "NULL", "NA", " ", "-"),
-    col_types = "text"
-  ) %>% 
-    as.data.frame()
+load_station <- function(path,
+                         namesheet = "Stations",
+                         verbose = TRUE) {
+  # --- Validation des entrées ---
+  checkmate::assert_file_exists(path, extension = "xlsx")
+  checkmate::assert_character(namesheet, len = 1)
+  checkmate::assert_flag(verbose)
   
-  # 2. Renommage des colonnes
-  colnames(station) <- c(
-    'no_lac',          # 1ère colonne : No plan d'eau
-    'nom_lac',         # 2ème colonne : Nom plan d'eau
-    'typ_pech',        # 3ème colonne : Type de pêche
-    'annee',           # 4ème colonne : Année
-    'no_station',      # 5ème colonne : No station
-    'lat_dd.dec',      # 6ème colonne : Latitude (degré, décimales)
-    'long_dd.dec',     # 7ème colonne : Longitude (degré, décimales)
-    'heure_pose',      # 8ème colonne : Heure de pose du filet
-    'min_pose',        # 9ème colonne : Minute - Pose de filet
-    'date_leve',       # 10ème colonne : Date de levée du filet
-    'heure_leve',      # 11ème colonne : Heure de levée du filet
-    'min_leve',        # 12ème colonne : Minute - Levée de filet
-    'st_hasard',       # 13ème colonne : Hasard
-    'st_valide',       # 14ème colonne : Station valide
-    'prof_deb',        # 15ème colonne : Profondeur début (m)
-    'prof_fin',        # 16ème colonne : Profondeur fin (m)
-    'type_maill',      # 17ème colonne : Type mailles en rive
-    'comments'         # 18ème colonne : Commentaires
+  # --- Colonnes attendues ---
+  colonnes_obligatoires <- c("no_lac", "typ_pech", "annee", "no_station", "st_valide", "st_hasard")
+  colonnes_optionnelles <- c(
+    "lat_dd.dec", "long_dd.dec", "prof_deb", "prof_fin",
+    "date_pose", "date_leve", "heure_pose", "min_pose",
+    "heure_leve", "min_leve", "h_pose", "h_leve",
+    "pose", "leve", "duree", "type_maill", "comments"
   )
   
+  # --- Synonymes pour mappage des colonnes ---
+  synonymes <- list(
+    no_lac      = c("no_lac", "numero_lce", "no_plan_deau"),
+    typ_pech    = c("typ_pech", "type_peche", "type_de_peche"),
+    annee       = c("annee", "année"),
+    no_station  = c("no_station", "station_id", "no_stn"),
+    st_valide   = c("st_valide", "station_valide", "valide"),
+    st_hasard   = c("st_hasard", "hasard", "tirage_aleatoire"),
+    leve        = c("leve"),
+    comments    = c("comments", "commentaires", "commentaires_generaux"),
+    lat_dd.dec  = c("lat_dd.dec", "latitude_degre_decimales"),
+    long_dd.dec = c("long_dd.dec", "longitude_degre_decimales"),
+    heure_pose  = c("heure_pose", "heure_de_pose_du_filet"),
+    min_pose    = c("min_pose", "minute_pose_de_filet"),
+    heure_leve  = c("heure_leve", "heure_de_levee_du_filet"),
+    min_leve    = c("min_leve", "minute_levee_de_filet_mm"),
+    date_leve   = c("date_leve", "date_de_levee_du_filet"),
+    type_maill  = c("type_maill", "type_mailles_en_rive")
+  )
   
-  # 3. Suppression de la colonne nom_lac
-  station <- station %>% dplyr::select(-nom_lac)
+  # --- Lecture brute ---
+  station_raw <- readxl::read_excel(
+    path,
+    sheet = namesheet,
+    col_names = TRUE,
+    col_types = "text",
+    na = c("", "NULL", "NA", " ", "-")
+  ) %>% as.data.frame()
   
-  # 3. Nettoyage des statuts : NA, "IND" ou "-" deviennent "O" dans les colonnes "st_valide" et "st_hasard"
+  noms_originaux <- names(station_raw)
+  noms_clean <- janitor::make_clean_names(noms_originaux)
+  
+  # --- Renommage intelligent ---
+  mapping <- sapply(names(synonymes), function(canonique) {
+    idx <- match(synonymes[[canonique]], noms_clean)
+    idx <- idx[!is.na(idx)]
+    if (length(idx) > 0) noms_originaux[idx[1]] else NA
+  }, USE.NAMES = TRUE)
+  
+  # --- Validation des colonnes obligatoires ---
+  manquantes <- names(mapping[colonnes_obligatoires])[is.na(mapping[colonnes_obligatoires])]
+  if (length(manquantes) > 0) {
+    stop("Colonnes obligatoires manquantes : ", paste(manquantes, collapse = ", "))
+  }
+  
+  # --- Construction du tableau structuré ---
+  n <- nrow(station_raw)
+  station <- as.data.frame(matrix(NA_character_, nrow = n, ncol = 0))
+  for (col in names(mapping)) {
+    source_col <- mapping[[col]]
+    if (!is.na(source_col)) {
+      station[[col]] <- station_raw[[source_col]]
+      if (verbose) message("[load_station] Colonne ‘", source_col, "’ reconnue comme ‘", col, "’.")
+    } else {
+      station[[col]] <- rep(NA_character_, n)
+      if (verbose) message("[load_station] Colonne ‘", col, "’ absente, ajoutée comme NA.")
+    }
+  }
+  
+  # --- Colonnes optionnelles absentes : ajout en NA ---
+  colonnes_manquantes <- setdiff(colonnes_optionnelles, names(station))
+  for (col in colonnes_manquantes) {
+    station[[col]] <- NA
+    if (verbose) message("[load_station] Colonne ‘", col, "’ absente, ajoutée comme NA.")
+  }
+  
+  # --- Nettoyage des statuts ---
   station <- station %>%
     dplyr::mutate(
-      st_valide = dplyr::case_when(
-        is.na(st_valide) | st_valide %in% c("IND", "-") ~ "O",
-        TRUE ~ st_valide
-      ),
-      st_hasard = dplyr::case_when(
-        is.na(st_hasard) | st_hasard %in% c("IND", "-") ~ "O",
-        TRUE ~ st_hasard
-      )
+      st_valide = dplyr::case_when(is.na(st_valide) | st_valide %in% c("IND", "-") ~ "O", TRUE ~ st_valide),
+      st_hasard = dplyr::case_when(is.na(st_hasard) | st_hasard %in% c("IND", "-") ~ "O", TRUE ~ st_hasard)
     )
-
-  # 4. Conversion des types de base
+  
+  # --- Conversion types de base ---
   station <- station %>%
     dplyr::mutate(
-      across(c(no_lac, typ_pech, st_hasard, st_valide, type_maill, no_station), as.factor),
       annee = dplyr::case_when(
         nchar(annee) == 5 ~ as.integer(lubridate::year(as.Date(as.numeric(annee), origin = "1899-12-30"))),
         TRUE              ~ suppressWarnings(as.integer(annee))
       ),
-      lat_dd.dec  = as.numeric(lat_dd.dec),
-      long_dd.dec = as.numeric(long_dd.dec),
-      prof_deb    = as.numeric(prof_deb),
-      prof_fin    = as.numeric(prof_fin),
-      comments_station    = as.character(comments)
+      dplyr::across(
+        intersect(c("no_lac", "typ_pech", "no_station", "st_valide", "st_hasard", "type_maill"), names(station)),
+        as.factor
+      ),
+      lat_dd.dec  = suppressWarnings(as.numeric(lat_dd.dec)),
+      long_dd.dec = suppressWarnings(as.numeric(long_dd.dec)),
+      prof_deb    = suppressWarnings(as.numeric(prof_deb)),
+      prof_fin    = suppressWarnings(as.numeric(prof_fin)),
+      comments_station = as.character(comments)
     ) %>%
     dplyr::select(-comments)
   
-  # 6. Conversion de la date de levée et calcul de la date de pose
-  station$date_leve <- as.Date(as.numeric(station$date_leve), origin = "1899-12-30")
-  station$date_pose <- station$date_leve - lubridate::days(1) # veille de la levée
+  # --- Dates et heures combinées ---
+  station$date_leve <- suppressWarnings(as.Date(as.numeric(station$date_leve), origin = "1899-12-30"))
+  station$date_pose <- if (!all(is.na(station$date_leve))) station$date_leve - lubridate::days(1) else NA
   
-  # 7. Normalisation des heures et minutes (ex : "7" → "07")
   station <- station %>%
     dplyr::mutate(
       min_pose   = stringr::str_pad(min_pose,   2, pad = "0"),
       heure_pose = stringr::str_pad(heure_pose, 2, pad = "0"),
       min_leve   = stringr::str_pad(min_leve,   2, pad = "0"),
-      heure_leve = stringr::str_pad(heure_leve, 2, pad = "0")
+      heure_leve = stringr::str_pad(heure_leve, 2, pad = "0"),
+      h_pose     = ifelse(!is.na(heure_pose) & !is.na(min_pose), paste0(heure_pose, ":", min_pose, ":00"), NA),
+      h_leve     = ifelse(!is.na(heure_leve) & !is.na(min_leve), paste0(heure_leve, ":", min_leve, ":00"), NA),
+      pose       = suppressWarnings(as.POSIXct(paste(date_pose, h_pose), format = "%Y-%m-%d %H:%M:%S")),
+      leve       = suppressWarnings(as.POSIXct(paste(date_leve, h_leve), format = "%Y-%m-%d %H:%M:%S")),
+      duree      = difftime(leve, pose, units = "hours")
     )
   
-  # 8. Construction des champs horaires en ajoutant les secondes
-  station <- station %>%
-    dplyr::mutate(
-      h_pose = ifelse(!is.na(heure_pose) & !is.na(min_pose), paste0(heure_pose, ":", min_pose, ":00"), NA),
-      h_leve = ifelse(!is.na(heure_leve) & !is.na(min_leve), paste0(heure_leve, ":", min_leve, ":00"), NA)
-    )
-  
-  # 9. Fusion date + heure → POSIXct
-  station <- station %>%
-    dplyr::mutate(
-      pose = as.POSIXct(paste(date_pose, h_pose), format = "%Y-%m-%d %H:%M:%S"),
-      leve = as.POSIXct(paste(date_leve, h_leve), format = "%Y-%m-%d %H:%M:%S"),
-      duree = difftime(leve, pose, units = "auto")
-    )
-  
-  # 10. Tri et suppression des doublons
-  station <- station[order(station$no_station), ]
-  station <- station %>% dplyr::distinct()
+  # --- Suppression des doublons ---
+  station <- dplyr::distinct(station)
   
   return(station)
 }

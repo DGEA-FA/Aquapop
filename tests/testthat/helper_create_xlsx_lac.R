@@ -1,6 +1,10 @@
-dir.create("tests/testthat/testdata", showWarnings = FALSE, recursive = TRUE)
+# tests/testthat/helper_create_xlsx_lac.R
+
+# Ce script génère tous les fichiers de test de la fonction load_lac()
+# À exécuter manuellement ou via testthat::source_test_helpers()
 
 library(writexl)
+dir.create(testthat::test_path("testdata"), showWarnings = FALSE, recursive = TRUE)
 
 # Jeu de base avec colonnes synonymes
 lac_complet <- data.frame(
@@ -34,13 +38,14 @@ lac_manque_colonne <- data.frame(
   "Type pêche" = "PE",
   "Année" = "2023"
 )
+
 # Variante avec colonnes dans un ordre aléatoire
 set.seed(42)
 lac_colonnes_desordonnees <- lac_complet[, sample(names(lac_complet))]
 
 # Sauvegarde avec nom du feuillet = "Lac"
-write_xlsx(list("Lac" = lac_complet),                  "tests/testthat/testdata/lac_complet.xlsx")
-write_xlsx(list("Lac" = lac_sans_comments),            "tests/testthat/testdata/lac_sans_comments.xlsx")
-write_xlsx(list("Lac" = lac_avec_colonnes_sup),        "tests/testthat/testdata/lac_avec_colonnes_sup.xlsx")
-write_xlsx(list("Lac" = lac_manque_colonne), "tests/testthat/testdata/lac_manque_colonne.xlsx")
-write_xlsx(list("Lac" = lac_colonnes_desordonnees),    "tests/testthat/testdata/lac_colonnes_desordonnees.xlsx")
+write_xlsx(list("Lac" = lac_complet),                  testthat::test_path("testdata", "lac_complet.xlsx"))
+write_xlsx(list("Lac" = lac_sans_comments),            testthat::test_path("testdata", "lac_sans_comments.xlsx"))
+write_xlsx(list("Lac" = lac_avec_colonnes_sup),        testthat::test_path("testdata", "lac_avec_colonnes_sup.xlsx"))
+write_xlsx(list("Lac" = lac_manque_colonne),           testthat::test_path("testdata", "lac_manque_colonne.xlsx"))
+write_xlsx(list("Lac" = lac_colonnes_desordonnees),    testthat::test_path("testdata", "lac_colonnes_desordonnees.xlsx"))
