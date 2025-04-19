@@ -1,132 +1,181 @@
-#' Charger et structurer les données du feuillet "Spécimens"
+#' Charger les données du feuillet "Specimens" d’un fichier Excel (version robuste)
 #'
-#' Cette fonction importe les données brutes du feuillet "Specimens" d’un fichier Excel,
-#' applique les transformations nécessaires pour nettoyer, convertir et uniformiser les types de colonnes,
-#' puis retourne un tableau exploitable pour l’analyse biologique.
+#' Cette fonction importe, nettoie et structure les données de spécimens de poissons
+#' contenues dans un fichier Excel, avec validations robustes. Les colonnes essentielles
+#' sont obligatoires, les autres sont ajoutées si présentes, sinon remplacées par `NA`.
 #'
-#' @param path Chemin complet vers le fichier Excel (.xlsx) à importer.
-#' @param namesheet Nom du feuillet contenant les données de spécimens (par défaut `"Specimens"`).
+#' @param path Chemin vers le fichier `.xlsx` à lire. Doit contenir un feuillet nommé `"Specimens"` formaté selon les conventions AquaPop.
+#' @param namesheet Nom du feuillet contenant les données des spécimens (défaut `"Specimens"`).
+#' @param verbose Afficher les messages de diagnostic ? (défaut `TRUE`)
+#' @param col_rename Appliquer le renommage des colonnes selon la correspondance interne ? (défaut `TRUE`)
 #'
-#' @return Un `data.frame` contenant :
-#' \describe{
-#'   \item{no_lac, typ_pech, no_station, no_specimen, sp}{Facteurs}
-#'   \item{ltm, lf, masse, age}{Numériques}
-#'   \item{sexe, maturite, marquage}{Facteurs avec niveaux ordonnés ("F", "M", "IND"), ("O", "N", "IND"), ("MA", "NMA")}
-#'   \item{ind_insec, ind_benth, ind_planc, ind_chyme, ind_vide, ind_poiss, poiss1, poiss2}{Facteurs}
-#'   \item{annee}{Année numérique, convertie si format Excel}
-#'   \item{comments_specimen}{Chaîne de caractères}
-#' }
+#' @return Un `data.frame` structuré avec les colonnes normalisées suivantes :
+#' - **Obligatoires** : `no_lac`, `typ_pech`, `no_station`, `no_specimen`, `sp`, `ltm`, `masse`, `age`, `sexe`, `maturite`, `annee`
+#' - **Optionnelles** (ajoutées comme NA si absentes) : `lf`, `marquage`, `ind_insec`, `ind_benth`, `ind_planc`, `ind_chyme`, `ind_vide`, `ind_poiss`, `poiss1`, `poiss2`, `comments_specimen`
 #'
 #' @details
-#' Étapes effectuées :
-#' \enumerate{
-#'   \item Lecture du fichier avec toutes les colonnes en texte
-#'   \item Renommage des colonnes
-#'   \item Remplacement des `NA` dans `sexe`, `maturite`, et `marquage`
-#'   \item Conversion des colonnes en facteurs ou numériques selon leur nature
-#'   \item Définition de niveaux explicites pour `sexe`, `maturite` et `marquage`
-#'   \item Conversion de l’année et renommage de la variable `comments`
-#'   \item Tri par numéro de spécimen croissant
-#'   \item Suppression des doublons
-#'   \item Suppression de la colonne `nom_lac`
+#' - Les valeurs manquantes sont remplacées par : `"IND"` (`sexe`, `maturite`), `"NMA"` (`marquage`).
+#' - Les années codées au format Excel (5 chiffres) sont converties en année réelle.
+#' - Les colonnes inutiles sont ignorées.
+#'
+#' @examples
+#' \dontrun{
+#' library(writexl)
+#' df <- data.frame(
+#'   no_lac      = "001", typ_pech = "PE", no_station = "ST01", no_specimen = "0001",
+#'   sp = "SANA", ltm = "110", masse = "15.3", age = "2", sexe = "F",
+#'   maturite = "O", annee = "2022"
+#' )
+#' path <- tempfile(fileext = ".xlsx")
+#' write_xlsx(list("Specimens" = df), path)
+#' load_specimen(path)
 #' }
 #'
-#' @importFrom readxl read_excel
-#' @importFrom lubridate year
-#' @importFrom dplyr mutate across distinct arrange select rename
-#' @importFrom tidyr replace_na
 #' @export
-load_specimen <- function(path, namesheet) {
-
-  # 1. Lecture du fichier
-  specimen <- readxl::read_excel(
-    path,
-    col_names = TRUE,
-    sheet = namesheet,
-    na = c("", "NULL", "NA", " ", "-"),
-    col_types = "text"
-  ) %>%
-    as.data.frame()
+load_specimen <- function(path,
+                          namesheet = "Specimens",
+                          verbose = TRUE,
+                          col_rename = TRUE) {
   
-  # 2. Renommage des colonnes
-  colnames(specimen) <- c(
-    'no_lac',        # 1ère colonne : No plan d'eau fusionné
-    'nom_lac',       # 2ème colonne : Nom plan d'eau fusionné
-    'typ_pech',      # 3ème colonne : Type de pêche
-    'annee',         # 4ème colonne : Année début inventaire
-    'no_station',    # 5ème colonne : No station
-    'no_specimen',   # 6ème colonne : No spécimen
-    'sp',            # 7ème colonne : Espèce code
-    'ltm',           # 8ème colonne : Long. totale max (mm)
-    'lf',            # 9ème colonne : Longueur à la fourche (mm)
-    'masse',         # 10ème colonne : Masse (g)
-    'sexe',          # 11ème colonne : Sexe
-    'maturite',      # 12ème colonne : Maturité sexuelle
-    'age',           # 13ème colonne : Âge 1
-    'ind_insec',     # 14ème colonne : Ind. insecte
-    'ind_benth',     # 15ème colonne : Ind. benthos
-    'ind_planc',     # 16ème colonne : Ind. plancton
-    'ind_chyme',     # 17ème colonne : Ind. chyme
-    'ind_vide',      # 18ème colonne : Ind. vide
-    'ind_poiss',     # 19ème colonne : Ind. poisson
-    'poiss1',        # 20ème colonne : Contenu - Poisson 1
-    'poiss2',        # 21ème colonne : Contenu - Poisson 2
-    'marquage',      # 22ème colonne : Statut marquage
-    'comments'       # 23ème colonne : Commentaires
+  # --- Dépendances ---
+  requireNamespace("readxl")
+  requireNamespace("janitor")
+  requireNamespace("lubridate")
+  requireNamespace("dplyr")
+  requireNamespace("checkmate")
+  
+  # --- Validation des arguments ---
+  checkmate::assert_file_exists(path, extension = "xlsx")
+  checkmate::assert_character(namesheet, len = 1)
+  checkmate::assert_flag(verbose)
+  checkmate::assert_flag(col_rename)
+  
+  # --- Colonnes attendues ---
+  colonnes_obligatoires <- c("no_lac", "typ_pech", "no_station", "no_specimen", "sp", "ltm", "masse", "age", "sexe", "maturite", "annee")
+  colonnes_optionnelles <- c(
+    "lf", "marquage", "ind_insec", "ind_benth", "ind_planc", "ind_chyme", "ind_vide", "ind_poiss",
+    "poiss1", "poiss2", "comments_specimen"
+  )
+  toutes_colonnes <- c(colonnes_obligatoires, colonnes_optionnelles)
+  colonnes_num <- c("ltm", "lf", "masse", "age", "ind_insec", "ind_benth", "ind_planc", "ind_chyme", "ind_vide", "ind_poiss")
+  
+  # --- Table de correspondance des noms ---
+  synonymes_clean <- list(
+    no_lac            = c("no_lac", "no_plan_deau", "id_lac", "numero_lce"),
+    typ_pech          = c("typ_pech", "type_peche", "peche_type", "type"),
+    no_station        = c("no_station", "station"),
+    no_specimen       = c("no_specimen", "specimen", "id_specimen"),
+    sp                = c("sp", "espece", "species", "code_espece"),
+    ltm               = c("ltm", "long_totale", "longueur_totale", "lt", "long_tot"),
+    masse             = c("masse", "poids", "poids_g", "weight"),
+    age               = c("age", "âge", "age1"),
+    sexe              = c("sexe", "sex"),
+    maturite          = c("maturite", "maturité"),
+    annee             = c("annee", "année", "year"),
+    lf                = c("lf", "long_fourche", "longueur_fourche"),
+    marquage          = c("marquage", "statut_marquage"),
+    ind_insec         = c("ind_insec", "indice_insecte"),
+    ind_benth         = c("ind_benth", "indice_benthos"),
+    ind_planc         = c("ind_planc", "indice_plancton"),
+    ind_chyme         = c("ind_chyme", "indice_chyme"),
+    ind_vide          = c("ind_vide", "indice_vide"),
+    ind_poiss         = c("ind_poiss", "indice_poisson"),
+    poiss1            = c("poiss1", "poisson_1"),
+    poiss2            = c("poiss2", "poisson_2"),
+    comments_specimen = c("comments_specimen", "commentaires", "remarques", "notes")
   )
   
-  # 3. Suppression de la colonne nom_lac
-  specimen <- specimen %>% dplyr::select(-nom_lac)
+  # --- Lecture brute du fichier Excel ---
+  specimen_raw <- readxl::read_excel(
+    path,
+    sheet = namesheet,
+    col_names = TRUE,
+    col_types = "text",
+    na = c("", "NULL", "NA", " ", "-")
+  ) %>% as.data.frame()
   
-  # 4. Remplacement des valeurs manquantes dans certaines colonnes clés
+  noms_originaux <- names(specimen_raw)
+  noms_clean <- janitor::make_clean_names(noms_originaux)
+  
+  # --- Renommage via table de correspondance ---
+  if (col_rename) {
+    if (verbose) message("[load_specimen] Table de synonymes utilisée pour le renommage.")
+    
+    mapping <- sapply(names(synonymes_clean), function(canonique) {
+      idx <- match(synonymes_clean[[canonique]], noms_clean)
+      idx <- idx[!is.na(idx)]
+      if (length(idx) > 0) {
+        col <- noms_originaux[idx[1]]
+        if (verbose) message("[load_specimen] Colonne ‘", col, "’ reconnue comme ‘", canonique, "’.")
+        return(col)
+      } else {
+        return(NA)
+      }
+    }, USE.NAMES = TRUE)
+    
+    col_mapping_valid <- !is.na(mapping[colonnes_obligatoires])
+    if (!all(col_mapping_valid)) {
+      col_absentes <- names(mapping[colonnes_obligatoires])[!col_mapping_valid]
+      stop("Colonnes obligatoires manquantes : ", paste(col_absentes, collapse = ", "))
+    }
+    
+    n <- nrow(specimen_raw)
+    specimen <- as.data.frame(matrix(NA, nrow = n, ncol = 0))
+    for (col in names(mapping)) {
+      col_source <- mapping[[col]]
+      if (!is.na(col_source)) {
+        specimen[[col]] <- specimen_raw[[col_source]]
+      } else {
+        valeur_na <- if (col %in% colonnes_num) NA_real_ else NA_character_
+        specimen[[col]] <- rep(valeur_na, n)
+        if (verbose) message("[load_specimen] Colonne ‘", col, "’ absente, ajoutée comme NA.")
+      }
+    }
+    
+  } else {
+    noms_clean_direct <- janitor::make_clean_names(names(specimen_raw))
+    canoniques_clean <- sapply(synonymes_clean[colonnes_obligatoires], `[[`, 1)
+    checkmate::assert_subset(canoniques_clean, noms_clean_direct,
+                             .var.name = "Colonnes obligatoires manquantes")
+    specimen <- specimen_raw
+  }
+  
+  # --- Nettoyage et conversion des colonnes ---
   specimen <- specimen %>%
     dplyr::mutate(
       maturite = tidyr::replace_na(maturite, "IND"),
       sexe     = tidyr::replace_na(sexe, "IND"),
-      marquage = tidyr::replace_na(marquage, "NMA")
-    )
-  
-  # 5. Conversion des types
-  specimen <- specimen %>%
-    dplyr::mutate(
-      across(
-        c(no_lac, typ_pech, no_station, no_specimen, sp,
-          ind_insec, ind_benth, ind_planc, ind_chyme, ind_vide, ind_poiss,
-          poiss1, poiss2, sexe, maturite, marquage),
-        as.factor
+      marquage = tidyr::replace_na(marquage, "NMA"),
+      
+      annee = dplyr::case_when(
+        nchar(annee) == 5 ~ as.integer(lubridate::year(as.Date(as.numeric(annee), origin = "1899-12-30"))),
+        TRUE              ~ suppressWarnings(as.integer(annee))
       ),
+      
       sexe     = factor(sexe, levels = c("F", "M", "IND")),
       maturite = factor(maturite, levels = c("O", "N", "IND")),
-      marquage = factor(marquage, levels = c("MA", "NMA"))
-    )
-  
-  # 6. Conversion de l’année (Excel → entier si nécessaire)
-  specimen$annee <- as.integer(specimen$annee)
-  specimen$annee <- ifelse(
-    nchar(specimen$annee) == 5,
-    as.integer(lubridate::year(as.Date(specimen$annee, origin = "1899-12-30"))),
-    specimen$annee
-  )
-  
-  # 7. Conversion des colonnes numériques et renommage de comments
-  specimen <- specimen %>%
-    dplyr::mutate(
-      ltm      = as.numeric(ltm),
-      lf       = as.numeric(lf),
-      masse    = as.numeric(masse),
-      age      = as.numeric(age),
-      comments_specimen = as.character(comments)
+      marquage = factor(marquage, levels = c("MA", "NMA")),
+      
+      dplyr::across(
+        intersect(c("no_lac", "typ_pech", "no_station", "no_specimen", "sp",
+                    "ind_insec", "ind_benth", "ind_planc", "ind_chyme", "ind_vide", "ind_poiss",
+                    "poiss1", "poiss2"), names(specimen)),
+        as.factor
+      ),
+      
+      dplyr::across(
+        intersect(c("ltm", "lf", "masse", "age"), names(specimen)),
+        as.numeric
+      ),
+      
+      comments_specimen = if ("comments_specimen" %in% names(specimen)) {
+        as.character(comments_specimen)
+      } else {
+        rep(NA_character_, nrow(specimen))
+      }
     ) %>%
-    dplyr::select(-comments)
-  
-  # 8. Tri croissant par no_specimen
-  specimen <- specimen %>%
-    dplyr::mutate(no_specimen_numeric = as.numeric(as.character(no_specimen))) %>%
-    dplyr::arrange(no_specimen_numeric) %>%
-    dplyr::select(-no_specimen_numeric)
-  
-  # 9. Suppression des doublons
-  specimen <- specimen %>% dplyr::distinct()
+    dplyr::arrange(dplyr::across("no_specimen")) %>%
+    dplyr::distinct()
   
   return(specimen)
 }
