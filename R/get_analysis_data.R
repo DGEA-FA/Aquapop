@@ -12,6 +12,7 @@
 #' @param sheet_station Nom du feuillet des stations (défaut = `"Stations"`)
 #' @param sheet_specimen Nom du feuillet des spécimens (défaut = `"Specimens"`)
 #' @param sheet_recolte Nom du feuillet des récoltes (défaut = `"Recolte"`)
+#' @param verbose Afficher les messages de progression des fonctions `load_*` (défaut = `TRUE`)
 #'
 #' @return Une liste nommée contenant :
 #' \describe{
@@ -27,67 +28,56 @@
 get_analysis_data <- function(path, typ_pech, no_lac, annee,
                               sheet_station = "Stations",
                               sheet_specimen = "Specimens",
-                              sheet_recolte = "Recolte") {
+                              sheet_recolte = "Recolte",
+                              verbose = TRUE) {
   
-  # Obtenir le code de l'espèce ciblée
+  # Identification ----
+  ## Espèce cible à partir du type de pêche ----
   info_pen <- get_info_pen(typ_pech)
   if (is.null(info_pen)) stop("Type de pêche inconnu : aucun code espèce disponible.")
   code_sp <- info_pen$code_sp
   
-  # Charger et filtrer les stations par lac, type de pêche et année
-  data_station <- load_station(path, sheet_station) |>
-    filter_by_pen_lac_annee(
-      typ_pech = typ_pech,
-      no_lac   = no_lac,
-      annee    = annee
-    )
+  # Chargement des données ----
+  ## Feuille des stations ----
+  data_station <- load_station(path, sheet_station, verbose = verbose) |>
+    filter_by_pen_lac_annee(typ_pech = typ_pech, no_lac = no_lac, annee = annee)
   
-  # Définir les sous-ensembles utiles de stations
+  ## Feuille des spécimens ----
+  data_specimen <- load_specimen(path, sheet_specimen, verbose = verbose) |>
+    filter_by_pen_lac_annee(typ_pech = typ_pech, no_lac = no_lac, annee = annee) |>
+    dplyr::filter(sp == code_sp)
+  
+  ## Feuille des récoltes ----
+  data_recolte <- load_recolte(path, sheet_recolte, verbose = verbose) |>
+    filter_by_pen_lac_annee(typ_pech = typ_pech, no_lac = no_lac, annee = annee) |>
+    dplyr::filter(sp == code_sp)
+  
+  # Préparation des stations ----
   station_valides <- dplyr::filter(data_station, st_valide == "O")
   station_hasard_valide <- dplyr::filter(data_station, st_valide == "O", st_hasard == "O")
   
-  # Charger les spécimens filtrés par espèce, lac, type de pêche et année
-  data_specimen <- load_specimen(path, sheet_specimen) |>
-    filter_by_pen_lac_annee(
-      typ_pech = typ_pech,
-      no_lac   = no_lac,
-      annee    = annee
-    ) |>
-    dplyr::filter(sp == code_sp)
-  
-  # Charger les récoltes filtrées
-  data_recolte <- load_recolte(path, sheet_recolte) |>
-    filter_by_pen_lac_annee(
-      typ_pech = typ_pech,
-      no_lac   = no_lac,
-      annee    = annee
-    ) |>
-    dplyr::filter(sp == code_sp)
-  
-  # Spécimens joints uniquement aux stations valides et au hasard
+  # Préparation des spécimens ----
+  ## Spécimens associés aux stations valides et au hasard ----
   specimen <- dplyr::left_join(
-    data_specimen,
-    station_hasard_valide,
+    data_specimen, station_hasard_valide,
     by = c("no_station", "annee", "no_lac", "typ_pech"),
     relationship = "many-to-one"
   ) |>
     dplyr::distinct() |>
     base::droplevels()
   
-  # Spécimens valides (stations valides, incluant les dirigées)
+  ## Spécimens associés à toutes les stations valides ----
   specimen_valid <- dplyr::left_join(
-    data_specimen,
-    station_valides,
+    data_specimen, station_valides,
     by = c("no_station", "annee", "no_lac", "typ_pech"),
     relationship = "many-to-one"
   ) |>
     dplyr::distinct() |>
     base::droplevels()
   
-  # Captures (stations valides et au hasard, même sans capture)
+  # Préparation des captures ----
   capture <- dplyr::full_join(
-    station_hasard_valide,
-    data_recolte,
+    station_hasard_valide, data_recolte,
     by = c("no_station", "annee", "no_lac", "typ_pech"),
     relationship = "one-to-many"
   ) |>
@@ -98,13 +88,13 @@ get_analysis_data <- function(path, typ_pech, no_lac, annee,
     dplyr::distinct() |>
     base::droplevels()
   
-  # Retourner tous les objets nécessaires à l’analyse
+  # Retour ----
   return(list(
-    data_station         = data_station,
-    station_valides      = station_valides,
+    data_station          = data_station,
+    station_valides       = station_valides,
     station_hasard_valide = station_hasard_valide,
-    specimen             = specimen,
-    specimen_valid       = specimen_valid,
-    capture              = capture
+    specimen              = specimen,
+    specimen_valid        = specimen_valid,
+    capture               = capture
   ))
 }

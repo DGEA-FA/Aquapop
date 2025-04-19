@@ -8,7 +8,7 @@ app_server <- function(input, output, session) {
 
 # Upload de la feuille Lac du fichier *.xlsx
     data_temp <- eventReactive(input$upload, {
-    load_lac(path = input$upload$datapath, namesheet = "Lac")
+    load_lac(path = input$upload$datapath, namesheet = "Lac", verbose = FALSE)
   })
   
 # UI dynamique – typ_pech (pas de sélection initiale)
@@ -64,16 +64,16 @@ app_server <- function(input, output, session) {
     filter_by_pen_lac_annee(data = df_filtered2(), annee = input$annee)
   })
   
-  # Affichage dans la console des filtres effectués (facilite debug)
-  observeEvent(data_lac(), {
-    cat("\n--- Données filtrées data_lac() ---\n")
-    cat("→ Type(s) de pêche sélectionné(s):\n")
-    print(unique(data_lac()$typ_pech))
-    cat("→ Numéro(s) de lac sélectionné(s):\n")
-    print(unique(data_lac()$no_lac))
-    cat("→ Année(s) dans data_lac():\n")
-    print(sort(unique(data_lac()$annee)))
-  })
+  # # Affichage dans la console des filtres effectués (facilite debug)
+  # observeEvent(data_lac(), {
+  #   cat("\n--- Données filtrées data_lac() ---\n")
+  #   cat("→ Type(s) de pêche sélectionné(s):\n")
+  #   print(unique(data_lac()$typ_pech))
+  #   cat("→ Numéro(s) de lac sélectionné(s):\n")
+  #   print(unique(data_lac()$no_lac))
+  #   cat("→ Année(s) dans data_lac():\n")
+  #   print(sort(unique(data_lac()$annee)))
+  # })
   
   # Identification de l'espèce ciblée
   
@@ -96,7 +96,7 @@ app_server <- function(input, output, session) {
       path     = input$upload$datapath,
       typ_pech = input$typ_pech,
       no_lac   = input$no_lac,
-      annee    = input$annee
+      annee    = input$annee, verbose = FALSE
     )
   })
   
