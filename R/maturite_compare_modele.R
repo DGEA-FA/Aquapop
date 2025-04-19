@@ -25,12 +25,6 @@ maturite_compare_modele <- function(specimen_data, prefer_combined = FALSE, vari
     )
   }
   
-  # Fonction pour arrondir et formater les valeurs p
-  format_pval <- function(p) {
-    ifelse(is.na(p), NA_character_,
-           ifelse(p < 0.001, "< 0.001", formatC(round(p, 3), format = "f", digits = 3)))
-  }
-  
   # Fonction interne pour ajouter les labels aux colonnes de modèles de maturité
   add_labels_maturite <- function(df) {
     var_labels <- list()

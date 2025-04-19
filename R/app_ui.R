@@ -6,8 +6,6 @@
 
 app_ui <- function() {
   
-  # Chargement des éléments textuels (ex. : titres, instructions, etc.)
-  source("texte/text_elements.R", local = TRUE)
   
   fluidPage(
     

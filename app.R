@@ -1,7 +1,6 @@
 source("R/load_packages.R")
 
 source("R/utils.R")
-source("./texte/text_elements.R", local = TRUE)   # Load the text elements
 
 # to_activate_before_play ----
 reactlog::reactlog_enable() # Pour voir le graphe des réactifs

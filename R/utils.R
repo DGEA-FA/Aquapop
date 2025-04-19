@@ -188,3 +188,28 @@ download_data <- function(data, path) {
     format_headers = TRUE
   )
 }
+
+#' Arrondir et formater les valeurs p
+#'
+#' Cette fonction prend une ou plusieurs valeurs de p en entrée et retourne une version
+#' arrondie et formatée sous forme de chaîne de caractères, selon les conventions de présentation
+#' usuelles en statistique.
+#'
+#' - Les valeurs `NA` sont retournées telles quelles (`NA_character_`).
+#' - Les valeurs inférieures à 0.001 sont remplacées par la chaîne `"< 0.001"`.
+#' - Les autres valeurs sont arrondies à trois décimales et affichées au format numérique fixe.
+#'
+#' @param p Un vecteur numérique contenant des valeurs p.
+#'
+#' @return Un vecteur de chaînes de caractères (`character`) contenant les valeurs p formatées.
+#' 
+#' @examples
+#' format_pval(c(0.0005, 0.02, 0.3456, NA))
+#' # [1] "< 0.001" "0.020" "0.346" NA
+#'
+#' @export
+# Fonction pour arrondir et formater les valeurs p
+format_pval <- function(p) {
+  ifelse(is.na(p), NA_character_,
+         ifelse(p < 0.001, "< 0.001", formatC(round(p, 3), format = "f", digits = 3)))
+}
