@@ -94,7 +94,8 @@ masse_longueur_fit_res$flextable # Tableau formaté (flextable)
 
 # Indice de condition ----
 
-wri_res <- wri(data = specimen)
+wri_res <- wri(data = specimen_valid)
+
 
 ## Tableau Wr ----
 

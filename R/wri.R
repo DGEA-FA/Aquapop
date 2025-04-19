@@ -12,6 +12,9 @@
 #' @return Une liste avec les éléments `data`, `flextable`, `plot_tous`, `plot_byclass`
 #' @export
 wri <- function(data) {
+  
+  # Chargement et validation des données ----
+  
   espece <- unique(data$sp)
   if (length(espece) != 1) stop("Les données doivent contenir une seule espèce.")
   
@@ -37,7 +40,7 @@ wri <- function(data) {
     ))
   }
   
-  # --- Graphique plot_tous ---
+  # Graphique Wr par sexe ----
   sexe_niveaux <- c("F", "M", "IND")
   data <- data |>
     dplyr::mutate(sexe = factor(sexe, levels = sexe_niveaux))
@@ -61,12 +64,10 @@ wri <- function(data) {
       labels = group_labels$sexe,
       name = "", drop = FALSE
     ) +
-    ggplot2::theme_classic() +
+    theme_aquapop() + 
+    
     ggplot2::labs(x = "Longueur totale maximale (mm)", y = "Indice de condition (%)") +
-    ggplot2::theme(
-      panel.background = ggplot2::element_rect(fill = "white", colour = "black"),
-      axis.line = ggplot2::element_line(colour = "black")
-    ) +
+ 
     ggplot2::annotate("segment", x = -Inf, xend = Inf, y = 100, yend = 100,
                       color = "lightgrey", linewidth = 0.5, linetype = 2
     ) +
@@ -74,7 +75,7 @@ wri <- function(data) {
                         linetype = 2, linewidth = 0.5) +
     ggplot2::geom_hline(yintercept = moy_tous, color = "red", linetype = 2, linewidth = 0.5)
   
-  # --- Graphique plot_byclass ---
+  # Graphique Wr par classe de taille ----
   breaks <- info$breaks
   labels <- info$break_labels
   
@@ -108,16 +109,12 @@ wri <- function(data) {
     ggplot2::geom_errorbar(ggplot2::aes(ymin = lwr, ymax = upr), width = 0.1) +
     ggplot2::xlab("Classe de taille") +
     ggplot2::ylab("Indice de condition (%)") +
-    ggplot2::theme_classic() +
-    ggplot2::theme(
-      panel.background = ggplot2::element_rect(fill = "white", colour = "white"),
-      axis.line = ggplot2::element_line(colour = "black")
-    ) +
+    theme_aquapop() +
     ggplot2::scale_x_discrete(limits = psd_classnames, drop = FALSE) +
     ggplot2::annotate("segment", x = -Inf, xend = Inf, y = 100, yend = 100,
                       linewidth = 0.5, color = "black", linetype = 2)
   
-  # --- Table synthèse ---
+  # Construction des tableaux synthèse ----
   resumer_wr_par_groupe <- function(mod, var) {
     valeurs <- unique(as.character(data[[var]]))
     nd <- tibble::tibble(!!rlang::sym(var) := valeurs)
@@ -159,14 +156,15 @@ wri <- function(data) {
   
   table_finale <- dplyr::bind_rows(tab_all, tab_sexe, tab_class)
   
-  ft <- flextable::flextable(table_finale) |>
+  table_wr_flextable <- flextable::flextable(table_finale) |>
     flextable::set_caption("Indice de condition (Wr)") |>
-    flextable::align(align = "center", part = "all") |>
-    flextable::autofit()
+    style_flextable_aquapop()
+  
+  # Retour de la liste finale ----
   
   return(list(
     data = table_finale,
-    flextable = ft,
+    flextable = table_wr_flextable,
     plot_tous = fig_tous,
     plot_byclass = fig_byclass
   ))

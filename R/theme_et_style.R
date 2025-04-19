@@ -22,12 +22,17 @@ theme_aquapop <- function() {
   
   ggplot2::theme_void() +
     ggplot2::theme(
-      # plot.margin = ggplot2::margin(
-      #   t = px_to_pt(48), r = px_to_pt(40), b = px_to_pt(48), l = px_to_pt(40), unit = "pt"
-      # ),
-      # plot.background = ggplot2::element_rect(
-        # colour = "#c5cad2", linewidth = 1,
-        # fill = "#FFFFFF"),
+      plot.margin = ggplot2::margin(
+        t = px_to_pt(48), 
+        r = px_to_pt(40), 
+        # b = px_to_pt(48),
+        b = px_to_pt(10), 
+        l = px_to_pt(40), 
+        unit = "pt"
+      ),
+      plot.background = ggplot2::element_rect(
+        colour = "#c5cad2", linewidth = 1,
+        fill = "#FFFFFF"),
       panel.background = ggplot2::element_rect(fill = "#FFFFFF", colour = "#FFFFFF"),
       panel.grid.major.y = ggplot2::element_line(linewidth = 0.5, colour = "#C5CAD2"),
       axis.line.x = ggplot2::element_line(linewidth = 1, colour = "#6B778A"),
@@ -35,17 +40,17 @@ theme_aquapop <- function() {
       legend.justification = c(0, 0),
       axis.text.x = ggplot2::element_text(
         family = "open-sans", size = 14, color = "#6b778a",
-        # margin = ggplot2::margin(t = px_to_pt(8), b = px_to_pt(16), unit = "pt"),
+        margin = ggplot2::margin(t = px_to_pt(8), b = px_to_pt(16), unit = "pt"),
         angle = 45, hjust = 1, vjust = 1
       ),
       axis.text.y = ggplot2::element_text(
         family = "open-sans", size = 14, color = "#6b778a",
-        # margin = ggplot2::margin(r = px_to_pt(8), l = px_to_pt(16), unit = "pt"),
+        margin = ggplot2::margin(r = px_to_pt(8), l = px_to_pt(16), unit = "pt"),
         hjust = 0.5
       ),
       axis.title.x = ggplot2::element_text(
         family = "open-sans", size = 14, color = "#6b778a",
-        # margin = ggplot2::margin(b = px_to_pt(32), unit = "pt"),
+        margin = ggplot2::margin(b = px_to_pt(32), unit = "pt"),
         hjust = 0.5
       ),
       axis.title.y = ggplot2::element_text(
@@ -54,7 +59,7 @@ theme_aquapop <- function() {
       ),
       legend.title = ggplot2::element_blank(),
       legend.text = ggplot2::element_text(
-        # margin = ggplot2::margin(r = px_to_pt(8)),
+        margin = ggplot2::margin(r = px_to_pt(8)),
         family = "open-sans", size = 14, color = "#6b778a"
       ),
       legend.key.size = grid::unit(px_to_pt(16), "pt")
@@ -94,11 +99,10 @@ geom_text_aquapop <- function(...) {
 #' flextable(head(iris)) %>% style_flextable_aquapop()
 style_flextable_aquapop <- function(ft) {
   ft %>%
-    flextable::set_table_properties(width = 1, layout = "autofit") %>%
+    flextable::set_table_properties(layout = "autofit") %>%
     flextable::fontsize(size = 10, part = "all") %>%
     flextable::font(fontname = "Arial", part = "all") %>%
     flextable::align(align = "center", part = "all") %>%
     flextable::border_remove() %>%
-    flextable::border_outer() #%>%
-    flextable::border_inner()
+    flextable::border_outer()
 }

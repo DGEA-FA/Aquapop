@@ -361,13 +361,15 @@ app_server <- function(input, output, session) {
   render_download_table("download_wri_table", reactive(wri_res()$data))
   
   ## Graphique Wr par sexe ----
+  render_plot_ggplot("wri_plot_tous", reactive({ wri_res()$plot_tous }))
   
-  render_plot_ggplot("wri_plot_tous", reactive(wri_res()$plot_tous))
+  # render_plot_ggplot("wri_plot_tous", reactive(wri_res()$plot_tous))
   render_download_plot("download_wri_plot_tous", reactive(wri_res()$plot_tous))
   
   ## Graphique Wr par classe de taille ----
+  render_plot_ggplot("wri_plot_byclass", reactive({ wri_res()$plot_byclass }))
   
-  render_plot_ggplot("wri_plot_byclass", reactive(wri_res()$plot_byclass))
+  # render_plot_ggplot("wri_plot_byclass", reactive(wri_res()$plot_byclass))
   render_download_plot("download_wri_plot_byclass", reactive(wri_res()$plot_byclass))
   
 
@@ -435,8 +437,7 @@ app_server <- function(input, output, session) {
   # Affichage du graphique dans Shiny
   render_plot_ggplot(
     output_id = "selectedmodelcroissanceplot",
-    plot_reactive = plot_selectedmodelcroissance,
-    width = 600, height = 400, res = 96
+    plot_reactive = plot_selectedmodelcroissance
   )
   
   # Bouton de téléchargement du graphique
@@ -496,15 +497,13 @@ app_server <- function(input, output, session) {
   
   render_plot_ggplot(
     output_id = "plot_dispersion_poisson",
-    plot_reactive = reactive(res_test_surdisp()$plot),
-    width = 600, height = 400, res = 96
+    plot_reactive = reactive(res_test_surdisp()$plot)
   )
   
   render_download_plot(
     id = "download_plot_dispersion_poisson",
     plot_reactive = reactive(res_test_surdisp()$plot),
     filename = "dispersion_poisson",
-    width = 7, height = 5, dpi = 300,
     label = "Télécharger le graphique"
   )
   
@@ -560,8 +559,7 @@ app_server <- function(input, output, session) {
   
   render_plot_ggplot(
     output_id = "plot_mortalite",
-    plot_reactive = plot_mortalite,
-    width = 600, height = 400, res = 96
+    plot_reactive = plot_mortalite
   )
   
   render_download_plot(

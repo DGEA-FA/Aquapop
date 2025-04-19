@@ -294,34 +294,43 @@ app_ui <- function() {
       tabPanel(
         title = "Indice de condition",
         
-        ## Tableau Wr ----
-        
+        # Tableau Wr
         p("Le tableau ci-dessous présente l’indice de masse relative (Wr) et son intervalle de confiance 
-          à 95 % pour l’ensemble de la population, par sexe et par classe de PSD (classe selon
-          Gabelhouse 1984)."),
+     à 95 % pour l’ensemble de la population, par sexe et par classe de PSD (classe selon 
+     Gabelhouse 1984)."),
         uiOutput("wri_table_ui"),
         uiOutput("download_wri_table_ui"),
         
-        ## Graphique Wr par sexe ----
+        br(),
         
+        # Graphique Wr par sexe
         p("Le graphique suivant illustre, pour chaque spécimen capturé, l’indice de condition en 
-          fonction de la longueur totale maximale et du sexe. La valeur moyenne est indiquée par une 
-          ligne pointillée en rouge (tous), en bleu foncé (femelles) et en bleu pâle. La ligne en gris 
-          représente la référence standard pour l’espèce selon Hyatt & Hubert 2011 (SAFO), 
-          Murphy et al. 1990 (SAVI) et Piccolo et al. 1993 (SANA)."),
+     fonction de la longueur totale maximale et du sexe. La valeur moyenne est indiquée par une 
+     ligne pointillée en rouge (tous), en bleu foncé (femelles) et en bleu pâle. La ligne en gris 
+     représente la référence standard pour l’espèce selon Hyatt & Hubert 2011 (SAFO), 
+     Murphy et al. 1990 (SAVI) et Piccolo et al. 1993 (SANA)."),
         h3("Indice de condition (Wr) selon la longueur et le sexe"),
         
-        withSpinner(plotOutput("wri_plot_tous", height = "400px"), type = myspinner),
-        downloadButton("download_wri_plot_tous", "Téléchargement du graphique"),
+        div(
+          style = "max-width: 900px; margin: auto;",
+          withSpinner(plotOutput("wri_plot_tous", height = "500px"), type = myspinner),
+          br(),
+          downloadButton("download_wri_plot_tous", "Téléchargement du graphique")
+        ),
         
-        ## Graphique Wr par classe de taille ----
+        br(),
         
-        p("Ce graphique présente la variation de l’indice de condition selon les classes de PSD. Les 
-          valeurs moyenne et les intervalles de confiance sont illustrés."),
+        # Graphique Wr par classe de taille
+        p("Ce graphique présente la variation de l’indice de condition selon les classes de PSD. 
+     Les valeurs moyenne et les intervalles de confiance sont illustrés."),
         h3("Indice de condition (Wr) moyen par classe de taille"),
         
-        plotOutput("wri_plot_byclass", height = "400px"),
-        downloadButton("download_wri_plot_byclass", "Téléchargement du graphique")
+        div(
+          style = "max-width: 900px; margin: auto;",
+          plotOutput("wri_plot_byclass", height = "500px"),
+          br(),
+          downloadButton("download_wri_plot_byclass", "Téléchargement du graphique")
+        )
       ),
       # Panel 4
       
