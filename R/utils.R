@@ -213,3 +213,40 @@ format_pval <- function(p) {
   ifelse(is.na(p), NA_character_,
          ifelse(p < 0.001, "< 0.001", formatC(round(p, 3), format = "f", digits = 3)))
 }
+
+
+#' Génère un suffixe de nom de fichier à partir des métadonnées du lac
+#'
+#' @param typ_pech Code du type de pêche (ex: "PENT")
+#' @param annee Année de l'inventaire (ex: 2022)
+#' @param no_lac Numéro du lac (ex: "01565")
+#' @param nom_lac Nom du lac (ex: "Lac Archambault"). Optionnel.
+#'
+#' @return Une chaîne de type "PENT_2022_LacArchambault_no01565"
+#' @export
+generate_filename_suffix <- function(typ_pech, annee, no_lac, nom_lac = NULL) {
+  stopifnot(!missing(typ_pech), !missing(annee), !missing(no_lac))
+  
+  # Nettoyer le nom du lac s'il est fourni
+  lac_name_clean <- if (!is.null(nom_lac) && nzchar(nom_lac)) {
+    lac <- stringi::stri_trans_general(nom_lac, "Latin-ASCII")
+    lac <- gsub("[^A-Za-z0-9]+", "", lac)
+    paste0(lac, "_")
+  } else {
+    ""
+  }
+  
+  paste0(typ_pech, "_", annee, "_", lac_name_clean, "no", no_lac)
+}
+
+#' Construit un nom de fichier standardisé pour les exports
+#'
+#' @param objet Nom du contenu exporté (ex: "masselongueur", "cpue_tous")
+#' @param suffixe Résultat de `generate_filename_suffix()` ou `filename_suffix()`
+#' @param ext Extension (xlsx, png, csv, etc.)
+#'
+#' @return Un nom complet comme "masselongueur_PENT_2022_LacArchambault_no01565.xlsx"
+#' @export
+build_export_filename <- function(objet, suffixe, ext = "xlsx") {
+  paste0(objet, "_", suffixe, ".", ext)
+}

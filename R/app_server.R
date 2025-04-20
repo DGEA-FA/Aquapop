@@ -64,6 +64,22 @@ app_server <- function(input, output, session) {
     filter_by_pen_lac_annee(data = df_filtered2(), annee = input$annee)
   })
   
+  nom_lac_reactif <- reactive({
+    req(data_lac(), input$no_lac)
+    
+    data_filtrée <- dplyr::filter(data_lac(), no_lac == input$no_lac)
+    nom <- unique(data_filtrée$nom_lac)
+    
+    # Sécurité maximale
+    if (length(nom) == 1 && !is.na(nom) && nzchar(as.character(nom))) {
+      return(as.character(nom))
+    }
+    
+    return(NULL)
+  })
+  
+  
+  
   # # Affichage dans la console des filtres effectués (facilite debug)
   # observeEvent(data_lac(), {
   #   cat("\n--- Données filtrées data_lac() ---\n")
@@ -145,6 +161,18 @@ app_server <- function(input, output, session) {
   output$table_specimen_valid  <- renderDataTable(specimen_valid(), options = list(pageLength = 10, autoWidth = TRUE, searching = FALSE))
   output$table_capture <- renderDataTable(capture(), options = list(pageLength = 10, autoWidth = TRUE, searching = FALSE))
   
+  
+  filename_suffix <- reactive({
+    generate_filename_suffix(
+      typ_pech = input$typ_pech,
+      annee    = input$annee,
+      no_lac   = input$no_lac,
+      nom_lac  = nom_lac_reactif()
+    )
+  })
+  
+  
+  
   # CPUE - Abondance ----
   
   ## Tableau CPUE - Tous ----
@@ -159,7 +187,13 @@ app_server <- function(input, output, session) {
   })
   
   render_table_flextable("cpue_tous_table", reactive(cpue_modele_tous()$flextable))
-  render_download_table("cpue_tous_dl", cpue_modele_tous()$data)
+  
+  
+  render_download_table(
+    "cpue_tous_table_dl",
+    data = reactive(cpue_modele_tous()$data),
+    filename = reactive(build_export_filename("cpue_tous", filename_suffix()))
+  )
   
   ## Tableau CPUE - Femelles matures ----
   cpue_table_femelles <- reactive({
@@ -173,11 +207,14 @@ app_server <- function(input, output, session) {
   })
   
   render_table_flextable("cpue_femelles_table", reactive(cpue_modele_femelles()$flextable))
-  render_download_table("cpue_femelles_dl", cpue_modele_femelles()$data)
+  render_download_table(
+    "cpue_femelles_table_dl",
+    data = reactive(cpue_modele_femelles()$data),
+    filename = reactive(build_export_filename("cpue_femelles", filename_suffix()))
+  )
   
   ## Tableau d’abondance ----
   
-  # Meilleurs modèles CPUE
   best_model_tous <- reactive({
     req(cpue_modele_tous())
     cpue_select_best_modele(cpue_modele_tous()$data)
@@ -188,7 +225,6 @@ app_server <- function(input, output, session) {
     cpue_select_best_modele(cpue_modele_femelles()$data)
   })
   
-  # Résultat combiné : abondance
   abondance1 <- reactive({
     req(
       specimen(),
@@ -207,10 +243,15 @@ app_server <- function(input, output, session) {
     )
   })
   
-  render_table_flextable("abondance1_table", reactive(abondance1()$flextable))
-  render_download_table("abondance1_dl", abondance1()$data)
+  render_table_flextable("abondance_table", reactive(abondance1()$flextable))
+  render_download_table(
+    "abondance_table_dl",
+    data = reactive(abondance1()$data),
+    filename = reactive(build_export_filename("abondance", filename_suffix()))
+  )
   
   # BPUE - Biomasse ----
+  
   biomasse1 <- reactive({
     req(specimen(), station_hasard_valide())
     bpue_generate_biomasse(
@@ -219,12 +260,14 @@ app_server <- function(input, output, session) {
     )
   })
   
-  # Affichage flextable
-  render_table_flextable("biomasse1table", reactive(biomasse1()$flextable))
+  render_table_flextable("biomasse_table", reactive(biomasse1()$flextable))
   
-  # Téléchargement en .xlsx
-  render_download_table(id = "download_biomasse1", data_reactive = biomasse1()$data)
-
+  
+  render_download_table(
+    "biomasse_table_dl",
+    data = reactive(biomasse1()$data),
+    filename = reactive(build_export_filename("biomasse", filename_suffix()))
+  ) 
   
   # Taille, masse, âge ----
   
@@ -235,11 +278,15 @@ app_server <- function(input, output, session) {
   })
   
   # Affichage du tableau flextable
-  render_table_flextable("taillemasseage_ui", reactive(taille_masse_age_res()$flextable))
+  render_table_flextable("taillemasseage_table", reactive(taille_masse_age_res()$flextable))
   
   # Bouton de téléchargement des données brutes
-  render_download_table("dl_taillemasseage", taille_masse_age_res()$data)
-
+  render_download_table(
+    "taillemasseage_table_dl",
+    data = reactive(taille_masse_age_res()$data),
+    filename = reactive(build_export_filename("taillemasseage", filename_suffix()))
+  )
+  
   # Structure de taille ----
   
   # Résultat combiné : graphique + données
@@ -255,11 +302,13 @@ app_server <- function(input, output, session) {
   render_plot_ggplot("structuretailleplot", reactive(res_structure_taille()$plot))
   
   # Téléchargement du graphique (PNG)
-  render_download_plot("download_groupetailleplot", reactive(res_structure_taille()$plot))
+  render_download_plot("download_groupetailleplot", reactive(res_structure_taille()$plot), filename_suffix = filename_suffix())
   
-  # Téléchargement des données (data.frame)
-  render_download_table("download_data4plot_taille", res_structure_taille()$data)
-  
+  render_download_table(
+    "download_data4plot_taille",
+    data = reactive(res_structure_taille()$data),
+    filename = reactive(build_export_filename("structure_taille", filename_suffix()))
+  )
   # Structure d'âge ----
   
   # Résultat combiné : graphique + tableau
@@ -274,18 +323,21 @@ app_server <- function(input, output, session) {
   # Affichage du graphique
   
   render_plot_ggplot(
-    output_id = "structureageplot",
-    plot_reactive = reactive(res_structure_age()$plot),
+    "structureageplot",
+    reactive(res_structure_age()$plot), 
     message_si_vide = "Aucun graphique n’a pu être généré : données d’âge manquantes ou inexploitables."
   )
-  
+
   
   
   # Téléchargement PNG
-  render_download_plot("download_groupeageplot", reactive(res_structure_age()$plot))
-  
+  render_download_plot("download_groupeageplot", reactive(res_structure_age()$plot), filename_suffix = filename_suffix())
   # Téléchargement des données
-  render_download_table("download_data4plot_age", res_structure_age()$data)
+  render_download_table(
+    "download_data4plot_age",
+    data = reactive(res_structure_age()$data),
+    filename = reactive(build_export_filename("structure_age", filename_suffix()))
+  )
   
   # PSD ----
   
@@ -309,18 +361,21 @@ app_server <- function(input, output, session) {
   })
   
   # Rendu du tableau flextable dans l'interface
-  render_table_flextable("psd_byclass_ui", reactive(psd_byclass_res()$flextable))
+  render_table_flextable("psd_byclass_table", reactive(psd_byclass_res()$flextable))
   
   # Bouton de téléchargement du tableau brut
-  render_download_table("dl_psd_byclass", reactive(psd_byclass_res()$data))
-  
+  render_download_table(
+    "psd_byclass_table_dl",
+    data = reactive(psd_byclass_res()$data),
+    filename = reactive(build_export_filename("psd_byclass", filename_suffix()))
+  )  
   ## Répartition par classe de taille – Graphique ----
   
   # Affichage du graphique dans l'interface
   render_plot_ggplot("psd_byclass_plot", reactive(psd_byclass_res()$plot))
   
   # Bouton de téléchargement du graphique (PNG)
-  render_download_plot("download_psd_byclass_plot", reactive(psd_byclass_res()$plot))
+  render_download_plot("download_psd_byclass_plot", reactive(psd_byclass_res()$plot), filename_suffix = filename_suffix())
   
   # Relation masse-longueur ----
   
@@ -334,19 +389,22 @@ app_server <- function(input, output, session) {
   
   render_plot_ggplot("plot_masselongueur", reactive(masse_longueur_fit_res()$plot))
   
-  render_download_plot(
-    id = "download_masselongueur_plot",
-    plot_reactive = reactive(masse_longueur_fit_res()$plot)
-  )
+  
+  render_download_plot("download_masselongueur_plot", reactive(masse_longueur_fit_res()$plot), filename_suffix = filename_suffix())
+  
   
   ## Tableau des coefficients ----
   
+
   render_table_flextable("table_masselongueur_ui", reactive(masse_longueur_fit_res()$flextable))
   
   render_download_table(
-    id = "download_masselongueur_table",
-    data_reactive = reactive(masse_longueur_fit_res()$data)
-  )
+    "download_masselongueur_table",
+    data = reactive(masse_longueur_fit_res()$data),
+    filename = reactive(build_export_filename("masselongueur", filename_suffix()))
+  ) 
+  
+  
   # Indice de condition ----
   
   # Reactive : retourne la liste {data, flextable, plot_tous, plot_byclass}
@@ -357,20 +415,20 @@ app_server <- function(input, output, session) {
   
   ## Tableau Wr ----
   
-  render_table_flextable("wri_table_ui", reactive(wri_res()$flextable))
-  render_download_table("download_wri_table", reactive(wri_res()$data))
-  
+  render_table_flextable("wri_table", reactive(wri_res()$flextable))
+  render_download_table(
+    "wri_table_dl",
+    data = reactive(wri_res()$data),
+    filename = reactive(build_export_filename("wri", filename_suffix()))
+  )  
   ## Graphique Wr par sexe ----
-  render_plot_ggplot("wri_plot_tous", reactive({ wri_res()$plot_tous }))
+  render_plot_ggplot("wri_plot_tous", reactive(wri_res()$plot_tous))
   
-  # render_plot_ggplot("wri_plot_tous", reactive(wri_res()$plot_tous))
-  render_download_plot("download_wri_plot_tous", reactive(wri_res()$plot_tous))
+  render_download_plot("download_wri_plot_tous", reactive(wri_res()$plot_tous), filename_suffix = filename_suffix())
   
   ## Graphique Wr par classe de taille ----
-  render_plot_ggplot("wri_plot_byclass", reactive({ wri_res()$plot_byclass }))
-  
-  # render_plot_ggplot("wri_plot_byclass", reactive(wri_res()$plot_byclass))
-  render_download_plot("download_wri_plot_byclass", reactive(wri_res()$plot_byclass))
+  render_plot_ggplot("wri_plot_byclass", reactive(wri_res()$plot_byclass))
+  render_download_plot("download_wri_plot_byclass", reactive(wri_res()$plot_byclass), filename_suffix = filename_suffix())
   
 
   # Croissance ----
@@ -420,9 +478,13 @@ app_server <- function(input, output, session) {
   
   
   # Bouton de téléchargement de la table des modèles
-  render_download_table(id = "download_table_modeles_croissance", data_reactive = table_modeles_croissance())
+  render_download_table(
+    "download_table_modeles_croissance",
+    data = reactive(table_modeles_croissance()),
+    filename = reactive(build_export_filename("croissance_modeles", filename_suffix()))
+  )
   
-  ## Graphique du modèle choisi ----
+   ## Graphique du modèle choisi ----
   
   # Réactif : graphique du modèle sélectionné
   plot_selectedmodelcroissance <- reactive({
@@ -435,18 +497,14 @@ app_server <- function(input, output, session) {
   })
   
   # Affichage du graphique dans Shiny
-  render_plot_ggplot(
-    output_id = "selectedmodelcroissanceplot",
-    plot_reactive = plot_selectedmodelcroissance
-  )
+  render_plot_ggplot("selectedmodelcroissanceplot", reactive(plot_selectedmodelcroissance()))
+  
   
   # Bouton de téléchargement du graphique
   render_download_plot(
     id = "download_selectedmodelcroissanceplot",
-    plot_reactive = plot_selectedmodelcroissance,
-    filename = "courbe_croissance",  # ou un reactive si tu veux le personnaliser
-    width = 7, height = 5, dpi = 300,
-    label = "Télécharger le graphique"
+    plot_selectedmodelcroissance,
+    filename = "courbe_croissance"
   )
   
   # Mortalité ----
@@ -495,16 +553,13 @@ app_server <- function(input, output, session) {
     res_test_surdisp()$message
   })
   
-  render_plot_ggplot(
-    output_id = "plot_dispersion_poisson",
-    plot_reactive = reactive(res_test_surdisp()$plot)
-  )
+  render_plot_ggplot("plot_dispersion_poisson", reactive(res_test_surdisp()$plot))
+  
   
   render_download_plot(
-    id = "download_plot_dispersion_poisson",
-    plot_reactive = reactive(res_test_surdisp()$plot),
-    filename = "dispersion_poisson",
-    label = "Télécharger le graphique"
+    "download_plot_dispersion_poisson",
+    reactive(res_test_surdisp()$plot),
+    filename = "dispersion_poisson"
   )
   
   # Comparaison des modèles
@@ -515,8 +570,11 @@ app_server <- function(input, output, session) {
   
   render_table_flextable("comparaison_mortalite_ui", reactive(mortalite_compare_modele_res()$flextable))
   
-  render_download_table("download_comparaison_mortalite_table", reactive(mortalite_compare_modele_res()$data))
-  
+  render_download_table(
+    "download_comparaison_mortalite_table",
+    data = reactive(mortalite_compare_modele_res()$data),
+    filename = reactive(build_export_filename("mortalite_comparaison", filename_suffix()))
+  )
   # Meilleur modèle (nom)
   meilleur_modele_nom <- reactive({
     req(mortalite_compare_modele_res())
@@ -557,16 +615,13 @@ app_server <- function(input, output, session) {
     )
   })
   
-  render_plot_ggplot(
-    output_id = "plot_mortalite",
-    plot_reactive = plot_mortalite
-  )
+  render_plot_ggplot("plot_mortalite", reactive(plot_mortalite()))
+  
   
   render_download_plot(
-    id = "download_plot_mortalite",
-    plot_reactive = plot_mortalite,
-    filename = "courbe_mortalite",
-    width = 7, height = 5, dpi = 300
+    "download_plot_mortalite",
+    plot_mortalite,
+    filename = "courbe_mortalite"
   )
   
   ## Chapman-Robson ----
@@ -582,8 +637,11 @@ app_server <- function(input, output, session) {
   
   render_table_flextable("table_chaprob", reactive(res_chaprob()$flextable))
   
-  render_download_table("download_chaprob_df", reactive(res_chaprob()$data))
-  
+  render_download_table(
+    "download_chaprob_df",
+    data = reactive(res_chaprob()$data),
+    filename = reactive(build_export_filename("chapman_robson", filename_suffix()))
+  )
   
   # Maturité sexuelle ----
   ## Longueur à maturité ----
@@ -665,13 +723,17 @@ app_server <- function(input, output, session) {
   
   
   ### Tableau du modèle choisi ----
-  render_table_flextable("table_ogive_maturite_ui", reactive(maturite_generate_modele_res()$table_resultats_flextable))
-  render_download_table("download_ogive_maturite_table", reactive(maturite_generate_modele_res()$table_resultats))
- 
+  render_table_flextable("ogive_maturite_table", reactive(maturite_generate_modele_res()$table_resultats_flextable))
+  render_download_table(
+    "ogive_maturite_table_dl",
+    data = reactive(maturite_generate_modele_res()$table_resultats),
+    filename = reactive(build_export_filename("ogive_maturite", filename_suffix()))
+  )
+  
   ### Graphique du modèle choisi ----
   render_plot_ggplot("plot_ogive_maturite", reactive(maturite_generate_modele_res()$graphique))
-  render_download_plot("download_ogive_maturite_plot", reactive(maturite_generate_modele_res()$graphique))
- 
+  render_download_plot("download_ogive_maturite_plot", reactive(maturite_generate_modele_res()$graphique), filename_suffix = filename_suffix())
+  
    
   ## Âge à maturité ----
   ### Tableau de sélection de modèles ----

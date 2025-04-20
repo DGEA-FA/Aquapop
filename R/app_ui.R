@@ -121,15 +121,15 @@ app_ui <- function() {
                    ## Tableau CPUE - Tous ----
                    
                    withSpinner(uiOutput("cpue_tous_table"), type = myspinner),
-                   uiOutput("cpue_tous_dl_ui"),
+                   download_button_ui("cpue_tous_table_dl"),
                    
                    ## Tableau CPUE - Femelles matures ----
                    withSpinner(uiOutput("cpue_femelles_table"), type = myspinner),
-                   uiOutput("cpue_femelles_dl_ui"),
+                   download_button_ui("cpue_femelles_table_dl"),
                    
                    ## Tableau d’abondance ----
-                   withSpinner(uiOutput("abondance1_table"), type = myspinner),
-                   uiOutput("abondance1_dl_ui")
+                   withSpinner(uiOutput("abondance_table"), type = myspinner),
+                   download_button_ui("abondance_table_dl"),
                  ),
                  
                  # BPUE - Biomasse ----
@@ -137,8 +137,8 @@ app_ui <- function() {
                  tabPanel(
                    title = "BPUE",
                    p("Le tableau ci-dessous présente la répartition de la biomasse capturée selon la table *Spécimens*."),
-                   withSpinner(uiOutput("biomasse1table"), type = myspinner),
-                   uiOutput("download_biomasse1_ui")
+                   withSpinner(uiOutput("biomasse_table"), type = myspinner),
+                   download_button_ui("biomasse_table_dl")
                  )
                  
                )),
@@ -157,8 +157,8 @@ app_ui <- function() {
               ainsi que la moyenne (Moy.), l’écart-type (ET), les valeurs minimale (Min) et maximale (Max) de la longueur
               totale maximale (LTMax), de la masse et de l’âge des poissons pour différents groupes."),
             h3("Aperçu des données morphologiques"),
-            withSpinner(uiOutput("taillemasseage_ui"), type = myspinner),
-            uiOutput("dl_taillemasseage_ui")
+            withSpinner(uiOutput("taillemasseage_table"), type = myspinner),
+            download_button_ui("taillemasseage_table_dl")
           ),
           
           # Structure de taille ----
@@ -194,7 +194,7 @@ app_ui <- function() {
               ),
               downloadButton(outputId = "download_groupetailleplot", label = "Téléchargement du graphique"),
 
-              downloadButton(outputId = "download_data4plot_taille",
+              download_button_ui("download_data4plot_taille",
                              label = "Téléchargement des données du graphique"
               )
             )
@@ -230,8 +230,7 @@ app_ui <- function() {
               downloadButton(outputId = "download_groupeageplot",
                              label = "Téléchargement du graphique"
               ),
-              downloadButton(
-                outputId = "download_data4plot_age",
+              download_button_ui("download_data4plot_age",
                 label = "Téléchargement des données du graphique"
               )
             )
@@ -252,8 +251,8 @@ app_ui <- function() {
             
             ## Répartition par classe de taille – Tableau ----
             
-            uiOutput("psd_byclass_ui"),
-            uiOutput("dl_psd_byclass_ui"),
+            uiOutput("psd_byclass_table"),
+            download_button_ui("psd_byclass_table_dl"),
             
             ## Répartition par classe de taille – Graphique ----
             
@@ -282,7 +281,7 @@ app_ui <- function() {
             ## Tableau des coefficients ----
             h3("Tableau des coefficients"),
             uiOutput("table_masselongueur_ui"),
-            uiOutput("download_masselongueur_table_ui")
+            download_button_ui("download_masselongueur_table")
           )
         )
       ),
@@ -296,8 +295,8 @@ app_ui <- function() {
         p("Le tableau ci-dessous présente l’indice de masse relative (Wr) et son intervalle de confiance 
      à 95 % pour l’ensemble de la population, par sexe et par classe de PSD (classe selon 
      Gabelhouse 1984)."),
-        uiOutput("wri_table_ui"),
-        uiOutput("download_wri_table_ui"),
+        uiOutput("wri_table"),
+        download_button_ui("wri_table_dl"),
         
         br(),
         
@@ -346,8 +345,7 @@ app_ui <- function() {
         
         h3("Table de sélection du modèle de croissance"),
         withSpinner(reactableOutput("table_modeles_croissance_table"), type = myspinner),
-        uiOutput("download_table_modeles_croissance_ui"),
-        # br(), br(),
+        download_button_ui("download_table_modeles_croissance"),
         
         ## Graphique du modèle choisi ----
         
@@ -382,7 +380,7 @@ app_ui <- function() {
         modèles testés. Le modèle le mieux adapté aux données est celui 
         avec le plus faible AICc."),
         uiOutput("comparaison_mortalite_ui"),
-        uiOutput("download_comparaison_mortalite_table_ui"),
+        download_button_ui("download_comparaison_mortalite_table"),
         textOutput("phrase_mortalite"),
         
         
@@ -401,7 +399,7 @@ app_ui <- function() {
           n’est pas recommandée."),
         h3("Chapman-Robson"),
         withSpinner(uiOutput("table_chaprob"), type = myspinner),
-        uiOutput("download_chaprob_df_ui")
+        download_button_ui("download_chaprob_df")
       ),
       # Panel 6
       
@@ -425,7 +423,7 @@ app_ui <- function() {
                    # Tableau des modèles évalués
                    h3("Tableau interactif des modèles évalués"),
                    withSpinner(reactableOutput("table_modeles_maturite_table"), type = myspinner),
-                   uiOutput("download_ogive_maturite_table_ui"),  
+                   download_button_ui("ogive_maturite_table_dl"),
                    
                    br(),
                    h3("Résultats du modèle sélectionné"),
@@ -434,7 +432,7 @@ app_ui <- function() {
                    
                    
                    # Tableau des résultats
-                   uiOutput("table_ogive_maturite_ui"),
+                   uiOutput("ogive_maturite_table"),
                    uiOutput("download_ogive_maturite_table_ui"),
                    
                    ### Graphique du modèle choisi ----
