@@ -17,6 +17,10 @@
 mortalite_chaprob <- function(specimen, pp, age_max) {
   df <- subset(specimen, !is.na(age))
   
+  if (nrow(df) == 0) {
+    stop("Aucune donnée d’âge valide pour Chapman-Robson.")
+  }
+  
   res <- fishmethods::agesurv(
     type = 1,
     age = df$age,
