@@ -372,6 +372,16 @@ app_ui <- function() {
         withSpinner(plotOutput("plot_dispersion_poisson", width = "100%", height = "400px"), type = myspinner),
         downloadButton("download_plot_dispersion_poisson", label = "Télécharger le graphique"),
         
+        h4("Paramètre avancé : recalcul avec un autre Peak Plus"),
+        p("Par défaut, la valeur du Peak Plus est déterminée automatiquement selon la structure d’âge observée. 
+Vous pouvez toutefois forcer un recalcul avec une autre valeur."),
+        uiOutput("ui_custom_peak_plus"),
+        actionButton("recalculer_mortalite", "Recalculer avec ce Peak Plus"),
+        em(textOutput("texte_pp_utilise")),
+        
+        br(), br(),
+        
+        
         ## Comparaison des modèles ----
         p("Le tableau suivant présente les résultats pour l’ensemble des modèles testés. Le modèle le mieux adapté aux données est celui avec le plus faible AICc."),
         

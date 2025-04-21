@@ -521,12 +521,63 @@ app_server <- function(input, output, session) {
     mortalite_get_peak_plus(data = specimen())
   })
   
+  output$ui_custom_peak_plus <- renderUI({
+    req(pp(), mortalite_get_age_max_res())
+    
+    age_min <- pp()
+    age_max <- mortalite_get_age_max_res()
+    validate(need(age_max > age_min, "Plage d'âge invalide pour le recalcul"))
+    
+    selectInput(
+      inputId = "custom_peak_plus",
+      label = "Recalculer avec un autre Peak Plus (facultatif)",
+      choices = age_min:age_max,
+      selected = pp()
+    )
+  })
+  
+  pp_choisi_par_utilisateur <- reactive({
+    input$custom_peak_plus
+  })
+  
+  
+  
+  pp_utilise <- eventReactive(input$recalculer_mortalite, {
+    custom_pp <- input$custom_peak_plus
+    age_max <- mortalite_get_age_max_res()
+    
+    validate(
+      need(!is.null(custom_pp), "Aucun âge sélectionné."),
+      need(as.numeric(custom_pp) < age_max, "Le Peak Plus doit être inférieur à l’âge maximal.")
+    )
+    
+    as.numeric(custom_pp)
+  }, ignoreNULL = FALSE, ignoreInit = TRUE)
+  
+  
+  peak_plus_final <- reactive({
+    if (input$recalculer_mortalite == 0) pp() else pp_utilise()
+  })
+  
+  
+  output$texte_pp_utilise <- renderText({
+    req(pp(), peak_plus_final())
+    
+    if (input$recalculer_mortalite == 0) {
+      glue::glue("Analyse effectuée avec la valeur par défaut du Peak Plus : {pp()}") |> as.character()
+    } else {
+      glue::glue("Analyse effectuée avec la valeur personnalisée du Peak Plus : {peak_plus_final()}") |> as.character()
+    }
+  })
+  
+  
+  
   ## Données corrigées pour la mortalité
   df_age_corrigee <- reactive({
-    req(specimen(), pp(), mortalite_get_age_max_res())
+    req(specimen(), peak_plus_final(), mortalite_get_age_max_res())
     mortalite_prepare_corr(
       data = specimen(),
-      age_peak_plus = pp(),
+      age_peak_plus = peak_plus_final(),
       age_max       = mortalite_get_age_max_res()
     )
   })
@@ -653,10 +704,10 @@ app_server <- function(input, output, session) {
   
   ## Chapman-Robson ----
   res_chaprob <- reactive({
-    req(specimen(), pp(), mortalite_get_age_max_res())
+    req(specimen(), peak_plus_final(), mortalite_get_age_max_res())
     mortalite_chaprob(
       specimen = specimen(),
-      pp       = pp(),
+      pp       = peak_plus_final(),
       age_max  = mortalite_get_age_max_res()
     )
   })
