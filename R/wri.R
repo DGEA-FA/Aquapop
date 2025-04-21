@@ -182,3 +182,17 @@ resumer_wr_par_groupe <- function(mod, var) {
   dplyr::left_join(pred, counts, by = "Groupe")
 }
 
+#' Récupérer les constantes Wr pour une espèce donnée
+#'
+#' Cette fonction retourne les coefficients de référence pour le calcul de l’indice
+#' de condition (Wr) pour une espèce supportée, à partir de la table `wr_constants`.
+#'
+#' @param sp Code d’espèce (ex: "SANA", "SAFO", "SAVI")
+#'
+#' @return Un `data.frame` avec les colonnes `min_TL`, `int`, `slope`, etc.
+#' @keywords internal
+get_wr_constants <- function(sp) {
+  wr_constants |>
+    dplyr::filter(sp == sp) |>
+    dplyr::slice(1)
+}

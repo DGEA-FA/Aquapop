@@ -74,12 +74,6 @@ wr_constants <- tibble::tibble(
   )
 )
 
-get_wr_constants <- function(sp) {
-  wr_constants |>
-    dplyr::filter(sp == sp) |>
-    dplyr::slice(1)
-}
-
 
 # Fonctions internes pour les modèles de croissance
 vb_function <- function(age, linf, k, t0) linf * (1 - exp(-k * (age - t0)))
