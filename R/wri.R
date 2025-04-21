@@ -115,25 +115,7 @@ wri <- function(data) {
                       linewidth = 0.5, color = "black", linetype = 2)
   
   # Construction des tableaux synthèse ----
-  resumer_wr_par_groupe <- function(mod, var) {
-    valeurs <- unique(as.character(data[[var]]))
-    nd <- tibble::tibble(!!rlang::sym(var) := valeurs)
-    
-    pred <- predict(mod, newdata = nd, interval = "confidence") |>
-      as.data.frame() |>
-      dplyr::mutate(Groupe = valeurs) |>
-      dplyr::mutate(
-        IC95 = paste0("[", round(lwr), "-", round(upr), "]"),
-        Wr = round(fit)
-      ) |>
-      dplyr::select(Groupe, Wr, IC95)
-    
-    counts <- data |>
-      dplyr::count(!!rlang::sym(var)) |>
-      dplyr::rename(Groupe = !!rlang::sym(var))
-    
-    dplyr::left_join(pred, counts, by = "Groupe")
-  }
+ 
   
   tab_all <- predict(lm(Wri ~ 1, data = data), newdata = data.frame(Groupe = "Tous"), interval = "confidence") |>
     as.data.frame() |>
@@ -169,3 +151,34 @@ wri <- function(data) {
     plot_byclass = fig_byclass
   ))
 }
+
+#' Résumer les résultats d’un modèle Wr par groupe (sexe ou classe)
+#'
+#' Cette fonction applique un modèle linéaire et génère un tableau de prédictions
+#' avec intervalles de confiance et effectifs pour chaque modalité du groupe spécifié.
+#'
+#' @param mod Un objet `lm` ajusté sur `Wri` en fonction du groupe (`sexe` ou `Classe`)
+#' @param var Nom du groupe à utiliser (`"sexe"` ou `"Classe"`)
+#'
+#' @return Un data.frame contenant les colonnes `Groupe`, `Wr`, `IC95`, `n`
+#' @keywords internal
+resumer_wr_par_groupe <- function(mod, var) {
+  valeurs <- unique(as.character(mod$model[[var]]))
+  nd <- tibble::tibble(!!rlang::sym(var) := valeurs)
+  
+  pred <- predict(mod, newdata = nd, interval = "confidence") |>
+    as.data.frame() |>
+    dplyr::mutate(Groupe = valeurs) |>
+    dplyr::mutate(
+      IC95 = paste0("[", round(lwr), "-", round(upr), "]"),
+      Wr = round(fit)
+    ) |>
+    dplyr::select(Groupe, Wr, IC95)
+  
+  counts <- mod$model |>
+    dplyr::count(!!rlang::sym(var)) |>
+    dplyr::rename(Groupe = !!rlang::sym(var))
+  
+  dplyr::left_join(pred, counts, by = "Groupe")
+}
+
