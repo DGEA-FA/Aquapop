@@ -4,7 +4,7 @@
 # Charger les dépendances et les fonctions du package aquapop ----
 
 # Charger les packages déclarés 
-source("R/load_packages.R")
+# source("R/load_packages.R")
 
 # Charger toutes les fonctions du package en développement
 devtools::load_all()
@@ -154,6 +154,9 @@ mortalite_plot_modele(specimen, modele, mortalite_compare_modele_res$data)
 mortalite_chaprob_res <- mortalite_chaprob(specimen, pp, age_max)
 mortalite_chaprob_res$data        # Résultat brut (data.frame)
 mortalite_chaprob_res$flextable   # Tableau formaté (flextable)
+
+
+mortalite_phrase_resume(mortalite_compare_modele_res$data, meilleur_modele_nom)
 
 
 # Maturité sexuelle ----

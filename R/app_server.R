@@ -614,14 +614,11 @@ app_server <- function(input, output, session) {
   })
   
   output$phrase_mortalite <- renderText({
-    table <- table_modeles_mortalite()
-    best <- best_model_mortalite()
-    
-    ligne <- dplyr::filter(table, Méthode == best)
-    modele_nom <- toupper(best)
-    mortalite_A <- ligne$A
-    
-    glue::glue("Le modèle {modele_nom} décrit le mieux la mortalité de la population. La mortalité annuelle s’élève à {mortalite_A} %.") |> as.character()
+    req(table_modeles_mortalite(), best_model_mortalite())
+    mortalite_phrase_resume(
+      data_comparaison = table_modeles_mortalite(),
+      modele_nom = best_model_mortalite()
+    )
   })
   
   
