@@ -360,11 +360,7 @@ app_ui <- function() {
       tabPanel(
         title = "Mortalité",
         
-        ## Tableau de sélection de modèles ----
-        
-        # p("Voici un rappel du graphique de la structure d'âge, avec le Peak Plus mis en évidence. Le Peak Plus représente l'âge à partir duquel les indicateurs de mortalité devraient être estimés.'Comme on souhaite avoir la meilleure représentation possible des
-        # classes d’âges pour estimer Z, il est préférable d’utiliser la classe d’âge suivant le Peak observé' (Mainguy et Moral, 2021), 
-        # soit le Peak Plus."),
+        ## Test de sur-dispersion ----
         h3("Test de sur-dispersion du modèle Poisson"),
         
         p("Ce test évalue si les données de mortalité par âge violent l’hypothèse d’équidispersion du modèle de Poisson. 
@@ -376,31 +372,29 @@ app_ui <- function() {
         withSpinner(plotOutput("plot_dispersion_poisson", width = "100%", height = "400px"), type = myspinner),
         downloadButton("download_plot_dispersion_poisson", label = "Télécharger le graphique"),
         
-        p("Le tableau suivant présente les résultats pour l’ensemble des
-        modèles testés. Le modèle le mieux adapté aux données est celui 
-        avec le plus faible AICc."),
-        uiOutput("comparaison_mortalite_ui"),
+        ## Comparaison des modèles ----
+        p("Le tableau suivant présente les résultats pour l’ensemble des modèles testés. Le modèle le mieux adapté aux données est celui avec le plus faible AICc."),
+        
+        h3("Table de sélection du modèle de mortalité"),
+        withSpinner(reactableOutput("comparaison_mortalite_table"), type = myspinner),
         download_button_ui("download_comparaison_mortalite_table"),
         textOutput("phrase_mortalite"),
-        
+        br(),
         
         ## Graphique du modèle choisi ----
-        
         h3("Distribution d'âge et modèle de mortalité retenu"),
         withSpinner(plotOutput("plot_mortalite"), type = myspinner),
         downloadButton("download_plot_mortalite", "Télécharger le graphique"),
         br(), br(),
         
-        
         ## Chapman-Robson ----
+        p("La mortalité estimée selon le modèle de Chapman-Robson est présentée à titre comparatif seulement, car son utilisation n’est pas recommandée."),
         
-        p("La mortalité estimée selon le modèle de Chapman-Robson est 
-          présentée à titre comparatif seulement, car son utilisation
-          n’est pas recommandée."),
         h3("Chapman-Robson"),
         withSpinner(uiOutput("table_chaprob"), type = myspinner),
         download_button_ui("download_chaprob_df")
       ),
+      
       # Panel 6
       
       # Maturité sexuelle ----

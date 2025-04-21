@@ -509,31 +509,29 @@ app_server <- function(input, output, session) {
   
   # Mortalité ----
   
-  ## Tableau de sélection de modèles ----
-  
-  # Âge maximum
+  ## Âge maximum
   mortalite_get_age_max_res <- reactive({
     req(specimen())
     mortalite_get_age_max(data = specimen())
   })
   
-  # Peak Plus (pp)
+  ## Peak Plus
   pp <- reactive({
     req(specimen())
     mortalite_get_peak_plus(data = specimen())
   })
   
-  # Données corrigées pour la mortalité
+  ## Données corrigées pour la mortalité
   df_age_corrigee <- reactive({
     req(specimen(), pp(), mortalite_get_age_max_res())
     mortalite_prepare_corr(
       data = specimen(),
       age_peak_plus = pp(),
-      age_max = mortalite_get_age_max_res()
+      age_max       = mortalite_get_age_max_res()
     )
   })
   
-  # Données étendues
+  ## Données étendues
   df_age_etendue <- reactive({
     req(df_age_corrigee(), mortalite_get_age_max_res())
     mortalite_prepare_extended(
@@ -542,7 +540,7 @@ app_server <- function(input, output, session) {
     )
   })
   
-  # Test de surdispersion (Poisson)
+  ## Test de surdispersion (Poisson)
   res_test_surdisp <- reactive({
     req(df_age_corrigee())
     mortalite_test_surdispersion_poisson(df_age_corrigee())
@@ -555,77 +553,108 @@ app_server <- function(input, output, session) {
   
   render_plot_ggplot("plot_dispersion_poisson", reactive(res_test_surdisp()$plot))
   
-  
   render_download_plot(
     "download_plot_dispersion_poisson",
     reactive(res_test_surdisp()$plot),
     filename = "dispersion_poisson"
   )
   
-  # Comparaison des modèles
+  ## Tableau de sélection de modèles ----
   mortalite_compare_modele_res <- reactive({
     req(df_age_etendue())
     mortalite_compare_modele(data = df_age_etendue())
   })
   
-  render_table_flextable("comparaison_mortalite_ui", reactive(mortalite_compare_modele_res()$flextable))
-  
-  render_download_table(
-    "download_comparaison_mortalite_table",
-    data = reactive(mortalite_compare_modele_res()$data),
-    filename = reactive(build_export_filename("mortalite_comparaison", filename_suffix()))
-  )
-  # Meilleur modèle (nom)
-  meilleur_modele_nom <- reactive({
+  # Tableau des modèles (data.frame)
+  table_modeles_mortalite <- reactive({
     req(mortalite_compare_modele_res())
-    mortalite_select_best_modele(mortalite_compare_modele_res()$data)
+    mortalite_compare_modele_res()$data
+  })
+  
+  # Meilleur modèle automatique (pour phrase descriptive)
+  best_model_mortalite <- reactive({
+    table <- table_modeles_mortalite()
+    req(nrow(table) > 0)
+    mortalite_select_best_modele(table)
+  })
+  
+  # Modèle sélectionné dans la table (utilisé pour graphique)
+  selected_model_mortalite <- reactive({
+    selected <- getReactableState("comparaison_mortalite_table", "selected")
+    req(!is.null(selected), table_modeles_mortalite())
+    table_modeles_mortalite()[selected, "Méthode", drop = TRUE]
   })
   
   
-   meilleur_modele_fit <- reactive({
-    req(df_age_etendue(), meilleur_modele_nom())
-     mortalite_fit_best_modele(df_age_etendue(), methode = meilleur_modele_nom())
+  # Index du meilleur modèle
+  default_model_index_mortalite <- reactive({
+    table <- table_modeles_mortalite()
+    req(nrow(table) > 0)
+    best_model <- mortalite_select_best_modele(table)
+    idx <- match(best_model, table$Méthode)
+    validate(need(!is.na(idx), "Le meilleur modèle n'a pas été trouvé dans les résultats"))
+    idx
   })
   
-  # Phrase descriptive
+  # Reactable des modèles
+  output$comparaison_mortalite_table <- renderReactable({
+    table <- table_modeles_mortalite()
+    idx <- default_model_index_mortalite()
+    
+    reactable::reactable(
+      table,
+      selection = "single",
+      onClick = "select",
+      defaultSelected = idx,
+      defaultColDef = reactable::colDef(
+        align = "center",
+        headerStyle = list(textAlign = "center")
+      )
+    )
+  })
+  
   output$phrase_mortalite <- renderText({
-    req(mortalite_compare_modele_res(), meilleur_modele_nom())
+    table <- table_modeles_mortalite()
+    best <- best_model_mortalite()
     
-    ligne <- mortalite_compare_modele_res()$data |>
-      dplyr::filter(Méthode == meilleur_modele_nom())
-    
-    modele_nom <- toupper(meilleur_modele_nom())
+    ligne <- dplyr::filter(table, Méthode == best)
+    modele_nom <- toupper(best)
     mortalite_A <- ligne$A
     
     glue::glue("Le modèle {modele_nom} décrit le mieux la mortalité de la population. La mortalité annuelle s’élève à {mortalite_A} %.") |> as.character()
   })
   
   
-  ## Graphique du modèle choisi ----
-  
-  
-  # Courbe du modèle retenu
-  plot_mortalite <- reactive({
-    req(specimen(), meilleur_modele_fit(), mortalite_compare_modele_res())
-  
-    mortalite_plot_modele(
-      specimen = specimen(),
-      modele = meilleur_modele_fit(),
-      info_modele = mortalite_compare_modele_res()$data
+  # Fit du modèle sélectionné
+  modele_fit_mortalite <- reactive({
+    req(df_age_etendue(), selected_model_mortalite())
+    mortalite_fit_best_modele(
+      data = df_age_etendue(),
+      methode = selected_model_mortalite()
     )
   })
   
-  render_plot_ggplot("plot_mortalite", reactive(plot_mortalite()))
   
+  ## Graphique du modèle choisi ----
+  plot_selectedmodel_mortalite <- reactive({
+    req(specimen(), modele_fit_mortalite(), table_modeles_mortalite())
+    
+    mortalite_plot_modele(
+      specimen    = specimen(),
+      modele      = modele_fit_mortalite(),
+      info_modele = table_modeles_mortalite()
+    )
+  })
+  
+  render_plot_ggplot("plot_mortalite", reactive(plot_selectedmodel_mortalite()))
   
   render_download_plot(
     "download_plot_mortalite",
-    plot_mortalite,
+    plot_selectedmodel_mortalite,
     filename = "courbe_mortalite"
   )
   
   ## Chapman-Robson ----
-  
   res_chaprob <- reactive({
     req(specimen(), pp(), mortalite_get_age_max_res())
     mortalite_chaprob(
@@ -642,6 +671,14 @@ app_server <- function(input, output, session) {
     data = reactive(res_chaprob()$data),
     filename = reactive(build_export_filename("chapman_robson", filename_suffix()))
   )
+  
+  # Téléchargement tableau de modèles
+  render_download_table(
+    "download_comparaison_mortalite_table",
+    data = reactive(table_modeles_mortalite()),
+    filename = reactive(build_export_filename("mortalite_comparaison", filename_suffix()))
+  )
+  
   
   # Maturité sexuelle ----
   ## Longueur à maturité ----
