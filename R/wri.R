@@ -12,17 +12,21 @@
 #' @return Une liste avec les éléments `data`, `flextable`, `plot_tous`, `plot_byclass`
 #' @export
 wri <- function(data) {
-  
-  # Chargement et validation des données ----
+  # Validation des colonnes ----
+  colonnes_essentielles <- c("sp", "ltm", "masse")
+  colonnes_absentes <- setdiff(colonnes_essentielles, names(data))
+  if (length(colonnes_absentes) > 0) {
+    stop(glue::glue("Colonnes manquantes : {paste(colonnes_absentes, collapse = ', ')}"))
+  }
   
   espece <- unique(data$sp)
   if (length(espece) != 1) stop("Les données doivent contenir une seule espèce.")
   
   info <- get_info_pen(espece)
   ref <- get_wr_constants(espece)
-  
   if (is.null(info) || is.null(ref)) stop("Espèce non supportée.")
   
+  # Nettoyage et calcul ----
   data <- data |>
     dplyr::filter(!is.na(ltm), !is.na(masse), ltm >= ref$min_TL) |>
     dplyr::mutate(
@@ -31,7 +35,7 @@ wri <- function(data) {
     )
   
   if (nrow(data) == 0) {
-    vide <- tibble::tibble()
+    vide <- tibble::tibble(Groupe = character(), Wr = numeric(), IC95 = character(), n = integer())
     return(list(
       data = vide,
       flextable = flextable::flextable(vide),
@@ -42,16 +46,11 @@ wri <- function(data) {
   
   # Graphique Wr par sexe ----
   sexe_niveaux <- c("F", "M", "IND")
-  data <- data |>
-    dplyr::mutate(sexe = factor(sexe, levels = sexe_niveaux))
+  data <- data |> dplyr::mutate(sexe = factor(sexe, levels = sexe_niveaux))
   
-  moyennes <- tibble::tibble(
-    sexe = factor(sexe_niveaux, levels = sexe_niveaux)
-  ) |>
+  moyennes <- tibble::tibble(sexe = factor(sexe_niveaux, levels = sexe_niveaux)) |>
     dplyr::left_join(
-      data |>
-        dplyr::group_by(sexe) |>
-        dplyr::summarise(moy = mean(Wri, na.rm = TRUE), .groups = "drop"),
+      data |> dplyr::group_by(sexe) |> dplyr::summarise(moy = mean(Wri, na.rm = TRUE), .groups = "drop"),
       by = "sexe"
     )
   
@@ -59,23 +58,14 @@ wri <- function(data) {
   
   fig_tous <- ggplot2::ggplot(data, ggplot2::aes(x = ltm, y = Wri, color = sexe)) +
     ggplot2::geom_point(alpha = 0.8) +
-    ggplot2::scale_color_manual(
-      values = group_colors$sexe,
-      labels = group_labels$sexe,
-      name = "", drop = FALSE
-    ) +
-    theme_aquapop() + 
-    
+    ggplot2::scale_color_manual(values = group_colors$sexe, labels = group_labels$sexe, name = "", drop = FALSE) +
+    theme_aquapop() +
     ggplot2::labs(x = "Longueur totale maximale (mm)", y = "Indice de condition (%)") +
- 
-    ggplot2::annotate("segment", x = -Inf, xend = Inf, y = 100, yend = 100,
-                      color = "lightgrey", linewidth = 0.5, linetype = 2
-    ) +
-    ggplot2::geom_hline(data = moyennes, ggplot2::aes(yintercept = moy, color = sexe),
-                        linetype = 2, linewidth = 0.5) +
+    ggplot2::annotate("segment", x = -Inf, xend = Inf, y = 100, yend = 100, color = "lightgrey", linewidth = 0.5, linetype = 2) +
+    ggplot2::geom_hline(data = moyennes, ggplot2::aes(yintercept = moy, color = sexe), linetype = 2, linewidth = 0.5) +
     ggplot2::geom_hline(yintercept = moy_tous, color = "red", linetype = 2, linewidth = 0.5)
   
-  # Graphique Wr par classe de taille ----
+  # Graphique Wr par classe ----
   breaks <- info$breaks
   labels <- info$break_labels
   
@@ -86,37 +76,34 @@ wri <- function(data) {
       Intervalle = dplyr::recode(as.character(gcat), !!!setNames(labels, as.character(breaks)))
     )
   
-  sommaire <- data |>
-    dplyr::group_by(gcat, Classe, Intervalle) |>
-    dplyr::summarise(n = dplyr::n(), .groups = "drop")
-  
+  sommaire <- data |> dplyr::group_by(gcat, Classe, Intervalle) |> dplyr::summarise(n = dplyr::n(), .groups = "drop")
   data <- dplyr::left_join(data, sommaire, by = c("gcat", "Classe", "Intervalle"))
   
-  aov1 <- lm(Wri ~ gcat, data = data)
-  gcat_obs <- levels(droplevels(data$gcat))
-  nd <- tibble::tibble(gcat = factor(gcat_obs, levels = levels(data$gcat)))
+  if (dplyr::n_distinct(data$gcat) >= 2) {
+    aov1 <- lm(Wri ~ gcat, data = data)
+    gcat_obs <- levels(droplevels(data$gcat))
+    nd <- tibble::tibble(gcat = factor(gcat_obs, levels = levels(data$gcat)))
+    
+    pred <- predict(aov1, newdata = nd, interval = "confidence") |>
+      as.data.frame() |>
+      dplyr::bind_cols(nd) |>
+      dplyr::left_join(sommaire, by = "gcat")
+    
+    fig_byclass <- ggplot2::ggplot(pred, ggplot2::aes(x = Classe, y = fit)) +
+      ggplot2::geom_point() +
+      ggplot2::geom_point(data = data, ggplot2::aes(x = Classe, y = Wri),
+                          shape = 21, colour = "black", fill = "white", size = 1, alpha = 0.5) +
+      ggplot2::geom_errorbar(ggplot2::aes(ymin = lwr, ymax = upr), width = 0.1) +
+      ggplot2::xlab("Classe de taille") +
+      ggplot2::ylab("Indice de condition (%)") +
+      theme_aquapop() +
+      ggplot2::scale_x_discrete(limits = psd_classnames, drop = FALSE) +
+      ggplot2::annotate("segment", x = -Inf, xend = Inf, y = 100, yend = 100, linewidth = 0.5, color = "black", linetype = 2)
+  } else {
+    fig_byclass <- ggplot2::ggplot()
+  }
   
-  pred <- predict(aov1, newdata = nd, interval = "confidence") |>
-    as.data.frame() |>
-    dplyr::bind_cols(nd) |>
-    dplyr::left_join(sommaire, by = "gcat")
-  
-  fig_byclass <- ggplot2::ggplot(pred, ggplot2::aes(x = Classe, y = fit)) +
-    ggplot2::geom_point() +
-    ggplot2::geom_point(data = data,
-                        ggplot2::aes(x = Classe, y = Wri),
-                        shape = 21, colour = "black", fill = "white", size = 1, alpha = 0.5) +
-    ggplot2::geom_errorbar(ggplot2::aes(ymin = lwr, ymax = upr), width = 0.1) +
-    ggplot2::xlab("Classe de taille") +
-    ggplot2::ylab("Indice de condition (%)") +
-    theme_aquapop() +
-    ggplot2::scale_x_discrete(limits = psd_classnames, drop = FALSE) +
-    ggplot2::annotate("segment", x = -Inf, xend = Inf, y = 100, yend = 100,
-                      linewidth = 0.5, color = "black", linetype = 2)
-  
-  # Construction des tableaux synthèse ----
- 
-  
+  # Tableaux de résultats ----
   tab_all <- predict(lm(Wri ~ 1, data = data), newdata = data.frame(Groupe = "Tous"), interval = "confidence") |>
     as.data.frame() |>
     dplyr::mutate(
@@ -127,22 +114,29 @@ wri <- function(data) {
     ) |>
     dplyr::select(Groupe, Wr, IC95, n)
   
-  tab_sexe <- resumer_wr_par_groupe(lm(Wri ~ sexe, data = data), "sexe") |>
-    dplyr::filter(Groupe %in% c("F", "M")) |>
-    dplyr::mutate(Groupe = plyr::mapvalues(Groupe, c("F", "M"), c("Femelle", "Mâle")))
+  tab_sexe <- if (dplyr::n_distinct(data$sexe) >= 2) {
+    resumer_wr_par_groupe(lm(Wri ~ sexe, data = data), "sexe") |>
+      dplyr::filter(Groupe %in% c("F", "M")) |>
+      dplyr::mutate(Groupe = plyr::mapvalues(Groupe, c("F", "M"), c("Femelle", "Mâle")))
+  } else {
+    tibble::tibble(Groupe = character(), Wr = numeric(), IC95 = character(), n = integer())
+  }
   
-  tab_class <- resumer_wr_par_groupe(lm(Wri ~ Classe, data = data), "Classe") |>
-    tidyr::complete(Groupe = psd_classnames, fill = list(Wr = 0, IC95 = "0", n = 0)) |>
-    dplyr::mutate(Groupe = factor(Groupe, levels = psd_classnames)) |>
-    dplyr::arrange(Groupe)
+  tab_class <- if (dplyr::n_distinct(data$Classe) >= 2) {
+    resumer_wr_par_groupe(lm(Wri ~ Classe, data = data), "Classe") |>
+      tidyr::complete(Groupe = psd_classnames, fill = list(Wr = 0, IC95 = "0", n = 0)) |>
+      dplyr::mutate(Groupe = factor(Groupe, levels = psd_classnames)) |>
+      dplyr::arrange(Groupe)
+  } else {
+    tibble::tibble(Groupe = factor(psd_classnames, levels = psd_classnames),
+                   Wr = 0, IC95 = "0", n = 0)
+  }
   
   table_finale <- dplyr::bind_rows(tab_all, tab_sexe, tab_class)
   
   table_wr_flextable <- flextable::flextable(table_finale) |>
     flextable::set_caption("Indice de condition (Wr)") |>
     style_flextable_aquapop()
-  
-  # Retour de la liste finale ----
   
   return(list(
     data = table_finale,
@@ -151,6 +145,7 @@ wri <- function(data) {
     plot_byclass = fig_byclass
   ))
 }
+
 
 #' Résumer les résultats d’un modèle Wr par groupe (sexe ou classe)
 #'
