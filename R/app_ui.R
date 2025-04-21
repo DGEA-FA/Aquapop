@@ -417,8 +417,6 @@ Vous pouvez toutefois forcer un recalcul avec une autre valeur."),
                    
                    ### Tableau de sélection de modèles ----
                    
-                   
-                   
                    # Message explicatif
                    h3(HTML("Sélection des modèles L<sub>50</sub>")),
                    verbatimTextOutput("message_l50"),
@@ -426,8 +424,8 @@ Vous pouvez toutefois forcer un recalcul avec une autre valeur."),
                    
                    # Tableau des modèles évalués
                    h3("Tableau interactif des modèles évalués"),
-                   withSpinner(reactableOutput("table_modeles_maturite_table"), type = myspinner),
-                   download_button_ui("ogive_maturite_table_dl"),
+                   withSpinner(reactableOutput("table_modeles_l50_table"), type = myspinner),
+                   download_button_ui("ogive_l50_table_dl"),
                    
                    br(),
                    h3("Résultats du modèle sélectionné"),
@@ -436,15 +434,15 @@ Vous pouvez toutefois forcer un recalcul avec une autre valeur."),
                    
                    
                    # Tableau des résultats
-                   uiOutput("ogive_maturite_table"),
-                   uiOutput("download_ogive_maturite_table_ui"),
+                   uiOutput("ogive_l50_table"),
+                   uiOutput("download_ogive_l50_table_ui"),
                    
                    ### Graphique du modèle choisi ----
                    
                    
                    # Graphique des résultats
-                   plotOutput("plot_ogive_maturite"),
-                   downloadButton("download_ogive_maturite_plot", label = "Télécharger le graphique")
+                   plotOutput("plot_ogive_l50"),
+                   downloadButton("download_ogive_l50_plot", label = "Télécharger le graphique")
                  ),
                  
                  ## Âge à maturité ----

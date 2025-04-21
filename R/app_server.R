@@ -734,7 +734,7 @@ app_server <- function(input, output, session) {
   ### Tableau de sélection de modèles ----
   
   # Résultat complet : modèles et tables
-  table_modeles_maturite_resultats <- reactive({
+  table_modeles_l50_resultats <- reactive({
     req(specimen())
     maturite_compare_modele(
       specimen_data = specimen(),
@@ -744,8 +744,8 @@ app_server <- function(input, output, session) {
   })
   
   # Index du meilleur modèle pour sélection par défaut
-  default_model_index_maturite <- reactive({
-    table <- table_modeles_maturite_resultats()$table$df
+  default_model_index_l50 <- reactive({
+    table <- table_modeles_l50_resultats()$table$df
     req(nrow(table) > 0)
     idx <- which(table$recommande)
     if (length(idx) == 0) idx <- 1
@@ -753,10 +753,10 @@ app_server <- function(input, output, session) {
   })
   
   # Tableau interactif des modèles
-  output$table_modeles_maturite_table <- renderReactable({
-    req(table_modeles_maturite_resultats())
-    table <- table_modeles_maturite_resultats()$table$df
-    idx <- default_model_index_maturite()
+  output$table_modeles_l50_table <- renderReactable({
+    req(table_modeles_l50_resultats())
+    table <- table_modeles_l50_resultats()$table$df
+    idx <- default_model_index_l50()
     
     reactable(
       labelled_data(table),
@@ -774,10 +774,10 @@ app_server <- function(input, output, session) {
   })
   
   # Modèle actuellement sélectionné
-  selected_model_info_maturite <- reactive({
-    selected <- getReactableState("table_modeles_maturite_table", "selected")
-    req(!is.null(selected), table_modeles_maturite_resultats())
-    table <- table_modeles_maturite_resultats()$table$df
+  selected_model_info_l50 <- reactive({
+    selected <- getReactableState("table_modeles_l50_table", "selected")
+    req(!is.null(selected), table_modeles_l50_resultats())
+    table <- table_modeles_l50_resultats()$table$df
     model_id <- table[selected, "modele_id", drop = TRUE]
     
     list(
@@ -790,34 +790,34 @@ app_server <- function(input, output, session) {
   
   # Message explicatif sur les modèles évalués
   output$message_l50 <- renderText({
-    req(table_modeles_maturite_resultats())
-    table_modeles_maturite_resultats()$message
+    req(table_modeles_l50_resultats())
+    table_modeles_l50_resultats()$message
   })
   
   
   # Résultat du modèle sélectionné
-  maturite_generate_modele_res <- reactive({
-    req(specimen(), selected_model_info_maturite())
+  l50_generate_modele_res <- reactive({
+    req(specimen(), selected_model_info_l50())
     maturite_generate_modele(
       data = specimen(),
-      variable = selected_model_info_maturite()$variable,
-      modele = selected_model_info_maturite()$modele,
-      lien = selected_model_info_maturite()$lien
+      variable = selected_model_info_l50()$variable,
+      modele = selected_model_info_l50()$modele,
+      lien = selected_model_info_l50()$lien
     )
   })
   
   
   ### Tableau du modèle choisi ----
-  render_table_flextable("ogive_maturite_table", reactive(maturite_generate_modele_res()$table_resultats_flextable))
+  render_table_flextable("ogive_l50_table", reactive(l50_generate_modele_res()$table_resultats_flextable))
   render_download_table(
-    "ogive_maturite_table_dl",
-    data = reactive(maturite_generate_modele_res()$table_resultats),
+    "ogive_l50_table_dl",
+    data = reactive(l50_generate_modele_res()$table_resultats),
     filename = reactive(build_export_filename("ogive_maturite", filename_suffix()))
   )
   
   ### Graphique du modèle choisi ----
-  render_plot_ggplot("plot_ogive_maturite", reactive(maturite_generate_modele_res()$graphique))
-  render_download_plot("download_ogive_maturite_plot", reactive(maturite_generate_modele_res()$graphique), filename_suffix = filename_suffix())
+  render_plot_ggplot("plot_ogive_l50", reactive(l50_generate_modele_res()$graphique))
+  render_download_plot("download_ogive_l50_plot", reactive(l50_generate_modele_res()$graphique), filename_suffix = filename_suffix())
   
    
   ## Âge à maturité ----
