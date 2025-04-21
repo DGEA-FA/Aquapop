@@ -133,7 +133,7 @@ test_that("ltm trop faible → retourne une structure vide valide", {
   
   expect_s3_class(res$data, "data.frame")
   expect_equal(nrow(res$data), 0)
-  expect_named(res$data, c("Groupe", "Wr", "IC95", "n"))
+  expect_named(res$data, c("groupe", "wr", "ic95", "n"))
   expect_s3_class(res$flextable, "flextable")
   expect_s3_class(res$plot_tous, "gg")
   expect_s3_class(res$plot_byclass, "gg")
@@ -152,6 +152,6 @@ test_that("wri() retourne une structure vide proprement si aucune donnée ne pas
   expect_type(res, "list")
   expect_s3_class(res$data, "data.frame")
   expect_equal(nrow(res$data), 0)
-  expect_named(res$data, c("Groupe", "Wr", "IC95", "n"))
+  expect_named(res$data, c("groupe", "wr", "ic95", "n"))
   expect_s3_class(res$flextable, "flextable")
 })
