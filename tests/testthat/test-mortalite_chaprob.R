@@ -40,6 +40,6 @@ test_that("mortalite_chaprob fonctionne avec un seul âge", {
   specimen <- data.frame(age = c(5))
   expect_error(
     mortalite_chaprob(specimen, pp = 5, age_max = 5),
-    regexp = "not enough degrees of freedom|data"
+    regexp = "au moins deux classes d’âge"
   )
 })

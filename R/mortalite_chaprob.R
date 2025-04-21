@@ -20,6 +20,9 @@ mortalite_chaprob <- function(specimen, pp, age_max) {
   if (nrow(df) == 0) {
     stop("Aucune donnée d’âge valide pour Chapman-Robson.")
   }
+  if (length(unique(df$age)) < 2) {
+    stop("La méthode Chapman-Robson nécessite au moins deux classes d’âge différentes.")
+  }
   
   res <- fishmethods::agesurv(
     type = 1,
