@@ -179,9 +179,7 @@ app_ui <- function() {
             ),
             
             mainPanel(
-              p("L’histogramme de fréquence des longueurs permettant de caractériser la structure
-                de taille de la population est réalisée avec la fonction geom_histogram de 
-                la librairie ggplot2 (Chang et al. 2021). La sélection des intervalles pour
+              p("La sélection des intervalles pour
                 les classes de taille est basée sur les recommandations de Anderson et Neumann (1996) 
                 et Neumann et al. (2012). Ainsi, des intervalles de 20 mm sont utilisés pour l’omble 
                 de fontaine, alors qu’ils sont de 50 mm pour le doré jaune et le touladi."),

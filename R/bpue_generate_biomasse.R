@@ -157,11 +157,8 @@ bpue_generate_biomasse <- function(data_specimen, data_station) {
       bpue     = "BPUE (kg/station)",
       ic95     = "IC 95%"
     ) |>
-    flextable::fontsize(size = 12, part = "all") |>
-    flextable::font(fontname = "Arial", part = "all") |>
-    flextable::align(align = "center", part = "all") |>
-    flextable::autofit() |>
-    flextable::hline(i = 3, border = officer::fp_border(color = "black", width = 0.5))
+    flextable::hline(i = 3, border = officer::fp_border(color = "black", width = 0.5)) |>
+    style_flextable_aquapop()
   
   return(list(
     data = table_biomasse,

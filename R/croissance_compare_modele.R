@@ -123,8 +123,7 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
   
   ft <- flextable::flextable(final) |>
     flextable::set_caption("Paramètres des modèles de croissance (VB, Gompertz, Logistique)") |>
-    flextable::align(align = "center", part = "all") |>
-    flextable::autofit()
+    style_flextable_aquapop() 
   
   return(list(data = final, flextable = ft))
 }

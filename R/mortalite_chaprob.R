@@ -51,10 +51,7 @@ mortalite_chaprob <- function(specimen, pp, age_max) {
       A = "Taux de mortalité (A%)",
       ic_95 = "Intervalle de confiance à 95%"
     ) |>
-    flextable::align(align = "center", part = "all") |>
-    flextable::font(fontname = "Arial", part = "all") |>
-    flextable::fontsize(size = 12, part = "all") |>
-    flextable::autofit()
+    style_flextable_aquapop()
   
   return(list(
     data = result,

@@ -57,10 +57,7 @@ mortalite_compare_modele <- function(data) {
   # Création du flextable
   ft <- flextable::flextable(df_final) |>
     flextable::set_caption("Comparaison des modèles de mortalité") |>
-    flextable::fontsize(size = 12, part = "all") |>
-    flextable::font(fontname = "Arial", part = "all") |>
-    flextable::align(align = "center", part = "all") |>
-    flextable::autofit()
+    style_flextable_aquapop()
   
   # Retourner les deux formats
   return(list(

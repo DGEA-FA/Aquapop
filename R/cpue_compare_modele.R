@@ -80,10 +80,7 @@ cpue_compare_modele <- function(cpue_data) {
   # Créer le flextable
   ft_final <- flextable::flextable(df_final) |>
     flextable::set_caption(titre_caption) |>
-    flextable::fontsize(size = 12, part = "all") |>
-    flextable::font(fontname = "Arial", part = "all") |>
-    flextable::align(align = "center", part = "all") |>
-    flextable::autofit()
+    style_flextable_aquapop()
   
   return(list(
     data = df_final,

@@ -83,7 +83,7 @@ structure_age <- function(data, groupement = "tous") {
   
   tableau_age <- flextable::flextable(age_counts) |>
     flextable::set_caption("Structure d'âge") |>
-    flextable::align(align = "center", part = "all")
+    style_flextable_aquapop()
   
   # --- Création du graphique ---
   graphique_structure_age <- if (groupement == "tous") {

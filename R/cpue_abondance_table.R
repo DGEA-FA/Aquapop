@@ -122,10 +122,7 @@ cpue_abondance_table <- function(data,
   
   ft <- flextable::flextable(table) |>
     flextable::set_caption("Tableau d'abondance") |>
-    flextable::fontsize(size = 12, part = "all") |>
-    flextable::font(fontname = "Arial", part = "all") |>
-    flextable::align(align = "center", part = "all") |>
-    flextable::autofit()
+    style_flextable_aquapop()
   
   return(list(
     data = table,

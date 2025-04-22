@@ -40,8 +40,7 @@ masse_longueur_fit <- function(data) {
   
   ft <- table_coef %>%
     flextable::flextable() %>%
-    flextable::autofit() %>%
-    flextable::align(align = "center", part = "all")
+    style_flextable_aquapop()
   
   xs <- seq(min(df$logL), max(df$logL), length.out = 100)
   cf <- FSA::logbtcf(fit, 10)

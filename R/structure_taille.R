@@ -94,7 +94,7 @@ structure_taille <- function(data,
   df <- structure_taille_extraire_donnees(plt, groupement)
   ft <- flextable::flextable(df) |>
     flextable::set_caption("Structure de taille") |>
-    flextable::align(align = "center", part = "all")
+    style_flextable_aquapop()
   
   return(list(
     plot = plt,
