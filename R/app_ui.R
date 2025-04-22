@@ -338,21 +338,32 @@ app_ui <- function() {
         
         ## Tableau de sélection de modèles ----
         
-        p("Si les trois modèles convergent, sélectionnez celui ayant le plus petit AICc.
-          Prenez note également que le modèle de von Bertalanffy utilise la méthode
-          pondérée avec t0 variable. Attention : les IC95% des prédictions ne peuvent
-          pas être calculées à partir des IC95% des estimations des paramètres L, K et t0."),
+        p("Si les trois modèles convergent, sélectionnez celui ayant le plus petit AICc. 
+     Prenez note également que le modèle de von Bertalanffy utilise la méthode pondérée 
+     avec t₀ variable. Attention : les IC95 % des prédictions ne peuvent pas être calculés 
+     à partir des IC95 % des estimations des paramètres L, K et t₀."),
         
         h3("Table de sélection du modèle de croissance"),
         withSpinner(reactableOutput("table_modeles_croissance_table"), type = myspinner),
         download_button_ui("download_table_modeles_croissance"),
         
+        br(),
+        
         ## Graphique du modèle choisi ----
+        p("Le graphique suivant illustre la longueur observée des spécimens en fonction de leur âge, 
+     ainsi que la courbe de croissance modélisée selon le modèle sélectionné. Les points représentent 
+     les données observées, tandis que la ligne montre la prédiction du modèle."),
         
         h3("Longueur à l’âge des spécimens capturés et modèle de croissance"),
         
-        plotOutput("selectedmodelcroissanceplot"),
-        downloadButton("download_selectedmodelcroissanceplot", "Télécharger le graphique")
+        div(
+          style = "max-width: 900px; margin: auto;",
+          withSpinner(plotOutput("selectedmodelcroissanceplot", height = "500px"), type = myspinner),
+          br(),
+          downloadButton("download_selectedmodelcroissanceplot", "Téléchargement du graphique")
+        )
+        
+        
       ),
       # Panel 5 
       

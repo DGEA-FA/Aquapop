@@ -275,19 +275,18 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
   
   # Mise en forme finale
   ft <- ft %>%
-    autofit() %>%
-    align(align = "center", part = "all") %>%
-    bold(part = "header")
+    style_flextable_aquapop() 
+    # autofit() %>%
+    # align(align = "center", part = "all") %>%
+    # bold(part = "header")
   
   ft <- add_footer_lines(ft, values = glue("Modèle: {modele}, lien: {lien}"))
   
   
   # Résultat
   table_resultats_flextable <- ft
-  # table_resultats_flextable
+
   
-  
-  # Graphique -------------------------------------------------------------------
   # Graphique -------------------------------------------------------------------
   color_by_sex <- "sexe" %in% names(donnees_ogive)
   
@@ -300,14 +299,13 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
         labels = group_labels$sexe
       ) else NULL 
     } +
-    theme_classic() +
     labs(
       x = ifelse(variable == "ltm", "Longueur totale maximale (mm)", "Âge"),
       y = "Proportion reproducteurs actifs",
       title = "Ogive de maturité",
       color = "Sexe"
     ) +
-    theme(panel.background = element_rect(fill = "white", colour = "black"))
+    theme_aquapop()
   
   # Ajout des lignes horizontales/verticales de point50
   if (modele == "TLO") {
