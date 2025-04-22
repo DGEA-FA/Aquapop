@@ -1,42 +1,87 @@
-#' Calculer l’indice PSD-Q global pour une espèce cible
+#' Calculer l’indice PSD-Q global (Proportional Size Distribution – Quality)
 #'
-#' Cette fonction calcule l’indice PSD (Proportional Size Distribution de type Q) pour une espèce donnée.
-#' Elle retourne un tableau contenant la valeur de l’indice PSD-Q et son intervalle de confiance à 95 %,
-#' à la fois sous forme brute (`data.frame`) et sous forme formatée (`flextable`).
+#' Cette fonction calcule l’indice PSD-Q pour une espèce cible, à partir des longueurs des spécimens capturés.
+#' L’indice PSD-Q correspond à la proportion d’individus situés dans les classes de qualité (Q), définies
+#' par des seuils spécifiques à chaque espèce.
+#' La fonction utilise les seuils extraits par `get_info_pen()` et retourne l’estimation ponctuelle
+#' ainsi qu’un intervalle de confiance à 95 %, calculé selon une méthode binomiale.
 #'
-#' @param data Un `data.frame` contenant au moins les colonnes `ltm` (longueur totale en mm) et `sp`.
-#'             Les données doivent être filtrées pour une seule espèce.
+#' @param data Un `data.frame` contenant les données pour une seule espèce.
+#'             Doit inclure les colonnes :
+#'             - `ltm` : Longueur totale (en mm)
+#'             - `sp`  : Code de l’espèce (ex : `"SAFO"`)
 #'
-#' @return Une liste contenant :
+#' @return Une liste nommée contenant :
 #' \describe{
-#'   \item{`data`}{Un `data.frame` avec la valeur de l’indice PSD-Q et l’intervalle de confiance 95 %.}
-#'   \item{`flextable`}{Une version formatée du tableau pour affichage ou export (Word, Shiny, etc.).}
+#'   \item{`data`}{Un `data.frame` avec la valeur de l’indice PSD-Q et son intervalle de confiance à 95 %.}
+#'   \item{`flextable`}{Une version formatée (`flextable`) du tableau pour affichage ou export.}
 #' }
+#'
+#' @examples
+#' # Exemple avec données simulées
+#' set.seed(123)
+#' data_ex <- data.frame(
+#'   ltm = rnorm(100, mean = 250, sd = 50),
+#'   sp = "SAFO"
+#' )
+#' data_ex <- dplyr::filter(data_ex, ltm > 0)
+#' psd_q_res <- psd_q(data_ex)
+#' psd_q_res$data
+#' psd_q_res$flextable
+#'
 #' @export
 psd_q <- function(data) {
+  
+  # --- Validation des données ---
+  
+  if (!is.data.frame(data))
+    stop("`data` doit être un data.frame.")
+  if (!all(c("ltm", "sp") %in% colnames(data))) {
+    stop("Le jeu de données doit contenir les colonnes `ltm` et `sp`.")
+  }
+  
   sp <- unique(data$sp)
-  if (length(sp) != 1) stop("Les données doivent être filtrées pour une seule espèce.")
+  if (length(sp) != 1)
+    stop("Les données doivent être filtrées pour une seule espèce.")
   
   info <- get_info_pen(sp)
-  if (is.null(info)) stop("Espèce non supportée.")
+  if (is.null(info))
+    stop("Espèce non supportée par `get_info_pen()`.")
   
-  breakClass <- info$breaks
-  limInfStock <- breakClass[2]
+  # --- Préparation des classes de taille ---
   
-  bunch <- data %>%
-    dplyr::filter(ltm >= limInfStock) %>%
-    dplyr::mutate(gcat = FSA::lencat(ltm, breaks = breakClass, droplevels = TRUE))
+  break_class <- info$breaks
+  seuil_qualite <- break_class[2]
   
-  gfreq <- xtabs(~ gcat, data = bunch)
-  psdtable <- prop.table(gfreq) * 100
-  psdtable <- apply(psdtable, 1, sum)
+  # --- Filtrage et classification des longueurs ---
   
-  weights <- rep(1, length(psdtable)); weights[1] <- 0  # Ne pas inclure la première classe
+  donnees_qualite <- data %>%
+    dplyr::filter(ltm >= seuil_qualite) %>%
+    dplyr::mutate(gcat = FSA::lencat(ltm, breaks = break_class, droplevels = TRUE))
   
-  PSDresult <- FSA::psdCI(
-    weights,
-    ptbl = psdtable / 100,
-    n = sum(gfreq),
+  # --- Calcul des fréquences par classe ---
+  
+  freq_classes <- xtabs(~ gcat, data = donnees_qualite)
+  freq_relatives <- prop.table(freq_classes) * 100
+  freq_vecteur <- apply(freq_relatives, 1, sum)
+  
+  # --- Pondération : on exclut la première classe (stock) du calcul PSD-Q ---
+  
+  poids_classes <- rep(1, length(freq_vecteur))
+  poids_classes[1] <- 0
+  
+  # --- Validation des fréquences pondérées ---
+  
+  if (all((freq_vecteur / 100)[poids_classes == 1] == 0)) {
+    stop("Aucune donnée dans les classes pondérées. Impossible de calculer l’indice PSD-Q.")
+  }
+  
+  # --- Calcul de l’indice PSD-Q avec IC 95 % ---
+  
+  table_resultats <- FSA::psdCI(
+    poids_classes,
+    ptbl = freq_vecteur / 100,
+    n = sum(freq_classes),
     method = "binomial",
     label = "PSD Q"
   ) %>%
@@ -49,12 +94,16 @@ psd_q <- function(data) {
     dplyr::mutate(`IC 95%` = glue::glue("[{round(LCI, 1)}-{round(UCI, 1)}]")) %>%
     dplyr::select(Q, `IC 95%`)
   
-  PSD_flex <- flextable::flextable(PSDresult) %>%
-    flextable::autofit() %>%
-    flextable::align(align = "center", part = "all")
+  # --- Construction du tableau flextable ---
+  
+  table_flextable <- flextable::flextable(table_resultats) %>%
+    style_flextable_aquapop()
+    
+  
+  # --- Retour ---
   
   return(list(
-    data = PSDresult,
-    flextable = PSD_flex
+    data = table_resultats,
+    flextable = table_flextable
   ))
 }
