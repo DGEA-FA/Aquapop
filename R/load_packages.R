@@ -4,7 +4,7 @@
 # ============================================================================
 
 # Vérification de la version minimale de R -----------------------------------
-version_minimale_R <- "4.4.2"
+version_minimale_R <- "4.4.1" 
 
 if (getRversion() < version_minimale_R) {
   stop(paste0("❌ Version de R trop ancienne. ",

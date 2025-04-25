@@ -69,12 +69,7 @@ mortalite_plot_modele <- function(specimen, modele, info_modele) {
       x = "Âge",
       y = paste0("Nb. ", nomsp, " échantillonnés")
     ) +
-    ggplot2::theme_classic() +
-    ggplot2::theme(
-      panel.background = ggplot2::element_rect(fill = "white", colour = "black", linewidth = 0.5),
-      axis.text.x = ggplot2::element_text(angle = 0, hjust = 0.5),
-      axis.line = ggplot2::element_line(colour = "black")
-    ) +
+    theme_aquapop() +
     ggplot2::scale_x_continuous(
       expand = c(0, 0),
       limits = c(0, max_age + 2),

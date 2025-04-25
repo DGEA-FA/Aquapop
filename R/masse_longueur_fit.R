@@ -57,7 +57,7 @@ masse_longueur_fit <- function(data) {
     ggplot2::geom_line(data = pred_df, ggplot2::aes(x = ltm, y = fit), color = "blue") +
     ggplot2::geom_line(data = pred_df, ggplot2::aes(x = ltm, y = lwr), color = "red", linetype = 2) +
     ggplot2::geom_line(data = pred_df, ggplot2::aes(x = ltm, y = upr), color = "red", linetype = 2) +
-    ggplot2::theme_classic() +
+    theme_aquapop() +
     ggplot2::labs(
       x = "Longueur totale maximale (mm)",
       y = "Masse (g)"

@@ -47,12 +47,7 @@ structure_taille <- function(data,
     plt <- ggplot2::ggplot(data, ggplot2::aes(x = ltm_interval)) +
       ggplot2::geom_bar(fill = couleur_default, color = "white", alpha = 1, na.rm = TRUE) +
       ggplot2::labs(x = "Longueur totale maximale (mm)", y = paste0("Nb. ", nomsp, " échantillonnés")) +
-      ggplot2::theme_classic() +
-      ggplot2::theme(
-        panel.background = ggplot2::element_rect(fill = "white", colour = "black", linewidth = 0.5),
-        axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
-        axis.line = ggplot2::element_line(colour = "black")
-      ) +
+      theme_aquapop() +
       ggplot2::scale_x_discrete(drop = FALSE, limits = labels) +
       ggplot2::scale_y_continuous(expand = c(0, 0), limits = c(0, max_y))
   } else {
@@ -73,13 +68,7 @@ structure_taille <- function(data,
       ggplot2::geom_bar(data = df_legende, ggplot2::aes(x = categorie, fill = categorie),
                         alpha = 1, width = 0, show.legend = TRUE, na.rm = TRUE) +
       ggplot2::labs(x = "Longueur totale maximale (mm)", y = paste0("Nb. ", nomsp, " échantillonnés")) +
-      ggplot2::theme_classic() +
-      ggplot2::theme(
-        panel.background = ggplot2::element_rect(fill = "white", colour = "black", linewidth = 0.5),
-        axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
-        axis.line = ggplot2::element_line(colour = "black"),
-        legend.key = ggplot2::element_rect(colour = "white")
-      ) +
+      theme_aquapop() +
       ggplot2::scale_x_discrete(drop = FALSE, limits = labels) +
       ggplot2::scale_y_continuous(expand = c(0, 0), limits = c(0, max_y)) +
       ggplot2::scale_fill_manual(

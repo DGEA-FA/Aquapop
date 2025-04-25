@@ -65,9 +65,7 @@ croissance_plot <- function(dfspecimen, tablemodele, modele) {
                       linewidth = 0.5, color = "red", linetype = 2) +
     ggplot2::scale_x_continuous(name = "Âge (année)", breaks = age_ticks, limits = age_range_plot, expand = c(0, 0)) +
     ggplot2::scale_y_continuous(name = "Longueur totale maximale (mm)", expand = c(0, 0)) +
-    ggplot2::theme_bw() +
-    ggplot2::theme(panel.grid = ggplot2::element_blank(),
-                   plot.caption = ggplot2::element_text(size = 10)) +
+    theme_aquapop() +
     ggplot2::labs(caption = paste0("Modèle : ", modele, "\n",
                                    "Equation : L(âge) = ", round(start_values$linf, 2),
                                    " / (1 + exp(-", round(start_values$k, 3),

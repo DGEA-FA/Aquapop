@@ -91,11 +91,7 @@ structure_age <- function(data, groupement = "tous") {
       ggplot2::geom_histogram(binwidth = 1, closed = "right",
                               fill = couleur_default, color = "white", na.rm = TRUE) +
       ggplot2::labs(x = "Âge", y = paste0("Nb. ", nom_espece, " échantillonnés")) +
-      ggplot2::theme_classic() +
-      ggplot2::theme(
-        panel.background = ggplot2::element_rect(fill = "white", colour = "black", linewidth = 0.5),
-        axis.line = ggplot2::element_line(colour = "black")
-      ) +
+      theme_aquapop() +
       ggplot2::scale_x_continuous(
         expand = c(0, 0),
         limits = c(0, age_max + 2),
@@ -120,12 +116,7 @@ structure_age <- function(data, groupement = "tous") {
         position = ggplot2::position_stack(reverse = TRUE), na.rm = TRUE
       ) +
       ggplot2::labs(x = "Âge", y = paste0("Nb. ", nom_espece, " échantillonnés")) +
-      ggplot2::theme_classic() +
-      ggplot2::theme(
-        panel.background = ggplot2::element_rect(fill = "white", colour = "black", linewidth = 0.5),
-        axis.line = ggplot2::element_line(colour = "black"),
-        legend.key = ggplot2::element_rect(colour = "white")
-      ) +
+      theme_aquapop() +
       ggplot2::scale_x_continuous(
         expand = c(0, 0),
         limits = c(0, age_max + 2),

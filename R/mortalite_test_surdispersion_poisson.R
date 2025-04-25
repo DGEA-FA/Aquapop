@@ -50,7 +50,7 @@ mortalite_test_surdispersion_poisson <- function(df) {
       y = "Résidus de Pearson",
       title = "Résidus vs Valeurs ajustées (modèle Poisson)"
     ) +
-    ggplot2::theme_classic()
+    theme_aquapop()
   
   return(list(
     dispersion = disp_value,
