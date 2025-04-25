@@ -24,9 +24,9 @@ Caroline Brûlé
 Pour toute question ou besoin de soutien, veuillez contacter :
 
 Geneviève Ouellet-Cauchon\
-Direction de l'expertise sur la faune aquatique\
-Service de la gestion des espèces aquatiques\
-[Genevieve.Ouellet-Cauchon\@mffp.gouv.qc.ca](mailto:Genevieve.Ouellet-Cauchon@mffp.gouv.qc.ca)
+Direction principale de l'expertise sur la faune aquatique\
+Direction de la gestion des espèces aquatiques\
+[Genevieve.Ouellet-Cauchon\@environnement.gouv.qc.ca](mailto:Genevieve.Ouellet-Cauchon@environnement.gouv.qc.ca)
 
 # Références
 
