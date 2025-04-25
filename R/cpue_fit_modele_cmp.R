@@ -78,7 +78,7 @@ cpue_fit_modele_cmp <- function(cpue_data) {
   commentaire <- dplyr::case_when(
     ajustement < 10 ~ "Bon ajustement.",
     ajustement < 15 ~ "Ajustement marginal.",
-    TRUE ~ "Mauvais ajustement"
+    TRUE ~ "Mauvais ajustement."
   )
   
   # 6. Résultat
