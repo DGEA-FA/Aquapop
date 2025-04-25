@@ -1,6 +1,6 @@
 #' Charger les données du feuillet "Lac" d'un fichier Excel (version robuste)
 #'
-#' Cette fonction importe, nettoie et structure les données lacustres contenues
+#' Cette fonction importe, nettoie et structure les données associées aux lacs contenues
 #' dans un fichier Excel, avec validations robustes et souples. Les colonnes
 #' essentielles sont obligatoires, les autres sont facultatives et ajoutées si présentes.
 #'
