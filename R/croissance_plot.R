@@ -37,7 +37,6 @@ croissance_plot <- function(dfspecimen, tablemodele, modele) {
   data_clean <- dfspecimen |>
     dplyr::filter(!is.na(ltm), !is.na(age)) |>
     dplyr::select(ltm, age, no_specimen)
-  rownames(data_clean) <- seq_len(nrow(data_clean))
   
   # --- Extraction des paramètres du modèle sélectionné ---
   model_params <- dplyr::filter(tablemodele, methode == modele)
@@ -55,6 +54,12 @@ croissance_plot <- function(dfspecimen, tablemodele, modele) {
     k = model_params$k,
     t0 = model_params$t0
   )
+  
+  # --- Validation ---
+  if (!modele %in% c("Von Bertalanffy", "Gompertz", "Logistique")) {
+    stop("Le modèle doit être l’un de : 'Von Bertalanffy', 'Gompertz' ou 'Logistique'")
+  }
+  
   
   # --- Ajustement du modèle ---
   model_fit <- switch(modele,
