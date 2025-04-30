@@ -3,68 +3,67 @@
 #' Cette fonction produit un tableau synthèse des métadonnées d’un inventaire ichtyologique
 #' réalisé sur un lac donné, pour un type de pêche et une ou plusieurs années.
 #'
-#' @inheritParams count_filtered
+#' @param data_lac Un `data.frame` contenant les métadonnées du lac (feuillet "Lac"),
+#'                 déjà filtré sur un seul lac, un type de pêche et une ou plusieurs années.
+#' @param data_station Un `data.frame` contenant les données des stations (feuillet "Station"),
+#'                     déjà filtré de manière cohérente avec `data_lac`.
 #'
 #' @return Un `data.frame` structuré avec une ligne par type d'information
-#' et une colonne par type de pêche. La première colonne est nommée `"Type de pêche"`.
-#'
+#'         et une colonne par type de pêche. La première colonne est `"Type de pêche"`.
 #' @export
-#'
-#' @examples
-#' # Exemple fictif :
-#' recap <- generate_recapitulatif_inventaire(data_lac = lac_filtre, data_station = stations_filtrees)
-#' print(recap)
 generate_recapitulatif_inventaire <- function(data_lac, data_station) {
   
-  # Informations issues du feuillet "Lac"
-  info_lac <- data_lac %>% reframe(
-    "Type de pêche" = unique(typ_pech),
-    "No de lac" = unique(no_lac),
-    "Nom du lac" = unique(nom_lac),
-    "Superficie du lac (ha)" = unique(superficie_ha),
-    "Année(s) de l’inventaire (aaaa)" = toString(sort(unique(annee)))
+  # --- Informations générales sur le lac ---
+  info_lac <- data_lac |> dplyr::reframe(
+    `Type de pêche` = unique(typ_pech),
+    `No de lac` = unique(no_lac),
+    `Nom du lac` = unique(nom_lac),
+    `Superficie du lac (ha)` = unique(superficie_ha),
+    `Année(s) de l’inventaire (aaaa)` = toString(sort(unique(annee)))
   )
   
-  # Dates de début/fin d’inventaire
-  date_info <- data_station %>% reframe(
-    "Date de début de l’inventaire (aaaa-mm-jj)" = {
+  # --- Dates de l’inventaire ---
+  date_info <- data_station |> dplyr::reframe(
+    `Date de début de l’inventaire (aaaa-mm-jj)` = {
       if (all(is.na(date_pose))) "Aucune donnée disponible" else min(date_pose, na.rm = TRUE)
     },
-    "Date de fin de l’inventaire (aaaa-mm-jj)" = {
+    `Date de fin de l’inventaire (aaaa-mm-jj)` = {
       if (all(is.na(date_leve))) "Aucune donnée disponible" else max(date_leve, na.rm = TRUE)
     }
   )
   
-  # Comptages des stations
+  # --- Comptage des stations ---
   count_info <- tibble::tibble(
-    "N stations aléatoires" = count_filtered(data_station, "st_hasard", "O"),
-    "N stations dirigées"   = count_filtered(data_station, "st_hasard", "N"),
-    "N stations valides"    = count_filtered(data_station, "st_valide", "O"),
-    "N stations invalides"  = count_filtered(data_station, "st_valide", "N"),
-    "N stations total"      = nrow(data_station)
+    `N stations aléatoires` = generate_recapitulatif_compter_valeurs(data_station, "st_hasard", "O"),
+    `N stations dirigées`   = generate_recapitulatif_compter_valeurs(data_station, "st_hasard", "N"),
+    `N stations valides`    = generate_recapitulatif_compter_valeurs(data_station, "st_valide", "O"),
+    `N stations invalides`  = generate_recapitulatif_compter_valeurs(data_station, "st_valide", "N"),
+    `N stations total`      = nrow(data_station)
   )
   
-  # Construction finale du tableau : rotation pour affichage vertical
-  recap <- bind_cols(info_lac, date_info, count_info)
-  recap[-1] %>% t() %>% as.data.frame() %>% setNames(recap[, 1]) %>%
+  # --- Fusion et transformation du tableau pour affichage vertical ---
+  tableau_recapitulatif <- dplyr::bind_cols(info_lac, date_info, count_info)
+  tableau_recapitulatif[-1] |>
+    t() |>
+    as.data.frame() |>
+    stats::setNames(tableau_recapitulatif[[1]]) |>
     tibble::rownames_to_column("Type de pêche")
 }
 
-#' Compter les lignes correspondant à une valeur spécifique dans une colonne
+#' Compter les occurrences d’une valeur dans une colonne
 #'
-#' Fonction utilitaire interne utilisée pour compter le nombre d’occurrences
-#' d’une valeur donnée dans une colonne d’un `data.frame`.
+#' Fonction utilitaire interne utilisée dans le tableau récapitulatif.
 #'
-#' @param df Un `data.frame`
-#' @param col Le nom de la colonne à tester (chaîne de caractères)
+#' @param df Un `data.frame` contenant les données à filtrer
+#' @param col Le nom de la colonne (chaîne de caractères)
 #' @param val La valeur à compter dans cette colonne
 #'
-#' @return Un entier représentant le nombre de lignes correspondant
+#' @return Un entier représentant le nombre de lignes correspondantes
 #' @keywords internal
-count_filtered <- function(df, col, val) {
-  df %>%
-    dplyr::filter(.data[[col]] == val) %>%
-    dplyr::summarise(n = dplyr::n()) %>%
+generate_recapitulatif_compter_valeurs <- function(df, col, val) {
+  df |>
+    dplyr::filter(.data[[col]] == val) |>
+    dplyr::summarise(n = dplyr::n()) |>
     dplyr::pull(n)
 }
 
