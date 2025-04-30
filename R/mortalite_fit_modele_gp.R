@@ -1,104 +1,116 @@
 #' Ajuster un modèle de mortalité de type GP (Generalized Poisson)
 #'
-#' Cette fonction ajuste un modèle GP via `glmmTMB` sur les données de fréquence d'âge étendues.
-#' Elle applique aussi un test HNP (Half-Normal Plot) pour évaluer la qualité de l'ajustement.
+#' Cette fonction ajuste un modèle de régression `glmmTMB` avec distribution GP (Generalized Poisson)
+#' sur des données de fréquence d'âge. Elle applique un test HNP (Half-Normal Plot) en 2 à 5 simulations,
+#' puis retourne les estimations du modèle et un commentaire sur la qualité de l’ajustement.
 #'
-#' @param df_age_etendue Un `data.frame` contenant les colonnes `age` et `number`, produit par `mortalite_prepare_extended()`.
+#' @param df_age_etendue Un `data.frame` produit par `mortalite_prepare_extended()` contenant au minimum :
+#' \describe{
+#'   \item{age}{Âge des individus}
+#'   \item{number}{Nombre d’individus observés à cet âge}
+#' }
 #'
-#' @return Un `data.frame` d’une ligne résumant le modèle ajusté.
-#' @export
+#' @return Un `data.frame` d’une ligne contenant :
+#' \describe{
+#'   \item{methode}{Modèle utilisé (`"gp"`)}
+#'   \item{ajustement_hnp}{Pourcentage moyen d’observations hors bande (HNP)}
+#'   \item{aicc}{Critère d’information corrigé AICc}
+#'   \item{Z}{Coefficient d'âge (valeur absolue)}
+#'   \item{SE}{Erreur standard de Z}
+#'   \item{A}{Taux de mortalité annuel estimé (%)}
+#'   \item{IC 95%}{Intervalle de confiance de A (format "[min-max]")}
+#'   \item{commentaire}{Appréciation qualitative de l’ajustement}
+#'   \item{convergence}{Convergence du modèle (booléen)}
+#'   \item{nb_iterations_hnp}{Nombre d’itérations HNP effectuées}
+#' }
 #'
 #' @examples
-#' mortalite_fit_modele_gp(df_age_etendue)
+#' df_fake <- tibble::tibble(age = 1:6, number = c(180, 120, 70, 40, 25, 10))
+#' mortalite_fit_modele_gp(df_fake)
+#'
+#' @export
 mortalite_fit_modele_gp <- function(df_age_etendue) {
   stopifnot(all(c("age", "number") %in% names(df_age_etendue)))
   
-  # 1. Ajustement du modèle GP
+  # --- Ajustement du modèle GP ---
   model <- glmmTMB::glmmTMB(
     number ~ age,
     family = glmmTMB::genpois(link = "log"),
     data = df_age_etendue
   )
   
-  # 2. Test HNP initial (2 simulations)
+  # --- Fonctions internes HNP ---
+  diagfun_gp <- function(obj) stats::residuals(obj, type = "pearson")
+  simfun_gp <- function(n, obj) stats::simulate(obj)[[1]]
+  
+  fitfun_gp <- function(y) {
+    fit <- try(glmmTMB::glmmTMB(
+      y ~ age,
+      family = glmmTMB::genpois(link = "log"),
+      data = df_age_etendue
+    ), silent = TRUE)
+    
+    while (inherits(fit, "try-error")) {
+      y_retry <- stats::simulate(model)[[1]]
+      fit <- try(glmmTMB::glmmTMB(
+        y_retry ~ age,
+        family = glmmTMB::genpois(link = "log"),
+        data = df_age_etendue
+      ), silent = TRUE)
+    }
+    return(fit)
+  }
+  
+  # --- Test HNP initial (2 itérations) ---
   message("Test HNP : Modèle GP (2 simulations initiales)...")
   set.seed(2023)
-  
-  hnp_results <- replicate(
+  hnp_valeurs <- replicate(
     2,
     hnp::hnp(
       model,
       newclass = TRUE,
-      diagfun = function(obj) residuals(obj, type = "pearson"),
-      simfun = function(n, obj) stats::simulate(obj)[[1]],
-      fitfun = function(y) {
-        fit <- try(glmmTMB::glmmTMB(
-          y ~ age,
-          family = glmmTMB::genpois(link = "log"),
-          data = df_age_etendue
-        ), silent = TRUE)
-        while (inherits(fit, "try-error")) {
-          y_retry <- stats::simulate(model)[[1]]
-          fit <- try(glmmTMB::glmmTMB(
-            y_retry ~ age,
-            family = glmmTMB::genpois(link = "log"),
-            data = df_age_etendue
-          ), silent = TRUE)
-        }
-        return(fit)
-      },
+      diagfun = diagfun_gp,
+      simfun = simfun_gp,
+      fitfun = fitfun_gp,
       how.many.out = TRUE,
       plot.sim = FALSE
     ),
     simplify = FALSE
-  )
+  ) |>
+    sapply(function(x) x$out / x$total * 100)
   
-  hnp_out <- sapply(hnp_results, function(x) x$out / x$total * 100)
-  ajustement <- mean(hnp_out) %>% round(2)
-  nb_iter <- 2
+  ajustement_hnp <- round(mean(hnp_valeurs), 2)
+  nb_iterations_hnp <- 2
   
-  # 3. Simulations supplémentaires si ajustement marginal
-  if (ajustement >= 10 && ajustement < 15) {
+  # --- Test HNP supplémentaire si ajustement marginal ---
+  if (ajustement_hnp >= 10 && ajustement_hnp < 15) {
     message("Ajustement marginal : Ajout de 3 simulations HNP supplémentaires...")
-    hnp_extra <- replicate(
+    hnp_suppl <- replicate(
       3,
       hnp::hnp(
         model,
         newclass = TRUE,
-        diagfun = function(obj) residuals(obj, type = "pearson"),
-        simfun = function(n, obj) stats::simulate(obj)[[1]],
-        fitfun = function(y) {
-          fit <- try(glmmTMB::glmmTMB(
-            y ~ age,
-            family = glmmTMB::genpois(link = "log"),
-            data = df_age_etendue
-          ), silent = TRUE)
-          while (inherits(fit, "try-error")) {
-            y_retry <- stats::simulate(model)[[1]]
-            fit <- try(glmmTMB::glmmTMB(
-              y_retry ~ age,
-              family = glmmTMB::genpois(link = "log"),
-              data = df_age_etendue
-            ), silent = TRUE)
-          }
-          return(fit)
-        },
+        diagfun = diagfun_gp,
+        simfun = simfun_gp,
+        fitfun = fitfun_gp,
         how.many.out = TRUE,
         plot.sim = FALSE
       ),
       simplify = FALSE
-    )
-    hnp_out_extra <- sapply(hnp_extra, function(x) x$out / x$total * 100)
-    ajustement <- mean(c(hnp_out, hnp_out_extra)) %>% round(2)
-    nb_iter <- 5
+    ) |>
+      sapply(function(x) x$out / x$total * 100)
+    
+    hnp_valeurs <- c(hnp_valeurs, hnp_suppl)
+    ajustement_hnp <- round(mean(hnp_valeurs), 2)
+    nb_iterations_hnp <- 5
   }
   
-  # 4. Extraction des coefficients
+  # --- Extraction des coefficients ---
   coef <- summary(model)$coefficients$cond
   Z <- abs(coef["age", "Estimate"])
   SE <- coef["age", "Std. Error"]
   
-  # 5. Conversion en mortalité annuelle A
+  # --- Conversion en taux de mortalité annuel (A) ---
   A <- (1 - exp(-Z)) * 100
   lowerZ <- Z - SE
   upperZ <- Z + SE
@@ -106,23 +118,21 @@ mortalite_fit_modele_gp <- function(df_age_etendue) {
   upperA <- round((1 - exp(-upperZ)) * 100, 1)
   ic_95 <- glue::glue("[{lowerA}-{upperA}]")
   
-  # 6. Résultat structuré
-  result <- tibble::tibble(
+  # --- Résultat final structuré ---
+  tibble::tibble(
     methode = "gp",
-    ajustement_hnp = ajustement,
+    ajustement_hnp = ajustement_hnp,
     aicc = MuMIn::AICc(model),
     Z = round(Z, 4),
     SE = round(SE, 4),
     A = round(A, 1),
     `IC 95%` = ic_95,
     commentaire = dplyr::case_when(
-      ajustement < 10 ~ "Bon ajustement",
-      ajustement < 15 ~ "Ajustement marginal",
+      ajustement_hnp < 10 ~ "Bon ajustement",
+      ajustement_hnp < 15 ~ "Ajustement marginal",
       TRUE ~ "Mauvais ajustement"
     ),
     convergence = model$fit$convergence == 0,
-    nb_iterations_hnp = nb_iter
+    nb_iterations_hnp = nb_iterations_hnp
   )
-  
-  return(result)
 }
