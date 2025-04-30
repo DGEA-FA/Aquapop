@@ -15,6 +15,30 @@
 bpue_generate_biomasse <- function(data_specimen, data_station) {
   n_stations <- nrow(data_station)
   
+  # ---- Fonction interne : ajustement NB2 sécurisé ----
+  safe_nb_fit <- function(y) {
+    if (length(unique(y)) <= 1 || all(y == 0, na.rm = TRUE)) {
+      return(list(bpue = 0, ic95 = "(0.0-0.0)"))
+    }
+    
+    suppressWarnings({
+      model <- try(MASS::glm.nb(biomasse_g ~ 1, data = data.frame(biomasse_g = y)), silent = TRUE)
+    })
+    
+    if (inherits(model, "try-error")) {
+      return(list(bpue = NA_real_, ic95 = "(NA-NA)"))
+    }
+    
+    pred <- predict(model, se.fit = TRUE, type = "link", newdata = data.frame(biomasse_g = 0))
+    fit_val <- as.numeric(pred$fit[1])
+    se_val <- as.numeric(pred$se.fit[1])
+    bpue <- exp(fit_val) / 1000
+    ic <- exp(fit_val + c(-1.96, 1.96) * se_val) / 1000
+    
+    list(bpue = bpue, ic95 = sprintf("(%.1f-%.1f)", ic[1], ic[2]))
+  }
+  
+  
   # ---- Groupe "Tous" ----
   biomasse_totale_par_station <- data_specimen |>
     dplyr::group_by(no_station) |>
@@ -23,20 +47,14 @@ bpue_generate_biomasse <- function(data_specimen, data_station) {
     dplyr::mutate(biomasse_g = tidyr::replace_na(biomasse_g, 0))
   
   biomasse_totale_kg <- sum(biomasse_totale_par_station$biomasse_g) / 1000
-  
-  modele_nb2_tous <- MASS::glm.nb(biomasse_g ~ 1, data = biomasse_totale_par_station)
-  prediction_tous <- predict(modele_nb2_tous, newdata = data.frame(moyenne = "moyenne"),
-                             se.fit = TRUE, type = "link")
-  
-  bpue_tous <- exp(prediction_tous$fit) / 1000
-  ic_tous <- exp(prediction_tous$fit + c(-1.96, 1.96) * prediction_tous$se.fit) / 1000
+  fit_tous <- safe_nb_fit(biomasse_totale_par_station$biomasse_g)
   
   ligne_tous <- tibble::tibble(
     groupe = "Tous",
     biomasse = biomasse_totale_kg,
-    percent = biomasse_totale_kg * 100 / biomasse_totale_kg,
-    bpue = bpue_tous,
-    ic95 = sprintf("(%.1f-%.1f)", ic_tous[1], ic_tous[2])
+    percent = 100,
+    bpue = fit_tous$bpue,
+    ic95 = fit_tous$ic95
   )
   
   # ---- Groupe par sexe ----
@@ -86,19 +104,14 @@ bpue_generate_biomasse <- function(data_specimen, data_station) {
     dplyr::mutate(biomasse_g = tidyr::replace_na(biomasse_g, 0))
   
   biomasse_femelles_matures <- sum(data_femelles_matures$biomasse_g)
-  modele_nb2_femelles <- MASS::glm.nb(biomasse_g ~ 1, data = data_femelles_matures)
-  prediction_femelles <- predict(modele_nb2_femelles, newdata = data.frame(moyenne = "moyenne"),
-                                 se.fit = TRUE, type = "link")
-  
-  bpue_femelles <- exp(prediction_femelles$fit) / 1000
-  ic_femelles <- exp(prediction_femelles$fit + c(-1.96, 1.96) * prediction_femelles$se.fit) / 1000
+  fit_femelles <- safe_nb_fit(data_femelles_matures$biomasse_g)
   
   ligne_femelles_matures <- tibble::tibble(
     groupe = "Repro. actifs femelles",
     biomasse = biomasse_femelles_matures / 1000,
     percent = biomasse * 100 / biomasse_totale_kg,
-    bpue = bpue_femelles,
-    ic95 = sprintf("(%.1f-%.1f)", ic_femelles[1], ic_femelles[2])
+    bpue = fit_femelles$bpue,
+    ic95 = fit_femelles$ic95
   )
   
   # ---- Immatures ----
