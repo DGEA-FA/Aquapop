@@ -137,20 +137,22 @@ maturite_get_coef <- function(modele_glm, sexe = c("sexeF", "sexeM"), interactio
 #'
 #' @return Une chaîne de caractères représentant le ratio simplifié (ex: `"3:2"`), ou `NA_character_` si les deux valeurs sont nulles.
 #'
-#' @examples
-#' calculate_mf_ratio(6, 4)   # Retourne "3:2"
-#' calculate_mf_ratio(5, 5)   # Retourne "1:1"
-#' calculate_mf_ratio(0, 0)   # Retourne NA
-#' calculate_mf_ratio(0, 7)   # Retourne "0:1"
-#'
 #' @export
 calculate_mf_ratio <- function(male_count, female_count) {
   if (male_count == 0 && female_count == 0) {
-    return(NA_character_)  # Retourne NA explicite de type character
+    return(NA_character_)
   }
-  # Simplifier le ratio avec fractions()
-  ratio <- MASS::fractions(c(male_count, female_count))
-  return(paste0(ratio[1], ":", ratio[2]))
+  
+  pgcd <- function(a, b) if (b == 0) a else Recall(b, a %% b)
+  divisor <- pgcd(male_count, female_count)
+  
+  # Pour éviter division par zéro (ex: 0:7 → 0:1)
+  divisor <- ifelse(divisor == 0, 1, divisor)
+  
+  male_simple <- male_count %/% divisor
+  female_simple <- female_count %/% divisor
+  
+  paste0(male_simple, ":", female_simple)
 }
 
 
