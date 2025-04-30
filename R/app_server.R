@@ -34,7 +34,7 @@ app_server <- function(input, output, session) {
     selectInput(
       inputId = "no_lac",
       label = "Sélectionner le numéro de lac",
-      choices = unique(df_filtered1()$no_lac),
+      choices = sort(unique(df_filtered1()$no_lac)),
       selected = NULL
     )
   })
