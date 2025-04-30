@@ -116,27 +116,29 @@ app_ui <- function() {
                    dans la *Récolte* alors que le tableau récapitulatif 
                    est calculé à partir des données de la table *Spécimens*."),
                    
-                   htmltools::includeMarkdown(path = './texte/CPUE_texte.rmd'),
-                   
                    ## Tableau CPUE - Tous ----
                    
                    withSpinner(uiOutput("cpue_tous_table"), type = myspinner),
                    download_button_ui("cpue_tous_table_dl"),
                    
+                   br(),
+                   
                    ## Tableau CPUE - Femelles matures ----
-                   withSpinner(uiOutput("cpue_femelles_table"), type = myspinner),
+                   uiOutput("cpue_femelles_table"),
                    download_button_ui("cpue_femelles_table_dl"),
+                   br(),
                    
                    ## Tableau d’abondance ----
-                   withSpinner(uiOutput("abondance_table"), type = myspinner),
+                   uiOutput("abondance_table"),
                    download_button_ui("abondance_table_dl"),
+                   
                  ),
                  
                  # BPUE - Biomasse ----
                  
                  tabPanel(
                    title = "BPUE",
-                   p("Le tableau ci-dessous présente la répartition de la biomasse capturée selon la table *Spécimens*."),
+                   p("Le tableau ci-dessous présente la répartition de la biomasse capturée."),
                    withSpinner(uiOutput("biomasse_table"), type = myspinner),
                    download_button_ui("biomasse_table_dl")
                  )
@@ -186,12 +188,17 @@ app_ui <- function() {
               h3("Histogramme de fréquence des longueurs"),
               p("La figure ci-dessous représente l’histogramme de fréquence des
                 longueurs selon le filtre sélectionné à gauche."),
-              withSpinner(
-                plotOutput("structuretailleplot", width = "100%", height = "400px"),
-                type = myspinner
+              
+              div(
+                style = "max-width: 900px; margin: auto;",
+                withSpinner(plotOutput("structuretailleplot", height = "500px"), type = myspinner),
+                br(),
+                downloadButton("download_groupetailleplot", "Téléchargement du graphique")
               ),
-              downloadButton(outputId = "download_groupetailleplot", label = "Téléchargement du graphique"),
-
+              
+              br(),
+              
+          
               download_button_ui("download_data4plot_taille",
                              label = "Téléchargement des données du graphique"
               )
@@ -221,13 +228,16 @@ app_ui <- function() {
               h3("Histogramme de fréquence des âges"),
               p("La figure ci-dessous représente l’histogramme de fréquences des âges 
                 selon le filtre sélectionné à gauche."),
-              withSpinner(
-                plotOutput("structureageplot", width = "100%", height = "400px"),
-                type = myspinner
+              
+              div(
+                style = "max-width: 900px; margin: auto;",
+                withSpinner(plotOutput("structureageplot", height = "500px"), type = myspinner),
+                br(),
+                downloadButton("download_groupeageplot", "Téléchargement du graphique")
               ),
-              downloadButton(outputId = "download_groupeageplot",
-                             label = "Téléchargement du graphique"
-              ),
+              
+              br(),
+             
               download_button_ui("download_data4plot_age",
                 label = "Téléchargement des données du graphique"
               )
@@ -255,8 +265,14 @@ app_ui <- function() {
             ## Répartition par classe de taille – Graphique ----
             
             h3("Distribution de fréquence de longueurs avec les classes de PSD"),
-            plotOutput("psd_byclass_plot", width = 600, height = 400),
-            downloadButton("download_psd_byclass_plot", label = "Téléchargement du graphique")
+            div(
+              style = "max-width: 900px; margin: auto;",
+              withSpinner(plotOutput("psd_byclass_plot", height = "500px"), type = myspinner),
+              br(),
+              downloadButton("download_psd_byclass_plot", "Téléchargement du graphique")
+            )
+            
+            
           ),
          
           
@@ -271,10 +287,14 @@ app_ui <- function() {
             
             ## Graphique ----
             h3("Relation masse-longueur"),
-
-            withSpinner(plotOutput("plot_masselongueur"), type = myspinner),
-            downloadButton("download_masselongueur_plot", label = "Téléchargement du graphique"),
-            # br(), br(),
+            div(
+              style = "max-width: 900px; margin: auto;",
+              withSpinner(plotOutput("plot_masselongueur", height = "500px"), type = myspinner),
+              br(),
+              downloadButton("download_masselongueur_plot", "Téléchargement du graphique")
+            ),
+          
+            br(),
 
             ## Tableau des coefficients ----
             h3("Tableau des coefficients"),
@@ -378,8 +398,15 @@ app_ui <- function() {
         strong("Interprétation :"),
         verbatimTextOutput("dispersion_msg"),
         br(),
-        withSpinner(plotOutput("plot_dispersion_poisson", width = "100%", height = "400px"), type = myspinner),
-        downloadButton("download_plot_dispersion_poisson", label = "Télécharger le graphique"),
+        
+        div(
+          style = "max-width: 900px; margin: auto;",
+          withSpinner(plotOutput("plot_dispersion_poisson", height = "500px"), type = myspinner),
+          br(),
+          downloadButton("download_plot_dispersion_poisson", "Téléchargement du graphique")
+        ),
+        
+        br(),
         
         h4("Paramètre avancé : recalcul avec un autre Peak Plus"),
         p("Par défaut, la valeur du Peak Plus est déterminée automatiquement selon la structure d’âge observée. 
@@ -402,9 +429,15 @@ Vous pouvez toutefois forcer un recalcul avec une autre valeur."),
         
         ## Graphique du modèle choisi ----
         h3("Distribution d'âge et modèle de mortalité retenu"),
-        withSpinner(plotOutput("plot_mortalite"), type = myspinner),
-        downloadButton("download_plot_mortalite", "Télécharger le graphique"),
-        br(), br(),
+        
+        div(
+          style = "max-width: 900px; margin: auto;",
+          withSpinner(plotOutput("plot_mortalite", height = "500px"), type = myspinner),
+          br(),
+          downloadButton("download_plot_mortalite", "Téléchargement du graphique")
+        ),
+        
+        br(),
         
         ## Chapman-Robson ----
         p("La mortalité estimée selon le modèle de Chapman-Robson est présentée à titre comparatif seulement, car son utilisation n’est pas recommandée."),
@@ -450,8 +483,15 @@ Vous pouvez toutefois forcer un recalcul avec une autre valeur."),
                    
                    
                    # Graphique des résultats
-                   plotOutput("plot_ogive_l50"),
-                   downloadButton("download_ogive_l50_plot", label = "Télécharger le graphique")
+                   div(
+                     style = "max-width: 900px; margin: auto;",
+                     withSpinner(plotOutput("plot_ogive_l50", height = "500px"), type = myspinner),
+                     br(),
+                     downloadButton("download_ogive_l50_plot", "Téléchargement du graphique")
+                   ),
+                   
+                   br()
+                   
                  ),
                  
                  ## Âge à maturité ----
