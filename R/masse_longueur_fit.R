@@ -1,71 +1,90 @@
-#' Calculer et afficher la relation masse-longueur pour une espèce
+#' Ajuster la relation masse-longueur pour une espèce
 #'
 #' Cette fonction ajuste une régression linéaire sur les données log-transformées
-#' de masse et de longueur. Elle retourne un tableau contenant les coefficients estimés
-#' et un graphique de la courbe ajustée avec ses intervalles de prédiction.
+#' de masse et de longueur. Elle retourne les coefficients estimés (avec IC 95 %),
+#' un graphique de la courbe ajustée, et une version formatée du tableau.
 #'
-#' @param data Un `data.frame` contenant `ltm`, `masse`, `sp` et `no_specimen`.
+#' @param data Un `data.frame` contenant les colonnes `ltm`, `masse`, `sp` et `no_specimen`.
 #'
-#' @return Une liste contenant :
+#' @return Une liste nommée contenant :
 #' \describe{
-#'   \item{`data`}{Un `data.frame` avec les coefficients estimés, erreurs standard et IC 95 %.}
-#'   \item{`flextable`}{Une version formatée du tableau des coefficients.}
-#'   \item{`plot`}{Un graphique `ggplot` de la relation masse-longueur.}
+#'   \item{data}{Tableau des coefficients estimés (`data.frame`)}
+#'   \item{flextable}{Tableau formaté (`flextable`)}
+#'   \item{plot}{Graphique ggplot de la relation masse-longueur}
 #' }
 #' @export
 masse_longueur_fit <- function(data) {
-  sp <- unique(data$sp)
-  if (length(sp) != 1) stop("Les données doivent être filtrées pour une seule espèce.")
+  # --- Validation des données ---
+  espece <- unique(data$sp)
+  if (length(espece) != 1) stop("Les données doivent contenir une seule espèce (sp).")
   
-  df <- data %>%
-    dplyr::filter(!is.na(ltm), !is.na(masse)) %>%
+  # --- Prétraitement ---
+  donnees_filtrees <- data |>
+    dplyr::filter(!is.na(ltm), !is.na(masse)) |>
     dplyr::mutate(
-      logW = log10(masse),
-      logL = log10(ltm)
+      log_masse = log10(masse),
+      log_longueur = log10(ltm)
     )
   
-  fit <- lm(logW ~ logL, data = df)
-  coef_summary <- summary(fit)$coefficients
-  conf_int <- confint(fit)
+  # --- Ajustement du modèle ---
+  modele_masse_longueur <- stats::lm(log_masse ~ log_longueur, data = donnees_filtrees)
+  resume_modele <- summary(modele_masse_longueur)$coefficients
+  intervalle_confiance <- stats::confint(modele_masse_longueur)
   
-  table_coef <- tibble::tibble(
-    Coefficient = c("log10(a)", "b"),
-    Estimate = round(coef_summary[, 1], 3),
-    SE       = round(coef_summary[, 2], 3),
-    IC95     = c(
-      glue::glue("[{round(conf_int[1, 1], 3)} - {round(conf_int[1, 2], 3)}]"),
-      glue::glue("[{round(conf_int[2, 1], 3)} - {round(conf_int[2, 2], 3)}]")
+  # --- Création du tableau brut ---
+  table_resultats <- tibble::tibble(
+    coefficient = c("log10(a)", "b"),
+    estimation = round(resume_modele[, 1], 3),
+    erreur_standard = round(resume_modele[, 2], 3),
+    ic95 = c(
+      glue::glue("[{round(intervalle_confiance[1, 1], 3)} - {round(intervalle_confiance[1, 2], 3)}]"),
+      glue::glue("[{round(intervalle_confiance[2, 1], 3)} - {round(intervalle_confiance[2, 2], 3)}]")
     )
   )
   
-  ft <- table_coef %>%
-    flextable::flextable() %>%
+  # --- Tableau formaté ---
+  table_flextable <- table_resultats |>
+    flextable::flextable() |>
     style_flextable_aquapop()
   
-  xs <- seq(min(df$logL), max(df$logL), length.out = 100)
-  cf <- FSA::logbtcf(fit, 10)
-  preds <- cf * 10 ^ predict(fit, newdata = data.frame(logL = xs), interval = "prediction")
-  pred_df <- tibble::tibble(
-    ltm = 10 ^ xs,
-    fit = preds[, "fit"],
-    lwr = preds[, "lwr"],
-    upr = preds[, "upr"]
+  # --- Génération du graphique ---
+  sequence_log_longueur <- seq(
+    min(donnees_filtrees$log_longueur),
+    max(donnees_filtrees$log_longueur),
+    length.out = 100
   )
   
-  fig <- ggplot2::ggplot() +
-    ggplot2::geom_point(data = df, ggplot2::aes(x = ltm, y = masse)) +
-    ggplot2::geom_line(data = pred_df, ggplot2::aes(x = ltm, y = fit), color = "blue") +
-    ggplot2::geom_line(data = pred_df, ggplot2::aes(x = ltm, y = lwr), color = "red", linetype = 2) +
-    ggplot2::geom_line(data = pred_df, ggplot2::aes(x = ltm, y = upr), color = "red", linetype = 2) +
+  facteur_correction <- FSA::logbtcf(modele_masse_longueur, base = 10)
+  predictions <- facteur_correction * 10 ^ predict(
+    modele_masse_longueur,
+    newdata = data.frame(log_longueur = sequence_log_longueur),
+    interval = "prediction"
+  )
+  
+  donnees_prediction <- tibble::tibble(
+    ltm = 10 ^ sequence_log_longueur,
+    fit = predictions[, "fit"],
+    lwr = predictions[, "lwr"],
+    upr = predictions[, "upr"]
+  )
+  
+  graphique_relation <- ggplot2::ggplot() +
+    ggplot2::geom_point(data = donnees_filtrees, ggplot2::aes(x = ltm, y = masse)) +
+    ggplot2::geom_line(data = donnees_prediction, ggplot2::aes(x = ltm, y = fit), color = "blue") +
+    ggplot2::geom_line(data = donnees_prediction, ggplot2::aes(x = ltm, y = lwr), color = "red", linetype = 2) +
+    ggplot2::geom_line(data = donnees_prediction, ggplot2::aes(x = ltm, y = upr), color = "red", linetype = 2) +
     theme_aquapop() +
     ggplot2::labs(
       x = "Longueur totale maximale (mm)",
       y = "Masse (g)"
     )
   
-  return(list(
-    data = table_coef,
-    flextable = ft,
-    plot = fig
-  ))
+  # --- Résultat final ---
+  masse_longueur_fit_res <- list(
+    data = table_resultats,
+    flextable = table_flextable,
+    plot = graphique_relation
+  )
+  
+  return(masse_longueur_fit_res)
 }
