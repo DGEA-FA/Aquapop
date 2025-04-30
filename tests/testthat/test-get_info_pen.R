@@ -1,16 +1,30 @@
-test_that("get_info_pen() retourne une liste pour un type de pêche valide", {
-  resultat <- get_info_pen("PENT")
-  expect_type(resultat, "list")
-  expect_equal(resultat$code_sp, "SANA")
+# test-get_info_pen.R
+# Tests unitaires – Fonction get_info_pen()
+# AquaPop – Informations biologiques par espèce ou type de pêche
+
+test_that("get_info_pen() retourne une liste valide pour un code d'espèce connu", {
+  res <- get_info_pen("SANA")
+  expect_type(res, "list")
+  expect_named(res, c("code_sp", "nom_sp", "binwidth", "breaks", "break_labels"))
+  expect_equal(res$code_sp, "SANA")
+  expect_true(is.numeric(res$binwidth))
+  expect_type(res$breaks, "double")
+  expect_type(res$break_labels, "character")
+  expect_equal(length(res$breaks), length(res$break_labels))
 })
 
-test_that("get_info_pen() retourne une liste pour un code espèce valide", {
-  resultat <- get_info_pen("SAFO")
-  expect_type(resultat, "list")
-  expect_equal(resultat$code_sp, "SAFO")
+test_that("get_info_pen() retourne les infos correctes pour un type de pêche valide", {
+  res <- get_info_pen("PENT")
+  expect_type(res, "list")
+  expect_equal(res$code_sp, "SANA")  # Selon le mapping dans la fonction
 })
 
-test_that("get_info_pen() retourne NULL si l'entrée est invalide", {
-  expect_null(get_info_pen("XYZ"))
-  expect_null(get_info_pen("ESPECE_FAUSSE"))
+test_that("get_info_pen() retourne NULL pour un code inconnu", {
+  expect_null(get_info_pen("XXXX"))
 })
+
+test_that("get_info_pen() retourne NULL pour une valeur NA ou vide", {
+  expect_null(get_info_pen(NA_character_))
+  expect_null(get_info_pen(""))
+})
+
