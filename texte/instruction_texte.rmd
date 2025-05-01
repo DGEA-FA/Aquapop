@@ -3,11 +3,6 @@ title: "Instruction texte"
 author: "Caroline Brule"
 date: "5 nov 2023"
 ---
-Le fichier doit être en format *.xlsx, conformément à la procédure d'extraction de IFA (fourni par la DPEFA).
-Sans modification de votre part, le fichier excel extrait est déjà formatté pour l'Application.
-Les onglets du classeur Excel doivent être dans un ordre précis, soit : Lac, Stations, Recolte, Specimens, Profil, Paramètres.
-Dans chaque onglet, les colonnes doivent également être dans un ordre précis. Voir les onglets pour un exemple de chaque feuille.
-Les variantes de données absentes (i.e. NA, '', ' ', NULL, NaN) seront toutes transformées en NA dans R.
-
-Les données Excel doivent toutes être en format texte à leur sortie de IFA (leur format sera modifié dans R).
+Le fichier doit être en format *.xlsx. Il est recommandé d'extraire vos données à partir de la base de données IFA en utilisant le classeur nommé Aquapop spécialement conçu à cette fin, puis de l'enregistrer sous le format *.xlsx. Aucune autre modification n'est nécessaire, le fichier Excel extrait est déjà formatté pour l'Application. Il est néanmoins recommandé de vérifier que vos données sont correctement saisies (voir le guide de l'utilisateur) et, le cas échéant, de les corriger dans IFA avant de refaire une extraction.
+Pour les utilisateurs souhaitant utiliser leur propre fichier Excel, consulter le guide de l'utilisateur pour connaitre la structure requise du fichier afin d'assurer le bon fonctionnement de l'outil.
                         
