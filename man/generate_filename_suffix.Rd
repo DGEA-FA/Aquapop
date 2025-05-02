@@ -7,17 +7,17 @@
 generate_filename_suffix(typ_pech, annee, no_lac, nom_lac = NULL)
 }
 \arguments{
-\item{typ_pech}{Code du type de pêche (ex: "PENT")}
+\item{typ_pech}{Code du type de pêche (ex: \code{"PENT"})}
 
-\item{annee}{Année de l'inventaire (ex: 2022)}
+\item{annee}{Année de l'inventaire (ex: \code{2022})}
 
-\item{no_lac}{Numéro du lac (ex: "01565")}
+\item{no_lac}{Numéro du lac (ex: \code{"01565"})}
 
-\item{nom_lac}{Nom du lac (ex: "Lac Archambault"). Optionnel.}
+\item{nom_lac}{Nom du lac (ex: \code{"Lac Archambault"}). Optionnel.}
 }
 \value{
-Une chaîne de type "PENT_2022_LacArchambault_no01565"
+Une chaîne de caractères.
 }
 \description{
-Génère un suffixe de nom de fichier à partir des métadonnées du lac
+Exemple : \code{"PENT_2022_LacArchambault_no01565"}
 }

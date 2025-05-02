@@ -7,15 +7,15 @@
 build_export_filename(objet, suffixe, ext = "xlsx")
 }
 \arguments{
-\item{objet}{Nom du contenu exporté (ex: "masselongueur", "cpue_tous")}
+\item{objet}{Nom du contenu exporté (ex: \code{"masselongueur"}, \code{"cpue_tous"})}
 
-\item{suffixe}{Résultat de \code{generate_filename_suffix()} ou \code{filename_suffix()}}
+\item{suffixe}{Résultat de \code{generate_filename_suffix()}}
 
-\item{ext}{Extension (xlsx, png, csv, etc.)}
+\item{ext}{Extension souhaitée (ex: \code{"xlsx"}, \code{"png"})}
 }
 \value{
-Un nom complet comme "masselongueur_PENT_2022_LacArchambault_no01565.xlsx"
+Une chaîne de caractères représentant le nom de fichier.
 }
 \description{
-Construit un nom de fichier standardisé pour les exports
+Exemple : \code{"masselongueur_PENT_2022_LacArchambault_no01565.xlsx"}
 }

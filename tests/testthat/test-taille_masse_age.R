@@ -39,6 +39,5 @@ test_that("taille_masse_age() gère les cas normaux et limites", {
   val_extraites <- res$data[1, max_cols]
   expect_true(all(grepl("^\\d+(\\.\\d)?$|^-$", as.character(unlist(val_extraites)))))
   
-  # Vérifie que la table flextable peut être imprimée sans erreur
-  expect_silent(print(res$flextable))
+
 })

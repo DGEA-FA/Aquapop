@@ -31,16 +31,16 @@ taille_masse_age <- function(data) {
   }
   
   # Calcul des statistiques morphologiques ----
-  table_ltm   <- .regrouper_stats_morpho(data, "ltm")   %>% rename_with(~ paste0("ltm_", .), -sexe)
-  table_masse <- .regrouper_stats_morpho(data, "masse") %>% rename_with(~ paste0("masse_", .), -sexe)
-  table_age   <- .regrouper_stats_morpho(data, "age")   %>% rename_with(~ paste0("age_", .), -sexe)
+  table_ltm   <- .regrouper_stats_morpho(data, "ltm")   %>% dplyr::rename_with(~ paste0("ltm_", .), -sexe)
+  table_masse <- .regrouper_stats_morpho(data, "masse") %>% dplyr::rename_with(~ paste0("masse_", .), -sexe)
+  table_age   <- .regrouper_stats_morpho(data, "age")   %>% dplyr::rename_with(~ paste0("age_", .), -sexe)
   
   # Fusion des tableaux ----
   table_resultats <- table_ltm %>%
-    inner_join(table_masse, by = "sexe") %>%
-    inner_join(table_age, by = "sexe") %>%
-    rename(Sexe = sexe) %>%
-    mutate(across(ends_with(c("min", "max", "moy", "e_t")),
+    dplyr::inner_join(table_masse, by = "sexe") %>%
+    dplyr::inner_join(table_age, by = "sexe") %>%
+    dplyr::rename(Sexe = sexe) %>%
+    dplyr::mutate(across(ends_with(c("min", "max", "moy", "e_t")),
                   ~ ifelse(. %in% c("Inf", "-Inf") | is.na(.), "-", .)))
   
   # Création du tableau flextable ----
@@ -92,18 +92,18 @@ taille_masse_age <- function(data) {
 .regrouper_stats_morpho <- function(data, var) {
   
   # --- Calcul des statistiques pour chaque sous-groupe ---
-  table_groupes <- bind_rows(
+  table_groupes <- dplyr::bind_rows(
     .stats_morpho(data, var, "sexe"),
-    .stats_morpho(data, var) %>% mutate(sexe = NA),
-    .stats_morpho(filter(data, maturite == "O" & sexe == "M"), var) %>% mutate(sexe = "Reprod. actifs mâles"),
-    .stats_morpho(filter(data, maturite == "N"), var) %>% mutate(sexe = "Imm. ou reprod. inactifs"),
-    .stats_morpho(filter(data, maturite == "O" & sexe == "F"), var) %>% mutate(sexe = "Reprod. actifs femelles"),
-    .stats_morpho(filter(data, maturite == "IND"), var) %>% mutate(sexe = "Statut reprod. inconnu")
+    .stats_morpho(data, var) %>% dplyr::mutate(sexe = NA),
+    .stats_morpho(dplyr::filter(data, maturite == "O" & sexe == "M"), var) %>% dplyr::mutate(sexe = "Reprod. actifs mâles"),
+    .stats_morpho(dplyr::filter(data, maturite == "N"), var) %>% dplyr::mutate(sexe = "Imm. ou reprod. inactifs"),
+    .stats_morpho(dplyr::filter(data, maturite == "O" & sexe == "F"), var) %>% dplyr::mutate(sexe = "Reprod. actifs femelles"),
+    .stats_morpho(dplyr::filter(data, maturite == "IND"), var) %>% dplyr::mutate(sexe = "Statut reprod. inconnu")
   )
   
   # --- Nettoyage et harmonisation des libellés de groupes ---
   table_groupes <- table_groupes %>%
-    mutate(
+    dplyr::mutate(
       sexe = as.character(sexe),
       sexe = ifelse(is.na(sexe), "Tous", sexe),
       sexe = dplyr::recode(sexe,
@@ -117,7 +117,7 @@ taille_masse_age <- function(data) {
         "Imm. ou reprod. inactifs", "Statut reprod. inconnu"
       ))
     ) %>%
-    arrange(sexe)
+    dplyr::arrange(sexe)
   
   return(table_groupes)
 }
@@ -137,17 +137,17 @@ taille_masse_age <- function(data) {
   
   # --- Regroupement (si applicable) ---
   if (!is.null(group_var)) {
-    data <- data %>% group_by(!!sym(group_var), .drop = FALSE)
+    data <- data %>% dplyr::group_by(!!dplyr::sym(group_var), .drop = FALSE)
   }
   
   # --- Calcul des statistiques descriptives ---
   data %>%
-    summarise(
-      nb  = sum(!is.na(!!sym(var))),
-      moy = ifelse(all(is.na(!!sym(var))), NA, mean(!!sym(var), na.rm = TRUE)) %>% round(1),
-      e_t = ifelse(all(is.na(!!sym(var))), NA, sd(!!sym(var), na.rm = TRUE)) %>% round(1),
-      min = ifelse(all(is.na(!!sym(var))), NA, min(!!sym(var), na.rm = TRUE)) %>% round(1),
-      max = ifelse(all(is.na(!!sym(var))), NA, max(!!sym(var), na.rm = TRUE)) %>% round(1),
+    dplyr::summarise(
+      nb  = sum(!is.na(!!dplyr::sym(var))),
+      moy = ifelse(all(is.na(!!dplyr::sym(var))), NA, mean(!!dplyr::sym(var), na.rm = TRUE)) %>% round(1),
+      e_t = ifelse(all(is.na(!!dplyr::sym(var))), NA, sd(!!dplyr::sym(var), na.rm = TRUE)) %>% round(1),
+      min = ifelse(all(is.na(!!dplyr::sym(var))), NA, min(!!dplyr::sym(var), na.rm = TRUE)) %>% round(1),
+      max = ifelse(all(is.na(!!dplyr::sym(var))), NA, max(!!dplyr::sym(var), na.rm = TRUE)) %>% round(1),
       .groups = "drop"
     )
 }

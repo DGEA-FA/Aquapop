@@ -7,12 +7,12 @@
 download_data(data, path)
 }
 \arguments{
-\item{data}{Un data.frame ou une liste de data.frames}
+\item{data}{Un \code{data.frame} ou une liste de \code{data.frame}}
 
-\item{path}{Chemin de sortie du fichier .xlsx}
+\item{path}{Chemin de sortie du fichier \code{.xlsx}}
 }
 \value{
-NULL (fichier écrit sur disque)
+\code{NULL} (le fichier est écrit sur disque)
 }
 \description{
 Enregistre un data.frame en fichier Excel (.xlsx)

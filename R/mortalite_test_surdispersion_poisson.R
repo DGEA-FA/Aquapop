@@ -42,7 +42,7 @@ mortalite_test_surdispersion_poisson <- function(df) {
     residuals = residuals(mod_pois, type = "pearson")
   )
   
-  plot <- ggplot2::ggplot(df_plot, aes(x = fitted, y = residuals)) +
+  plot <- ggplot2::ggplot(df_plot, ggplot2::aes(x = fitted, y = residuals)) +
     ggplot2::geom_point(color = "#0072B2", size = 2) +
     ggplot2::geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") +
     ggplot2::labs(

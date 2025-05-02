@@ -14,14 +14,10 @@ Un vecteur de chaînes de caractères (\code{character}) contenant les valeurs p
 }
 \description{
 Cette fonction prend une ou plusieurs valeurs de p en entrée et retourne une version
-arrondie et formatée sous forme de chaîne de caractères, selon les conventions de présentation
-usuelles en statistique.
-}
-\details{
+arrondie et formatée sous forme de chaîne de caractères, selon les conventions usuelles :
 \itemize{
-\item Les valeurs \code{NA} sont retournées telles quelles (\code{NA_character_}).
-\item Les valeurs inférieures à 0.001 sont remplacées par la chaîne \code{"< 0.001"}.
-\item Les autres valeurs sont arrondies à trois décimales et affichées au format numérique fixe.
+\item \verb{< 0.001} pour les valeurs très faibles
+\item valeurs numériques à 3 décimales sinon
 }
 }
 \examples{
