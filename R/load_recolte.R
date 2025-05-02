@@ -45,7 +45,7 @@ load_recolte <- function(path,
     col_names = TRUE,
     col_types = "text",
     na = c("", "NULL", "NA", " ", "-")
-  ) %>% as.data.frame()
+  ) |> as.data.frame()
   
   # --- Table de synonymes avec noms déjà clean_names() ---
   synonymes_clean <- list(
@@ -103,12 +103,12 @@ load_recolte <- function(path,
   )
   
   # --- Conversion des types ---
-  recolte <- recolte %>%
+  recolte <- recolte |>
     dplyr::mutate(
       dplyr::across(c(no_lac, typ_pech, no_station, sp), as.factor),
       dplyr::across(c(nb_capture, nb_pese), as.numeric),
       comments_recolte = if ("comments" %in% names(recolte)) as.character(recolte$comments) else NA_character_
-    ) %>%
+    ) |>
     dplyr::select(-any_of("comments"))
   
   # --- Suppression des doublons ---

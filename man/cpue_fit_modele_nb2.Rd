@@ -7,28 +7,29 @@
 cpue_fit_modele_nb2(cpue_data)
 }
 \arguments{
-\item{cpue_data}{Un \code{data.frame} produit par \code{cpue_prepare()} contenant au minimum
-les colonnes \code{no_station} (identifiant de la station) et \code{CPUE} (valeur numérique de la capture par unité d'effort).}
+\item{cpue_data}{Un \code{data.frame} produit par \code{cpue_prepare()}, contenant au minimum les colonnes \code{no_station} et \code{CPUE}.}
 }
 \value{
-Un \code{data.frame} d’une ligne contenant :
+Un \code{data.frame} d’une seule ligne résumant le modèle ajusté, avec les colonnes suivantes :
 \describe{
-\item{methode}{Nom du modèle ("nb2")}
-\item{ajustement_hnp}{Pourcentage moyen d'observations hors bande dans le HNP}
-\item{aicc}{Critère d’information corrigé (AICc)}
-\item{cpue_moyenne}{Estimation moyenne de la CPUE (valeur prédite)}
-\item{ic_95}{Intervalle de confiance à 95 \%}
-\item{commentaire}{Appréciation qualitative de l’ajustement}
-\item{convergence}{Toujours TRUE si le modèle a été ajusté sans erreur}
-\item{nb_iterations_hnp}{Nombre d’itérations du test HNP (2 ou 5)}
+\item{methode}{Type de modèle utilisé (\code{"nb2"})}
+\item{ajustement_hnp}{Pourcentage moyen d’observations hors bande du test HNP}
+\item{aicc}{Critère d'information corrigé (AICc)}
+\item{cpue_moyenne}{Valeur moyenne prédite par le modèle (exponentielle du lien)}
+\item{ic_95}{Intervalle de confiance à 95 \% sous forme de chaîne de caractères}
+\item{commentaire}{Texte interprétant l’ajustement : bon, marginal ou mauvais}
+\item{convergence}{État de convergence (\code{TRUE}, car \code{glm.nb()} converge toujours sauf erreur)}
+\item{nb_iterations_hnp}{Nombre total d’itérations HNP effectuées (2 ou 5)}
 }
 }
 \description{
-Cette fonction ajuste un modèle de régression NB2 (\code{glm.nb}) sur les données de CPUE par station,
-puis applique un test HNP (Half-Normal Plot) pour évaluer la qualité de l’ajustement.
+Cette fonction ajuste un modèle de type NB2 (Negative Binomial 2) à l’aide de \code{glm.nb()}
+sur les données de CPUE par station. Elle applique également un test HNP (Half-Normal Plot)
+pour évaluer la qualité de l’ajustement. En cas d’ajustement marginal (entre 10 \% et 15 \% d’observations hors bande),
+trois simulations supplémentaires sont effectuées.
 }
 \examples{
-fake_data <- tibble::tibble(
+fake_data <- tibble(
   no_station = 1:10,
   CPUE = rnbinom(10, mu = 5, size = 1)
 )

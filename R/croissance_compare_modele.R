@@ -1,13 +1,26 @@
-#' Comparaison de modèles de croissance (Von Bertalanffy, Gompertz, Logistique)
+#' Comparer trois modèles de croissance (Von Bertalanffy, Gompertz, Logistique)
 #'
 #' Cette fonction ajuste trois modèles de croissance non linéaire (Von Bertalanffy, Gompertz, Logistique)
-#' à des données de spécimens et retourne un tableau comparatif des paramètres estimés, des intervalles
-#' de confiance et des critères de sélection de modèles (AICc).
+#' à un jeu de données de spécimens. Elle retourne un tableau comparatif des paramètres estimés, des
+#' intervalles de confiance et du critère d'information corrigé (AICc) pour chacun des modèles.
 #'
-#' @param data Un `data.frame` contenant les spécimens (doit inclure les colonnes `sp`, `ltm`, `age`, `no_specimen`)
-#' @param format Format de sortie : `"data.frame"` (par défaut) ou `"flextable"`
+#' @param data Un `data.frame` de spécimens, contenant au minimum les colonnes `sp`, `ltm`, `age` et `no_specimen`.
+#' @param format Format de sortie souhaité : `"data.frame"` (par défaut) ou `"flextable"`.
 #'
-#' @return Une liste contenant : `data` (`data.frame`) et `flextable` (`flextable`)
+#' @return Une liste avec deux éléments :
+#' \describe{
+#'   \item{data}{Un `data.frame` résumant les résultats des trois modèles (paramètres, IC, AICc).}
+#'   \item{flextable}{Une version formatée (`flextable`) du tableau comparatif.}
+#' }
+#'
+#' @importFrom labelled set_variable_labels
+#' @importFrom dplyr if_else mutate left_join rename select filter arrange
+#' @importFrom AICcmodavg aictab
+#' @importFrom stats confint
+#' @importFrom fishmethods growth
+#' @importFrom FSA vbStarts
+#' @importFrom flextable set_caption flextable
+
 #' @export
 #'
 #' @examples
@@ -17,13 +30,13 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
   format <- match.arg(format)
   
   df <- data |>
-    dplyr::filter(!is.na(ltm), !is.na(age)) |>
-    dplyr::select(ltm, age, no_specimen)
+    filter(!is.na(ltm), !is.na(age)) |>
+    select(ltm, age, no_specimen)
   rownames(df) <- seq_len(nrow(df))
   
-  pi <- FSA::vbStarts(ltm ~ age, data = df)
+  pi <- vbStarts(ltm ~ age, data = df)
   
-  result <- fishmethods::growth(
+  result <- growth(
     intype = 1, unit = 1, size = df$ltm, age = df$age,
     calctype = 1, wgtby = 1, error = 1,
     Sinf = pi$Linf, K = pi$K, t0 = pi$t0,
@@ -34,7 +47,7 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
   modele_names <- c("Von Bertalanffy", "Gompertz", "Logistique")
   
   extract_param <- function(res, index) {
-    tryCatch(stats::confint(res, level = 0.95)[index, , drop = TRUE], error = handle_error)
+    tryCatch(confint(res, level = 0.95)[index, , drop = TRUE], error = handle_error)
   }
   
   extract_from_env <- function(mod) {
@@ -86,16 +99,16 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
     )
   )
   
-  aic_tab <- AICcmodavg::aictab(
+  aic_tab <- aictab(
     list(result[["vout"]], result[["gout"]], result[["lout"]]),
     modnames = modele_names
   ) |>
-    dplyr::rename(methode = Modnames) |>
-    dplyr::select(-c("K", "LL", "Cum.Wt", "ModelLik"))
+    rename(methode = Modnames) |>
+    select(-c("K", "LL", "Cum.Wt", "ModelLik"))
   
-  final <- dplyr::left_join(tableresult, aic_tab, by = "methode") |>
-    dplyr::mutate(
-      converged = dplyr::if_else(converged == "converged", "convergé", converged),
+  final <- left_join(tableresult, aic_tab, by = "methode") |>
+    mutate(
+      converged = if_else(converged == "converged", "convergé", converged),
       l_inf = round(l_inf, 0),
       k = round(as.numeric(k), 3),
       t0 = round(as.numeric(t0), 3),
@@ -103,7 +116,7 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
       Delta_AICc = round(Delta_AICc, 2),
       AICcWt = round(AICcWt, 2)
     ) |>
-    labelled::set_variable_labels(
+    set_variable_labels(
       methode = "Modèles",
       l_inf = "L∞", l_inf_ic = "L∞ IC 95%",
       k = "K", k_ic = "K IC 95%",
@@ -113,16 +126,16 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
       AICcWt = "Poids d’Akaike",
       converged = "Convergence"
     ) |>
-    dplyr::select(
+    select(
       methode, l_inf, l_inf_ic,
       k, k_ic, t0, t0_ic,
       AICc, Delta_AICc, AICcWt,
       converged
     ) |>
-    dplyr::arrange(AICc)
+    arrange(AICc)
   
-  ft <- flextable::flextable(final) |>
-    flextable::set_caption("Paramètres des modèles de croissance (VB, Gompertz, Logistique)") |>
+  ft <- flextable(final) |>
+    set_caption("Paramètres des modèles de croissance (VB, Gompertz, Logistique)") |>
     style_flextable_aquapop() 
   
   return(list(data = final, flextable = ft))

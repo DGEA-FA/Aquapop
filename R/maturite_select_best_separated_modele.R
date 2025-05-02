@@ -15,7 +15,7 @@
 #' @export
 maturite_select_best_separated_modele <- function(evaluation_df) {
   # Filtrer les modèles valides : convergence et commentaire favorable
-  valid_models <- evaluation_df %>%
+  valid_models <- evaluation_df |>
     dplyr::filter(
       convergence == TRUE,
       !grepl("rejeter|choisir un autre modèle", commentaire)
@@ -50,12 +50,12 @@ maturite_select_best_separated_modele <- function(evaluation_df) {
   }
   
   # Cas 4 — Les deux sexes ont au moins un modèle valide
-  best_M <- valid_M %>%
-    dplyr::filter(aicc == min(aicc)) %>%
+  best_M <- valid_M |>
+    dplyr::filter(aicc == min(aicc)) |>
     dplyr::pull(modele_id)
   
-  best_F <- valid_F %>%
-    dplyr::filter(aicc == min(aicc)) %>%
+  best_F <- valid_F |>
+    dplyr::filter(aicc == min(aicc)) |>
     dplyr::pull(modele_id)
   
   return(list(

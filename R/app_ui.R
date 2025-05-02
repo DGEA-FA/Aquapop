@@ -1,10 +1,10 @@
-# ════════════════════════════════════════════════════════════════════════
-# INTERFACE UTILISATEUR – FONCTION PRINCIPALE app_ui()
-# ════════════════════════════════════════════════════════════════════════
-
-
+#' @importFrom htmltools includeMarkdown
+#' @importFrom shiny fluidPage navbarPage tabPanel
+#' @importFrom shinycssloaders withSpinner
+#' @importFrom reactable reactableOutput renderReactable
 
 app_ui <- function() {
+  myspinner <- 6
   
   render_user_guide_if_needed()
   
@@ -20,7 +20,7 @@ app_ui <- function() {
     navbarPage(
       "",
       
-      # Page d’accueil ----
+      # Page d'accueil ----
       tabPanel(
         icon("home"),
         tags$iframe(
@@ -31,24 +31,24 @@ app_ui <- function() {
         )
       ),
       
-      # Téléchargement des données ----
+      # Telechargement des donnees ----
       tabPanel(
         title = "Téléchargement",
         icon = icon("upload"),
         
         sidebarLayout(
           
-          # Panneau latéral - Téléversement et filtres
+          # Panneau lateral - Televersement et filtres
           sidebarPanel(
             
-            # Texte d’instructions utilisateur
+            # Texte d'instructions utilisateur
             
             tags$div(
-              htmltools::includeMarkdown(path = './texte/instruction_texte.rmd'),
+              includeMarkdown(path = './texte/instruction_texte.rmd'),
               style = "font-size: 85%; color: #555;"
             ),
             
-            # Bouton de téléchargement de fichier .xlsx
+            # Bouton de telechargement de fichier .xlsx
             tags$head(
               tags$style(HTML("
                 .btn-file {
@@ -66,22 +66,22 @@ app_ui <- function() {
               accept = c(".xlsx")
             ),
             
-            # Filtres dynamiques (pêche, lac, année)
+            # Filtres dynamiques (peche, lac, annee)
             uiOutput(outputId = "ui_typ_pech"),
             uiOutput(outputId = "ui_no_lac"),
             uiOutput(outputId = "ui_annee"),
             
-            # Sélecteur pour visualisation des jeux de données
+            # Selecteur pour visualisation des jeux de donnees
             uiOutput(outputId = "visualiser")
           ),
           
-          # Panneau principal - Affichage brut des données
+          # Panneau principal - Affichage brut des donnees
           mainPanel(
             
-            # Tableau de synthèse introductif
+            # Tableau de synthese introductif
             tableOutput(outputId = "recap_intro_table"),
             
-            # Affichage tabulaire conditionnel selon sélection utilisateur
+            # Affichage tabulaire conditionnel selon selection utilisateur
 
             tabsetPanel(
               id = "switcher",
@@ -130,7 +130,7 @@ app_ui <- function() {
                    download_button_ui("cpue_femelles_table_dl"),
                    br(),
                    
-                   ## Tableau d’abondance ----
+                   ## Tableau d'abondance ----
                    uiOutput("abondance_table"),
                    download_button_ui("abondance_table_dl"),
                    
@@ -153,7 +153,7 @@ app_ui <- function() {
         title = "Structure de population",
         tabsetPanel(
           
-          # Taille, masse, âge ----
+          # Taille, masse, age ----
           
           tabPanel(
             title = "Taille, masse et âge moyens",
@@ -207,7 +207,7 @@ app_ui <- function() {
             )
           ),
           
-          # Structure d'âge ----
+          # Structure d'age ----
           tabPanel(
             title = "Structure d'âge",
             
@@ -259,12 +259,12 @@ app_ui <- function() {
             
             withSpinner(uiOutput("psd_indice_ui"), type = myspinner),
             
-            ## Répartition par classe de taille – Tableau ----
+            ## Repartition par classe de taille - Tableau ----
             
             uiOutput("psd_byclass_table"),
             download_button_ui("psd_byclass_table_dl"),
             
-            ## Répartition par classe de taille – Graphique ----
+            ## Repartition par classe de taille - Graphique ----
             
             h3("Distribution de fréquence de longueurs avec les classes de PSD"),
             div(
@@ -369,7 +369,7 @@ app_ui <- function() {
         
         br(),
         
-        ## Graphique du modèle choisi ----
+        ## Graphique du modele choisi ----
         p("Le graphique suivant illustre la longueur observée des spécimens en fonction de leur âge, 
      ainsi que la courbe de croissance modélisée selon le modèle sélectionné. Les points représentent 
      les données observées, tandis que la ligne montre la prédiction du modèle."),
@@ -387,7 +387,7 @@ app_ui <- function() {
       ),
       # Panel 5 
       
-      # Mortalité ----
+      # Mortalite ----
       tabPanel(
         title = "Mortalité",
         
@@ -420,7 +420,7 @@ Vous pouvez toutefois forcer un recalcul avec une autre valeur."),
         br(), br(),
         
         
-        ## Comparaison des modèles ----
+        ## Comparaison des modeles ----
         p("Le tableau suivant présente les résultats pour l’ensemble des modèles testés. Le modèle le mieux adapté aux données est celui avec le plus faible AICc."),
         
         h3("Table de sélection du modèle de mortalité"),
@@ -429,7 +429,7 @@ Vous pouvez toutefois forcer un recalcul avec une autre valeur."),
         textOutput("phrase_mortalite"),
         br(),
         
-        ## Graphique du modèle choisi ----
+        ## Graphique du modele choisi ----
         h3("Distribution d'âge et modèle de mortalité retenu"),
         
         div(
@@ -451,22 +451,22 @@ Vous pouvez toutefois forcer un recalcul avec une autre valeur."),
       
       # Panel 6
       
-      # Maturité sexuelle ----
+      # Maturite sexuelle ----
       tabPanel(title = "Maturité sexuelle",
                tabsetPanel(
-                 ## Longueur à maturité ----
+                 ## Longueur a maturite ----
                  
                  tabPanel(
                    title = "Longueur à maturité",
                    
-                   ### Tableau de sélection de modèles ----
+                   ### Tableau de selection de modeles ----
                    
                    # Message explicatif
                    h3(HTML("Sélection des modèles L<sub>50</sub>")),
                    verbatimTextOutput("message_l50"),
                    br(),
                    
-                   # Tableau des modèles évalués
+                   # Tableau des modeles evalues
                    h3("Tableau interactif des modèles évalués"),
                    withSpinner(reactableOutput("table_modeles_l50_table"), type = myspinner),
                    download_button_ui("ogive_l50_table_dl"),
@@ -474,17 +474,17 @@ Vous pouvez toutefois forcer un recalcul avec une autre valeur."),
                    br(),
                    h3("Résultats du modèle sélectionné"),
                    
-                   ### Tableau du modèle choisi ----
+                   ### Tableau du modele choisi ----
                    
                    
-                   # Tableau des résultats
+                   # Tableau des resultats
                    uiOutput("ogive_l50_table"),
                    uiOutput("download_ogive_l50_table_ui"),
                    
-                   ### Graphique du modèle choisi ----
+                   ### Graphique du modele choisi ----
                    
                    
-                   # Graphique des résultats
+                   # Graphique des resultats
                    div(
                      style = "max-width: 900px; margin: auto;",
                      withSpinner(plotOutput("plot_ogive_l50", height = "500px"), type = myspinner),
@@ -496,21 +496,21 @@ Vous pouvez toutefois forcer un recalcul avec une autre valeur."),
                    
                  ),
                  
-                 ## Âge à maturité ----
+                 ## Age a maturite ----
                  
                  tabPanel(
                    title = "Âge à maturité",
                    
-                   ### Tableau de sélection de modèles ----
+                   ### Tableau de selection de modeles ----
                    
                    h3(HTML("Sélection des modèles A<sub>50</sub>")),
                    
-                   htmltools::includeMarkdown(path = './texte/A50_texte.rmd'),
+                   includeMarkdown(path = './texte/A50_texte.rmd'),
                    
-                   ### Tableau du modèle choisi ----
+                   ### Tableau du modele choisi ----
                    
                    
-                   ### Graphique du modèle choisi ----
+                   ### Graphique du modele choisi ----
                    
                    
                  )

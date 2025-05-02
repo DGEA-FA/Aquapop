@@ -55,8 +55,8 @@ psd_q <- function(data) {
   
   # --- Filtrage et classification des longueurs ---
   
-  donnees_qualite <- data %>%
-    dplyr::filter(ltm >= seuil_qualite) %>%
+  donnees_qualite <- data |>
+    dplyr::filter(ltm >= seuil_qualite) |>
     dplyr::mutate(gcat = FSA::lencat(ltm, breaks = break_class, droplevels = TRUE))
   
   # --- Calcul des fréquences par classe ---
@@ -84,19 +84,19 @@ psd_q <- function(data) {
     n = sum(freq_classes),
     method = "binomial",
     label = "PSD Q"
-  ) %>%
-    as.data.frame() %>%
+  ) |>
+    as.data.frame() |>
     dplyr::rename(
       Q   = Estimate,
       LCI = `95% LCI`,
       UCI = `95% UCI`
-    ) %>%
-    dplyr::mutate(`IC 95%` = glue::glue("[{round(LCI, 1)}-{round(UCI, 1)}]")) %>%
+    ) |>
+    dplyr::mutate(`IC 95%` = glue::glue("[{round(LCI, 1)}-{round(UCI, 1)}]")) |>
     dplyr::select(Q, `IC 95%`)
   
   # --- Construction du tableau flextable ---
   
-  table_flextable <- flextable::flextable(table_resultats) %>%
+  table_flextable <- flextable::flextable(table_resultats) |>
     style_flextable_aquapop()
     
   

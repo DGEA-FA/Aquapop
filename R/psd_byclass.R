@@ -24,15 +24,15 @@ psd_byclass <- function(data) {
   seuil_min_stock <- seuils_psd[2]
   noms_classes <- psd_classnames
   
-  donnees_classes <- data %>%
-    filter(ltm >= seuil_min_stock) %>%
+  donnees_classes <- data |>
+    filter(ltm >= seuil_min_stock) |>
     mutate(
       gcat = FSA::lencat(ltm, breaks = seuils_psd, droplevels = TRUE),
       Classe = plyr::mapvalues(gcat, from = seuils_psd, to = noms_classes, warn_missing = FALSE),
       intervalle = plyr::mapvalues(gcat, from = seuils_psd, to = etiquettes, warn_missing = FALSE)
     )
   
-  n_par_classe <- donnees_classes %>%
+  n_par_classe <- donnees_classes |>
     group_by(gcat, Classe, intervalle) %>%
     summarise(n = n(), .groups = "keep") %>%
     droplevels()

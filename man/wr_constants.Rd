@@ -7,18 +7,18 @@
 \format{
 Un \code{tibble} avec les colonnes :
 \itemize{
-\item \code{sp} : Code d’espèce (SANA, SAFO, SAVI)
-\item \code{species} : Nom anglais de l'espèce
+\item \code{sp} : Code d'espece (SANA, SAFO, SAVI)
+\item \code{species} : Nom anglais de l'espece
 \item \code{min_TL} : Longueur minimale (mm)
-\item \code{int} : Intercept de la régression log-log
-\item \code{slope} : Pente de la régression log-log
-\item \code{source} : Référence source
+\item \code{int} : Intercept de la regression log-log
+\item \code{slope} : Pente de la regression log-log
+\item \code{source} : Reference source
 }
 }
 \usage{
 wr_constants
 }
 \description{
-Source : \code{FSA::wsVal()} pour touladi, omble de fontaine, doré jaune
+Source : \code{wsVal()} pour touladi, omble de fontaine, dore jaune
 }
 \keyword{datasets}

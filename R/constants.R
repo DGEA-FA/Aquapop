@@ -1,11 +1,13 @@
-#' Constantes associées aux espèces suivies par PEN
+#' Constantes associees aux especes suivies par PEN
 #'
-#' Contient le nom commun, le binwidth recommandé pour les histogrammes,
-#' les seuils de classes PSD (`breaks`) et leurs libellés (`break_labels`) par espèce (`sp`).
+#' Contient le nom commun, le binwidth recommande pour les histogrammes,
+#' les seuils de classes PSD (`breaks`) et leurs libelles (`break_labels`) par espece (`sp`).
 #'
-#' @format Un `tibble` avec une ligne par espèce.
+#' @importFrom FSA wsVal
+#' @importFrom tibble tibble
+#' @format Un `tibble` avec une ligne par espece.
 #' @export
-pen_constants <- tibble::tibble(
+pen_constants <- tibble(
   sp       = c("SANA", "SAFO", "SAVI"),
   nom_sp   = c("touladis", "ombles de fontaine", "dorés jaunes"),
   binwidth = c(50, 20, 50),
@@ -21,26 +23,26 @@ pen_constants <- tibble::tibble(
   )
 )
 
-#' Noms standardisés des classes PSD
+#' Noms standardises des classes PSD
 #'
-#' Utilisés dans les fonctions PSD (`psd_q`, `psd_byclass`, etc.)
+#' Utilises dans les fonctions PSD (`psd_q`, `psd_byclass`, etc.)
 #'
 #' @export
 psd_classnames <- c("Sous-stock", "Stock", "Qualité", "Préférée", "Mémorable", "Trophée")
 
 #' Constantes pour le calcul de l'indice de condition (Wr)
 #'
-#' Source : `FSA::wsVal()` pour touladi, omble de fontaine, doré jaune
+#' Source : `wsVal()` pour touladi, omble de fontaine, dore jaune
 #'
 #' @format Un `tibble` avec les colonnes :
-#' - `sp` : Code d’espèce (SANA, SAFO, SAVI)
-#' - `species` : Nom anglais de l'espèce
+#' - `sp` : Code d'espece (SANA, SAFO, SAVI)
+#' - `species` : Nom anglais de l'espece
 #' - `min_TL` : Longueur minimale (mm)
-#' - `int` : Intercept de la régression log-log
-#' - `slope` : Pente de la régression log-log
-#' - `source` : Référence source
+#' - `int` : Intercept de la regression log-log
+#' - `slope` : Pente de la regression log-log
+#' - `source` : Reference source
 #' @export
-wr_constants <- tibble::tibble(
+wr_constants <- tibble(
   sp      = c("SANA", "SAFO", "SAVI"),
   species = c("Lake Trout", "Brook Trout", "Walleye"),
   min_TL  = c(280, 120, 150),

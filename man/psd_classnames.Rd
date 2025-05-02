@@ -3,7 +3,7 @@
 \docType{data}
 \name{psd_classnames}
 \alias{psd_classnames}
-\title{Noms standardisés des classes PSD}
+\title{Noms standardises des classes PSD}
 \format{
 An object of class \code{character} of length 6.
 }
@@ -11,6 +11,6 @@ An object of class \code{character} of length 6.
 psd_classnames
 }
 \description{
-Utilisés dans les fonctions PSD (\code{psd_q}, \code{psd_byclass}, etc.)
+Utilises dans les fonctions PSD (\code{psd_q}, \code{psd_byclass}, etc.)
 }
 \keyword{datasets}

@@ -66,9 +66,9 @@ mortalite_prepare_corr <- function(data, age_peak_plus, age_max) {
   )
   
   # Complétion des classes d'âge ----
-  data_final <- tibble::tibble(age = seq(min(data_agesurv$age), max(data_agesurv$age))) %>%
-    dplyr::left_join(data_agesurv, by = "age") %>%
-    dplyr::mutate(number = tidyr::replace_na(number, 0L)) %>%
+  data_final <- tibble::tibble(age = seq(min(data_agesurv$age), max(data_agesurv$age))) |>
+    dplyr::left_join(data_agesurv, by = "age") |>
+    dplyr::mutate(number = tidyr::replace_na(number, 0L)) |>
     dplyr::arrange(age)
   
   return(data_final)

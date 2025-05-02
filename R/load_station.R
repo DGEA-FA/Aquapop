@@ -68,7 +68,7 @@ load_station <- function(path,
     col_names = TRUE,
     col_types = "text",
     na = c("", "NULL", "NA", " ", "-")
-  ) %>% as.data.frame()
+  ) |> as.data.frame()
   
   noms_originaux <- names(station_raw)
   noms_clean <- janitor::make_clean_names(noms_originaux)
@@ -108,14 +108,14 @@ load_station <- function(path,
   }
   
   # --- Nettoyage des statuts ---
-  station <- station %>%
+  station <- station |>
     dplyr::mutate(
       st_valide = dplyr::case_when(is.na(st_valide) | st_valide %in% c("IND", "-") ~ "O", TRUE ~ st_valide),
       st_hasard = dplyr::case_when(is.na(st_hasard) | st_hasard %in% c("IND", "-") ~ "O", TRUE ~ st_hasard)
     )
   
   # --- Conversion types de base ---
-  station <- station %>%
+  station <- station |>
     dplyr::mutate(
       annee = dplyr::case_when(
         nchar(annee) == 5 ~ as.integer(lubridate::year(as.Date(as.numeric(annee), origin = "1899-12-30"))),
@@ -130,14 +130,14 @@ load_station <- function(path,
       prof_deb    = suppressWarnings(as.numeric(prof_deb)),
       prof_fin    = suppressWarnings(as.numeric(prof_fin)),
       comments_station = as.character(comments)
-    ) %>%
+    ) |>
     dplyr::select(-comments)
   
   # --- Dates et heures combinées ---
   station$date_leve <- suppressWarnings(as.Date(as.numeric(station$date_leve), origin = "1899-12-30"))
   station$date_pose <- if (!all(is.na(station$date_leve))) station$date_leve - lubridate::days(1) else NA
   
-  station <- station %>%
+  station <- station |>
     dplyr::mutate(
       min_pose   = stringr::str_pad(min_pose,   2, pad = "0"),
       heure_pose = stringr::str_pad(heure_pose, 2, pad = "0"),

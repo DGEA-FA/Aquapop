@@ -1,0 +1,137 @@
+---
+title: "STYLE_GUIDE"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{STYLE_GUIDE}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Guide de style du projet AquaPop
+
+Ce guide définit les conventions de style, de structuration et de documentation du code utilisé dans le développement du package et de l’application Shiny **AquaPop**.
+
+Il s’applique à toutes les fonctions métier, modules Shiny, scripts d’utilisation et fichiers d’exportation.
+
+## Objectifs
+
+- Être compréhensible par les biologistes non programmeurs
+- Favoriser la lisibilité et la maintenance du code
+- Garantir la cohérence du style dans tout le projet
+- Rester compatible avec les conventions du tidyverse
+- Produire une documentation professionnelle, réutilisable dans des rapports
+
+## Style général : hybride français / anglais
+
+Le projet utilise un style hybride, avec :
+
+| Élément                       | Langue utilisée               |
+|-------------------------------|-------------------------------|
+| Noms de fonctions             | Français pour le concept, anglais pour l’action (ex: `mortalite_compare_modele`) |
+| Arguments de fonction         | Anglais, simples et compatibles tidyverse (`data`, `group`, `method`) |
+| Objets internes               | Français, toujours en `snake_case` (`table_resultats`, `espece`, `plot_byclass`) |
+| Documentation `roxygen2`      | En français uniquement        |
+| Commentaires                  | En français ou bilingues      |
+
+## Conventions de nommage
+
+| Élément                     | Règle                                                                 |
+|-----------------------------|-----------------------------------------------------------------------|
+| Nom des fonctions           | Concept métier en premier (`mortalite_`, `croissance_`), suivi d’un verbe en anglais |
+| Arguments                   | En anglais, simples et compatibles tidyverse (`data`, `method`, `group`) |
+| Nom du concept "modèle"     | Toujours écrit `modele`, au singulier                                |
+| Documentation               | Entièrement en français                                               |
+| Commentaires                | En français ou bilingues                                              |
+
+### Convention pour les objets retournés
+
+Le nom de l’objet retourné correspond au nom de la fonction suivi de `_res`.
+
+```r
+mortalite_compare_modele_res <- mortalite_compare_modele(data)
+mortalite_compare_modele_res_data <- mortalite_compare_modele_res$data
+mortalite_compare_modele_res_flextable <- mortalite_compare_modele_res$flextable
+```
+
+## Structuration interne des fonctions
+
+### Ordre logique recommandé
+
+1. Validation des données
+2. Prétraitements
+3. Calculs métier ou modèles
+4. Création des visualisations (`ggplot2`)
+5. Construction des tableaux (`flextable`)
+6. Retour de la liste des objets
+
+### Séparation visuelle des blocs
+
+Chaque bloc est introduit par un commentaire structurant, rédigé en français et précédé de tirets :
+
+```r
+# --- Calcul du Wr ---
+# --- Construction du graphique par classe ---
+```
+
+### Bonnes pratiques
+
+- Objets explicites, toujours en `snake_case`
+- Éviter `df`, `a`, `t`, `final`
+- Utiliser `data` comme nom d’argument principal
+- Pas de majuscules dans les noms (`IC95` → `ic95`)
+- Objets retournés : `table_resultats`, `table_flextable`, `plot_tous`, etc.
+- Préférer des noms longs explicites
+
+## Documentation `roxygen2`
+
+Chaque fonction exportée doit inclure :
+
+- `@description` : Explication claire
+- `@param` : Un par argument, nom + type + rôle
+- `@return` : Structure explicite (liste, table, graphique, etc.)
+- `@examples` : Exemple reproductible
+- `@importFrom` : Pour chaque fonction externe utilisée sans `pkg::`
+- `@export` : Présent pour toute fonction publique
+- `@references` : Le cas échéant
+
+## Utilisation recommandée des packages
+
+- Dans le **code du package** : préférer `@importFrom` à `pkg::`
+- Dans les **scripts .R ou .Rmd** : `library(pkg)` accepté
+- Utiliser `pkg::fonction()` pour désambiguïser ou dans des cas exceptionnels
+
+## Structuration des scripts avec titres RStudio
+
+Utiliser les niveaux suivants :
+
+```r
+# Section principale ----
+## Sous-section ----
+### Sous-sous-section ----
+```
+
+### Exemples
+
+```r
+# Croissance ----
+## Tableau de sélection de modèles ----
+## Graphique du modèle choisi ----
+
+# Mortalité ----
+## Tableau de sélection de modèles ----
+## Graphique du modèle choisi ----
+## Chapman-Robson ----
+```
+
+### Pourquoi cette convention ?
+
+- Reconnu par RStudio
+- Permet de plier/déplier
+- Améliore la navigation

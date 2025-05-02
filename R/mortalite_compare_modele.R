@@ -31,8 +31,8 @@ mortalite_compare_modele <- function(data) {
   resultats <- dplyr::bind_rows(result_poisson, result_nb1, result_nb2, result_cmp, result_gp)
   
   # Calcul du Δ AICc et ajustement du commentaire
-  resultats <- resultats %>%
-    dplyr::mutate(`Δ AICc` = round(aicc - min(aicc, na.rm = TRUE), 2)) %>%
+  resultats <- resultats |>
+    dplyr::mutate(`Δ AICc` = round(aicc - min(aicc, na.rm = TRUE), 2)) |>
     dplyr::mutate(commentaire = dplyr::case_when(
       ajustement_hnp < 10 & `Δ AICc` == 0 ~
         "Le modèle s’ajuste bien à vos données. Ce modèle est recommandé car son AICc est le plus faible.",
@@ -42,8 +42,8 @@ mortalite_compare_modele <- function(data) {
     ))
   
   # Colonnes finales (data.frame)
-  df_final <- resultats %>%
-    dplyr::arrange(aicc) %>%
+  df_final <- resultats |>
+    dplyr::arrange(aicc) |>
     dplyr::select(
       Méthode = methode,
       `Ajustement HNP (%)` = ajustement_hnp,

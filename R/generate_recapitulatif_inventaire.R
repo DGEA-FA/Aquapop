@@ -10,11 +10,15 @@
 #'
 #' @return Un `data.frame` structuré avec une ligne par type d'information
 #'         et une colonne par type de pêche. La première colonne est `"Type de pêche"`.
+#'         
+#' @importFrom tibble rownames_to_column tibble
+#' @importFrom stats setNames
+#' @importFrom dplyr reframe bind_cols n summarise filter pull
 #' @export
 generate_recapitulatif_inventaire <- function(data_lac, data_station) {
   
   # --- Informations générales sur le lac ---
-  info_lac <- data_lac |> dplyr::reframe(
+  info_lac <- data_lac |> reframe(
     `Type de pêche` = unique(typ_pech),
     `No de lac` = unique(no_lac),
     `Nom du lac` = unique(nom_lac),
@@ -23,7 +27,7 @@ generate_recapitulatif_inventaire <- function(data_lac, data_station) {
   )
   
   # --- Dates de l’inventaire ---
-  date_info <- data_station |> dplyr::reframe(
+  date_info <- data_station |> reframe(
     `Date de début de l’inventaire (aaaa-mm-jj)` = {
       if (all(is.na(date_pose))) "Aucune donnée disponible" else min(date_pose, na.rm = TRUE)
     },
@@ -33,7 +37,7 @@ generate_recapitulatif_inventaire <- function(data_lac, data_station) {
   )
   
   # --- Comptage des stations ---
-  count_info <- tibble::tibble(
+  count_info <- tibble(
     `N stations aléatoires` = generate_recapitulatif_compter_valeurs(data_station, "st_hasard", "O"),
     `N stations dirigées`   = generate_recapitulatif_compter_valeurs(data_station, "st_hasard", "N"),
     `N stations valides`    = generate_recapitulatif_compter_valeurs(data_station, "st_valide", "O"),
@@ -42,12 +46,12 @@ generate_recapitulatif_inventaire <- function(data_lac, data_station) {
   )
   
   # --- Fusion et transformation du tableau pour affichage vertical ---
-  tableau_recapitulatif <- dplyr::bind_cols(info_lac, date_info, count_info)
+  tableau_recapitulatif <- bind_cols(info_lac, date_info, count_info)
   tableau_recapitulatif[-1] |>
     t() |>
     as.data.frame() |>
-    stats::setNames(tableau_recapitulatif[[1]]) |>
-    tibble::rownames_to_column("Type de pêche")
+    setNames(tableau_recapitulatif[[1]]) |>
+    rownames_to_column("Type de pêche")
 }
 
 #' Compter les occurrences d’une valeur dans une colonne
@@ -62,8 +66,8 @@ generate_recapitulatif_inventaire <- function(data_lac, data_station) {
 #' @keywords internal
 generate_recapitulatif_compter_valeurs <- function(df, col, val) {
   df |>
-    dplyr::filter(.data[[col]] == val) |>
-    dplyr::summarise(n = dplyr::n()) |>
-    dplyr::pull(n)
+    filter(.data[[col]] == val) |>
+    summarise(n = n()) |>
+    pull(n)
 }
 

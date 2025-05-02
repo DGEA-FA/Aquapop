@@ -3,6 +3,7 @@
 #' @param expr Une expression `glm()` passée sans guillemets
 #'
 #' @return Le résultat de `glm()`, sans émettre de warning si celui-ci correspond à l'ajustement numérique
+#' @importFrom glue glue
 #' @keywords internal
 sans_warning_proba <- function(expr) {
   withCallingHandlers(
@@ -30,7 +31,7 @@ maturite_get_coef <- function(modele_glm, sexe = c("sexeF", "sexeM"), interactio
   nom_cible <- coef_nom[grepl(pattern, coef_nom)]
   
   if (length(nom_cible) == 0) {
-    stop(glue::glue("❌ Aucun coefficient ne correspond au motif '{pattern}' dans le modèle."))
+    stop(glue("❌ Aucun coefficient ne correspond au motif '{pattern}' dans le modèle."))
   }
   
   coef(modele_glm)[[nom_cible]]

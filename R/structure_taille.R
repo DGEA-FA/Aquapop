@@ -20,8 +20,8 @@ structure_taille <- function(data,
   nomsp <- info$nom_sp
   binwidth <- info$binwidth
   
-  data <- data %>%
-    dplyr::mutate(ltm = as.numeric(ltm)) %>%
+  data <- data |>
+    dplyr::mutate(ltm = as.numeric(ltm)) |>
     dplyr::filter(!is.na(ltm))
   
   if (nrow(data) == 0) {

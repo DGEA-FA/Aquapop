@@ -85,7 +85,7 @@ load_lac <- function(path,
     col_names = TRUE,
     col_types = "text",
     na = c("", "NULL", "NA", " ", "-")
-  ) %>% as.data.frame()
+  ) |> as.data.frame()
   
   noms_originaux <- names(lac_raw)
   noms_clean <- janitor::make_clean_names(noms_originaux)
@@ -138,7 +138,7 @@ load_lac <- function(path,
   }
   
   # Conversion des types ----
-  lac <- lac %>%
+  lac <- lac |>
     dplyr::mutate(
       annee = dplyr::case_when(
         nchar(annee) == 5 ~ as.integer(lubridate::year(as.Date(as.numeric(annee), origin = "1899-12-30"))),
@@ -156,8 +156,8 @@ load_lac <- function(path,
     )
   
   # Création de l'identifiant unique + dédoublonnage ----
-  lac <- lac %>%
-    dplyr::mutate(ID = paste0(nom_lac, " - ", annee, " - ", typ_pech)) %>%
+  lac <- lac |>
+    dplyr::mutate(ID = paste0(nom_lac, " - ", annee, " - ", typ_pech)) |>
     dplyr::distinct()
   
   return(lac)

@@ -6,6 +6,7 @@
 #' @param tablemodele Un `data.frame` retourné par `croissance_compare_modele()`
 #'
 #' @return Une chaîne de caractères (nom du meilleur modèle) ou un message en cas d'erreur
+#' @importFrom dplyr filter pull
 #' @export
 #'
 #' @examples
@@ -17,8 +18,8 @@ croissance_select_best_modele <- function(tablemodele) {
   }
   
   best_row <- tablemodele |>
-    dplyr::filter(AICc == min(AICc, na.rm = TRUE)) |>
-    dplyr::pull(methode)
+    filter(AICc == min(AICc, na.rm = TRUE)) |>
+    pull(methode)
   
   if (length(best_row) == 0) {
     warning("Aucun modèle n’a pu être sélectionné.")

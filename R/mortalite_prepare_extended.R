@@ -23,7 +23,7 @@ mortalite_prepare_extended <- function(df_corrigee, age_max) {
     number = 0
   )
   
-  df_etendue <- dplyr::bind_rows(df_corrigee, ages_fictifs) %>%
+  df_etendue <- dplyr::bind_rows(df_corrigee, ages_fictifs) |>
     dplyr::arrange(age)
   
   return(df_etendue)

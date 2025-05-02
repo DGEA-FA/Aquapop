@@ -7,16 +7,16 @@
 cpue_select_best_modele(tablemodele)
 }
 \arguments{
-\item{tablemodele}{Un \code{data.frame} retourné par \code{modele_cpue_comparaison()} (format = \code{"data.frame"})}
+\item{tablemodele}{Un \code{data.frame} retourné par \code{modele_cpue_comparaison(..., format = "data.frame")}.}
 }
 \value{
-Une chaîne de caractères (\code{Méthode}) correspondant au meilleur modèle
+Une chaîne de caractères (\code{Méthode}) correspondant au nom du meilleur modèle sélectionné.
 }
 \description{
-Cette fonction identifie automatiquement le meilleur modèle CPUE
-parmi Poisson, NB1, NB2, CMP et GP, basé sur le plus bas AICc parmi
-les modèles bien ajustés (ajustement HNP < 10). Si aucun modèle n’est
-bien ajusté, elle sélectionne celui avec le plus bas AICc global.
+Cette fonction identifie automatiquement le meilleur modèle d’abondance (CPUE)
+parmi les modèles Poisson, NB1, NB2, CMP et GP. La sélection est effectuée selon
+le plus bas AICc parmi les modèles bien ajustés (ajustement HNP < 10).
+Si aucun modèle ne satisfait ce critère, la fonction retourne celui avec le plus bas AICc global.
 }
 \examples{
 cpue <- cpue_prepare(capture, specimen, group = "tous")

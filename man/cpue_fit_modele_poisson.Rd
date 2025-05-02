@@ -7,24 +7,24 @@
 cpue_fit_modele_poisson(cpue_data)
 }
 \arguments{
-\item{cpue_data}{Un \code{data.frame} produit par \code{cpue_prepare()} contenant au minimum :
-\code{no_station}, \code{CPUE}.}
+\item{cpue_data}{Un \code{data.frame} produit par \code{cpue_prepare()}, contenant au minimum les colonnes \code{no_station} et \code{CPUE}.}
 }
 \value{
-Un \code{data.frame} d’une ligne résumant le modèle ajusté, avec les colonnes :
+Un \code{data.frame} d’une seule ligne résumant le modèle ajusté, avec les colonnes suivantes :
 \describe{
-\item{Méthode}{Nom du modèle ("Poisson")}
-\item{Ajustement (résultat du test HNP)}{Pourcentage moyen de résidus hors enveloppe}
-\item{AICc}{Critère AICc}
-\item{CPUE}{Valeur moyenne prédite}
-\item{IC 95\%}{Intervalle de confiance autour de la prédiction}
-\item{Commentaires}{Interprétation de l’ajustement}
-\item{Convergence}{Booléen indiquant la convergence}
-\item{Nb_iterations_HNP}{Nombre total d’itérations HNP utilisées}
+\item{methode}{Type de modèle utilisé (\code{"poisson"})}
+\item{ajustement_hnp}{Pourcentage moyen d’observations hors bande du test HNP}
+\item{aicc}{Critère d'information corrigé (AICc)}
+\item{cpue_moyenne}{Valeur moyenne prédite par le modèle (exponentielle du lien)}
+\item{ic_95}{Intervalle de confiance à 95 \% sous forme de chaîne de caractères}
+\item{commentaire}{Texte interprétant l’ajustement : bon, marginal ou mauvais}
+\item{convergence}{État de convergence (\code{TRUE} ou \code{FALSE}) selon le modèle}
+\item{nb_iterations_hnp}{Nombre total d’itérations HNP effectuées (2 ou 5)}
 }
 }
 \description{
-Cette fonction ajuste un modèle linéaire généralisé de type Poisson (GLM)
-sur les données de CPUE par station. Elle effectue également un test HNP
-(Half-Normal Plot) pour évaluer la qualité de l’ajustement.
+Cette fonction ajuste un modèle linéaire généralisé (GLM) avec distribution de Poisson
+sur les données de CPUE par station. Elle applique également un test HNP (Half-Normal Plot)
+pour évaluer la qualité de l’ajustement. En cas d’ajustement marginal (entre 10 \% et 15 \% d’observations hors bande),
+des simulations supplémentaires sont effectuées.
 }

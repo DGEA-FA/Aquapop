@@ -11,6 +11,8 @@
 #'
 #' @return Un `data.frame` filtré selon les critères fournis, avec les niveaux de facteurs inutilisés supprimés.
 #'
+#' @importFrom checkmate assert_character assert_choice assert_data_frame
+#' @importFrom dplyr filter
 #' @examples
 #' \dontrun{
 #' df <- data.frame(
@@ -34,33 +36,32 @@ filter_by_pen_lac_annee <- function(data, typ_pech = NULL, no_lac = NULL, annee 
   requireNamespace("checkmate")
   
   # Validations explicites -----
-  checkmate::assert_data_frame(data)
+  assert_data_frame(data)
   
   # --- Filtrage par type de pêche ---
   if (!is.null(typ_pech_selected)) {
     if (length(typ_pech_selected) != 1) {
       stop("Le filtre typ_pech doit contenir une seule valeur.")
     }
-    checkmate::assert_choice(typ_pech_selected, choices = c("PENT", "PENOF", "PENDJ"))
-    data <- data %>% dplyr::filter(typ_pech == typ_pech_selected)
+    assert_choice(typ_pech_selected, choices = c("PENT", "PENOF", "PENDJ"))
+    data <- data |> filter(typ_pech == typ_pech_selected)
     
   }
   
   
   # --- Filtrage par numéro de lac ---
   if (!is.null(no_lac_selected)) {
-    checkmate::assert_character(no_lac_selected, any.missing = FALSE, min.chars = 5, max.chars = 5)
-    data <- data %>% dplyr::filter(no_lac %in% no_lac_selected)
+    assert_character(no_lac_selected, any.missing = FALSE, min.chars = 5, max.chars = 5)
+    data <- data |> filter(no_lac %in% no_lac_selected)
     
   }
   
 
   # --- Filtrage par année ---
-  if (!is.null(annee_selected) && length(annee_selected) > 0) {
-    data <- data %>% dplyr::filter(annee %in% as.integer(annee_selected))
-    
-  }
-  
+ if (!is.null(annee_selected) &&
+     length(annee_selected) > 0) {
+   data <- data |> filter(annee %in% as.integer(annee_selected))
+ }
   
   # Suppression des niveaux inutilisés -----
   droplevels(data)

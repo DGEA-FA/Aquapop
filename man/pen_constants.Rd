@@ -3,15 +3,15 @@
 \docType{data}
 \name{pen_constants}
 \alias{pen_constants}
-\title{Constantes associées aux espèces suivies par PEN}
+\title{Constantes associees aux especes suivies par PEN}
 \format{
-Un \code{tibble} avec une ligne par espèce.
+Un \code{tibble} avec une ligne par espece.
 }
 \usage{
 pen_constants
 }
 \description{
-Contient le nom commun, le binwidth recommandé pour les histogrammes,
-les seuils de classes PSD (\code{breaks}) et leurs libellés (\code{break_labels}) par espèce (\code{sp}).
+Contient le nom commun, le binwidth recommande pour les histogrammes,
+les seuils de classes PSD (\code{breaks}) et leurs libelles (\code{break_labels}) par espece (\code{sp}).
 }
 \keyword{datasets}

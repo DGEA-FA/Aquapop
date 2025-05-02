@@ -2,22 +2,26 @@
 % Please edit documentation in R/croissance_compare_modele.R
 \name{croissance_compare_modele}
 \alias{croissance_compare_modele}
-\title{Comparaison de modèles de croissance (Von Bertalanffy, Gompertz, Logistique)}
+\title{Comparer trois modèles de croissance (Von Bertalanffy, Gompertz, Logistique)}
 \usage{
 croissance_compare_modele(data, format = c("data.frame", "flextable"))
 }
 \arguments{
-\item{data}{Un \code{data.frame} contenant les spécimens (doit inclure les colonnes \code{sp}, \code{ltm}, \code{age}, \code{no_specimen})}
+\item{data}{Un \code{data.frame} de spécimens, contenant au minimum les colonnes \code{sp}, \code{ltm}, \code{age} et \code{no_specimen}.}
 
-\item{format}{Format de sortie : \code{"data.frame"} (par défaut) ou \code{"flextable"}}
+\item{format}{Format de sortie souhaité : \code{"data.frame"} (par défaut) ou \code{"flextable"}.}
 }
 \value{
-Une liste contenant : \code{data} (\code{data.frame}) et \code{flextable} (\code{flextable})
+Une liste avec deux éléments :
+\describe{
+\item{data}{Un \code{data.frame} résumant les résultats des trois modèles (paramètres, IC, AICc).}
+\item{flextable}{Une version formatée (\code{flextable}) du tableau comparatif.}
+}
 }
 \description{
 Cette fonction ajuste trois modèles de croissance non linéaire (Von Bertalanffy, Gompertz, Logistique)
-à des données de spécimens et retourne un tableau comparatif des paramètres estimés, des intervalles
-de confiance et des critères de sélection de modèles (AICc).
+à un jeu de données de spécimens. Elle retourne un tableau comparatif des paramètres estimés, des
+intervalles de confiance et du critère d'information corrigé (AICc) pour chacun des modèles.
 }
 \examples{
 croissance_compare_modele(data = specimen)$data

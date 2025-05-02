@@ -1,17 +1,17 @@
-# ════════════════════════════════════════════════════════════════════════
-# SERVER – FONCTION PRINCIPALE app_server()
-# ════════════════════════════════════════════════════════════════════════
-
+#' @importFrom dplyr filter
+#' @importFrom glue glue
+#' @importFrom stringr str_extract
+#' @importFrom reactable colDef reactable
 app_server <- function(input, output, session) {
 
-# Téléchargement des données ----
+# Telechargement des donnees ----
 
 # Upload de la feuille Lac du fichier *.xlsx
     data_temp <- eventReactive(input$upload, {
     load_lac(path = input$upload$datapath, namesheet = "Lac", verbose = FALSE)
   })
   
-# UI dynamique – typ_pech (pas de sélection initiale)
+# UI dynamique - typ_pech (pas de selection initiale)
   output$ui_typ_pech <- renderUI({
     req(data_temp())
     radioButtons(
@@ -28,7 +28,7 @@ app_server <- function(input, output, session) {
     filter_by_pen_lac_annee(data = data_temp(), typ_pech = input$typ_pech)
   })
   
-  # UI dynamique – no_lac (aucune sélection automatique)
+  # UI dynamique - no_lac (aucune selection automatique)
   output$ui_no_lac <- renderUI({
     req(df_filtered1())
     selectInput(
@@ -45,7 +45,7 @@ app_server <- function(input, output, session) {
     filter_by_pen_lac_annee(data = df_filtered1(), no_lac = input$no_lac)
   })
   
-  # UI dynamique – année (aucune sélection automatique)
+  # UI dynamique - annee (aucune selection automatique)
   output$ui_annee <- renderUI({
     req(df_filtered2())
     tagList(
@@ -58,7 +58,7 @@ app_server <- function(input, output, session) {
     )
   })
   
-  # Filtrage 3 : selon année (et création de data_lac)
+  # Filtrage 3 : selon annee (et creation de data_lac)
   data_lac <- reactive({
     req(df_filtered2(), input$annee)
     filter_by_pen_lac_annee(data = df_filtered2(), annee = input$annee)
@@ -67,10 +67,10 @@ app_server <- function(input, output, session) {
   nom_lac_reactif <- reactive({
     req(data_lac(), input$no_lac)
     
-    data_filtrée <- dplyr::filter(data_lac(), no_lac == input$no_lac)
-    nom <- unique(data_filtrée$nom_lac)
+    data_filtree <- filter(data_lac(), no_lac == input$no_lac)
+    nom <- unique(data_filtree$nom_lac)
     
-    # Sécurité maximale
+    # Securite maximale
     if (length(nom) == 1 && !is.na(nom) && nzchar(as.character(nom))) {
       return(as.character(nom))
     }
@@ -80,31 +80,31 @@ app_server <- function(input, output, session) {
   
   
   
-  # # Affichage dans la console des filtres effectués (facilite debug)
+  # # Affichage dans la console des filtres effectues (facilite debug)
   # observeEvent(data_lac(), {
-  #   cat("\n--- Données filtrées data_lac() ---\n")
-  #   cat("→ Type(s) de pêche sélectionné(s):\n")
+  #   cat("\n--- Donnees filtrees data_lac() ---\n")
+  #   cat("? Type(s) de peche selectionne(s):\n")
   #   print(unique(data_lac()$typ_pech))
-  #   cat("→ Numéro(s) de lac sélectionné(s):\n")
+  #   cat("? Numero(s) de lac selectionne(s):\n")
   #   print(unique(data_lac()$no_lac))
-  #   cat("→ Année(s) dans data_lac():\n")
+  #   cat("? Annee(s) dans data_lac():\n")
   #   print(sort(unique(data_lac()$annee)))
   # })
   
-  # Identification de l'espèce ciblée
+  # Identification de l'espece ciblee
   
   info_pen_reactive <- reactive({
     req(input$typ_pech)
     get_info_pen(input$typ_pech)
   })
   
-  # Accès aux elements préparés
+  # Acces aux elements prepares
   binwidth_reactive <- reactive({ info_pen_reactive()$binwidth })
   nomsp_reactive     <- reactive({ info_pen_reactive()$nom_sp })
   sp_pen <- reactive({ info_pen_reactive()$code_sp })
  
 
-  # Téléchargement des autres bases de données
+  # Telechargement des autres bases de donnees
   analysis_data <- reactive({
     req(input$upload, input$typ_pech, input$no_lac, input$annee)
     
@@ -116,7 +116,7 @@ app_server <- function(input, output, session) {
     )
   })
   
-  # Accès aux jeux préparés
+  # Acces aux jeux prepares
   data_station <- reactive({ analysis_data()$data_station })
   station_valides <- reactive({ analysis_data()$station_valides })
   station_hasard_valide <- reactive({ analysis_data()$station_hasard_valide })
@@ -125,14 +125,14 @@ app_server <- function(input, output, session) {
   specimen_valid <- reactive({ analysis_data()$specimen_valid })
   capture      <- reactive({ analysis_data()$capture })
   
-  # Tableau de synthèse introductif
+  # Tableau de synthese introductif
   
   output$recap_intro_table <- renderTable({
     req(data_lac(), data_station())
     generate_recapitulatif_inventaire(data_lac = data_lac(), data_station = data_station())
   })
 
-  #UI dynamique – visualisation des données téléchargées
+  #UI dynamique - visualisation des donnees telechargees
 
   output$visualiser <- renderUI({
     req(data_lac())
@@ -213,7 +213,7 @@ app_server <- function(input, output, session) {
     filename = reactive(build_export_filename("cpue_femelles", filename_suffix()))
   )
   
-  ## Tableau d’abondance ----
+  ## Tableau d'abondance ----
   
   best_model_tous <- reactive({
     req(cpue_modele_tous())
@@ -269,9 +269,9 @@ app_server <- function(input, output, session) {
     filename = reactive(build_export_filename("biomasse", filename_suffix()))
   ) 
   
-  # Taille, masse, âge ----
+  # Taille, masse, age ----
   
-  # Résultat combiné (data + flextable)
+  # Resultat combine (data + flextable)
   taille_masse_age_res <- reactive({
     req(specimen_valid())
     taille_masse_age(specimen_valid())
@@ -280,7 +280,7 @@ app_server <- function(input, output, session) {
   # Affichage du tableau flextable
   render_table_flextable("taillemasseage_table", reactive(taille_masse_age_res()$flextable))
   
-  # Bouton de téléchargement des données brutes
+  # Bouton de telechargement des donnees brutes
   render_download_table(
     "taillemasseage_table_dl",
     data = reactive(taille_masse_age_res()$data),
@@ -289,7 +289,7 @@ app_server <- function(input, output, session) {
   
   # Structure de taille ----
   
-  # Résultat combiné : graphique + données
+  # Resultat combine : graphique + donnees
   res_structure_taille <- reactive({
     req(specimen_valid(), input$groupetailleplot)
     structure_taille(
@@ -301,7 +301,7 @@ app_server <- function(input, output, session) {
   # Rendu du graphique dans l'interface
   render_plot_ggplot("structuretailleplot", reactive(res_structure_taille()$plot))
   
-  # Téléchargement du graphique (PNG)
+  # Telechargement du graphique (PNG)
   render_download_plot("download_groupetailleplot", reactive(res_structure_taille()$plot), filename_suffix = filename_suffix())
   
   render_download_table(
@@ -309,9 +309,9 @@ app_server <- function(input, output, session) {
     data = reactive(res_structure_taille()$data),
     filename = reactive(build_export_filename("structure_taille", filename_suffix()))
   )
-  # Structure d'âge ----
+  # Structure d'age ----
   
-  # Résultat combiné : graphique + tableau
+  # Resultat combine : graphique + tableau
   res_structure_age <- reactive({
     req(specimen_valid(), input$groupeageplot)
     structure_age(
@@ -330,9 +330,9 @@ app_server <- function(input, output, session) {
 
   
   
-  # Téléchargement PNG
+  # Telechargement PNG
   render_download_plot("download_groupeageplot", reactive(res_structure_age()$plot), filename_suffix = filename_suffix())
-  # Téléchargement des données
+  # Telechargement des donnees
   render_download_table(
     "download_data4plot_age",
     data = reactive(res_structure_age()$data),
@@ -352,7 +352,7 @@ app_server <- function(input, output, session) {
   render_table_flextable("psd_indice_ui", reactive(psd_q_res()$flextable))
   
   
-  ## Répartition par classe de taille – Tableau ----
+  ## Repartition par classe de taille - Tableau ----
   
   # Reactive : retourne la liste {data, flextable, plot}
   psd_byclass_res <- reactive({
@@ -363,18 +363,18 @@ app_server <- function(input, output, session) {
   # Rendu du tableau flextable dans l'interface
   render_table_flextable("psd_byclass_table", reactive(psd_byclass_res()$flextable))
   
-  # Bouton de téléchargement du tableau brut
+  # Bouton de telechargement du tableau brut
   render_download_table(
     "psd_byclass_table_dl",
     data = reactive(psd_byclass_res()$data),
     filename = reactive(build_export_filename("psd_byclass", filename_suffix()))
   )  
-  ## Répartition par classe de taille – Graphique ----
+  ## Repartition par classe de taille - Graphique ----
   
   # Affichage du graphique dans l'interface
   render_plot_ggplot("psd_byclass_plot", reactive(psd_byclass_res()$plot))
   
-  # Bouton de téléchargement du graphique (PNG)
+  # Bouton de telechargement du graphique (PNG)
   render_download_plot("download_psd_byclass_plot", reactive(psd_byclass_res()$plot), filename_suffix = filename_suffix())
   
   # Relation masse-longueur ----
@@ -432,16 +432,16 @@ app_server <- function(input, output, session) {
   
 
   # Croissance ----
-  ## Tableau de sélection de modèles ----
+  ## Tableau de selection de modeles ----
   
   
-    # Réactif pour la table de modèles
+    # Reactif pour la table de modeles
   table_modeles_croissance <- reactive({
     req(specimen()) 
     croissance_compare_modele(data = specimen())$data
   })
   
-  # Réactif pour la ligne par défaut (le meilleur modèle)
+  # Reactif pour la ligne par defaut (le meilleur modele)
   default_model_index <- reactive({
     table <- table_modeles_croissance()
     req(nrow(table) > 0)
@@ -451,7 +451,7 @@ app_server <- function(input, output, session) {
     idx
   })
   
-  # Table interactive avec sélection par défaut dynamique
+  # Table interactive avec selection par defaut dynamique
   output$table_modeles_croissance_table <- renderReactable({
     table <- table_modeles_croissance()
     idx <- default_model_index()
@@ -468,7 +468,7 @@ app_server <- function(input, output, session) {
     )
   })
   
-  # Modèle actuellement sélectionné
+  # Modele actuellement selectionne
   selectedmodelcroissance <- reactive({
     selected <- getReactableState("table_modeles_croissance_table", "selected")
     req(!is.null(selected), table_modeles_croissance())
@@ -477,16 +477,16 @@ app_server <- function(input, output, session) {
   })
   
   
-  # Bouton de téléchargement de la table des modèles
+  # Bouton de telechargement de la table des modeles
   render_download_table(
     "download_table_modeles_croissance",
     data = reactive(table_modeles_croissance()),
     filename = reactive(build_export_filename("croissance_modeles", filename_suffix()))
   )
   
-   ## Graphique du modèle choisi ----
+   ## Graphique du modele choisi ----
   
-  # Réactif : graphique du modèle sélectionné
+  # Reactif : graphique du modele selectionne
   plot_selectedmodelcroissance <- reactive({
     req(selectedmodelcroissance(), specimen(), table_modeles_croissance())
     croissance_plot(
@@ -500,16 +500,16 @@ app_server <- function(input, output, session) {
   render_plot_ggplot("selectedmodelcroissanceplot", reactive(plot_selectedmodelcroissance()))
   
   
-  # Bouton de téléchargement du graphique
+  # Bouton de telechargement du graphique
   render_download_plot(
     id = "download_selectedmodelcroissanceplot",
     plot_selectedmodelcroissance,
     filename = "courbe_croissance"
   )
   
-  # Mortalité ----
+  # Mortalite ----
   
-  ## Âge maximum
+  ## Age maximum
   mortalite_get_age_max_res <- reactive({
     req(specimen())
     mortalite_get_age_max(data = specimen())
@@ -564,15 +564,15 @@ app_server <- function(input, output, session) {
     req(pp(), peak_plus_final())
     
     if (input$recalculer_mortalite == 0) {
-      glue::glue("Analyse effectuée avec la valeur par défaut du Peak Plus : {pp()}") |> as.character()
+      glue("Analyse effectuée avec la valeur par défaut du Peak Plus : {pp()}") |> as.character()
     } else {
-      glue::glue("Analyse effectuée avec la valeur personnalisée du Peak Plus : {peak_plus_final()}") |> as.character()
+      glue("Analyse effectuée avec la valeur personnalisée du Peak Plus : {peak_plus_final()}") |> as.character()
     }
   })
   
   
   
-  ## Données corrigées pour la mortalité
+  ## Donnees corrigees pour la mortalite
   df_age_corrigee <- reactive({
     req(specimen(), peak_plus_final(), mortalite_get_age_max_res())
     mortalite_prepare_corr(
@@ -582,7 +582,7 @@ app_server <- function(input, output, session) {
     )
   })
   
-  ## Données étendues
+  ## Donnees etendues
   df_age_etendue <- reactive({
     req(df_age_corrigee(), mortalite_get_age_max_res())
     mortalite_prepare_extended(
@@ -610,26 +610,26 @@ app_server <- function(input, output, session) {
     filename = "dispersion_poisson"
   )
   
-  ## Tableau de sélection de modèles ----
+  ## Tableau de selection de modeles ----
   mortalite_compare_modele_res <- reactive({
     req(df_age_etendue())
     mortalite_compare_modele(data = df_age_etendue())
   })
   
-  # Tableau des modèles (data.frame)
+  # Tableau des modeles (data.frame)
   table_modeles_mortalite <- reactive({
     req(mortalite_compare_modele_res())
     mortalite_compare_modele_res()$data
   })
   
-  # Meilleur modèle automatique (pour phrase descriptive)
+  # Meilleur modele automatique (pour phrase descriptive)
   best_model_mortalite <- reactive({
     table <- table_modeles_mortalite()
     req(nrow(table) > 0)
     mortalite_select_best_modele(table)
   })
   
-  # Modèle sélectionné dans la table (utilisé pour graphique)
+  # Modele selectionne dans la table (utilise pour graphique)
   selected_model_mortalite <- reactive({
     selected <- getReactableState("comparaison_mortalite_table", "selected")
     req(!is.null(selected), table_modeles_mortalite())
@@ -637,7 +637,7 @@ app_server <- function(input, output, session) {
   })
   
   
-  # Index du meilleur modèle
+  # Index du meilleur modele
   default_model_index_mortalite <- reactive({
     table <- table_modeles_mortalite()
     req(nrow(table) > 0)
@@ -647,17 +647,17 @@ app_server <- function(input, output, session) {
     idx
   })
   
-  # Reactable des modèles
+  # Reactable des modeles
   output$comparaison_mortalite_table <- renderReactable({
     table <- table_modeles_mortalite()
     idx <- default_model_index_mortalite()
     
-    reactable::reactable(
+    reactable(
       table,
       selection = "single",
       onClick = "select",
       defaultSelected = idx,
-      defaultColDef = reactable::colDef(
+      defaultColDef = colDef(
         align = "center",
         headerStyle = list(textAlign = "center")
       )
@@ -673,7 +673,7 @@ app_server <- function(input, output, session) {
   })
   
   
-  # Fit du modèle sélectionné
+  # Fit du modele selectionne
   modele_fit_mortalite <- reactive({
     req(df_age_etendue(), selected_model_mortalite())
     mortalite_fit_best_modele(
@@ -683,7 +683,7 @@ app_server <- function(input, output, session) {
   })
   
   
-  ## Graphique du modèle choisi ----
+  ## Graphique du modele choisi ----
   plot_selectedmodel_mortalite <- reactive({
     req(specimen(), modele_fit_mortalite(), table_modeles_mortalite())
     
@@ -720,7 +720,7 @@ app_server <- function(input, output, session) {
     filename = reactive(build_export_filename("chapman_robson", filename_suffix()))
   )
   
-  # Téléchargement tableau de modèles
+  # Telechargement tableau de modeles
   render_download_table(
     "download_comparaison_mortalite_table",
     data = reactive(table_modeles_mortalite()),
@@ -728,12 +728,12 @@ app_server <- function(input, output, session) {
   )
   
   
-  # Maturité sexuelle ----
-  ## Longueur à maturité ----
+  # Maturite sexuelle ----
+  ## Longueur a maturite ----
   
-  ### Tableau de sélection de modèles ----
+  ### Tableau de selection de modeles ----
   
-  # Résultat complet : modèles et tables
+  # Resultat complet : modeles et tables
   table_modeles_l50_resultats <- reactive({
     req(specimen())
     maturite_compare_modele(
@@ -743,7 +743,7 @@ app_server <- function(input, output, session) {
     )
   })
   
-  # Index du meilleur modèle pour sélection par défaut
+  # Index du meilleur modele pour selection par defaut
   default_model_index_l50 <- reactive({
     table <- table_modeles_l50_resultats()$table$df
     req(nrow(table) > 0)
@@ -752,7 +752,7 @@ app_server <- function(input, output, session) {
     idx
   })
   
-  # Tableau interactif des modèles
+  # Tableau interactif des modeles
   output$table_modeles_l50_table <- renderReactable({
     req(table_modeles_l50_resultats())
     table <- table_modeles_l50_resultats()$table$df
@@ -773,7 +773,7 @@ app_server <- function(input, output, session) {
     )
   })
   
-  # Modèle actuellement sélectionné
+  # Modele actuellement selectionne
   selected_model_info_l50 <- reactive({
     selected <- getReactableState("table_modeles_l50_table", "selected")
     req(!is.null(selected), table_modeles_l50_resultats())
@@ -781,21 +781,21 @@ app_server <- function(input, output, session) {
     model_id <- table[selected, "modele_id", drop = TRUE]
     
     list(
-      modele = stringr::str_extract(model_id, "TLO|ADD|INT|COM"),
-      lien = stringr::str_extract(model_id, "logit|probit|cloglog"),
+      modele = str_extract(model_id, "TLO|ADD|INT|COM"),
+      lien = str_extract(model_id, "logit|probit|cloglog"),
       variable = "ltm"
     )
   })
   
   
-  # Message explicatif sur les modèles évalués
+  # Message explicatif sur les modeles evalues
   output$message_l50 <- renderText({
     req(table_modeles_l50_resultats())
     table_modeles_l50_resultats()$message
   })
   
   
-  # Résultat du modèle sélectionné
+  # Resultat du modele selectionne
   l50_generate_modele_res <- reactive({
     req(specimen(), selected_model_info_l50())
     maturite_generate_modele(
@@ -807,7 +807,7 @@ app_server <- function(input, output, session) {
   })
   
   
-  ### Tableau du modèle choisi ----
+  ### Tableau du modele choisi ----
   render_table_flextable("ogive_l50_table", reactive(l50_generate_modele_res()$table_resultats_flextable))
   render_download_table(
     "ogive_l50_table_dl",
@@ -815,16 +815,16 @@ app_server <- function(input, output, session) {
     filename = reactive(build_export_filename("ogive_maturite", filename_suffix()))
   )
   
-  ### Graphique du modèle choisi ----
+  ### Graphique du modele choisi ----
   render_plot_ggplot("plot_ogive_l50", reactive(l50_generate_modele_res()$graphique))
   render_download_plot("download_ogive_l50_plot", reactive(l50_generate_modele_res()$graphique), filename_suffix = filename_suffix())
   
    
-  ## Âge à maturité ----
-  ### Tableau de sélection de modèles ----
+  ## Age a maturite ----
+  ### Tableau de selection de modeles ----
   
-  ### Tableau du modèle choisi ----
-  ### Graphique du modèle choisi ----
+  ### Tableau du modele choisi ----
+  ### Graphique du modele choisi ----
   
   
 }

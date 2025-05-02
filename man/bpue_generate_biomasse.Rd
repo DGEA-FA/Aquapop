@@ -2,23 +2,24 @@
 % Please edit documentation in R/bpue_generate_biomasse.R
 \name{bpue_generate_biomasse}
 \alias{bpue_generate_biomasse}
-\title{Créer une table de biomasse et BPUE par groupe biologique}
+\title{Creer une table de biomasse et BPUE par groupe biologique}
 \usage{
 bpue_generate_biomasse(data_specimen, data_station)
 }
 \arguments{
-\item{data_specimen}{Un \code{data.frame} de spécimens filtrés (issu de \code{load_specimen()}).}
+\item{data_specimen}{Un \code{data.frame} de specimens filtres (issu de \code{load_specimen()}), contenant les colonnes \code{masse}, \code{sexe}, \code{maturite}, etc.}
 
-\item{data_station}{Un \code{data.frame} des stations valides (issu de \code{load_station()}).}
+\item{data_station}{Un \code{data.frame} des stations valides (issu de \code{load_station()}), utilise pour calculer le nombre de stations (effort).}
 }
 \value{
-Une liste contenant :
+Une liste contenant :
 \describe{
-\item{\code{data}}{Un \code{data.frame} résumant la biomasse totale, la proportion, la BPUE et les intervalles de confiance pour chaque groupe biologique.}
-\item{\code{flextable}}{Une version formatée du tableau pour l’exportation (Word, Shiny, etc.) à l’aide du package \code{flextable}.}
+\item{\code{data}}{Un \code{data.frame} resumant la biomasse totale, la proportion relative, la BPUE et les intervalles de confiance pour chaque groupe biologique.}
+\item{\code{flextable}}{Une version formatee du tableau (\code{flextable}) pour l'exportation (Word, Shiny, etc.).}
 }
 }
 \description{
-Cette fonction calcule la biomasse totale (kg), la proportion (\%) et la biomasse
-par unité d'effort (BPUE, en kg/station) pour différents groupes biologiques d'une espèce cible.
+Cette fonction calcule la biomasse totale (kg), la proportion relative (\%) et la biomasse
+par unite d'effort (BPUE, en kg/station) pour differents groupes biologiques d'une espece cible.
+Elle retourne a la fois un tableau brut (\code{data.frame}) et une version mise en page avec \code{flextable}.
 }

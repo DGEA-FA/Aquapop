@@ -22,7 +22,9 @@
 #'   sexe = rep(c("F", "M"), 5)
 #' )
 #' wri(df)
-#'
+#' 
+#' @importFrom stats lm setNames
+#' 
 #' @export
 wri <- function(data) {
   

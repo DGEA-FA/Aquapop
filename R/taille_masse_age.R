@@ -60,7 +60,7 @@ taille_masse_age <- function(data) {
   
   
   for (col in c("ltm_max", "masse_max")) {
-    table_flextable <- table_flextable %>%
+    table_flextable <- table_flextable |>
       flextable::border(i = 1:2, j = col, border.right = bordure_normale, part = "header") %>%
       flextable::border(j = col, border.right = bordure_normale, part = "body")
   }
@@ -144,10 +144,10 @@ taille_masse_age <- function(data) {
   data %>%
     dplyr::summarise(
       nb  = sum(!is.na(!!dplyr::sym(var))),
-      moy = ifelse(all(is.na(!!dplyr::sym(var))), NA, mean(!!dplyr::sym(var), na.rm = TRUE)) %>% round(1),
-      e_t = ifelse(all(is.na(!!dplyr::sym(var))), NA, sd(!!dplyr::sym(var), na.rm = TRUE)) %>% round(1),
-      min = ifelse(all(is.na(!!dplyr::sym(var))), NA, min(!!dplyr::sym(var), na.rm = TRUE)) %>% round(1),
-      max = ifelse(all(is.na(!!dplyr::sym(var))), NA, max(!!dplyr::sym(var), na.rm = TRUE)) %>% round(1),
+      moy = ifelse(all(is.na(!!dplyr::sym(var))), NA, mean(!!dplyr::sym(var), na.rm = TRUE)) |> round(1),
+      e_t = ifelse(all(is.na(!!dplyr::sym(var))), NA, sd(!!dplyr::sym(var), na.rm = TRUE)) |> round(1),
+      min = ifelse(all(is.na(!!dplyr::sym(var))), NA, min(!!dplyr::sym(var), na.rm = TRUE)) |> round(1),
+      max = ifelse(all(is.na(!!dplyr::sym(var))), NA, max(!!dplyr::sym(var), na.rm = TRUE)) |> round(1),
       .groups = "drop"
     )
 }

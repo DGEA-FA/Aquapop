@@ -67,7 +67,7 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
                        ),
                        
                        stop("❌ Modèle non supporté.")
-  ) %>% sans_warning_proba()
+  ) |> sans_warning_proba()
   
   
   
@@ -162,7 +162,7 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
   
   prediction_model <- predict(modele_glm, donnees_prediction, full = TRUE, type = "link", se.fit = TRUE)
   
-  donnees_ogive <- donnees_prediction %>%
+  donnees_ogive <- donnees_prediction |>
     mutate(
       maturite = switch(lien,
                         probit = pnorm(prediction_model$fit),
@@ -240,41 +240,41 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
   ft <- do.call(set_header_labels, c(list(ft), labels))
   
   # Appliquer les indices (b0, b1)
-  ft <- ft %>%
-    compose(j = "b0", part = "header", value = as_paragraph("b", as_sub("0"))) %>%
+  ft <- ft |>
+    compose(j = "b0", part = "header", value = as_paragraph("b", as_sub("0"))) |>
     compose(j = "b1", part = "header", value = as_paragraph("b", as_sub("1")))
   
   # Appliquer les étiquettes dynamiques pour point50
   if ("l50" %in% names(table_resultats)) {
-    ft <- ft %>% compose(j = "l50", part = "header", value = as_paragraph("L", as_sub("50")))
+    ft <- ft |> compose(j = "l50", part = "header", value = as_paragraph("L", as_sub("50")))
   }
   if ("a50" %in% names(table_resultats)) {
-    ft <- ft %>% compose(j = "a50", part = "header", value = as_paragraph("A", as_sub("50")))
+    ft <- ft |> compose(j = "a50", part = "header", value = as_paragraph("A", as_sub("50")))
   }
   if ("l50_f" %in% names(table_resultats)) {
-    ft <- ft %>% compose(j = "l50_f", part = "header", value = as_paragraph("L", as_sub("50"), " – Femelle"))
+    ft <- ft |> compose(j = "l50_f", part = "header", value = as_paragraph("L", as_sub("50"), " – Femelle"))
   }
   if ("l50_m" %in% names(table_resultats)) {
-    ft <- ft %>% compose(j = "l50_m", part = "header", value = as_paragraph("L", as_sub("50"), " – Mâle"))
+    ft <- ft |> compose(j = "l50_m", part = "header", value = as_paragraph("L", as_sub("50"), " – Mâle"))
   }
   if ("a50_f" %in% names(table_resultats)) {
-    ft <- ft %>% compose(j = "a50_f", part = "header", value = as_paragraph("A", as_sub("50"), " – Femelle"))
+    ft <- ft |> compose(j = "a50_f", part = "header", value = as_paragraph("A", as_sub("50"), " – Femelle"))
   }
   if ("a50_m" %in% names(table_resultats)) {
-    ft <- ft %>% compose(j = "a50_m", part = "header", value = as_paragraph("A", as_sub("50"), " – Mâle"))
+    ft <- ft |> compose(j = "a50_m", part = "header", value = as_paragraph("A", as_sub("50"), " – Mâle"))
   }
   if ("intervalle" %in% names(table_resultats)) {
-    ft <- ft %>% compose(j = "intervalle", part = "header", value = as_paragraph("IC 95%"))
+    ft <- ft |> compose(j = "intervalle", part = "header", value = as_paragraph("IC 95%"))
   }
   if ("sexe" %in% names(table_resultats)) {
-    ft <- ft %>% compose(j = "sexe", part = "header", value = as_paragraph("sexe"))
+    ft <- ft |> compose(j = "sexe", part = "header", value = as_paragraph("sexe"))
   }
   if ("interaction" %in% names(table_resultats)) {
-    ft <- ft %>% compose(j = "interaction", part = "header", value = as_paragraph("interaction"))
+    ft <- ft |> compose(j = "interaction", part = "header", value = as_paragraph("interaction"))
   }
   
   # Mise en forme finale
-  ft <- ft %>%
+  ft <- ft |>
     style_flextable_aquapop() 
     # autofit() %>%
     # align(align = "center", part = "all") %>%

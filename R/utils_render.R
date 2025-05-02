@@ -116,6 +116,8 @@ render_download_table <- function(id,
 #' @param height Hauteur (en pouces)
 #' @param dpi Résolution (DPI)
 #' @param label Libellé du bouton
+#' 
+#' @importFrom ggplot2 ggsave 
 #'
 #' @export
 render_download_plot <- function(id,

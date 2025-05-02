@@ -1,29 +1,37 @@
 #' Ajuster un modèle de CPUE de type NB2 (Negative Binomial 2)
 #'
-#' Cette fonction ajuste un modèle de régression NB2 (`glm.nb`) sur les données de CPUE par station,
-#' puis applique un test HNP (Half-Normal Plot) pour évaluer la qualité de l’ajustement.
+#' Cette fonction ajuste un modèle de type NB2 (Negative Binomial 2) à l’aide de `glm.nb()`
+#' sur les données de CPUE par station. Elle applique également un test HNP (Half-Normal Plot)
+#' pour évaluer la qualité de l’ajustement. En cas d’ajustement marginal (entre 10 % et 15 % d’observations hors bande),
+#' trois simulations supplémentaires sont effectuées.
 #'
-#' @param cpue_data Un `data.frame` produit par `cpue_prepare()` contenant au minimum
-#'                  les colonnes `no_station` (identifiant de la station) et `CPUE` (valeur numérique de la capture par unité d'effort).
+#' @param cpue_data Un `data.frame` produit par `cpue_prepare()`, contenant au minimum les colonnes `no_station` et `CPUE`.
 #'
-#' @return Un `data.frame` d’une ligne contenant :
+#' @return Un `data.frame` d’une seule ligne résumant le modèle ajusté, avec les colonnes suivantes :
 #' \describe{
-#'   \item{methode}{Nom du modèle ("nb2")}
-#'   \item{ajustement_hnp}{Pourcentage moyen d'observations hors bande dans le HNP}
-#'   \item{aicc}{Critère d’information corrigé (AICc)}
-#'   \item{cpue_moyenne}{Estimation moyenne de la CPUE (valeur prédite)}
-#'   \item{ic_95}{Intervalle de confiance à 95 %}
-#'   \item{commentaire}{Appréciation qualitative de l’ajustement}
-#'   \item{convergence}{Toujours TRUE si le modèle a été ajusté sans erreur}
-#'   \item{nb_iterations_hnp}{Nombre d’itérations du test HNP (2 ou 5)}
+#'   \item{methode}{Type de modèle utilisé (`"nb2"`)}
+#'   \item{ajustement_hnp}{Pourcentage moyen d’observations hors bande du test HNP}
+#'   \item{aicc}{Critère d'information corrigé (AICc)}
+#'   \item{cpue_moyenne}{Valeur moyenne prédite par le modèle (exponentielle du lien)}
+#'   \item{ic_95}{Intervalle de confiance à 95 % sous forme de chaîne de caractères}
+#'   \item{commentaire}{Texte interprétant l’ajustement : bon, marginal ou mauvais}
+#'   \item{convergence}{État de convergence (`TRUE`, car `glm.nb()` converge toujours sauf erreur)}
+#'   \item{nb_iterations_hnp}{Nombre total d’itérations HNP effectuées (2 ou 5)}
 #' }
 #'
 #' @examples
-#' fake_data <- tibble::tibble(
+#' fake_data <- tibble(
 #'   no_station = 1:10,
 #'   CPUE = rnbinom(10, mu = 5, size = 1)
 #' )
 #' cpue_fit_modele_nb2(fake_data)
+#'
+#' @importFrom MASS glm.nb
+#' @importFrom stats predict simulate residuals rnbinom
+#' @importFrom hnp hnp
+#' @importFrom dplyr case_when
+#' @importFrom tibble tibble
+#' @importFrom MuMIn AICc
 #'
 #' @export
 cpue_fit_modele_nb2 <- function(cpue_data) {
@@ -32,7 +40,7 @@ cpue_fit_modele_nb2 <- function(cpue_data) {
   simuler_hnp_nb2 <- function(model, n_iter = 2) {
     replicate(
       n_iter,
-      hnp::hnp(
+      hnp(
         model,
         resid.type = "pearson",
         how.many.out = TRUE,
@@ -44,7 +52,7 @@ cpue_fit_modele_nb2 <- function(cpue_data) {
   }
   
   # --- Ajustement du modèle NB2 ---
-  model <- MASS::glm.nb(CPUE ~ 1, data = cpue_data)
+  model <- glm.nb(CPUE ~ 1, data = cpue_data)
   
   # --- Test HNP initial ---
   message("Test HNP : Modèle NB2 (2 simulations initiales)...")
@@ -63,24 +71,24 @@ cpue_fit_modele_nb2 <- function(cpue_data) {
   }
   
   # --- Prédiction moyenne et IC 95% ---
-  pred <- stats::predict(model, type = "link", se.fit = TRUE)
+  pred <- predict(model, type = "link", se.fit = TRUE)
   cpue_moyenne <- round(exp(pred$fit[1]), 2)
   ic_borne_inf <- round(exp(pred$fit[1] - 1.96 * pred$se.fit[1]), 2)
   ic_borne_sup <- round(exp(pred$fit[1] + 1.96 * pred$se.fit[1]), 2)
   ic_95 <- sprintf("(%s-%s)", ic_borne_inf, ic_borne_sup)
   
   # --- Commentaire sur la qualité d’ajustement ---
-  commentaire <- dplyr::case_when(
+  commentaire <- case_when(
     ajustement_hnp < 10 ~ "Bon ajustement.",
     ajustement_hnp < 15 ~ "Ajustement marginal.",
     TRUE ~ "Mauvais ajustement."
   )
   
   # --- Résultat final ---
-  tibble::tibble(
+  tibble(
     methode = "nb2",
     ajustement_hnp = ajustement_hnp,
-    aicc = MuMIn::AICc(model),
+    aicc = AICc(model),
     cpue_moyenne = cpue_moyenne,
     ic_95 = ic_95,
     commentaire = commentaire,

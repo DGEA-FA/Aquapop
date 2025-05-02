@@ -7,26 +7,26 @@
 cpue_prepare(capture, specimen, group = c("tous", "femelles"))
 }
 \arguments{
-\item{capture}{Un \code{data.frame} de captures, avec au minimum \code{no_station}, \code{nb_capture}, \code{nb_pese}.}
+\item{capture}{Un \code{data.frame} de captures, contenant au minimum les colonnes \code{no_station}, \code{nb_capture}, \code{nb_pese}.}
 
-\item{specimen}{Un \code{data.frame} de spécimens, déjà filtré pour l’espèce et les stations valides/hasard.}
+\item{specimen}{Un \code{data.frame} de spécimens, déjà filtré pour l’espèce et les stations pertinentes.}
 
-\item{group}{Une chaîne \code{"tous"} (par défaut) ou \code{"femelles"}, indiquant le groupe à analyser.}
+\item{group}{Une chaîne de caractères, \code{"tous"} (valeur par défaut) ou \code{"femelles"}, indiquant le groupe à analyser.}
 }
 \value{
-Un \code{data.frame} avec les colonnes :
+Un \code{data.frame} contenant les colonnes suivantes :
 \describe{
 \item{no_station}{Identifiant de la station}
-\item{CPUE}{Nombre de spécimens observés à cette station}
+\item{CPUE}{Nombre de spécimens observés à la station, divisé par l’effort (station)}
 \item{Group}{Libellé du groupe analysé : \code{"Tous"} ou \code{"Femelles"}}
 }
 }
 \description{
-Cette fonction prépare un tableau de CPUE par station à partir des spécimens observés
-et des captures enregistrées. Elle permet de calculer soit la CPUE totale, soit la CPUE
-limitée aux femelles, selon l'argument \code{group}.
+Cette fonction prépare un tableau de CPUE (captures par unité d'effort) à l’échelle de la station,
+à partir des données de captures et des spécimens observés. Elle permet de calculer soit la CPUE totale,
+soit la CPUE restreinte aux femelles, selon l’argument \code{group}.
 }
 \details{
-Elle suppose que les objets \code{specimen} et \code{capture} sont déjà filtrés en amont pour ne
-contenir que les stations valides et au hasard (via \code{get_analysis_data()}).
+Elle suppose que les objets \code{capture} et \code{specimen} sont déjà filtrés pour ne contenir que les stations valides et aléatoires
+(par exemple via \code{get_analysis_data()}).
 }

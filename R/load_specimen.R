@@ -92,7 +92,7 @@ load_specimen <- function(path,
     col_names = TRUE,
     col_types = "text",
     na = c("", "NULL", "NA", " ", "-")
-  ) %>% as.data.frame()
+  ) |> as.data.frame()
   
   noms_originaux <- names(specimen_raw)
   noms_clean <- janitor::make_clean_names(noms_originaux)
@@ -141,7 +141,7 @@ load_specimen <- function(path,
   }
   
   # --- Nettoyage et conversion des colonnes ---
-  specimen <- specimen %>%
+  specimen <- specimen |>
     dplyr::mutate(
       maturite = tidyr::replace_na(maturite, "IND"),
       sexe     = tidyr::replace_na(sexe, "IND"),
@@ -173,8 +173,8 @@ load_specimen <- function(path,
       } else {
         rep(NA_character_, nrow(specimen))
       }
-    ) %>%
-    dplyr::arrange(dplyr::across("no_specimen")) %>%
+    ) |>
+    dplyr::arrange(dplyr::across("no_specimen")) |>
     dplyr::distinct()
   
   return(specimen)

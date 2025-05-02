@@ -96,13 +96,13 @@ geom_text_aquapop <- function(...) {
 #'
 #' @examples
 #' library(flextable)
-#' flextable(head(iris)) %>% style_flextable_aquapop()
+#' flextable(head(iris)) |> style_flextable_aquapop()
 style_flextable_aquapop <- function(ft) {
-  ft %>%
-    flextable::set_table_properties(layout = "autofit") %>%
-    flextable::fontsize(size = 10, part = "all") %>%
-    flextable::font(fontname = "Arial", part = "all") %>%
-    flextable::align(align = "center", part = "all") %>%
-    flextable::border_remove() %>%
+  ft |>
+    flextable::set_table_properties(layout = "autofit") |>
+    flextable::fontsize(size = 10, part = "all") |>
+    flextable::font(fontname = "Arial", part = "all") |>
+    flextable::align(align = "center", part = "all") |>
+    flextable::border_remove() |>
     flextable::border_outer()
 }

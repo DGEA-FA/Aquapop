@@ -7,13 +7,24 @@
 cpue_fit_modele_nb1(cpue_data)
 }
 \arguments{
-\item{cpue_data}{Un \code{data.frame} produit par \code{cpue_prepare()} contenant au minimum :
-\code{no_station}, \code{CPUE}.}
+\item{cpue_data}{Un \code{data.frame} produit par \code{cpue_prepare()}, contenant au minimum les colonnes \code{no_station} et \code{CPUE}.}
 }
 \value{
-Un \code{data.frame} d’une ligne résumant le modèle ajusté.
+Un \code{data.frame} d’une seule ligne résumant le modèle ajusté, avec les colonnes suivantes :
+\describe{
+\item{methode}{Type de modèle utilisé (\code{"nb1"})}
+\item{ajustement_hnp}{Pourcentage moyen d’observations hors bande du test HNP}
+\item{aicc}{Critère d'information corrigé (AICc)}
+\item{cpue_moyenne}{Valeur moyenne prédite par le modèle (exponentielle du lien)}
+\item{ic_95}{Intervalle de confiance à 95 \% sous forme de chaîne de caractères}
+\item{commentaire}{Texte interprétant l’ajustement : bon, marginal ou mauvais}
+\item{convergence}{État de convergence du modèle (\code{TRUE} ou \code{FALSE})}
+\item{nb_iterations_hnp}{Nombre total d’itérations HNP effectuées (2 ou 5)}
+}
 }
 \description{
-Cette fonction ajuste un modèle glmmTMB avec distribution NB1 sur les données de CPUE par station.
-Elle réalise aussi un test HNP (Half-Normal Plot) pour vérifier l’ajustement du modèle.
+Cette fonction ajuste un modèle de type NB1 (Negative Binomial 1) avec \code{glmmTMB}
+sur les données de CPUE par station. Elle applique également un test HNP (Half-Normal Plot)
+pour évaluer la qualité de l’ajustement. En cas d’ajustement marginal (entre 10 \% et 15 \% d’observations hors bande),
+des simulations HNP supplémentaires sont effectuées.
 }

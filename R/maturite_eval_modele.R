@@ -19,8 +19,8 @@ maturite_eval_modele <- function(models) {
   library(glue)
   library(labelled)   # Pour ajouter des labels d'affichage
   
-  results <- lapply(names(models), function(n) build_individual_model_row(models[[n]], n)) %>%
-    bind_rows() %>%
+  results <- lapply(names(models), function(n) build_individual_model_row(models[[n]], n)) |>
+    bind_rows() |>
     arrange(desc(convergence), aicc)
   
   # Ajout de labels pour un affichage plus clair dans l'application

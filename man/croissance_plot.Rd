@@ -2,35 +2,33 @@
 % Please edit documentation in R/croissance_plot.R
 \name{croissance_plot}
 \alias{croissance_plot}
-\title{Générer un graphique illustrant la courbe de croissance ajustée}
+\title{Tracer la courbe de croissance ajustée pour un modèle sélectionné}
 \usage{
 croissance_plot(dfspecimen, tablemodele, modele)
 }
 \arguments{
-\item{dfspecimen}{Un \code{data.frame} contenant les données des spécimens, incluant au minimum
-les colonnes \code{ltm} (longueur totale maximale), \code{age} et \code{no_specimen}.}
+\item{dfspecimen}{Un \code{data.frame} de spécimens, contenant au minimum les colonnes \code{ltm}, \code{age} et \code{no_specimen}.}
 
-\item{tablemodele}{Un \code{data.frame} contenant les paramètres des modèles ajustés, incluant
-les colonnes \code{methode}, \code{l_inf}, \code{k} et \code{t0}.}
+\item{tablemodele}{Un \code{data.frame} contenant les paramètres du modèle ajusté, incluant \code{methode}, \code{l_inf}, \code{k} et \code{t0}.}
 
-\item{modele}{Un nom de modèle à utiliser pour le tracé, parmi :
-\code{"Von Bertalanffy"}, \code{"Gompertz"} ou \code{"Logistique"}.}
+\item{modele}{Une chaîne de caractères indiquant le modèle à utiliser : \code{"Von Bertalanffy"}, \code{"Gompertz"} ou \code{"Logistique"}.}
 }
 \value{
-Un objet \code{ggplot} affichant la courbe de croissance ajustée avec intervalles de confiance.
+Un objet \code{ggplot} représentant la courbe de croissance ajustée, avec les points observés et l’intervalle de confiance.
 }
 \description{
-Cette fonction trace la courbe de croissance d’un groupe de spécimens selon le modèle sélectionné
-(Von Bertalanffy, Gompertz ou Logistique). Le graphique inclut les points observés, la courbe ajustée,
-un intervalle de confiance et la ligne représentant L∞.
+Cette fonction génère un graphique illustrant la courbe de croissance ajustée d’un groupe de spécimens,
+selon le modèle choisi parmi : Von Bertalanffy, Gompertz ou Logistique.
+Le graphique comprend les points observés (\code{ltm} vs \code{age}), la courbe ajustée, l’intervalle de confiance,
+ainsi qu’une ligne horizontale représentant la valeur asymptotique de croissance (\verb{L∞}).
 }
 \examples{
-dfspecimen <- tibble::tibble(
+dfspecimen <- tibble(
   ltm = c(100, 120, 140, 150),
   age = c(1, 2, 3, 4),
   no_specimen = 1:4
 )
-tablemodele <- tibble::tibble(
+tablemodele <- tibble(
   methode = "Von Bertalanffy",
   l_inf = 160,
   k = 0.3,

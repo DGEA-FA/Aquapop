@@ -21,7 +21,7 @@ maturite_compare_modele <- function(specimen_data, prefer_combined = FALSE, vari
   to_dual_format <- function(df) {
     list(
       df = df,
-      flextable = df %>% flextable::flextable() %>% style_flextable_aquapop()
+      flextable = df |> flextable::flextable() |> style_flextable_aquapop()
     )
   }
   

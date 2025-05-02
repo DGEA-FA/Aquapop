@@ -24,6 +24,8 @@
 #'   \item{capture}{Table des captures par station (inclut les stations valides et au hasard, même sans capture)}
 #' }
 #'
+#' @importFrom tidyr replace_na
+#' @importFrom dplyr full_join mutate distinct left_join filter
 #' @export
 get_analysis_data <- function(path, typ_pech, no_lac, annee,
                               sheet_station = "Stations",
@@ -45,48 +47,48 @@ get_analysis_data <- function(path, typ_pech, no_lac, annee,
   ## Feuille des spécimens ----
   data_specimen <- load_specimen(path, sheet_specimen, verbose = verbose) |>
     filter_by_pen_lac_annee(typ_pech = typ_pech, no_lac = no_lac, annee = annee) |>
-    dplyr::filter(sp == code_sp)
+    filter(sp == code_sp)
   
   ## Feuille des récoltes ----
   data_recolte <- load_recolte(path, sheet_recolte, verbose = verbose) |>
     filter_by_pen_lac_annee(typ_pech = typ_pech, no_lac = no_lac, annee = annee) |>
-    dplyr::filter(sp == code_sp)
+    filter(sp == code_sp)
   
   # Préparation des stations ----
-  station_valides <- dplyr::filter(data_station, st_valide == "O")
-  station_hasard_valide <- dplyr::filter(data_station, st_valide == "O", st_hasard == "O")
+  station_valides <- filter(data_station, st_valide == "O")
+  station_hasard_valide <- filter(data_station, st_valide == "O", st_hasard == "O")
   
   # Préparation des spécimens ----
   ## Spécimens associés aux stations valides et au hasard ----
-  specimen <- dplyr::left_join(
+  specimen <- left_join(
     data_specimen, station_hasard_valide,
     by = c("no_station", "annee", "no_lac", "typ_pech"),
     relationship = "many-to-one"
   ) |>
-    dplyr::distinct() |>
-    base::droplevels()
+    distinct() |>
+    droplevels()
   
   ## Spécimens associés à toutes les stations valides ----
-  specimen_valid <- dplyr::left_join(
+  specimen_valid <- left_join(
     data_specimen, station_valides,
     by = c("no_station", "annee", "no_lac", "typ_pech"),
     relationship = "many-to-one"
   ) |>
-    dplyr::distinct() |>
-    base::droplevels()
+    distinct() |>
+    droplevels()
   
   # Préparation des captures ----
-  capture <- dplyr::full_join(
+  capture <- full_join(
     station_hasard_valide, data_recolte,
     by = c("no_station", "annee", "no_lac", "typ_pech"),
     relationship = "one-to-many"
   ) |>
-    dplyr::mutate(
-      nb_capture = tidyr::replace_na(nb_capture, 0),
-      nb_pese    = tidyr::replace_na(nb_pese, 0)
+    mutate(
+      nb_capture = replace_na(nb_capture, 0),
+      nb_pese    = replace_na(nb_pese, 0)
     ) |>
-    dplyr::distinct() |>
-    base::droplevels()
+    distinct() |>
+    droplevels()
   
   # Retour ----
   return(list(

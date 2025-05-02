@@ -1,32 +1,39 @@
-#' Générer un graphique illustrant la courbe de croissance ajustée
+#' Tracer la courbe de croissance ajustée pour un modèle sélectionné
 #'
-#' Cette fonction trace la courbe de croissance d’un groupe de spécimens selon le modèle sélectionné 
-#' (Von Bertalanffy, Gompertz ou Logistique). Le graphique inclut les points observés, la courbe ajustée,
-#' un intervalle de confiance et la ligne représentant L∞.
+#' Cette fonction génère un graphique illustrant la courbe de croissance ajustée d’un groupe de spécimens,
+#' selon le modèle choisi parmi : Von Bertalanffy, Gompertz ou Logistique.
+#' Le graphique comprend les points observés (`ltm` vs `age`), la courbe ajustée, l’intervalle de confiance,
+#' ainsi qu’une ligne horizontale représentant la valeur asymptotique de croissance (`L∞`).
 #'
-#' @param dfspecimen Un `data.frame` contenant les données des spécimens, incluant au minimum
-#'        les colonnes `ltm` (longueur totale maximale), `age` et `no_specimen`.
-#' @param tablemodele Un `data.frame` contenant les paramètres des modèles ajustés, incluant
-#'        les colonnes `methode`, `l_inf`, `k` et `t0`.
-#' @param modele Un nom de modèle à utiliser pour le tracé, parmi :
-#'        `"Von Bertalanffy"`, `"Gompertz"` ou `"Logistique"`.
+#' @param dfspecimen Un `data.frame` de spécimens, contenant au minimum les colonnes `ltm`, `age` et `no_specimen`.
+#' @param tablemodele Un `data.frame` contenant les paramètres du modèle ajusté, incluant `methode`, `l_inf`, `k` et `t0`.
+#' @param modele Une chaîne de caractères indiquant le modèle à utiliser : `"Von Bertalanffy"`, `"Gompertz"` ou `"Logistique"`.
 #'
-#' @return Un objet `ggplot` affichant la courbe de croissance ajustée avec intervalles de confiance.
+#' @return Un objet `ggplot` représentant la courbe de croissance ajustée, avec les points observés et l’intervalle de confiance.
+#'
+#' @importFrom ggplot2 ggplot aes geom_point geom_line geom_ribbon labs scale_y_continuous scale_x_continuous annotate
+#' @importFrom investr predFit
+#' @importFrom stats nls
+#' @importFrom dplyr select filter
+#' @importFrom tibble tibble
+#' @importFrom FSA Summarize
+#'
 #' @export
 #'
 #' @examples
-#' dfspecimen <- tibble::tibble(
+#' dfspecimen <- tibble(
 #'   ltm = c(100, 120, 140, 150),
 #'   age = c(1, 2, 3, 4),
 #'   no_specimen = 1:4
 #' )
-#' tablemodele <- tibble::tibble(
+#' tablemodele <- tibble(
 #'   methode = "Von Bertalanffy",
 #'   l_inf = 160,
 #'   k = 0.3,
 #'   t0 = -0.5
 #' )
 #' croissance_plot(dfspecimen, tablemodele, "Von Bertalanffy")
+
 croissance_plot <- function(dfspecimen, tablemodele, modele) {
   # --- Fonctions internes ---
   vb_function <- function(age, linf, k, t0) linf * (1 - exp(-k * (age - t0)))
@@ -35,14 +42,14 @@ croissance_plot <- function(dfspecimen, tablemodele, modele) {
   
   # --- Nettoyage des données ---
   data_clean <- dfspecimen |>
-    dplyr::filter(!is.na(ltm), !is.na(age)) |>
-    dplyr::select(ltm, age, no_specimen)
+    filter(!is.na(ltm), !is.na(age)) |>
+    select(ltm, age, no_specimen)
   
   # --- Extraction des paramètres du modèle sélectionné ---
-  model_params <- dplyr::filter(tablemodele, methode == modele)
+  model_params <- filter(tablemodele, methode == modele)
   
   # --- Séquence d'âges pour les prédictions ---
-  age_summary <- FSA::Summarize(ltm ~ age, data = data_clean)
+  age_summary <- Summarize(ltm ~ age, data = data_clean)
   age_min <- min(age_summary$age)
   age_max <- max(age_summary$age)
   age_range_plot <- c(0, ceiling(age_max / 5) * 5 + 1)
@@ -63,30 +70,30 @@ croissance_plot <- function(dfspecimen, tablemodele, modele) {
   
   # --- Ajustement du modèle ---
   model_fit <- switch(modele,
-                      "Von Bertalanffy" = stats::nls(ltm ~ vb_function(age, linf, k, t0), data = data_clean, start = start_values),
-                      "Gompertz"        = stats::nls(ltm ~ gompertz_function(age, linf, k, t0), data = data_clean, start = start_values),
-                      "Logistique"      = stats::nls(ltm ~ logistic_function(age, linf, k, t0), data = data_clean, start = start_values)
+                      "Von Bertalanffy" = nls(ltm ~ vb_function(age, linf, k, t0), data = data_clean, start = start_values),
+                      "Gompertz"        = nls(ltm ~ gompertz_function(age, linf, k, t0), data = data_clean, start = start_values),
+                      "Logistique"      = nls(ltm ~ logistic_function(age, linf, k, t0), data = data_clean, start = start_values)
   )
   
   # --- Génération des prédictions ---
   predictions <- data.frame(
     age = age_ticks,
-    investr::predFit(model_fit, data.frame(age = age_ticks), interval = "confidence")
+    predFit(model_fit, data.frame(age = age_ticks), interval = "confidence")
   )
   
   # --- Construction du graphique ---
-  ggplot2::ggplot() +
-    ggplot2::geom_ribbon(data = predictions, ggplot2::aes(x = age, ymin = lwr, ymax = upr), fill = "gray80") +
-    ggplot2::geom_point(data = data_clean, ggplot2::aes(x = age, y = ltm), size = 2, alpha = 0.1) +
-    ggplot2::geom_line(data = predictions, ggplot2::aes(x = age, y = fit), linewidth = 1, linetype = "dashed") +
-    ggplot2::geom_line(data = dplyr::filter(predictions, age >= age_min, age <= age_max),
-                       ggplot2::aes(x = age, y = fit), linewidth = 1) +
-    ggplot2::annotate("segment", x = -Inf, xend = Inf, y = start_values$linf, yend = start_values$linf,
+  ggplot() +
+    geom_ribbon(data = predictions, aes(x = age, ymin = lwr, ymax = upr), fill = "gray80") +
+    geom_point(data = data_clean, aes(x = age, y = ltm), size = 2, alpha = 0.1) +
+    geom_line(data = predictions, aes(x = age, y = fit), linewidth = 1, linetype = "dashed") +
+    geom_line(data = filter(predictions, age >= age_min, age <= age_max),
+                       aes(x = age, y = fit), linewidth = 1) +
+    annotate("segment", x = -Inf, xend = Inf, y = start_values$linf, yend = start_values$linf,
                       linewidth = 0.5, color = "red", linetype = 2) +
-    ggplot2::scale_x_continuous(name = "Âge (année)", breaks = age_ticks, limits = age_range_plot, expand = c(0, 0)) +
-    ggplot2::scale_y_continuous(name = "Longueur totale maximale (mm)", expand = c(0, 0)) +
+    scale_x_continuous(name = "Âge (année)", breaks = age_ticks, limits = age_range_plot, expand = c(0, 0)) +
+    scale_y_continuous(name = "Longueur totale maximale (mm)", expand = c(0, 0)) +
     theme_aquapop() +
-    ggplot2::labs(caption = paste0("Modèle : ", modele, "\n",
+    labs(caption = paste0("Modèle : ", modele, "\n",
                                    "Equation : L(âge) = ", round(start_values$linf, 2),
                                    " / (1 + exp(-", round(start_values$k, 3),
                                    " * (âge - ", round(start_values$t0, 3), ")))"))

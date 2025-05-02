@@ -21,4 +21,3 @@ Longueur théorique à cet âge
 \description{
 Calcule la longueur en fonction de l’âge selon le modèle logistique.
 }
-\keyword{internal}

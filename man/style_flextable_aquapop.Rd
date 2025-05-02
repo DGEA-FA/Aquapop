@@ -18,5 +18,5 @@ police Arial, texte centré, bordures simples et taille de police adaptée aux r
 }
 \examples{
 library(flextable)
-flextable(head(iris)) \%>\% style_flextable_aquapop()
+flextable(head(iris)) |> style_flextable_aquapop()
 }

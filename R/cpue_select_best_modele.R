@@ -1,13 +1,16 @@
 #' Sélectionner le meilleur modèle CPUE selon le plus bas AICc
 #'
-#' Cette fonction identifie automatiquement le meilleur modèle CPUE
-#' parmi Poisson, NB1, NB2, CMP et GP, basé sur le plus bas AICc parmi
-#' les modèles bien ajustés (ajustement HNP < 10). Si aucun modèle n’est
-#' bien ajusté, elle sélectionne celui avec le plus bas AICc global.
+#' Cette fonction identifie automatiquement le meilleur modèle d’abondance (CPUE)
+#' parmi les modèles Poisson, NB1, NB2, CMP et GP. La sélection est effectuée selon
+#' le plus bas AICc parmi les modèles bien ajustés (ajustement HNP < 10).
+#' Si aucun modèle ne satisfait ce critère, la fonction retourne celui avec le plus bas AICc global.
 #'
-#' @param tablemodele Un `data.frame` retourné par `modele_cpue_comparaison()` (format = `"data.frame"`)
+#' @param tablemodele Un `data.frame` retourné par `modele_cpue_comparaison(..., format = "data.frame")`.
 #'
-#' @return Une chaîne de caractères (`Méthode`) correspondant au meilleur modèle
+#' @return Une chaîne de caractères (`Méthode`) correspondant au nom du meilleur modèle sélectionné.
+#'
+#' @importFrom dplyr filter pull
+#'
 #' @export
 #'
 #' @examples
@@ -21,16 +24,16 @@ cpue_select_best_modele <- function(tablemodele) {
   
   # Priorité aux modèles bien ajustés
   bien_ajuste <- tablemodele |>
-    dplyr::filter(`Ajustement (résultat du test HNP)` < 10)
+    filter(`Ajustement (résultat du test HNP)` < 10)
   
   if (nrow(bien_ajuste) > 0) {
     best <- bien_ajuste |>
-      dplyr::filter(AICc == min(AICc, na.rm = TRUE)) |>
-      dplyr::pull(Méthode)
+      filter(AICc == min(AICc, na.rm = TRUE)) |>
+      pull(Méthode)
   } else {
     best <- tablemodele |>
-      dplyr::filter(AICc == min(AICc, na.rm = TRUE)) |>
-      dplyr::pull(Méthode)
+      filter(AICc == min(AICc, na.rm = TRUE)) |>
+      pull(Méthode)
   }
   
   if (length(best) == 0) {

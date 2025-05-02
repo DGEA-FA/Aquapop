@@ -13,21 +13,25 @@ cpue_abondance_table(
 )
 }
 \arguments{
-\item{data}{Un \code{data.frame} de spécimens filtrés pour le lac, année, etc.}
+\item{data}{Un \code{data.frame} de spécimens filtrés (issu de \code{load_specimen()}), pour un lac, une année, etc.}
 
-\item{cpue_table_tous}{Un \code{data.frame} issu de \code{cpue_compare_modele(...)$data} (tous spécimens)}
+\item{cpue_table_tous}{Un \code{data.frame} issu de \code{cpue_compare_modele(..., group = "tous", format = "data.frame")}.}
 
-\item{cpue_table_femelles}{Idem pour les femelles matures}
+\item{cpue_table_femelles}{Idem, pour les femelles matures (\code{group = "femelles"}).}
 
-\item{best_model_tous}{Nom du meilleur modèle (ex: "nb1") pour tous}
+\item{best_model_tous}{Nom du meilleur modèle pour les CPUE totales (ex. \code{"nb1"}).}
 
-\item{best_model_femelles}{Nom du meilleur modèle (ex: "nb2") pour femelles}
+\item{best_model_femelles}{Nom du meilleur modèle pour les femelles matures (ex. \code{"nb2"}).}
 }
 \value{
-Une liste avec deux éléments : \code{data} (tableau brut) et \code{flextable} (tableau formaté).
+Une liste contenant :
+\describe{
+\item{\code{data}}{Un \code{data.frame} résumant les effectifs, proportions, CPUE et IC 95 \% pour chaque groupe biologique.}
+\item{\code{flextable}}{Une version formatée (\code{flextable}) du tableau pour exportation dans Word, Shiny, etc.}
+}
 }
 \description{
-Cette fonction calcule les effectifs et proportions de différents groupes (tous, par sexe,
-par statut reproducteur) à partir des spécimens d’une espèce cible. Elle ajoute les
-colonnes de CPUE et d’intervalle de confiance (IC 95\%) en extrayant les données des meilleurs modèles.
+Cette fonction calcule les effectifs et proportions de différents groupes (tous spécimens,
+par sexe, par statut reproducteur) à partir des spécimens d’une espèce cible. Elle ajoute les
+colonnes de CPUE et les intervalles de confiance (IC à 95 \%) en extrayant les valeurs des meilleurs modèles sélectionnés.
 }

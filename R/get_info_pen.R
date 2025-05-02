@@ -15,6 +15,8 @@
 #' 
 #' Retourne `NULL` si le code d’espèce est inconnu dans `pen_constants`.
 #'
+#' @importFrom dplyr pull filter
+#' @importFrom tibble tibble
 #' @examples
 #' get_info_pen("SAFO")
 #' get_info_pen("PENT")
@@ -24,19 +26,19 @@ get_info_pen <- function(input) {
   
   
   # --- Traduction type de pêche → code espèce ---
-  mapping_typ_pech <- tibble::tibble(
+  mapping_typ_pech <- tibble(
     typ_pech = c("PENT", "PENOF", "PENDJ"),
     sp       = c("SANA", "SAFO", "SAVI")
   )
   
   sp_code <- if (input %in% mapping_typ_pech$typ_pech) {
-    mapping_typ_pech %>% dplyr::filter(typ_pech == input) %>% dplyr::pull(sp)
+    mapping_typ_pech |> filter(typ_pech == input) |> pull(sp)
   } else {
     input
   }
   
   # --- Extraction dans pen_constants ---
-  info <- pen_constants %>% dplyr::filter(sp == sp_code)
+  info <- pen_constants |> filter(sp == sp_code)
   
   # --- Retour NULL si espèce non trouvée ---
   if (nrow(info) == 0) return(NULL)
