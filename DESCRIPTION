@@ -10,7 +10,7 @@ Description: Outil d'aide à l'analyse de données d'inventaire
 License: MIT
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Imports: 
     AER (>= 1.2.12),
     AICcmodavg (>= 2.3.3),
