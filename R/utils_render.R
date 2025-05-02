@@ -162,3 +162,27 @@ download_button_ui <- function(id, label = "Télécharger (.xlsx)") {
   shiny::downloadButton(outputId = id, label = label)
 }
 
+#' Rendre le fichier user_guide.rmd en HTML (si nécessaire)
+#'
+#' Vérifie si le fichier HTML est plus vieux que le .Rmd, et le recompilé si besoin.
+#' Utile pour afficher dans l'app Shiny via iframe.
+#'
+#' @param rmd_path Chemin vers le fichier .Rmd
+#' @param html_path Chemin vers le fichier .html à générer
+render_user_guide_if_needed <- function(rmd_path = "texte/user_guide.rmd",
+                                        html_path = "www/user_guide.html") {
+  if (!file.exists(html_path) ||
+      file.info(rmd_path)$mtime > file.info(html_path)$mtime) {
+    
+    message("🛠️  Rendu de user_guide.rmd → HTML...")
+    
+    rmarkdown::render(
+      input = rmd_path,
+      output_file = basename(html_path),
+      output_dir = dirname(html_path),
+      quiet = TRUE
+    )
+  }
+}
+
+

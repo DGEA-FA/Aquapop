@@ -10,6 +10,7 @@
 # ---
 
 #' Test d'ajustement de Osius & Rojek
+
 o.r.test <- function(obj) {
   mf <- obj$model
   trials <- rep(1, times = nrow(mf))
@@ -116,6 +117,7 @@ ld_fieller <- function(object, cf = 1:2, p = 0.5, level = 0.95) {
   structure(R, p = p, class = "Fieller")
 }
 
+#' @export
 print.Fieller <- function(x, ...) {
   attr(x, "p") <- class(x) <- NULL
   NextMethod("print", x, ...)
@@ -207,6 +209,7 @@ ld_proflik <- function(object, cf = 1:2, p = 0.5, level = 0.95, profile = FALSE,
   structure(R, p = p, class = "LR_glm_dose")
 }
 
+#' @export
 print.LR_glm_dose <- function(x, ...) {
   attr(x, "p") <- class(x) <- NULL
   NextMethod("print", x, ...)
@@ -477,6 +480,7 @@ ld_bayesian <- function(object, cf, p, level, ...) {
   structure(R, p = p, class = "ld_bayesian")
 }
 
+#' @export
 print.ld_bayesian <- function(x, ...) {
   attr(x, "p") <- class(x) <- NULL
   NextMethod("print", x, ...)

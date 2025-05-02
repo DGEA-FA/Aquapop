@@ -6,6 +6,8 @@
 
 app_ui <- function() {
   
+  render_user_guide_if_needed()
+  
   
   fluidPage(
     

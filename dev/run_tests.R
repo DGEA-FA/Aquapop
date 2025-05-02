@@ -6,3 +6,4 @@ devtools::load_all()
 # Exécuter tous les tests unitaires
 devtools::test()
 
+fs::dir_tree(path = ".", depth = 2)
