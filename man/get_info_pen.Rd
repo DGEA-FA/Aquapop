@@ -14,6 +14,7 @@ Une liste nommée contenant :
 \item{binwidth}{Largeur des classes pour histogramme}
 \item{breaks}{Vecteur des bornes de classes}
 \item{break_labels}{Étiquettes associées aux classes}
+}
 
 Retourne \code{NULL} si le code d’espèce est inconnu dans \code{pen_constants}.
 }

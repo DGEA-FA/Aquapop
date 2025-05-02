@@ -11,7 +11,8 @@
 #'   \item{binwidth}{Largeur des classes pour histogramme}
 #'   \item{breaks}{Vecteur des bornes de classes}
 #'   \item{break_labels}{Étiquettes associées aux classes} 
-#'   
+#' }
+#' 
 #' Retourne `NULL` si le code d’espèce est inconnu dans `pen_constants`.
 #'
 #' @examples
@@ -20,6 +21,7 @@
 #'
 #' @export
 get_info_pen <- function(input) {
+  
   
   # --- Traduction type de pêche → code espèce ---
   mapping_typ_pech <- tibble::tibble(

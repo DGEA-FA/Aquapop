@@ -7,3 +7,5 @@ devtools::load_all()
 devtools::test()
 
 fs::dir_tree(path = ".", depth = 2)
+
+devtools::document()
