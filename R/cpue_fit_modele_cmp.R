@@ -8,6 +8,12 @@
 #'
 #' @return Un `data.frame` d’une ligne résumant le modèle ajusté.
 #' @export
+#' #' @importFrom glmmTMB glmmTMB compois
+#' @importFrom hnp hnp
+#' @importFrom stats simulate residuals predict
+#' @importFrom dplyr case_when
+#' @importFrom tibble tibble
+#' @importFrom MuMIn AICc
 cpue_fit_modele_cmp <- function(cpue_data) {
   # 1. Ajustement du modèle CMP
   model <- glmmTMB::glmmTMB(CPUE ~ 1, family = glmmTMB::compois(link = "log"), data = cpue_data)

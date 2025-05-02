@@ -8,7 +8,7 @@
 #' @param t0 Âge hypothétique à longueur nulle
 #'
 #' @return Longueur théorique à cet âge
-#' @keywords internal
+#' @export
 vb_function <- function(age, linf, k, t0) {
   linf * (1 - exp(-k * (age - t0)))
 }
@@ -23,7 +23,7 @@ vb_function <- function(age, linf, k, t0) {
 #' @param t0 Âge à inflexion
 #'
 #' @return Longueur théorique à cet âge
-#' @keywords internal
+#' @export
 gompertz_function <- function(age, linf, k, t0) {
   linf * exp(-exp(-k * (age - t0)))
 }
@@ -38,7 +38,7 @@ gompertz_function <- function(age, linf, k, t0) {
 #' @param t0 Âge à inflexion
 #'
 #' @return Longueur théorique à cet âge
-#' @keywords internal
+#' @export
 logistic_function <- function(age, linf, k, t0) {
   linf / (1 + exp(-k * (age - t0)))
 }
