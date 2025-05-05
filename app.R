@@ -1,6 +1,7 @@
 # source("R/load_packages.R")
+devtools::load_all()
 
-source("R/utils.R")
+# source("R/utils.R")
 
 # to_activate_before_play ----
 reactlog::reactlog_enable() # Pour voir le graphe des réactifs

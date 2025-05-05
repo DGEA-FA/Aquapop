@@ -36,6 +36,9 @@ render_table_flextable <- function(output_id, flextable) {
   })
 }
 
+
+
+
 #' Force une évaluation différée (lazy) même pour obj()$x
 #' @noRd
 force_lazy <- function(expr) {

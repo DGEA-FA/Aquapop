@@ -11,7 +11,7 @@ devtools::load_all()
 
 # Téléchargement des données ----
 
-path     <- "data/Extract IFA_R04_AquaPop.xlsx"
+path     <- "inst/extdata/Extract_IFA_R04_AquaPop.xlsx"
 typ_pech <- "PENT"
 no_lac   <- "01565"
 annee    <- 2008
