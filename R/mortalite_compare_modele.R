@@ -3,6 +3,8 @@
 #' Ajuste cinq modèles (Poisson, NB1, NB2, CMP, GP) sur les fréquences d’âge
 #' et retourne un tableau comparatif avec AICc, HNP, estimation de Z et A (%), etc.
 #'
+#' @importFrom flextable set_caption flextable
+#' @importFrom dplyr select arrange case_when mutate bind_rows
 #' @param data Un `data.frame` contenant les colonnes `age` et `number`,
 #'             tel que produit par la fonction `mortalite_prepare_extended()`.
 #'
@@ -28,12 +30,12 @@ mortalite_compare_modele <- function(data) {
   result_gp      <- mortalite_fit_modele_gp(data)
   
   # Regroupement
-  resultats <- dplyr::bind_rows(result_poisson, result_nb1, result_nb2, result_cmp, result_gp)
+  resultats <- bind_rows(result_poisson, result_nb1, result_nb2, result_cmp, result_gp)
   
   # Calcul du Δ AICc et ajustement du commentaire
   resultats <- resultats |>
-    dplyr::mutate(`Δ AICc` = round(aicc - min(aicc, na.rm = TRUE), 2)) |>
-    dplyr::mutate(commentaire = dplyr::case_when(
+    mutate(`Δ AICc` = round(aicc - min(aicc, na.rm = TRUE), 2)) |>
+    mutate(commentaire = case_when(
       ajustement_hnp < 10 & `Δ AICc` == 0 ~
         "Le modèle s’ajuste bien à vos données. Ce modèle est recommandé car son AICc est le plus faible.",
       ajustement_hnp >= 10 & `Δ AICc` == 0 ~
@@ -43,8 +45,8 @@ mortalite_compare_modele <- function(data) {
   
   # Colonnes finales (data.frame)
   df_final <- resultats |>
-    dplyr::arrange(aicc) |>
-    dplyr::select(
+    arrange(aicc) |>
+    select(
       Méthode = methode,
       `Ajustement HNP (%)` = ajustement_hnp,
       AICc = aicc,
@@ -55,8 +57,8 @@ mortalite_compare_modele <- function(data) {
     )
   
   # Création du flextable
-  ft <- flextable::flextable(df_final) |>
-    flextable::set_caption("Comparaison des modèles de mortalité") |>
+  ft <- flextable(df_final) |>
+    set_caption("Comparaison des modèles de mortalité") |>
     style_flextable_aquapop()
   
   # Retourner les deux formats

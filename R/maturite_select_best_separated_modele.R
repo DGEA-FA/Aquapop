@@ -4,6 +4,8 @@
 #' et qui ont un bon ajustement pour les mâles et les femelles, en choisissant celui avec le plus bas AICc.
 #' Si aucun modèle n’est valide pour un des deux sexes, elle recommande de passer à l’approche combinée.
 #'
+#' @importFrom dplyr pull
+#' @importFrom dplyr filter
 #' @param evaluation_df Un data.frame retourné par `evaluate_L50_models()`.
 #'                      Il doit inclure les colonnes `modele_id`, `convergence`, `commentaire`, et `aicc`.
 #'
@@ -16,14 +18,14 @@
 maturite_select_best_separated_modele <- function(evaluation_df) {
   # Filtrer les modèles valides : convergence et commentaire favorable
   valid_models <- evaluation_df |>
-    dplyr::filter(
+    filter(
       convergence == TRUE,
       !grepl("rejeter|choisir un autre modèle", commentaire)
     )
   
   # Séparer les modèles par sexe
-  valid_M <- dplyr::filter(valid_models, grepl("^M_", modele_id))
-  valid_F <- dplyr::filter(valid_models, grepl("^F_", modele_id))
+  valid_M <- filter(valid_models, grepl("^M_", modele_id))
+  valid_F <- filter(valid_models, grepl("^F_", modele_id))
   
   # Cas 1 — Aucun modèle valide
   if (nrow(valid_M) == 0 && nrow(valid_F) == 0) {
@@ -51,12 +53,12 @@ maturite_select_best_separated_modele <- function(evaluation_df) {
   
   # Cas 4 — Les deux sexes ont au moins un modèle valide
   best_M <- valid_M |>
-    dplyr::filter(aicc == min(aicc)) |>
-    dplyr::pull(modele_id)
+    filter(aicc == min(aicc)) |>
+    pull(modele_id)
   
   best_F <- valid_F |>
-    dplyr::filter(aicc == min(aicc)) |>
-    dplyr::pull(modele_id)
+    filter(aicc == min(aicc)) |>
+    pull(modele_id)
   
   return(list(
     best_model_M = best_M,

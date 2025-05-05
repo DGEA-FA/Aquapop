@@ -6,6 +6,14 @@
 #' La fonction utilise les seuils extraits par `get_info_pen()` et retourne l’estimation ponctuelle
 #' ainsi qu’un intervalle de confiance à 95 %, calculé selon une méthode binomiale.
 #'
+#' @importFrom flextable flextable
+#' @importFrom dplyr select
+#' @importFrom glue glue
+#' @importFrom dplyr rename
+#' @importFrom FSA psdCI
+#' @importFrom FSA lencat
+#' @importFrom dplyr mutate
+#' @importFrom dplyr filter
 #' @param data Un `data.frame` contenant les données pour une seule espèce.
 #'             Doit inclure les colonnes :
 #'             - `ltm` : Longueur totale (en mm)
@@ -24,7 +32,7 @@
 #'   ltm = rnorm(100, mean = 250, sd = 50),
 #'   sp = "SAFO"
 #' )
-#' data_ex <- dplyr::filter(data_ex, ltm > 0)
+#' data_ex <- filter(data_ex, ltm > 0)
 #' psd_q_res <- psd_q(data_ex)
 #' psd_q_res$data
 #' psd_q_res$flextable
@@ -56,8 +64,8 @@ psd_q <- function(data) {
   # --- Filtrage et classification des longueurs ---
   
   donnees_qualite <- data |>
-    dplyr::filter(ltm >= seuil_qualite) |>
-    dplyr::mutate(gcat = FSA::lencat(ltm, breaks = break_class, droplevels = TRUE))
+    filter(ltm >= seuil_qualite) |>
+    mutate(gcat = lencat(ltm, breaks = break_class, droplevels = TRUE))
   
   # --- Calcul des fréquences par classe ---
   
@@ -78,7 +86,7 @@ psd_q <- function(data) {
   
   # --- Calcul de l’indice PSD-Q avec IC 95 % ---
   
-  table_resultats <- FSA::psdCI(
+  table_resultats <- psdCI(
     poids_classes,
     ptbl = freq_vecteur / 100,
     n = sum(freq_classes),
@@ -86,17 +94,17 @@ psd_q <- function(data) {
     label = "PSD Q"
   ) |>
     as.data.frame() |>
-    dplyr::rename(
+    rename(
       Q   = Estimate,
       LCI = `95% LCI`,
       UCI = `95% UCI`
     ) |>
-    dplyr::mutate(`IC 95%` = glue::glue("[{round(LCI, 1)}-{round(UCI, 1)}]")) |>
-    dplyr::select(Q, `IC 95%`)
+    mutate(`IC 95%` = glue("[{round(LCI, 1)}-{round(UCI, 1)}]")) |>
+    select(Q, `IC 95%`)
   
   # --- Construction du tableau flextable ---
   
-  table_flextable <- flextable::flextable(table_resultats) |>
+  table_flextable <- flextable(table_resultats) |>
     style_flextable_aquapop()
     
   

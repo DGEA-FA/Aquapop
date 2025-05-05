@@ -29,12 +29,12 @@ Un \code{data.frame} d’une ligne contenant :
 }
 }
 \description{
-Cette fonction ajuste un modèle NB2 (\code{MASS::glm.nb}) sur les données de fréquence d’âge étendues.
+Cette fonction ajuste un modèle NB2 (\code{glm.nb}) sur les données de fréquence d’âge étendues.
 Elle applique un test HNP (Half-Normal Plot) avec 2 à 5 simulations pour évaluer l’ajustement,
 puis retourne les estimations de mortalité et leur intervalle de confiance.
 }
 \examples{
-df_fake <- tibble::tibble(age = 1:6, number = c(180, 120, 70, 40, 25, 10))
+df_fake <- tibble(age = 1:6, number = c(180, 120, 70, 40, 25, 10))
 mortalite_fit_modele_nb2(df_fake)
 
 }

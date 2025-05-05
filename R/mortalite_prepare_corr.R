@@ -1,10 +1,18 @@
 #' Préparer les données corrigées de fréquence d'âge pour l'estimation de la mortalité
 #'
-#' Cette fonction applique `fishmethods::agesurv()` avec `type = 1` pour générer
+#' Cette fonction applique `agesurv()` avec `type = 1` pour générer
 #' les données individuelles de fréquence d’âge sur la *descending limb* (partie descendante de la courbe de capture).
 #' Elle filtre d’abord les spécimens ayant un âge valide (`data_valid`), applique l’estimation (`data_agesurv`),
 #' puis complète les classes d’âge manquantes avec des zéros pour produire une table uniforme (`data_final`).
 #'
+#' @importFrom dplyr arrange
+#' @importFrom tidyr replace_na
+#' @importFrom dplyr mutate
+#' @importFrom dplyr left_join
+#' @importFrom tibble tibble
+#' @importFrom dplyr filter
+#' @importFrom checkmate assert_int assert_numeric assert_names assert_data_frame assert
+#' @importFrom fishmethods agesurv
 #' @param data Un `data.frame` contenant les spécimens d'une seule espèce, avec une colonne nommée `age`
 #'             (valeurs numériques entières ≥ 0). Les valeurs manquantes (`NA`) seront automatiquement exclues.
 #' @param age_peak_plus Un entier indiquant l’âge à partir duquel commence l’analyse de mortalité
@@ -25,31 +33,31 @@
 #' mortalite_prepare_corr(data = data_exemple, age_peak_plus = 5, age_max = 7)
 mortalite_prepare_corr <- function(data, age_peak_plus, age_max) {
   # Validations ----
-  checkmate::assert_data_frame(data)
-  checkmate::assert_names(names(data), must.include = "age")
-  checkmate::assert_numeric(data$age, any.missing = TRUE)
-  checkmate::assert_int(age_peak_plus, lower = 0)
-  checkmate::assert_int(age_max, lower = 0)
+  assert_data_frame(data)
+  assert_names(names(data), must.include = "age")
+  assert_numeric(data$age, any.missing = TRUE)
+  assert_int(age_peak_plus, lower = 0)
+  assert_int(age_max, lower = 0)
   
-  data_valid <- dplyr::filter(data, !is.na(age))
+  data_valid <- filter(data, !is.na(age))
   
-  checkmate::assert(
+  assert(
     nrow(data_valid) > 0,
     "Aucune valeur d’âge valide après suppression des NA."
   )
   
-  checkmate::assert(
+  assert(
     age_peak_plus <= max(data_valid$age),
     "`age_peak_plus` est supérieur à l’âge maximum observé dans les données."
   )
   
-  checkmate::assert(
+  assert(
     age_max >= age_peak_plus,
     "`age_max` doit être supérieur ou égal à `age_peak_plus`."
   )
   
   # Estimation avec agesurv ----
-  resultat <- fishmethods::agesurv(
+  resultat <- agesurv(
     type = 1,
     age = data_valid$age,
     full = age_peak_plus,
@@ -60,16 +68,16 @@ mortalite_prepare_corr <- function(data, age_peak_plus, age_max) {
   
   data_agesurv <- resultat$data
   
-  checkmate::assert(
+  assert(
     nrow(data_agesurv) >= 2,
     "L’ajustement agesurv() a retourné un jeu de données trop incomplet (moins de 2 âges)."
   )
   
   # Complétion des classes d'âge ----
-  data_final <- tibble::tibble(age = seq(min(data_agesurv$age), max(data_agesurv$age))) |>
-    dplyr::left_join(data_agesurv, by = "age") |>
-    dplyr::mutate(number = tidyr::replace_na(number, 0L)) |>
-    dplyr::arrange(age)
+  data_final <- tibble(age = seq(min(data_agesurv$age), max(data_agesurv$age))) |>
+    left_join(data_agesurv, by = "age") |>
+    mutate(number = replace_na(number, 0L)) |>
+    arrange(age)
   
   return(data_final)
 }

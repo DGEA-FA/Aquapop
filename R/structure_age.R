@@ -4,6 +4,11 @@
 #' d’un tableau brut (`data.frame`) et d’un tableau formaté (`flextable`). Elle prend en charge un regroupement
 #' facultatif par sexe, marquage ou maturité.
 #'
+#' @importFrom dplyr bind_rows count  filter mutate
+#' @importFrom ggplot2 scale_y_continuous scale_x_continuous labs geom_histogram aes position_stack scale_fill_manual ggplot theme
+#' @importFrom flextable set_caption flextable
+#' @importFrom tibble tibble
+#' @importFrom checkmate assert_data_frame test_subset
 #' @param data Un `data.frame` contenant les colonnes suivantes :
 #'   - `sp` : code de l’espèce (doit être unique),
 #'   - `age` : âge numérique du spécimen,
@@ -25,14 +30,14 @@
 structure_age <- function(data, groupement = "tous") {
   # --- Validation des entrées avec checkmate et messages personnalisés ---
   # --- Validation des entrées avec checkmate et messages personnalisés ---
-  checkmate::assert_data_frame(data, min.rows = 1)
+  assert_data_frame(data, min.rows = 1)
   
-  checkmate::assert(
-    checkmate::test_subset(c("sp", "age"), colnames(data)),
+  assert(
+    test_subset(c("sp", "age"), colnames(data)),
     "Les colonnes `sp` et `age` sont requises dans le tableau."
   )
   
-  checkmate::assert(
+  assert(
     groupement %in% c("tous", "sexe", "maturite", "marquage"),
     "Groupement non reconnu. Choisir parmi : 'tous', 'sexe', 'maturite', 'marquage'."
   )
@@ -44,13 +49,13 @@ structure_age <- function(data, groupement = "tous") {
   }
   
   especes_uniques <- unique(data$sp)
-  checkmate::assert(
+  assert(
     length(especes_uniques) == 1,
     "Les données doivent contenir une seule espèce (`sp`)."
   )
   
   info_espece <- get_info_pen(especes_uniques)
-  checkmate::assert(
+  assert(
     !is.null(info_espece) && is.list(info_espece),
     "Espèce non reconnue."
   )
@@ -60,15 +65,15 @@ structure_age <- function(data, groupement = "tous") {
   nom_espece <- info_espece$nom_sp
   
   data_clean <- data |>
-    dplyr::mutate(age = as.numeric(age)) |>
-    dplyr::filter(!is.na(age))
+    mutate(age = as.numeric(age)) |>
+    filter(!is.na(age))
   
   if (nrow(data_clean) == 0) {
-    tableau_vide <- tibble::tibble(age = numeric(0), n = integer(0))
+    tableau_vide <- tibble(age = numeric(0), n = integer(0))
     return(list(
-      plot = ggplot2::ggplot(),
+      plot = ggplot(),
       data = tableau_vide,
-      flextable = flextable::flextable(tableau_vide)
+      flextable = flextable(tableau_vide)
     ))
   }
   
@@ -78,26 +83,26 @@ structure_age <- function(data, groupement = "tous") {
   
   # --- Création du tableau brut et du flextable ---
   age_counts <- data_clean |>
-    dplyr::count(age, name = "n") |>
-    dplyr::mutate(age = as.integer(age))
+    count(age, name = "n") |>
+    mutate(age = as.integer(age))
   
-  tableau_age <- flextable::flextable(age_counts) |>
-    flextable::set_caption("Structure d'âge") |>
+  tableau_age <- flextable(age_counts) |>
+    set_caption("Structure d'âge") |>
     style_flextable_aquapop()
   
   # --- Création du graphique ---
   graphique_structure_age <- if (groupement == "tous") {
-    ggplot2::ggplot(data_clean, ggplot2::aes(x = age)) +
-      ggplot2::geom_histogram(binwidth = 1, closed = "right",
+    ggplot(data_clean, aes(x = age)) +
+      geom_histogram(binwidth = 1, closed = "right",
                               fill = couleur_default, color = "white", na.rm = TRUE) +
-      ggplot2::labs(x = "Âge", y = paste0("Nb. ", nom_espece, " échantillonnés")) +
+      labs(x = "Âge", y = paste0("Nb. ", nom_espece, " échantillonnés")) +
       theme_aquapop() +
-      ggplot2::scale_x_continuous(
+      scale_x_continuous(
         expand = c(0, 0),
         limits = c(0, age_max + 2),
         breaks = 0:(age_max + 2)
       ) +
-      ggplot2::scale_y_continuous(expand = c(0, 0), limits = c(0, frequence_max))
+      scale_y_continuous(expand = c(0, 0), limits = c(0, frequence_max))
   } else {
     # Groupement par couleur (sexe, maturite, marquage)
     niveaux_groupement <- names(group_labels[[groupement]])
@@ -106,24 +111,24 @@ structure_age <- function(data, groupement = "tous") {
     # Ajout de niveaux manquants pour affichage cohérent
     niveaux_absents <- setdiff(niveaux_groupement, unique(data_clean$groupe))
     if (length(niveaux_absents) > 0) {
-      faux_niveaux <- tibble::tibble(age = 0, groupe = factor(niveaux_absents, levels = niveaux_groupement))
-      data_clean <- dplyr::bind_rows(data_clean, faux_niveaux)
+      faux_niveaux <- tibble(age = 0, groupe = factor(niveaux_absents, levels = niveaux_groupement))
+      data_clean <- bind_rows(data_clean, faux_niveaux)
     }
     
-    ggplot2::ggplot(data_clean, ggplot2::aes(x = age, fill = groupe)) +
-      ggplot2::geom_histogram(
+    ggplot(data_clean, aes(x = age, fill = groupe)) +
+      geom_histogram(
         binwidth = 1, closed = "right", color = "white",
-        position = ggplot2::position_stack(reverse = TRUE), na.rm = TRUE
+        position = position_stack(reverse = TRUE), na.rm = TRUE
       ) +
-      ggplot2::labs(x = "Âge", y = paste0("Nb. ", nom_espece, " échantillonnés")) +
+      labs(x = "Âge", y = paste0("Nb. ", nom_espece, " échantillonnés")) +
       theme_aquapop() +
-      ggplot2::scale_x_continuous(
+      scale_x_continuous(
         expand = c(0, 0),
         limits = c(0, age_max + 2),
         breaks = 0:(age_max + 2)
       ) +
-      ggplot2::scale_y_continuous(expand = c(0, 0), limits = c(0, frequence_max)) +
-      ggplot2::scale_fill_manual(
+      scale_y_continuous(expand = c(0, 0), limits = c(0, frequence_max)) +
+      scale_fill_manual(
         values = group_colors[[groupement]],
         name = "",
         labels = group_labels[[groupement]],

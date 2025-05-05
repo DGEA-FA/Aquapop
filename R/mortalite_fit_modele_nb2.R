@@ -1,9 +1,15 @@
 #' Ajuster un modèle de mortalité de type NB2 (Negative Binomial 2)
 #'
-#' Cette fonction ajuste un modèle NB2 (`MASS::glm.nb`) sur les données de fréquence d’âge étendues.
+#' Cette fonction ajuste un modèle NB2 (`glm.nb`) sur les données de fréquence d’âge étendues.
 #' Elle applique un test HNP (Half-Normal Plot) avec 2 à 5 simulations pour évaluer l’ajustement,
 #' puis retourne les estimations de mortalité et leur intervalle de confiance.
 #'
+#' @importFrom dplyr case_when
+#' @importFrom MuMIn AICc
+#' @importFrom glue glue
+#' @importFrom hnp hnp
+#' @importFrom tibble tibble
+#' @importFrom MASS glm.nb
 #' @param df_age_etendue Un `data.frame` produit par `mortalite_prepare_extended()` contenant au minimum :
 #' \describe{
 #'   \item{age}{Âge des individus (entier)}
@@ -25,7 +31,7 @@
 #' }
 #'
 #' @examples
-#' df_fake <- tibble::tibble(age = 1:6, number = c(180, 120, 70, 40, 25, 10))
+#' df_fake <- tibble(age = 1:6, number = c(180, 120, 70, 40, 25, 10))
 #' mortalite_fit_modele_nb2(df_fake)
 #'
 #' @export
@@ -33,14 +39,14 @@ mortalite_fit_modele_nb2 <- function(df_age_etendue) {
   stopifnot(all(c("age", "number") %in% names(df_age_etendue)))
   
   # --- Ajustement du modèle NB2 ---
-  model <- MASS::glm.nb(number ~ age, data = df_age_etendue)
+  model <- glm.nb(number ~ age, data = df_age_etendue)
   
   # --- Test HNP initial (2 itérations) ---
   message("Test HNP : Modèle NB2 (2 simulations initiales)...")
   set.seed(2023)
   hnp_valeurs <- replicate(
     2,
-    hnp::hnp(
+    hnp(
       model,
       resid.type = "pearson",
       how.many.out = TRUE,
@@ -58,7 +64,7 @@ mortalite_fit_modele_nb2 <- function(df_age_etendue) {
     message("Ajustement marginal : Ajout de 3 simulations HNP supplémentaires...")
     hnp_suppl <- replicate(
       3,
-      hnp::hnp(
+      hnp(
         model,
         resid.type = "pearson",
         how.many.out = TRUE,
@@ -84,18 +90,18 @@ mortalite_fit_modele_nb2 <- function(df_age_etendue) {
   upperZ <- Z + SE
   lowerA <- round((1 - exp(-lowerZ)) * 100, 1)
   upperA <- round((1 - exp(-upperZ)) * 100, 1)
-  ic_95 <- glue::glue("[{lowerA}-{upperA}]")
+  ic_95 <- glue("[{lowerA}-{upperA}]")
   
   # --- Résultat final structuré ---
-  tibble::tibble(
+  tibble(
     methode = "nb2",
     ajustement_hnp = ajustement_hnp,
-    aicc = MuMIn::AICc(model),
+    aicc = AICc(model),
     Z = round(Z, 4),
     SE = round(SE, 4),
     A = round(A, 1),
     `IC 95%` = ic_95,
-    commentaire = dplyr::case_when(
+    commentaire = case_when(
       ajustement_hnp < 10 ~ "Bon ajustement",
       ajustement_hnp < 15 ~ "Ajustement marginal",
       TRUE ~ "Mauvais ajustement"

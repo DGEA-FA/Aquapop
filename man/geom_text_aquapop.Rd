@@ -7,7 +7,7 @@
 geom_text_aquapop(...)
 }
 \arguments{
-\item{...}{Arguments passés à \code{ggplot2::geom_text()}}
+\item{...}{Arguments passés à \code{geom_text()}}
 }
 \value{
 Un objet ggplot layer

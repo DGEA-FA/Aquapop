@@ -1,5 +1,8 @@
 #' Évalue et sélectionne les modèles L50 (ou A50 si variable = "age")
 #'
+#' @importFrom stringr str_extract
+#' @importFrom labelled var_label
+#' @importFrom flextable flextable
 #' @param specimen_data Données brutes (spécimens)
 #' @param prefer_combined Logique : forcer l'utilisation des modèles combinés ?
 #' @param variable Variable quantitative à utiliser : `"ltm"` (par défaut) ou `"age"`
@@ -21,7 +24,7 @@ maturite_compare_modele <- function(specimen_data, prefer_combined = FALSE, vari
   to_dual_format <- function(df) {
     list(
       df = df,
-      flextable = df |> flextable::flextable() |> style_flextable_aquapop()
+      flextable = df |> flextable() |> style_flextable_aquapop()
     )
   }
   
@@ -39,7 +42,7 @@ maturite_compare_modele <- function(specimen_data, prefer_combined = FALSE, vari
     if ("type" %in% names(df))      var_labels$type      <- "Type de modèle"
     if ("recommande" %in% names(df)) var_labels$recommande <- "✔ Recommandé"
     
-    labelled::var_label(df) <- var_labels
+    var_label(df) <- var_labels
     return(df)
   }
   
@@ -82,8 +85,8 @@ maturite_compare_modele <- function(specimen_data, prefer_combined = FALSE, vari
     table_main <- to_dual_format(eval_comb)
     best_model <- if (!is.null(best_comb$best_model)) {
       list(
-        modele = stringr::str_extract(best_comb$best_model, "TLO|ADD|INT|COM"),
-        lien = stringr::str_extract(best_comb$best_model, "logit|probit|cloglog"),
+        modele = str_extract(best_comb$best_model, "TLO|ADD|INT|COM"),
+        lien = str_extract(best_comb$best_model, "logit|probit|cloglog"),
         variable = variable
       )
     } else {
@@ -93,15 +96,15 @@ maturite_compare_modele <- function(specimen_data, prefer_combined = FALSE, vari
     best_model <- list(
       best_model_M = if (!is.null(best_sep$best_model_M)) {
         list(
-          modele = stringr::str_extract(best_sep$best_model_M, "TLO|ADD|INT|COM"),
-          lien = stringr::str_extract(best_sep$best_model_M, "logit|probit|cloglog"),
+          modele = str_extract(best_sep$best_model_M, "TLO|ADD|INT|COM"),
+          lien = str_extract(best_sep$best_model_M, "logit|probit|cloglog"),
           variable = variable
         )
       } else NULL,
       best_model_F = if (!is.null(best_sep$best_model_F)) {
         list(
-          modele = stringr::str_extract(best_sep$best_model_F, "TLO|ADD|INT|COM"),
-          lien = stringr::str_extract(best_sep$best_model_F, "logit|probit|cloglog"),
+          modele = str_extract(best_sep$best_model_F, "TLO|ADD|INT|COM"),
+          lien = str_extract(best_sep$best_model_F, "logit|probit|cloglog"),
           variable = variable
         )
       } else NULL

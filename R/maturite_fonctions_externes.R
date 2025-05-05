@@ -59,7 +59,7 @@ confint_L <- function(object, p = 0.5, cf = 1:2, level = 0.95, nboot = 10000,
 
 ## Delta Method
 ld_delta <- function(object, p, cf, level) {
-  dose_object <- MASS::dose.p(object, p = p, cf = cf)
+  dose_object <- dose.p(object, p = p, cf = cf)
   parm <- seq_along(dose_object)
   nam <- names(dose_object)[parm]
   se <- attr(dose_object, "SE")[parm]
@@ -117,6 +117,8 @@ ld_fieller <- function(object, cf = 1:2, p = 0.5, level = 0.95) {
   structure(R, p = p, class = "Fieller")
 }
 
+#' @importFrom mvtnorm rmvnorm
+#' @importFrom MASS dose.p
 #' @export
 print.Fieller <- function(x, ...) {
   attr(x, "p") <- class(x) <- NULL
@@ -222,14 +224,14 @@ ld_boot <- function(object, p = 0.5, cf = 1:2, level = 0.95, nboot = 1000,
   data <- object$data
   fmla <- formula(delete.response(terms(formula(object))))
   X <- model.matrix(fmla, data = data)
-  original_d_hat <- MASS::dose.p(object, p = p, cf = cf)
+  original_d_hat <- dose.p(object, p = p, cf = cf)
   
   d_hat <- matrix(NA, ncol = length(p), nrow = nboot)
   
   for(i in 1:nboot) {
     new_y <- as.matrix(simulate(object))
     new_fit <- glm(new_y ~ 0 + X, family = object$family)
-    d_hat[i,] <- as.numeric(MASS::dose.p(new_fit, p = p, cf = cf))
+    d_hat[i,] <- as.numeric(dose.p(new_fit, p = p, cf = cf))
   }
   
   res <- switch(interval_type,
@@ -303,7 +305,7 @@ ld_boot_nonpar <- function(object, p = 0.5, cf = 1:2, level = 0.95, nboot = 1000
   data <- object$data
   fmla <- formula(delete.response(terms(formula(object))))
   X <- model.matrix(fmla, data = data)
-  original_d_hat <- MASS::dose.p(object, p = p, cf = cf)
+  original_d_hat <- dose.p(object, p = p, cf = cf)
   
   d_hat <- matrix(NA, ncol = length(p), nrow = nboot)
   
@@ -311,7 +313,7 @@ ld_boot_nonpar <- function(object, p = 0.5, cf = 1:2, level = 0.95, nboot = 1000
     sampled_rows <- sample(1:nrow(data), nrow(data), replace = TRUE)
     new_data <- data[sampled_rows,]
     new_fit <- update(object, data = new_data)
-    d_hat[i,] <- as.numeric(MASS::dose.p(new_fit, p = p, cf = cf))
+    d_hat[i,] <- as.numeric(dose.p(new_fit, p = p, cf = cf))
   }
   
   res <- switch(interval_type,
@@ -490,11 +492,11 @@ print.ld_bayesian <- function(x, ...) {
 
 ld_montecarlo <- function(object, p = 0.5, cf = 1:2, level = 0.95, nboot = 1000,
                           interval_type = c("eti","hdi","bca","all")) {
-  original_d_hat <- MASS::dose.p(object, p = p, cf = cf)
+  original_d_hat <- dose.p(object, p = p, cf = cf)
   varcovar_mat <- vcov(object)[cf,cf]
   mean_vec <- coef(object)[cf]
   
-  beta_sim <- mvtnorm::rmvnorm(n = nboot, mean = mean_vec, sigma = varcovar_mat)
+  beta_sim <- rmvnorm(n = nboot, mean = mean_vec, sigma = varcovar_mat)
   
   linkfun <- object$family$linkfun
   p_const <- linkfun(p)
@@ -574,7 +576,7 @@ get_bca <- function(object, p, cf, d_hat, original_d_hat, nboot, level) {
   n <- nrow(object$data)
   u <- rep(0, n)
   for(i in 1:n) {
-    u[i] <- as.numeric(MASS::dose.p(update(object, data = object$data[-i,]), p = p, cf = cf))
+    u[i] <- as.numeric(dose.p(update(object, data = object$data[-i,]), p = p, cf = cf))
   }
   z0 <- qnorm(sum(d_hat < original_d_hat)/nboot)
   uu <- mean(u) - u

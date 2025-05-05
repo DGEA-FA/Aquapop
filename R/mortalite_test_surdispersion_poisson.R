@@ -1,11 +1,21 @@
 #' Tester la sur-dispersion dans un modèle de Poisson (mortalité)
 #'
-#' Cette fonction applique `AER::dispersiontest()` à un modèle de type Poisson
+#' Cette fonction applique `dispersiontest()` à un modèle de type Poisson
 #' ajusté sur les fréquences d’âge (`number ~ age`), et retourne une liste contenant :
 #' - la valeur de dispersion,
 #' - un message interprétatif,
 #' - un graphique des résidus vs ajustés.
 #'
+#' @importFrom ggplot2 labs
+#' @importFrom ggplot2 geom_hline
+#' @importFrom ggplot2 geom_point
+#' @importFrom ggplot2 aes
+#' @importFrom ggplot2 ggplot
+#' @importFrom tibble tibble
+#' @importFrom glue glue
+#' @importFrom dplyr mutate
+#' @importFrom dplyr filter
+#' @importFrom AER dispersiontest
 #' @param df Un data.frame contenant les colonnes `age` et `number`
 #'
 #' @return Une liste avec `dispersion`, `message`, `plot`
@@ -18,34 +28,34 @@ mortalite_test_surdispersion_poisson <- function(df) {
   
   # Nettoyage et résumé
   df <- df |>
-    dplyr::filter(!is.na(age)) |>
-    dplyr::mutate(age = as.integer(age))
+    filter(!is.na(age)) |>
+    mutate(age = as.integer(age))
   
   # Ajuster le modèle de Poisson
   mod_pois <- glm(number ~ age, family = poisson, data = df)
   
   # Tester la sur-dispersion
-  disp_test <- AER::dispersiontest(mod_pois, alternative = "greater")
+  disp_test <- dispersiontest(mod_pois, alternative = "greater")
   disp_value <- unname(disp_test$estimate["dispersion"])
   disp_value <- round(disp_value, 2)
   
   # Interprétation
   message <- if (disp_value > 1.5) {
-    glue::glue("Les données présentent une sur-dispersion (valeur = {disp_value}). Des modèles alternatifs comme NB1, NB2, CMP ou GP sont recommandés.")
+    glue("Les données présentent une sur-dispersion (valeur = {disp_value}). Des modèles alternatifs comme NB1, NB2, CMP ou GP sont recommandés.")
   } else {
-    glue::glue("Aucune sur-dispersion majeure détectée (valeur = {disp_value}). Le modèle de Poisson pourrait être acceptable.")
+    glue("Aucune sur-dispersion majeure détectée (valeur = {disp_value}). Le modèle de Poisson pourrait être acceptable.")
   }
   
   # Graphique : résidus de Pearson vs valeurs ajustées
-  df_plot <- tibble::tibble(
+  df_plot <- tibble(
     fitted = fitted(mod_pois),
     residuals = residuals(mod_pois, type = "pearson")
   )
   
-  plot <- ggplot2::ggplot(df_plot, ggplot2::aes(x = fitted, y = residuals)) +
-    ggplot2::geom_point(color = "#0072B2", size = 2) +
-    ggplot2::geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") +
-    ggplot2::labs(
+  plot <- ggplot(df_plot, aes(x = fitted, y = residuals)) +
+    geom_point(color = "#0072B2", size = 2) +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") +
+    labs(
       x = "Valeurs ajustées (Poisson)",
       y = "Résidus de Pearson",
       title = "Résidus vs Valeurs ajustées (modèle Poisson)"
@@ -68,6 +78,6 @@ mortalite_test_surdispersion_poisson <- function(df) {
 #   
 #   #il faut tester la sur-dispersion sur les données originale et non celles avec extensions de zéros
 #   dispersiontest <-
-#     AER::dispersiontest(m.data.p , alternative = "greater")
+#     dispersiontest(m.data.p , alternative = "greater")
 #   dispersiontest[["estimate"]][["dispersion"]]  #sur-dispersion si val >> 1
 # }

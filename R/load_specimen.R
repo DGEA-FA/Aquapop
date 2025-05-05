@@ -4,6 +4,14 @@
 #' contenues dans un fichier Excel, avec validations robustes. Les colonnes essentielles
 #' sont obligatoires, les autres sont ajoutées si présentes, sinon remplacées par `NA`.
 #'
+#' @importFrom dplyr distinct
+#' @importFrom dplyr arrange
+#' @importFrom dplyr across case_when mutate
+#' @importFrom lubridate year
+#' @importFrom tidyr replace_na
+#' @importFrom checkmate assert_subset assert_character assert_flag assert_file_exists
+#' @importFrom janitor make_clean_names
+#' @importFrom readxl read_excel
 #' @param path Chemin vers le fichier `.xlsx` à lire. Doit contenir un feuillet nommé `"Specimens"` formaté selon les conventions AquaPop.
 #' @param namesheet Nom du feuillet contenant les données des spécimens (défaut `"Specimens"`).
 #' @param verbose Afficher les messages de diagnostic ? (défaut `TRUE`)
@@ -20,7 +28,6 @@
 #'
 #' @examples
 #' \dontrun{
-#' library(writexl)
 #' df <- data.frame(
 #'   no_lac      = "001", typ_pech = "PE", no_station = "ST01", no_specimen = "0001",
 #'   sp = "SANA", ltm = "110", masse = "15.3", age = "2", sexe = "F",
@@ -45,10 +52,10 @@ load_specimen <- function(path,
   requireNamespace("checkmate")
   
   # --- Validation des arguments ---
-  checkmate::assert_file_exists(path, extension = "xlsx")
-  checkmate::assert_character(namesheet, len = 1)
-  checkmate::assert_flag(verbose)
-  checkmate::assert_flag(col_rename)
+  assert_file_exists(path, extension = "xlsx")
+  assert_character(namesheet, len = 1)
+  assert_flag(verbose)
+  assert_flag(col_rename)
   
   # --- Colonnes attendues ---
   colonnes_obligatoires <- c("no_lac", "typ_pech", "no_station", "no_specimen", "sp", "ltm", "masse", "age", "sexe", "maturite", "annee")
@@ -86,7 +93,7 @@ load_specimen <- function(path,
   )
   
   # --- Lecture brute du fichier Excel ---
-  specimen_raw <- readxl::read_excel(
+  specimen_raw <- read_excel(
     path,
     sheet = namesheet,
     col_names = TRUE,
@@ -95,7 +102,7 @@ load_specimen <- function(path,
   ) |> as.data.frame()
   
   noms_originaux <- names(specimen_raw)
-  noms_clean <- janitor::make_clean_names(noms_originaux)
+  noms_clean <- make_clean_names(noms_originaux)
   
   # --- Renommage via table de correspondance ---
   if (col_rename) {
@@ -133,22 +140,22 @@ load_specimen <- function(path,
     }
     
   } else {
-    noms_clean_direct <- janitor::make_clean_names(names(specimen_raw))
+    noms_clean_direct <- make_clean_names(names(specimen_raw))
     canoniques_clean <- sapply(synonymes_clean[colonnes_obligatoires], `[[`, 1)
-    checkmate::assert_subset(canoniques_clean, noms_clean_direct,
+    assert_subset(canoniques_clean, noms_clean_direct,
                              .var.name = "Colonnes obligatoires manquantes")
     specimen <- specimen_raw
   }
   
   # --- Nettoyage et conversion des colonnes ---
   specimen <- specimen |>
-    dplyr::mutate(
-      maturite = tidyr::replace_na(maturite, "IND"),
-      sexe     = tidyr::replace_na(sexe, "IND"),
-      marquage = tidyr::replace_na(marquage, "NMA"),
+    mutate(
+      maturite = replace_na(maturite, "IND"),
+      sexe     = replace_na(sexe, "IND"),
+      marquage = replace_na(marquage, "NMA"),
       
-      annee = dplyr::case_when(
-        nchar(annee) == 5 ~ as.integer(lubridate::year(as.Date(as.numeric(annee), origin = "1899-12-30"))),
+      annee = case_when(
+        nchar(annee) == 5 ~ as.integer(year(as.Date(as.numeric(annee), origin = "1899-12-30"))),
         TRUE              ~ suppressWarnings(as.integer(annee))
       ),
       
@@ -156,14 +163,14 @@ load_specimen <- function(path,
       maturite = factor(maturite, levels = c("O", "N", "IND")),
       marquage = factor(marquage, levels = c("MA", "NMA")),
       
-      dplyr::across(
+      across(
         intersect(c("no_lac", "typ_pech", "no_station", "no_specimen", "sp",
                     "ind_insec", "ind_benth", "ind_planc", "ind_chyme", "ind_vide", "ind_poiss",
                     "poiss1", "poiss2"), names(specimen)),
         as.factor
       ),
       
-      dplyr::across(
+      across(
         intersect(c("ltm", "lf", "masse", "age"), names(specimen)),
         as.numeric
       ),
@@ -174,8 +181,8 @@ load_specimen <- function(path,
         rep(NA_character_, nrow(specimen))
       }
     ) |>
-    dplyr::arrange(dplyr::across("no_specimen")) |>
-    dplyr::distinct()
+    arrange(across("no_specimen")) |>
+    distinct()
   
   return(specimen)
 }

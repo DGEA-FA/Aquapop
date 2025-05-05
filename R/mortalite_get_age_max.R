@@ -3,6 +3,7 @@
 #' Cette fonction retourne l’âge maximal observé dans les données de mortalité, en ignorant les valeurs manquantes.
 #' Elle vérifie également la présence de la colonne `age` et la présence de données valides.
 #'
+#' @importFrom checkmate assert_subset assert_data_frame
 #' @param data Un `data.frame` contenant les données de spécimens. Doit inclure une colonne nommée `age` de type numérique ou entier.
 #'
 #' @return Un entier (`integer`) correspondant à l’âge maximal observé. Retourne `NA_integer_` si aucun âge valide n’est présent.
@@ -22,8 +23,8 @@
 #' @export
 mortalite_get_age_max <- function(data) {
   # Validations robustes avec checkmate
-  checkmate::assert_data_frame(data, min.rows = 0, col.names = "named")
-  checkmate::assert_subset("age", colnames(data), empty.ok = FALSE)
+  assert_data_frame(data, min.rows = 0, col.names = "named")
+  assert_subset("age", colnames(data), empty.ok = FALSE)
   
   # Extraire les âges sans NA
   ages_cleaned <- na.omit(data$age)

@@ -24,7 +24,7 @@ Un \code{data.frame} nommé \code{data_final} contenant :
 Toutes les classes entre les âges extrêmes sont incluses, même celles absentes dans les données sources.
 }
 \description{
-Cette fonction applique \code{fishmethods::agesurv()} avec \code{type = 1} pour générer
+Cette fonction applique \code{agesurv()} avec \code{type = 1} pour générer
 les données individuelles de fréquence d’âge sur la \emph{descending limb} (partie descendante de la courbe de capture).
 Elle filtre d’abord les spécimens ayant un âge valide (\code{data_valid}), applique l’estimation (\code{data_agesurv}),
 puis complète les classes d’âge manquantes avec des zéros pour produire une table uniforme (\code{data_final}).

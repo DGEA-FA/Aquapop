@@ -17,7 +17,7 @@ mortalite_chaprob(specimen, pp, age_max)
 Une liste avec deux éléments : \code{data} (tableau brut), \code{flextable} (tableau formaté).
 }
 \description{
-Cette fonction applique la méthode Chapman-Robson via \code{fishmethods::agesurv()}
+Cette fonction applique la méthode Chapman-Robson via \code{agesurv()}
 et retourne une liste contenant un tableau brut (\code{data.frame}) et une version formatée (\code{flextable}).
 }
 \examples{

@@ -4,6 +4,39 @@
 #' des spécimens mesurés. Elle retourne une liste incluant un tableau brut, une version formatée,
 #' ainsi que deux graphiques : l’un pour l’ensemble des données, l’autre par classe de taille.
 #'
+#' @importFrom dplyr slice
+#' @importFrom dplyr rename
+#' @importFrom rlang sym
+#' @importFrom flextable set_caption
+#' @importFrom dplyr bind_rows
+#' @importFrom dplyr arrange
+#' @importFrom tidyr complete
+#' @importFrom plyr mapvalues
+#' @importFrom dplyr select
+#' @importFrom ggplot2 scale_x_discrete
+#' @importFrom ggplot2 ylab
+#' @importFrom ggplot2 xlab
+#' @importFrom ggplot2 geom_errorbar
+#' @importFrom dplyr bind_cols
+#' @importFrom dplyr n_distinct
+#' @importFrom dplyr count
+#' @importFrom dplyr recode
+#' @importFrom FSA lencat
+#' @importFrom ggplot2 geom_hline
+#' @importFrom ggplot2 annotate
+#' @importFrom ggplot2 labs
+#' @importFrom ggplot2 scale_color_manual
+#' @importFrom ggplot2 geom_point
+#' @importFrom ggplot2 aes
+#' @importFrom dplyr summarise
+#' @importFrom dplyr group_by
+#' @importFrom dplyr left_join
+#' @importFrom ggplot2 ggplot
+#' @importFrom flextable flextable
+#' @importFrom tibble tibble
+#' @importFrom dplyr mutate
+#' @importFrom dplyr filter
+#' @importFrom glue glue
 #' @param data Un `data.frame` contenant les colonnes `sp`, `ltm`, `masse` et `sexe`
 #'
 #' @return Une liste avec les éléments :
@@ -33,7 +66,7 @@ wri <- function(data) {
   colonnes_essentielles <- c("sp", "ltm", "masse")
   colonnes_absentes <- setdiff(colonnes_essentielles, names(data))
   if (length(colonnes_absentes) > 0) {
-    stop(glue::glue("Colonnes manquantes : {paste(colonnes_absentes, collapse = ', ')}"))
+    stop(glue("Colonnes manquantes : {paste(colonnes_absentes, collapse = ', ')}"))
   }
   
   espece <- unique(data$sp)
@@ -46,118 +79,118 @@ wri <- function(data) {
   # ---- Calcul de l’indice Wr ----
   
   data <- data |>
-    dplyr::filter(!is.na(ltm), !is.na(masse), ltm >= constantes_wr$min_TL) |>
-    dplyr::mutate(
+    filter(!is.na(ltm), !is.na(masse), ltm >= constantes_wr$min_TL) |>
+    mutate(
       prediction = 10 ^ (constantes_wr$int + constantes_wr$slope * log10(ltm)),
       wr = masse * 100 / prediction
     )
   
   if (nrow(data) == 0) {
-    table_vide <- tibble::tibble(groupe = character(), wr = numeric(), ic95 = character(), n = integer())
+    table_vide <- tibble(groupe = character(), wr = numeric(), ic95 = character(), n = integer())
     return(list(
       data = table_vide,
-      flextable = flextable::flextable(table_vide),
-      plot_tous = ggplot2::ggplot(),
-      plot_byclass = ggplot2::ggplot()
+      flextable = flextable(table_vide),
+      plot_tous = ggplot(),
+      plot_byclass = ggplot()
     ))
   }
   
   # ---- Graphique Wr par sexe (plot_tous) ----
   
   niveaux_sexe <- c("F", "M", "IND")
-  data <- dplyr::mutate(data, sexe = factor(sexe, levels = niveaux_sexe))
+  data <- mutate(data, sexe = factor(sexe, levels = niveaux_sexe))
   
-  moyenne_par_sexe <- tibble::tibble(sexe = factor(niveaux_sexe, levels = niveaux_sexe)) |>
-    dplyr::left_join(
-      data |> dplyr::group_by(sexe) |> dplyr::summarise(moyenne = mean(wr, na.rm = TRUE), .groups = "drop"),
+  moyenne_par_sexe <- tibble(sexe = factor(niveaux_sexe, levels = niveaux_sexe)) |>
+    left_join(
+      data |> group_by(sexe) |> summarise(moyenne = mean(wr, na.rm = TRUE), .groups = "drop"),
       by = "sexe"
     )
   moyenne_totale <- mean(data$wr, na.rm = TRUE)
   
-  plot_tous <- ggplot2::ggplot(data, ggplot2::aes(x = ltm, y = wr, color = sexe)) +
-    ggplot2::geom_point(alpha = 0.8) +
-    ggplot2::scale_color_manual(values = group_colors$sexe, labels = group_labels$sexe, name = "", drop = FALSE) +
-    ggplot2::labs(x = "Longueur totale maximale (mm)", y = "Indice de condition (%)") +
-    ggplot2::annotate("segment", x = -Inf, xend = Inf, y = 100, yend = 100,
+  plot_tous <- ggplot(data, aes(x = ltm, y = wr, color = sexe)) +
+    geom_point(alpha = 0.8) +
+    scale_color_manual(values = group_colors$sexe, labels = group_labels$sexe, name = "", drop = FALSE) +
+    labs(x = "Longueur totale maximale (mm)", y = "Indice de condition (%)") +
+    annotate("segment", x = -Inf, xend = Inf, y = 100, yend = 100,
                       color = "lightgrey", linewidth = 0.5, linetype = 2) +
-    ggplot2::geom_hline(data = moyenne_par_sexe, ggplot2::aes(yintercept = moyenne, color = sexe),
+    geom_hline(data = moyenne_par_sexe, aes(yintercept = moyenne, color = sexe),
                         linetype = 2, linewidth = 0.5) +
-    ggplot2::geom_hline(yintercept = moyenne_totale, color = "red", linetype = 2, linewidth = 0.5) +
+    geom_hline(yintercept = moyenne_totale, color = "red", linetype = 2, linewidth = 0.5) +
     theme_aquapop()
   
   # ---- Graphique Wr par classe de taille (plot_byclass) ----
   
   data <- data |>
-    dplyr::mutate(
-      classe_brute = FSA::lencat(ltm, breaks = info_pen$breaks, as.fact = TRUE),
-      classe = dplyr::recode(as.character(classe_brute), !!!setNames(psd_classnames, as.character(info_pen$breaks))),
-      intervalle = dplyr::recode(as.character(classe_brute), !!!setNames(info_pen$break_labels, as.character(info_pen$breaks)))
+    mutate(
+      classe_brute = lencat(ltm, breaks = info_pen$breaks, as.fact = TRUE),
+      classe = recode(as.character(classe_brute), !!!setNames(psd_classnames, as.character(info_pen$breaks))),
+      intervalle = recode(as.character(classe_brute), !!!setNames(info_pen$break_labels, as.character(info_pen$breaks)))
     )
   
   sommaire_classe <- data |>
-    dplyr::count(classe_brute, classe, intervalle, name = "n")
+    count(classe_brute, classe, intervalle, name = "n")
   
-  data <- dplyr::left_join(data, sommaire_classe, by = c("classe_brute", "classe", "intervalle"))
+  data <- left_join(data, sommaire_classe, by = c("classe_brute", "classe", "intervalle"))
   
-  if (dplyr::n_distinct(data$classe_brute) >= 2) {
+  if (n_distinct(data$classe_brute) >= 2) {
     modele <- lm(wr ~ classe_brute, data = data)
     niveaux <- levels(droplevels(data$classe_brute))
-    grille <- tibble::tibble(classe_brute = factor(niveaux, levels = levels(data$classe_brute)))
+    grille <- tibble(classe_brute = factor(niveaux, levels = levels(data$classe_brute)))
     
     prediction <- predict(modele, newdata = grille, interval = "confidence") |>
       as.data.frame() |>
-      dplyr::bind_cols(grille) |>
-      dplyr::left_join(sommaire_classe, by = "classe_brute")
+      bind_cols(grille) |>
+      left_join(sommaire_classe, by = "classe_brute")
     
-    plot_byclass <- ggplot2::ggplot(prediction, ggplot2::aes(x = classe, y = fit)) +
-      ggplot2::geom_point() +
-      ggplot2::geom_point(data = data, ggplot2::aes(x = classe, y = wr),
+    plot_byclass <- ggplot(prediction, aes(x = classe, y = fit)) +
+      geom_point() +
+      geom_point(data = data, aes(x = classe, y = wr),
                           shape = 21, colour = "black", fill = "white", size = 1, alpha = 0.5) +
-      ggplot2::geom_errorbar(ggplot2::aes(ymin = lwr, ymax = upr), width = 0.1) +
-      ggplot2::xlab("Classe de taille") +
-      ggplot2::ylab("Indice de condition (%)") +
-      ggplot2::scale_x_discrete(limits = psd_classnames, drop = FALSE) +
-      ggplot2::annotate("segment", x = -Inf, xend = Inf, y = 100, yend = 100,
+      geom_errorbar(aes(ymin = lwr, ymax = upr), width = 0.1) +
+      xlab("Classe de taille") +
+      ylab("Indice de condition (%)") +
+      scale_x_discrete(limits = psd_classnames, drop = FALSE) +
+      annotate("segment", x = -Inf, xend = Inf, y = 100, yend = 100,
                         linewidth = 0.5, color = "black", linetype = 2) +
       theme_aquapop()
   } else {
-    plot_byclass <- ggplot2::ggplot()
+    plot_byclass <- ggplot()
   }
   
   # ---- Construction des tableaux de synthèse ----
   
   table_tous <- predict(lm(wr ~ 1, data = data), newdata = data.frame(groupe = "Tous"), interval = "confidence") |>
     as.data.frame() |>
-    dplyr::mutate(
+    mutate(
       groupe = "Tous",
       ic95 = paste0("[", round(lwr), "-", round(upr), "]"),
       wr = round(fit),
       n = nrow(data)
     ) |>
-    dplyr::select(groupe, wr, ic95, n)
+    select(groupe, wr, ic95, n)
   
-  table_par_sexe <- if (dplyr::n_distinct(data$sexe) >= 2) {
+  table_par_sexe <- if (n_distinct(data$sexe) >= 2) {
     resumer_wr_par_groupe(lm(wr ~ sexe, data = data), "sexe") |>
-      dplyr::filter(groupe %in% c("F", "M")) |>
-      dplyr::mutate(groupe = plyr::mapvalues(groupe, c("F", "M"), c("Femelle", "Mâle")))
+      filter(groupe %in% c("F", "M")) |>
+      mutate(groupe = mapvalues(groupe, c("F", "M"), c("Femelle", "Mâle")))
   } else {
-    tibble::tibble(groupe = character(), wr = numeric(), ic95 = character(), n = integer())
+    tibble(groupe = character(), wr = numeric(), ic95 = character(), n = integer())
   }
   
-  table_par_classe <- if (dplyr::n_distinct(data$classe) >= 2) {
+  table_par_classe <- if (n_distinct(data$classe) >= 2) {
     resumer_wr_par_groupe(lm(wr ~ classe, data = data), "classe") |>
-      tidyr::complete(groupe = psd_classnames, fill = list(wr = 0, ic95 = "0", n = 0)) |>
-      dplyr::mutate(groupe = factor(groupe, levels = psd_classnames)) |>
-      dplyr::arrange(groupe)
+      complete(groupe = psd_classnames, fill = list(wr = 0, ic95 = "0", n = 0)) |>
+      mutate(groupe = factor(groupe, levels = psd_classnames)) |>
+      arrange(groupe)
   } else {
-    tibble::tibble(groupe = factor(psd_classnames, levels = psd_classnames),
+    tibble(groupe = factor(psd_classnames, levels = psd_classnames),
                    wr = 0, ic95 = "0", n = 0)
   }
   
-  table_sommaire <- dplyr::bind_rows(table_tous, table_par_sexe, table_par_classe)
+  table_sommaire <- bind_rows(table_tous, table_par_sexe, table_par_classe)
   
-  table_flextable <- flextable::flextable(table_sommaire) |>
-    flextable::set_caption("Indice de condition (Wr)") |>
+  table_flextable <- flextable(table_sommaire) |>
+    set_caption("Indice de condition (Wr)") |>
     style_flextable_aquapop()
   
   # ---- Retour de la liste finale ----
@@ -184,22 +217,22 @@ wri <- function(data) {
 #' @keywords internal
 resumer_wr_par_groupe <- function(mod, var) {
   valeurs <- unique(as.character(mod$model[[var]]))
-  nd <- tibble::tibble(!!rlang::sym(var) := valeurs)
+  nd <- tibble(!!sym(var) := valeurs)
   
   pred <- predict(mod, newdata = nd, interval = "confidence") |>
     as.data.frame() |>
-    dplyr::mutate(groupe = valeurs) |>
-    dplyr::mutate(
+    mutate(groupe = valeurs) |>
+    mutate(
       ic95 = paste0("[", round(lwr), "-", round(upr), "]"),
       wr = round(fit)
     ) |>
-    dplyr::select(groupe, wr, ic95)
+    select(groupe, wr, ic95)
   
   counts <- mod$model |>
-    dplyr::count(!!rlang::sym(var)) |>
-    dplyr::rename(groupe = !!rlang::sym(var))
+    count(!!sym(var)) |>
+    rename(groupe = !!rlang::sym(var))
   
-  dplyr::left_join(pred, counts, by = "groupe")
+  left_join(pred, counts, by = "groupe")
 }
 
 #' Récupérer les constantes Wr pour une espèce donnée
@@ -213,6 +246,6 @@ resumer_wr_par_groupe <- function(mod, var) {
 #' @keywords internal
 get_wr_constants <- function(sp) {
   wr_constants |>
-    dplyr::filter(sp == sp) |>
-    dplyr::slice(1)
+    filter(sp == sp) |>
+    slice(1)
 }

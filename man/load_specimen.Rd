@@ -36,7 +36,6 @@ sont obligatoires, les autres sont ajoutées si présentes, sinon remplacées pa
 }
 \examples{
 \dontrun{
-library(writexl)
 df <- data.frame(
   no_lac      = "001", typ_pech = "PE", no_station = "ST01", no_specimen = "0001",
   sp = "SANA", ltm = "110", masse = "15.3", age = "2", sexe = "F",

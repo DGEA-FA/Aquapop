@@ -3,6 +3,7 @@
 #' À partir du tableau d’évaluation, cette fonction sélectionne le modèle combiné
 #' ayant le plus bas AICc parmi ceux qui ont convergé et qui s'ajustent bien.
 #'
+#' @importFrom dplyr pull filter
 #' @param evaluation_df Un data.frame retourné par `evaluate_L50_models()` appliqué aux modèles combinés.
 #'
 #' @return Une liste contenant :
@@ -14,7 +15,7 @@
 #' @export
 maturite_select_best_combined_modele <- function(evaluation_df) {
   valid_models <- evaluation_df |>
-    dplyr::filter(
+    filter(
       convergence == TRUE,
       !grepl("rejeter|choisir un autre modèle", commentaire)
     )
@@ -27,8 +28,8 @@ maturite_select_best_combined_modele <- function(evaluation_df) {
   }
   
   best_model <- valid_models |>
-    dplyr::filter(aicc == min(aicc)) |>
-    dplyr::pull(modele_id)
+    filter(aicc == min(aicc)) |>
+    pull(modele_id)
   
   return(list(
     best_model = best_model,

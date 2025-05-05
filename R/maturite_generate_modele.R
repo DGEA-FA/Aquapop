@@ -7,6 +7,11 @@
 #' @param nboot Nombre de tirages Monte Carlo (par défaut: 10000)
 #'
 #' @return Liste avec `table_resultats`, `table_resultats_flextable`, `commentaire`, `graphique`, `donnees_ogive`
+#' @importFrom FSA Summarize
+#' @importFrom glue glue
+#' @importFrom stats pnorm
+#' @importFrom flextable add_footer_lines as_paragraph compose
+
 #' @export
 maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = c("TLO", "ADD", "COM", "INT"), lien = c("probit", "logit", "cloglog"), nboot = 10000) {
   variable <- match.arg(variable)
@@ -14,13 +19,13 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
   lien <- match.arg(lien)
   
   if (!all(c(variable, "maturite", "sexe") %in% names(data))) {
-    stop(glue::glue("❌ Le jeu de données doit contenir les colonnes `{variable}`, `maturite` et `sexe`."))
+    stop(glue("❌ Le jeu de données doit contenir les colonnes `{variable}`, `maturite` et `sexe`."))
   }
   
   donnees_modeles <- maturite_prepare(data, variable = variable)
   
   if (nrow(donnees_modeles) < 10) {
-    stop(glue::glue("❌ Trop peu d’individus après nettoyage (n = {nrow(donnees_modeles)})."))
+    stop(glue("❌ Trop peu d’individus après nettoyage (n = {nrow(donnees_modeles)})."))
   }
   
   
@@ -151,8 +156,8 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
     donnees_prediction <- data.frame(temp = seq(from = x_min, to = x_max, by = 1))
     names(donnees_prediction) <- variable
   } else {
-    form <- as.formula(glue::glue("{variable} ~ sexe"))
-    var_minmax <- FSA::Summarize(form, data = donnees_modeles)
+    form <- as.formula(glue("{variable} ~ sexe"))
+    var_minmax <- Summarize(form, data = donnees_modeles)
     donnees_prediction <- bind_rows(
       data.frame(sexe = "F", temp = seq(from = var_minmax$min[var_minmax$sexe == "F"], to = var_minmax$max[var_minmax$sexe == "F"], by = 1)),
       data.frame(sexe = "M", temp = seq(from = var_minmax$min[var_minmax$sexe == "M"], to = var_minmax$max[var_minmax$sexe == "M"], by = 1))
@@ -183,7 +188,7 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
   
   if (modele == "TLO") {
     table_resultats <- data.frame(
-      intervalle = glue::glue("[{point50_inf}-{point50_sup}]"),
+      intervalle = glue("[{point50_inf}-{point50_sup}]"),
       b0 = round(b0, 3),
       b1 = round(b1, 3)
     )
@@ -276,9 +281,6 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
   # Mise en forme finale
   ft <- ft |>
     style_flextable_aquapop() 
-    # autofit() %>%
-    # align(align = "center", part = "all") %>%
-    # bold(part = "header")
   
   ft <- add_footer_lines(ft, values = glue("Modèle: {modele}, lien: {lien}"))
   
@@ -319,8 +321,8 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
       vmin_m <- min(donnees_modeles %>% filter(sexe == "M") %>% pull(.data[[variable]]))
       vmin_f <- min(donnees_modeles %>% filter(sexe == "F") %>% pull(.data[[variable]]))
     } else {
-      form <- as.formula(glue::glue("{variable} ~ sexe"))
-      var_minmax <- FSA::Summarize(form, data = donnees_modeles)
+      form <- as.formula(glue("{variable} ~ sexe"))
+      var_minmax <- Summarize(form, data = donnees_modeles)
       vmin_m <- var_minmax %>% filter(sexe == "M") %>% pull(min)
       vmin_f <- var_minmax %>% filter(sexe == "F") %>% pull(min)
     }
@@ -346,7 +348,7 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
     )
   
   graphique <- graphique +
-    labs(caption = glue::glue("Modèle : {modele}, lien : {lien}"))
+    labs(caption = glue("Modèle : {modele}, lien : {lien}"))
   
   
   

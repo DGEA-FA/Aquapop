@@ -4,6 +4,11 @@
 # =============================================================================
 
 #' Convertit un objet en reactive() si ce n’est pas déjà le cas
+#' @importFrom rmarkdown render
+#' @importFrom shiny downloadButton showNotification downloadHandler
+#' @importFrom writexl write_xlsx
+#' @importFrom htmltools HTML
+#' @importFrom flextable save_as_html
 #' @noRd
 as_reactive <- function(x) {
   if (inherits(x, "reactive")) x else reactive(x)
@@ -26,8 +31,8 @@ render_table_flextable <- function(output_id, flextable) {
     req(ft)
     
     tmpfile <- tempfile(fileext = ".html")
-    flextable::save_as_html(ft, path = tmpfile)
-    htmltools::HTML(readLines(tmpfile, warn = FALSE))
+    save_as_html(ft, path = tmpfile)
+    HTML(readLines(tmpfile, warn = FALSE))
   })
 }
 
@@ -49,7 +54,7 @@ force_lazy <- function(expr) {
 #' @param height Hauteur en pixels
 #' @param res Résolution en DPI
 #' @param message_si_vide Message à afficher si graphique vide ou invalide
-#'
+#' @importFrom shiny downloadButton showNotification getDefaultReactiveDomain
 #' @export
 render_plot_ggplot <- function(output_id, plot,
                                height = 500, res = 96,
@@ -99,7 +104,7 @@ render_download_table <- function(id,
   output[[id]] <- downloadHandler(
     filename = function() get_filename(),
     content  = function(file) {
-      writexl::write_xlsx(get_data(), path = file)
+      write_xlsx(get_data(), path = file)
     }
   )
 }
@@ -161,7 +166,7 @@ render_download_plot <- function(id,
 #' @return Un bouton téléchargeable (à insérer dans `app_ui()`)
 #' @export
 download_button_ui <- function(id, label = "Télécharger (.xlsx)") {
-  shiny::downloadButton(outputId = id, label = label)
+  downloadButton(outputId = id, label = label)
 }
 
 #' Rendre le fichier user_guide.rmd en HTML (si nécessaire)
@@ -178,7 +183,7 @@ render_user_guide_if_needed <- function(rmd_path = "texte/user_guide.rmd",
     
     message("🛠️  Rendu de user_guide.rmd → HTML...")
     
-    rmarkdown::render(
+    render(
       input = rmd_path,
       output_file = basename(html_path),
       output_dir = dirname(html_path),

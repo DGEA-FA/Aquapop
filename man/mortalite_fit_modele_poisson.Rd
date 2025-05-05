@@ -34,7 +34,7 @@ Cette fonction ajuste un modèle de mortalité sur les données étendues de fr�
 selon la qualité de l’ajustement. Elle retourne un résumé des statistiques du modèle.
 }
 \examples{
-df_fake <- tibble::tibble(age = 1:6, number = c(180, 120, 70, 40, 25, 10))
+df_fake <- tibble(age = 1:6, number = c(180, 120, 70, 40, 25, 10))
 mortalite_fit_modele_poisson(df_fake)
 
 }

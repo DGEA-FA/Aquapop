@@ -1,5 +1,6 @@
 #' Générer une phrase descriptive pour le modèle de mortalité sélectionné
 #'
+#' @importFrom glue glue
 #' @param data_comparaison data.frame contenant les colonnes `Méthode` et `A`
 #' @param modele_nom Nom du modèle à décrire (ex: "NB1")
 #'
@@ -26,14 +27,14 @@ mortalite_phrase_resume <- function(data_comparaison, modele_nom) {
   ligne <- data_comparaison[data_comparaison$Méthode == modele_nom, , drop = FALSE]
   
   if (nrow(ligne) == 0) {
-    stop(glue::glue("Modèle {modele_nom} non trouvé dans les résultats."))
+    stop(glue("Modèle {modele_nom} non trouvé dans les résultats."))
   }
   
   modele_upper <- toupper(modele_nom)
   
   if (!"A" %in% names(ligne) || is.na(ligne$A)) {
-    return(glue::glue("Le modèle {modele_upper} a été sélectionné, mais la mortalité annuelle n’est pas disponible."))
+    return(glue("Le modèle {modele_upper} a été sélectionné, mais la mortalité annuelle n’est pas disponible."))
   }
   
-  glue::glue("Le modèle {modele_upper} décrit le mieux la mortalité de la population. La mortalité annuelle s’élève à {ligne$A} %.") |> as.character()
+  glue("Le modèle {modele_upper} décrit le mieux la mortalité de la population. La mortalité annuelle s’élève à {ligne$A} %.") |> as.character()
 }

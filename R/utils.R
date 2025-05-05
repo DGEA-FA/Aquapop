@@ -4,6 +4,9 @@
 #' ratio \eqn{M:F} (mâles pour femelles) sous forme réduite à ses plus simples expressions,
 #' comme `"3:2"` ou `"1:1"`. Si les deux valeurs sont nulles, la fonction retourne `NA`.
 #'
+#' @importFrom labelled var_label
+#' @importFrom stringi stri_trans_general
+#' @importFrom writexl write_xlsx
 #' @param male_count Nombre d’individus de sexe masculin (entier)
 #' @param female_count Nombre d’individus de sexe féminin (entier)
 #'
@@ -52,7 +55,7 @@ format_pval <- function(p) {
 #'
 #' @export
 download_data <- function(data, path) {
-  writexl::write_xlsx(
+  write_xlsx(
     x = data,
     path = path,
     col_names = TRUE,
@@ -76,7 +79,7 @@ generate_filename_suffix <- function(typ_pech, annee, no_lac, nom_lac = NULL) {
   stopifnot(!missing(typ_pech), !missing(annee), !missing(no_lac))
   
   lac_name_clean <- if (!is.null(nom_lac) && nzchar(nom_lac)) {
-    lac <- stringi::stri_trans_general(nom_lac, "Latin-ASCII")
+    lac <- stri_trans_general(nom_lac, "Latin-ASCII")
     lac <- gsub("[^A-Za-z0-9]+", "", lac)
     paste0(lac, "_")
   } else {
@@ -109,7 +112,7 @@ build_export_filename <- function(objet, suffixe, ext = "xlsx") {
 #'
 #' @export
 labelled_data <- function(data) {
-  labels <- labelled::var_label(data)
+  labels <- var_label(data)
   colnames(data) <- unlist(labels)
   return(data)
 }

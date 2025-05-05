@@ -34,7 +34,7 @@ sur des données de fréquence d'âge. Elle applique un test HNP (Half-Normal Pl
 puis retourne les estimations du modèle et un commentaire sur la qualité de l’ajustement.
 }
 \examples{
-df_fake <- tibble::tibble(age = 1:6, number = c(180, 120, 70, 40, 25, 10))
+df_fake <- tibble(age = 1:6, number = c(180, 120, 70, 40, 25, 10))
 mortalite_fit_modele_gp(df_fake)
 
 }

@@ -13,7 +13,7 @@ mortalite_test_surdispersion_poisson(df)
 Une liste avec \code{dispersion}, \code{message}, \code{plot}
 }
 \description{
-Cette fonction applique \code{AER::dispersiontest()} à un modèle de type Poisson
+Cette fonction applique \code{dispersiontest()} à un modèle de type Poisson
 ajusté sur les fréquences d’âge (\code{number ~ age}), et retourne une liste contenant :
 \itemize{
 \item la valeur de dispersion,

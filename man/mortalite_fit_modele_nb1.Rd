@@ -35,7 +35,7 @@ Elle applique un test HNP (Half-Normal Plot) avec jusqu’à 5 simulations pour 
 Elle retourne une ligne résumant le modèle, l’ajustement, et le taux de mortalité annuel estimé.
 }
 \examples{
-df_fake <- tibble::tibble(age = 1:6, number = c(180, 120, 70, 40, 25, 10))
+df_fake <- tibble(age = 1:6, number = c(180, 120, 70, 40, 25, 10))
 mortalite_fit_modele_nb1(df_fake)
 
 }

@@ -1,8 +1,14 @@
 #' Appliquer la méthode de Chapman-Robson pour estimer Z et A
 #'
-#' Cette fonction applique la méthode Chapman-Robson via `fishmethods::agesurv()`
+#' Cette fonction applique la méthode Chapman-Robson via `agesurv()`
 #' et retourne une liste contenant un tableau brut (`data.frame`) et une version formatée (`flextable`).
 #'
+#' @importFrom flextable set_header_labels
+#' @importFrom flextable set_caption
+#' @importFrom flextable flextable
+#' @importFrom glue glue
+#' @importFrom dplyr transmute
+#' @importFrom fishmethods agesurv
 #' @param specimen Un `data.frame` produit par `mortalite_prepare_corr()`, contenant une colonne `age`.
 #' @param pp Valeur du peak-plus.
 #' @param age_max Âge maximum observé.
@@ -24,7 +30,7 @@ mortalite_chaprob <- function(specimen, pp, age_max) {
     stop("La méthode Chapman-Robson nécessite au moins deux classes d’âge différentes.")
   }
   
-  res <- fishmethods::agesurv(
+  res <- agesurv(
     type = 1,
     age = df$age,
     full = pp,
@@ -34,17 +40,17 @@ mortalite_chaprob <- function(specimen, pp, age_max) {
   )
   
   result <- res$results |>
-    dplyr::transmute(
+    transmute(
       methode = "Chapman-Robson",
       z = Estimate,
       se = SE,
       A = round((1 - exp(-z)) * 100, 1),
-      ic_95 = glue::glue("[{round((1 - exp(-(z - se))) * 100, 1)}-{round((1 - exp(-(z + se))) * 100, 1)}]")
+      ic_95 = glue("[{round((1 - exp(-(z - se))) * 100, 1)}-{round((1 - exp(-(z + se))) * 100, 1)}]")
     )
   
-  ft <- flextable::flextable(result) |>
-    flextable::set_caption("Estimation de la mortalité par la méthode de Chapman-Robson") |>
-    flextable::set_header_labels(
+  ft <- flextable(result) |>
+    set_caption("Estimation de la mortalité par la méthode de Chapman-Robson") |>
+    set_header_labels(
       methode = "Méthode",
       z = "Z (coefficient de mortalité)",
       se = "Erreur standard",

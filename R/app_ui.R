@@ -2,7 +2,6 @@
 #' @importFrom shiny fluidPage navbarPage tabPanel
 #' @importFrom shinycssloaders withSpinner
 #' @importFrom reactable reactableOutput renderReactable
-
 app_ui <- function() {
   myspinner <- 6
   
@@ -505,7 +504,7 @@ Vous pouvez toutefois forcer un recalcul avec une autre valeur."),
                    
                    h3(HTML("Sélection des modèles A<sub>50</sub>")),
                    
-                   includeMarkdown(path = './texte/A50_texte.rmd'),
+                   p("Sélectionnez un modèle pour faire apparaître les valeurs et le graphique. Le modèle le mieux adapté aux données est celui avec le plus faible AICc."),
                    
                    ### Tableau du modele choisi ----
                    

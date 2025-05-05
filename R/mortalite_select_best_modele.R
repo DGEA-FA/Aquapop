@@ -5,6 +5,8 @@
 #' les modèles bien ajustés (ajustement HNP < 10). Si aucun modèle n’est
 #' bien ajusté, elle sélectionne celui avec le plus bas AICc global.
 #'
+#' @importFrom dplyr pull
+#' @importFrom dplyr filter
 #' @param tablemodele Un `data.frame` retourné par `mortalite_compare_modele()$data`
 #'
 #' @return Une chaîne de caractères (`Méthode`) correspondant au meilleur modèle.
@@ -19,16 +21,16 @@ mortalite_select_best_modele <- function(tablemodele) {
   }
   
   bien_ajuste <- tablemodele |>
-    dplyr::filter(`Ajustement HNP (%)` < 10)
+    filter(`Ajustement HNP (%)` < 10)
   
   if (nrow(bien_ajuste) > 0) {
     best <- bien_ajuste |>
-      dplyr::filter(AICc == min(AICc, na.rm = TRUE)) |>
-      dplyr::pull(Méthode)
+      filter(AICc == min(AICc, na.rm = TRUE)) |>
+      pull(Méthode)
   } else {
     best <- tablemodele |>
-      dplyr::filter(AICc == min(AICc, na.rm = TRUE)) |>
-      dplyr::pull(Méthode)
+      filter(AICc == min(AICc, na.rm = TRUE)) |>
+      pull(Méthode)
   }
   
   if (length(best) == 0) {

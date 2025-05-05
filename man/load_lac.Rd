@@ -31,7 +31,7 @@ Colonnes \strong{optionnelles} (ajoutées comme \code{NA} si absentes) :
 \code{superficie_ha}, \code{perimetre_km}, \code{prof_max_m}, \code{prof_moy_m}, \code{comments}
 
 La fonction reconnaît également des \strong{variantes courantes} de ces noms grâce à une table
-de synonymes nettoyés via \code{janitor::make_clean_names()}.
+de synonymes nettoyés via \code{make_clean_names()}.
 }
 \examples{
 # Exemple minimal avec un fichier Excel temporaire
@@ -42,7 +42,7 @@ df <- data.frame(
   "Année" = "2022"
 )
 path <- tempfile(fileext = ".xlsx")
-writexl::write_xlsx(list("Lac" = df), path)
+write_xlsx(list("Lac" = df), path)
 load_lac(path)
 
 }

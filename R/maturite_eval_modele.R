@@ -11,13 +11,13 @@
 #' @param models Liste des modèles retournée par fit_L50_models() ou fit_L50_combined_models()
 #'
 #' @return Un dataframe avec les critères de convergence et d'ajustement, trié par ordre croissant d'AICc.
+#' @importFrom MuMIn AICc
+#' @importFrom glue glue
 #' @export
 maturite_eval_modele <- function(models) {
-  library(dplyr)
-  library(MuMIn)      # Pour AICc
-  library(DescTools)  # Pour o.r.test
-  library(glue)
-  library(labelled)   # Pour ajouter des labels d'affichage
+  # library(dplyr)
+  # library(DescTools)  # Pour o.r.test
+  # library(labelled)   # Pour ajouter des labels d'affichage
   
   results <- lapply(names(models), function(n) build_individual_model_row(models[[n]], n)) |>
     bind_rows() |>

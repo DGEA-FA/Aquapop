@@ -4,6 +4,15 @@
 #' sur des données de fréquence d'âge. Elle applique un test HNP (Half-Normal Plot) en 2 à 5 simulations,
 #' puis retourne les estimations du modèle et un commentaire sur la qualité de l’ajustement.
 #'
+#' @importFrom dplyr case_when
+#' @importFrom MuMIn AICc
+#' @importFrom glue glue
+#' @importFrom hnp hnp
+#' @importFrom stats simulate
+#' @importFrom stats residuals
+#' @importFrom glmmTMB genpois
+#' @importFrom glmmTMB glmmTMB
+#' @importFrom tibble tibble
 #' @param df_age_etendue Un `data.frame` produit par `mortalite_prepare_extended()` contenant au minimum :
 #' \describe{
 #'   \item{age}{Âge des individus}
@@ -25,7 +34,7 @@
 #' }
 #'
 #' @examples
-#' df_fake <- tibble::tibble(age = 1:6, number = c(180, 120, 70, 40, 25, 10))
+#' df_fake <- tibble(age = 1:6, number = c(180, 120, 70, 40, 25, 10))
 #' mortalite_fit_modele_gp(df_fake)
 #'
 #' @export
@@ -33,28 +42,28 @@ mortalite_fit_modele_gp <- function(df_age_etendue) {
   stopifnot(all(c("age", "number") %in% names(df_age_etendue)))
   
   # --- Ajustement du modèle GP ---
-  model <- glmmTMB::glmmTMB(
+  model <- glmmTMB(
     number ~ age,
-    family = glmmTMB::genpois(link = "log"),
+    family = genpois(link = "log"),
     data = df_age_etendue
   )
   
   # --- Fonctions internes HNP ---
-  diagfun_gp <- function(obj) stats::residuals(obj, type = "pearson")
-  simfun_gp <- function(n, obj) stats::simulate(obj)[[1]]
+  diagfun_gp <- function(obj) residuals(obj, type = "pearson")
+  simfun_gp <- function(n, obj) simulate(obj)[[1]]
   
   fitfun_gp <- function(y) {
-    fit <- try(glmmTMB::glmmTMB(
+    fit <- try(glmmTMB(
       y ~ age,
-      family = glmmTMB::genpois(link = "log"),
+      family = genpois(link = "log"),
       data = df_age_etendue
     ), silent = TRUE)
     
     while (inherits(fit, "try-error")) {
-      y_retry <- stats::simulate(model)[[1]]
-      fit <- try(glmmTMB::glmmTMB(
+      y_retry <- simulate(model)[[1]]
+      fit <- try(glmmTMB(
         y_retry ~ age,
-        family = glmmTMB::genpois(link = "log"),
+        family = genpois(link = "log"),
         data = df_age_etendue
       ), silent = TRUE)
     }
@@ -66,7 +75,7 @@ mortalite_fit_modele_gp <- function(df_age_etendue) {
   set.seed(2023)
   hnp_valeurs <- replicate(
     2,
-    hnp::hnp(
+    hnp(
       model,
       newclass = TRUE,
       diagfun = diagfun_gp,
@@ -87,7 +96,7 @@ mortalite_fit_modele_gp <- function(df_age_etendue) {
     message("Ajustement marginal : Ajout de 3 simulations HNP supplémentaires...")
     hnp_suppl <- replicate(
       3,
-      hnp::hnp(
+      hnp(
         model,
         newclass = TRUE,
         diagfun = diagfun_gp,
@@ -116,18 +125,18 @@ mortalite_fit_modele_gp <- function(df_age_etendue) {
   upperZ <- Z + SE
   lowerA <- round((1 - exp(-lowerZ)) * 100, 1)
   upperA <- round((1 - exp(-upperZ)) * 100, 1)
-  ic_95 <- glue::glue("[{lowerA}-{upperA}]")
+  ic_95 <- glue("[{lowerA}-{upperA}]")
   
   # --- Résultat final structuré ---
-  tibble::tibble(
+  tibble(
     methode = "gp",
     ajustement_hnp = ajustement_hnp,
-    aicc = MuMIn::AICc(model),
+    aicc = AICc(model),
     Z = round(Z, 4),
     SE = round(SE, 4),
     A = round(A, 1),
     `IC 95%` = ic_95,
-    commentaire = dplyr::case_when(
+    commentaire = case_when(
       ajustement_hnp < 10 ~ "Bon ajustement",
       ajustement_hnp < 15 ~ "Ajustement marginal",
       TRUE ~ "Mauvais ajustement"

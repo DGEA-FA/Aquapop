@@ -28,9 +28,9 @@ load_station <- function(path,
                          namesheet = "Stations",
                          verbose = TRUE) {
   # --- Validation des entrées ---
-  checkmate::assert_file_exists(path, extension = "xlsx")
-  checkmate::assert_character(namesheet, len = 1)
-  checkmate::assert_flag(verbose)
+  assert_file_exists(path, extension = "xlsx")
+  assert_character(namesheet, len = 1)
+  assert_flag(verbose)
   
   # --- Colonnes attendues ---
   colonnes_obligatoires <- c("no_lac", "typ_pech", "annee", "no_station", "st_valide", "st_hasard")
@@ -62,7 +62,7 @@ load_station <- function(path,
   )
   
   # --- Lecture brute ---
-  station_raw <- readxl::read_excel(
+  station_raw <- read_excel(
     path,
     sheet = namesheet,
     col_names = TRUE,
@@ -71,7 +71,7 @@ load_station <- function(path,
   ) |> as.data.frame()
   
   noms_originaux <- names(station_raw)
-  noms_clean <- janitor::make_clean_names(noms_originaux)
+  noms_clean <- make_clean_names(noms_originaux)
   
   # --- Renommage intelligent ---
   mapping <- sapply(names(synonymes), function(canonique) {
@@ -109,19 +109,19 @@ load_station <- function(path,
   
   # --- Nettoyage des statuts ---
   station <- station |>
-    dplyr::mutate(
-      st_valide = dplyr::case_when(is.na(st_valide) | st_valide %in% c("IND", "-") ~ "O", TRUE ~ st_valide),
-      st_hasard = dplyr::case_when(is.na(st_hasard) | st_hasard %in% c("IND", "-") ~ "O", TRUE ~ st_hasard)
+    mutate(
+      st_valide = case_when(is.na(st_valide) | st_valide %in% c("IND", "-") ~ "O", TRUE ~ st_valide),
+      st_hasard = case_when(is.na(st_hasard) | st_hasard %in% c("IND", "-") ~ "O", TRUE ~ st_hasard)
     )
   
   # --- Conversion types de base ---
   station <- station |>
-    dplyr::mutate(
-      annee = dplyr::case_when(
-        nchar(annee) == 5 ~ as.integer(lubridate::year(as.Date(as.numeric(annee), origin = "1899-12-30"))),
+    mutate(
+      annee = case_when(
+        nchar(annee) == 5 ~ as.integer(year(as.Date(as.numeric(annee), origin = "1899-12-30"))),
         TRUE              ~ suppressWarnings(as.integer(annee))
       ),
-      dplyr::across(
+      across(
         intersect(c("no_lac", "typ_pech", "no_station", "st_valide", "st_hasard", "type_maill"), names(station)),
         as.factor
       ),
@@ -131,18 +131,18 @@ load_station <- function(path,
       prof_fin    = suppressWarnings(as.numeric(prof_fin)),
       comments_station = as.character(comments)
     ) |>
-    dplyr::select(-comments)
+    select(-comments)
   
   # --- Dates et heures combinées ---
   station$date_leve <- suppressWarnings(as.Date(as.numeric(station$date_leve), origin = "1899-12-30"))
-  station$date_pose <- if (!all(is.na(station$date_leve))) station$date_leve - lubridate::days(1) else NA
+  station$date_pose <- if (!all(is.na(station$date_leve))) station$date_leve - days(1) else NA
   
   station <- station |>
-    dplyr::mutate(
-      min_pose   = stringr::str_pad(min_pose,   2, pad = "0"),
-      heure_pose = stringr::str_pad(heure_pose, 2, pad = "0"),
-      min_leve   = stringr::str_pad(min_leve,   2, pad = "0"),
-      heure_leve = stringr::str_pad(heure_leve, 2, pad = "0"),
+    mutate(
+      min_pose   = str_pad(min_pose,   2, pad = "0"),
+      heure_pose = str_pad(heure_pose, 2, pad = "0"),
+      min_leve   = str_pad(min_leve,   2, pad = "0"),
+      heure_leve = str_pad(heure_leve, 2, pad = "0"),
       h_pose     = ifelse(!is.na(heure_pose) & !is.na(min_pose), paste0(heure_pose, ":", min_pose, ":00"), NA),
       h_leve     = ifelse(!is.na(heure_leve) & !is.na(min_leve), paste0(heure_leve, ":", min_leve, ":00"), NA),
       pose       = suppressWarnings(as.POSIXct(paste(date_pose, h_pose), format = "%Y-%m-%d %H:%M:%S")),
@@ -151,7 +151,7 @@ load_station <- function(path,
     )
   
   # --- Suppression des doublons ---
-  station <- dplyr::distinct(station)
+  station <- distinct(station)
   
   return(station)
 }

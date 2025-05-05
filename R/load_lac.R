@@ -19,14 +19,13 @@
 #' `superficie_ha`, `perimetre_km`, `prof_max_m`, `prof_moy_m`, `comments`
 #'
 #' La fonction reconnaît également des **variantes courantes** de ces noms grâce à une table
-#' de synonymes nettoyés via `janitor::make_clean_names()`.
+#' de synonymes nettoyés via `make_clean_names()`.
 #'
 #' @importFrom readxl read_excel
 #' @importFrom janitor make_clean_names
 #' @importFrom lubridate year
 #' @importFrom dplyr mutate across distinct case_when
 #' @importFrom checkmate assert_file_exists assert_character assert_flag assert_subset
-#'
 #' @examples
 #' # Exemple minimal avec un fichier Excel temporaire
 #' df <- data.frame(
@@ -36,7 +35,7 @@
 #'   "Année" = "2022"
 #' )
 #' path <- tempfile(fileext = ".xlsx")
-#' writexl::write_xlsx(list("Lac" = df), path)
+#' write_xlsx(list("Lac" = df), path)
 #' load_lac(path)
 #'
 #' @export
@@ -46,10 +45,10 @@ load_lac <- function(path,
                      col_rename = TRUE) {
   
   # Validation des arguments ----
-  checkmate::assert_file_exists(path, extension = "xlsx")
-  checkmate::assert_character(namesheet, len = 1)
-  checkmate::assert_flag(verbose)
-  checkmate::assert_flag(col_rename)
+  assert_file_exists(path, extension = "xlsx")
+  assert_character(namesheet, len = 1)
+  assert_flag(verbose)
+  assert_flag(col_rename)
   
   # Définition des colonnes attendues ----
   colonnes_obligatoires <- c("no_lac", "nom_lac", "typ_pech", "annee")
@@ -79,7 +78,7 @@ load_lac <- function(path,
   )
   
   # Lecture brute du fichier Excel ----
-  lac_raw <- readxl::read_excel(
+  lac_raw <- read_excel(
     path,
     sheet = namesheet,
     col_names = TRUE,
@@ -88,7 +87,7 @@ load_lac <- function(path,
   ) |> as.data.frame()
   
   noms_originaux <- names(lac_raw)
-  noms_clean <- janitor::make_clean_names(noms_originaux)
+  noms_clean <- make_clean_names(noms_originaux)
   
   # Renommage des colonnes via la table de synonymes ----
   if (col_rename) {
@@ -129,9 +128,9 @@ load_lac <- function(path,
     
   } else {
     # Vérification sans renommage ----
-    noms_clean_direct <- janitor::make_clean_names(names(lac_raw))
+    noms_clean_direct <- make_clean_names(names(lac_raw))
     canoniques_clean <- sapply(synonymes_clean[colonnes_obligatoires], `[[`, 1)
-    checkmate::assert_subset(canoniques_clean, noms_clean_direct,
+    assert_subset(canoniques_clean, noms_clean_direct,
                              .var.name = "Colonnes obligatoires manquantes")
     
     lac <- lac_raw
@@ -139,16 +138,16 @@ load_lac <- function(path,
   
   # Conversion des types ----
   lac <- lac |>
-    dplyr::mutate(
-      annee = dplyr::case_when(
-        nchar(annee) == 5 ~ as.integer(lubridate::year(as.Date(as.numeric(annee), origin = "1899-12-30"))),
+    mutate(
+      annee = case_when(
+        nchar(annee) == 5 ~ as.integer(year(as.Date(as.numeric(annee), origin = "1899-12-30"))),
         TRUE              ~ suppressWarnings(as.integer(annee))
       ),
-      dplyr::across(
+      across(
         intersect(c("region_admin", "no_lac", "nom_lac", "typ_pech", "sp_pen", "terr_faun", "zon_pech"), names(lac)),
         as.factor
       ),
-      dplyr::across(
+      across(
         intersect(c("long_dd.dec", "lat_dd.dec", "superficie_ha", "perimetre_km", "prof_max_m", "prof_moy_m"), names(lac)),
         as.numeric
       ),
@@ -157,8 +156,8 @@ load_lac <- function(path,
   
   # Création de l'identifiant unique + dédoublonnage ----
   lac <- lac |>
-    dplyr::mutate(ID = paste0(nom_lac, " - ", annee, " - ", typ_pech)) |>
-    dplyr::distinct()
+    mutate(ID = paste0(nom_lac, " - ", annee, " - ", typ_pech)) |>
+    distinct()
   
   return(lac)
 }
