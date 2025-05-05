@@ -46,22 +46,7 @@ format_pval <- function(p) {
          ifelse(p < 0.001, "< 0.001", formatC(round(p, 3), format = "f", digits = 3)))
 }
 
-#' Enregistre un data.frame en fichier Excel (.xlsx)
-#'
-#' @param data Un `data.frame` ou une liste de `data.frame`
-#' @param path Chemin de sortie du fichier `.xlsx`
-#'
-#' @return `NULL` (le fichier est écrit sur disque)
-#'
-#' @export
-download_data <- function(data, path) {
-  write_xlsx(
-    x = data,
-    path = path,
-    col_names = TRUE,
-    format_headers = TRUE
-  )
-}
+
 
 #' Génère un suffixe de nom de fichier à partir des métadonnées du lac
 #'
@@ -108,14 +93,20 @@ build_export_filename <- function(objet, suffixe, ext = "xlsx") {
 #'
 #' @param data Un `data.frame` avec des labels (`labelled`).
 #'
-#' @return Un `data.frame` avec noms de colonnes remplacés par leurs labels.
-#'
+#' @return Un `data.frame` avec les noms de colonnes remplacés par leurs labels s'ils sont valides.
 #' @export
+#' @importFrom labelled var_label
 labelled_data <- function(data) {
   labels <- var_label(data)
-  colnames(data) <- unlist(labels)
+  
+  # Vérifier si tous les labels sont valides
+  if (all(!is.na(labels) & nzchar(labels))) {
+    colnames(data) <- unlist(labels)
+  }
+  
   return(data)
 }
+
 
 #' Gérer les erreurs silencieusement
 #'

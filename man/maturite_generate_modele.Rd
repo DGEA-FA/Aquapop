@@ -2,7 +2,7 @@
 % Please edit documentation in R/maturite_generate_modele.R
 \name{maturite_generate_modele}
 \alias{maturite_generate_modele}
-\title{Ajuste un modèle de maturité selon le type spécifié (TLO, ADD, COM, INT) et le lien (logit, probit, cloglog)}
+\title{Ajuste un modèle de maturité (L50 ou A50)}
 \usage{
 maturite_generate_modele(
   data,
@@ -13,19 +13,28 @@ maturite_generate_modele(
 )
 }
 \arguments{
-\item{data}{Jeu de données contenant les colonnes \code{maturite}, \code{sexe} et \code{ltm} ou \code{age}}
+\item{data}{Jeu de données contenant les colonnes \code{maturite}, \code{sexe}, et \code{ltm} ou \code{age}}
 
-\item{variable}{Variable quantitative à utiliser : "ltm" (par défaut) ou "age"}
+\item{variable}{Variable quantitative à utiliser : \code{"ltm"} (par défaut) ou \code{"age"}}
 
-\item{modele}{Type de modèle : "TLO", "ADD", "COM" ou "INT"}
+\item{modele}{Type de modèle : \code{"TLO"}, \code{"ADD"}, \code{"COM"} ou \code{"INT"}}
 
-\item{lien}{Lien à utiliser dans le glm : "probit" (par défaut), "logit" ou "cloglog"}
+\item{lien}{Lien à utiliser dans le glm : \code{"probit"} (par défaut), \code{"logit"}, \code{"cloglog"}}
 
-\item{nboot}{Nombre de tirages Monte Carlo (par défaut: 10000)}
+\item{nboot}{Nombre de tirages Monte Carlo pour les intervalles (défaut : 10000)}
 }
 \value{
-Liste avec \code{table_resultats}, \code{table_resultats_flextable}, \code{commentaire}, \code{graphique}, \code{donnees_ogive}
+Une liste avec :
+\itemize{
+\item \code{table_resultats}: tableau brut des coefficients et points 50 \%
+\item \code{table_resultats_flextable}: version formatée
+\item \code{commentaire}: interprétation de l’ajustement
+\item \code{graphique}: ogive de maturité
+\item \code{donnees_ogive}: données prédictives
+}
 }
 \description{
-Ajuste un modèle de maturité selon le type spécifié (TLO, ADD, COM, INT) et le lien (logit, probit, cloglog)
+Cette fonction ajuste un modèle de maturité en fonction du type de modèle (\code{TLO}, \code{ADD}, \code{COM}, \code{INT})
+et du lien (\code{logit}, \code{probit}, \code{cloglog}) spécifiés. Elle retourne un tableau de résultats,
+un graphique de l’ogive de maturité, un commentaire sur l’ajustement, et les prédictions associées.
 }

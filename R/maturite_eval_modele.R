@@ -1,25 +1,16 @@
-# =============================================================================
-# Fonction : maturite_eval_modele()
-# Projet   : AquaPop
-# But      : Évaluer l’ajustement de modèles L50
-# Auteur   : [Votre nom]
-# Date     : [Date]
-# =============================================================================
-
-#' Évalue l'ajustement des modèles L50
+#' Évaluer l'ajustement des modèles de maturité (L50 ou A50)
 #'
-#' @param models Liste des modèles retournée par fit_L50_models() ou fit_L50_combined_models()
+#' @param models Liste des modèles retournée 
 #'
-#' @return Un dataframe avec les critères de convergence et d'ajustement, trié par ordre croissant d'AICc.
-#' @importFrom MuMIn AICc
+#' @return Un `data.frame` avec les critères d’évaluation, trié par AICc
+#' @importFrom dplyr bind_rows arrange desc
+#' @importFrom labelled var_label<-
 #' @importFrom glue glue
 #' @export
 maturite_eval_modele <- function(models) {
-  # library(dplyr)
-  # library(DescTools)  # Pour o.r.test
-  # library(labelled)   # Pour ajouter des labels d'affichage
-  
-  results <- lapply(names(models), function(n) build_individual_model_row(models[[n]], n)) |>
+
+  results <- lapply(names(models), function(n)
+    build_individual_model_row(models[[n]], n)) |>
     bind_rows() |>
     arrange(desc(convergence), aicc)
   
@@ -38,21 +29,19 @@ maturite_eval_modele <- function(models) {
   return(results)
 }
 
-# =============================================================================
-# Fonction interne : build_individual_model_row()
-# =============================================================================
-
-#' Évaluer les critères d’un modèle individuel L50
+#' Évaluer les critères d’un modèle individuel de maturité
 #'
-#' Fonction interne utilisée pour extraire les critères d’ajustement
-#' (convergence, p-valeurs, AICc, etc.) d’un modèle de type `glm` utilisé
-#' dans l’évaluation de la maturité (L50).
+#' Fonction interne utilisée par `maturite_eval_modele()` pour extraire les indicateurs
+#' d’ajustement d’un modèle de type `glm` : convergence, p-valeurs, AICc, etc.
 #'
-#' @param mod Un objet de type `glm` (ou `NULL` si le modèle n’a pas pu être ajusté).
-#' @param id  Identifiant du modèle (ex. combinaison lien + variable).
+#' @param mod Un objet `glm`, ou `NULL` si l’ajustement a échoué
+#' @param id  Identifiant du modèle (ex. : "ltm_logit", "age_cloglog")
 #'
-#' @return Un `data.frame` avec les critères d’ajustement pour un seul modèle.
+#' @return Un `data.frame` avec les critères d’ajustement du modèle
 #' @keywords internal
+#'
+#' @importFrom stats predict update anova formula
+#' @importFrom MuMIn AICc
 build_individual_model_row <- function(mod, id) {
   if (is.null(mod)) {
     return(data.frame(
@@ -68,21 +57,22 @@ build_individual_model_row <- function(mod, id) {
     ))
   }
   
-  modele_id <- id
-  modele <- as.character(formula(mod))[3]
-  
+  formule_str <- as.character(formula(mod))[3]
   conv <- mod$converged
   
+  # Test d’ajustement : résidus de Pearson
   p_fit <- tryCatch(o.r.test(mod), error = function(e) NA)
   
+  # Test de la qualité du lien via ajout de η²
   df <- mod$model
   df$eta2 <- predict(mod, type = "link")^2
   mod_eta2 <- tryCatch(update(mod, . ~ . + eta2, data = df), error = function(e) NA)
-  p_link <- tryCatch(anova(mod, mod_eta2, test = "Chisq")$`Pr(>Chi)`[2],
-                     error = function(e) NA)
+  p_link <- tryCatch(anova(mod, mod_eta2, test = "Chisq")$`Pr(>Chi)`[2], error = function(e) NA)
   
+  # Critère d'information corrigé AICc
   aicc_val <- tryCatch(AICc(mod), error = function(e) NA)
   
+  # Message d'interprétation
   comm <- "Modèle valide."
   if (!conv) {
     comm <- "Ce modèle ne converge pas et devrait être rejeté."
@@ -91,8 +81,8 @@ build_individual_model_row <- function(mod, id) {
   }
   
   data.frame(
-    modele_id = modele_id,
-    modele = modele,
+    modele_id = id,
+    modele = formule_str,
     lien = as.character(mod$family$link),
     convergence = conv,
     pearson_x2_pval = p_fit,

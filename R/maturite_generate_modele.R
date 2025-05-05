@@ -1,18 +1,29 @@
-#' Ajuste un modèle de maturité selon le type spécifié (TLO, ADD, COM, INT) et le lien (logit, probit, cloglog)
+#' Ajuste un modèle de maturité (L50 ou A50)
 #'
-#' @param data Jeu de données contenant les colonnes `maturite`, `sexe` et `ltm` ou `age`
-#' @param variable Variable quantitative à utiliser : "ltm" (par défaut) ou "age"
-#' @param modele Type de modèle : "TLO", "ADD", "COM" ou "INT"
-#' @param lien Lien à utiliser dans le glm : "probit" (par défaut), "logit" ou "cloglog"
-#' @param nboot Nombre de tirages Monte Carlo (par défaut: 10000)
+#' Cette fonction ajuste un modèle de maturité en fonction du type de modèle (`TLO`, `ADD`, `COM`, `INT`) 
+#' et du lien (`logit`, `probit`, `cloglog`) spécifiés. Elle retourne un tableau de résultats, 
+#' un graphique de l’ogive de maturité, un commentaire sur l’ajustement, et les prédictions associées.
 #'
-#' @return Liste avec `table_resultats`, `table_resultats_flextable`, `commentaire`, `graphique`, `donnees_ogive`
-#' @importFrom FSA Summarize
-#' @importFrom glue glue
-#' @importFrom stats pnorm
-#' @importFrom flextable add_footer_lines as_paragraph compose
-
+#' @param data Jeu de données contenant les colonnes `maturite`, `sexe`, et `ltm` ou `age`
+#' @param variable Variable quantitative à utiliser : `"ltm"` (par défaut) ou `"age"`
+#' @param modele Type de modèle : `"TLO"`, `"ADD"`, `"COM"` ou `"INT"`
+#' @param lien Lien à utiliser dans le glm : `"probit"` (par défaut), `"logit"`, `"cloglog"`
+#' @param nboot Nombre de tirages Monte Carlo pour les intervalles (défaut : 10000)
+#'
+#' @return Une liste avec :
+#' - `table_resultats`: tableau brut des coefficients et points 50 %
+#' - `table_resultats_flextable`: version formatée
+#' - `commentaire`: interprétation de l’ajustement
+#' - `graphique`: ogive de maturité
+#' - `donnees_ogive`: données prédictives
+#'
 #' @export
+#' @importFrom stats glm binomial predict anova coef update plogis
+#' @importFrom glue glue
+#' @importFrom dplyr bind_rows filter mutate pull
+#' @importFrom ggplot2 ggplot aes geom_line geom_ribbon geom_point labs annotate theme
+#' @importFrom FSA Summarize
+#' @importFrom flextable flextable compose as_paragraph as_sub set_header_labels add_footer_lines
 maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = c("TLO", "ADD", "COM", "INT"), lien = c("probit", "logit", "cloglog"), nboot = 10000) {
   variable <- match.arg(variable)
   modele <- match.arg(modele)
@@ -73,8 +84,6 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
                        
                        stop("❌ Modèle non supporté.")
   ) |> sans_warning_proba()
-  
-  
   
   # Tests d'ajustement du modèle -----------------------------------------------
   pval_ajustement <- o.r.test(modele_glm)
@@ -360,3 +369,29 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
     donnees_ogive = donnees_ogive
   ))
 }
+
+#' Extraire un coefficient d’un modèle de maturité selon le sexe
+#'
+#' Fonction interne utilisée par `maturite_generate_modele()` pour extraire
+#' un coefficient ciblé (par sexe ou interaction) à partir d’un modèle glm.
+#'
+#' @param modele_glm Un objet `glm`
+#' @param sexe `"sexeF"` ou `"sexeM"` selon le coefficient à extraire
+#' @param interaction Logique. Si `TRUE`, cible une interaction
+#'
+#' @return La valeur du coefficient ciblé
+#' @keywords internal
+maturite_get_coef <- function(modele_glm, sexe = c("sexeF", "sexeM"), interaction = FALSE) {
+  sexe <- match.arg(sexe)
+  pattern <- if (interaction) paste0(":", sexe) else sexe
+  coef_nom <- names(coef(modele_glm))
+  nom_cible <- coef_nom[grepl(pattern, coef_nom)]
+  
+  if (length(nom_cible) == 0) {
+    stop(glue::glue("❌ Aucun coefficient ne correspond au motif '{pattern}' dans le modèle."))
+  }
+  
+  coef(modele_glm)[[nom_cible]]
+}
+
+

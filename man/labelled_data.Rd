@@ -10,7 +10,7 @@ labelled_data(data)
 \item{data}{Un \code{data.frame} avec des labels (\code{labelled}).}
 }
 \value{
-Un \code{data.frame} avec noms de colonnes remplacés par leurs labels.
+Un \code{data.frame} avec les noms de colonnes remplacés par leurs labels s'ils sont valides.
 }
 \description{
 Extraire les labels comme noms de colonnes (pour usage dans export)

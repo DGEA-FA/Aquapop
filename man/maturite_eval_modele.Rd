@@ -2,16 +2,16 @@
 % Please edit documentation in R/maturite_eval_modele.R
 \name{maturite_eval_modele}
 \alias{maturite_eval_modele}
-\title{Évalue l'ajustement des modèles L50}
+\title{Évaluer l'ajustement des modèles de maturité (L50 ou A50)}
 \usage{
 maturite_eval_modele(models)
 }
 \arguments{
-\item{models}{Liste des modèles retournée par fit_L50_models() ou fit_L50_combined_models()}
+\item{models}{Liste des modèles retournée}
 }
 \value{
-Un dataframe avec les critères de convergence et d'ajustement, trié par ordre croissant d'AICc.
+Un \code{data.frame} avec les critères d’évaluation, trié par AICc
 }
 \description{
-Évalue l'ajustement des modèles L50
+Évaluer l'ajustement des modèles de maturité (L50 ou A50)
 }

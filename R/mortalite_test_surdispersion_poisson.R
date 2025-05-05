@@ -1,43 +1,55 @@
 #' Tester la sur-dispersion dans un modèle de Poisson (mortalité)
 #'
-#' Cette fonction applique `dispersiontest()` à un modèle de type Poisson
-#' ajusté sur les fréquences d’âge (`number ~ age`), et retourne une liste contenant :
-#' - la valeur de dispersion,
-#' - un message interprétatif,
-#' - un graphique des résidus vs ajustés.
+#' Cette fonction applique un test de sur-dispersion (`dispersiontest()`)
+#' à un modèle de Poisson ajusté sur les fréquences d’âge (`number ~ age`).
+#' Elle retourne :
+#' - la valeur numérique de dispersion,
+#' - un message d’interprétation textuel,
+#' - un graphique des résidus de Pearson vs les valeurs ajustées.
 #'
-#' @importFrom ggplot2 labs
-#' @importFrom ggplot2 geom_hline
-#' @importFrom ggplot2 geom_point
-#' @importFrom ggplot2 aes
-#' @importFrom ggplot2 ggplot
-#' @importFrom tibble tibble
-#' @importFrom glue glue
-#' @importFrom dplyr mutate
-#' @importFrom dplyr filter
+#' @param data Un `data.frame` contenant au minimum deux colonnes :
+#'   - `age` : l’âge des poissons (entier ou numérique),
+#'   - `number` : la fréquence d’individus observés pour chaque âge.
+#'
+#' @return Une liste nommée avec trois éléments :
+#'   - `dispersion` : (numérique) valeur estimée de dispersion ;
+#'   - `message` : (caractère) interprétation textuelle de la valeur ;
+#'   - `plot` : (ggplot) graphique des résidus de Pearson.
+#'
 #' @importFrom AER dispersiontest
-#' @param df Un data.frame contenant les colonnes `age` et `number`
+#' @importFrom dplyr filter mutate
+#' @importFrom ggplot2 ggplot aes geom_point geom_hline labs
+#' @importFrom glue glue
+#' @importFrom tibble tibble
 #'
-#' @return Une liste avec `dispersion`, `message`, `plot`
 #' @export
 #'
 #' @examples
-#' mortalite_test_surdispersion_poisson(df)
-mortalite_test_surdispersion_poisson <- function(df) {
-  stopifnot(all(c("age", "number") %in% names(df)))
+#' # Exemple simulé
+#' set.seed(1)
+#' df_test <- data.frame(
+#'   age = 1:10,
+#'   number = rpois(10, lambda = c(5, 10, 15, 20, 15, 10, 5, 4, 3, 2))
+#' )
+#' res <- mortalite_test_surdispersion_poisson(df_test)
+#' print(res$message)
+#' print(res$plot)
+mortalite_test_surdispersion_poisson <- function(data) {
+  if (!all(c("age", "number") %in% names(data))) {
+    stop("Le data.frame doit contenir les colonnes 'age' et 'number'.")
+  }
   
-  # Nettoyage et résumé
-  df <- df |>
+  # Nettoyage de base
+  data <- data |>
     filter(!is.na(age)) |>
     mutate(age = as.integer(age))
   
-  # Ajuster le modèle de Poisson
-  mod_pois <- glm(number ~ age, family = poisson, data = df)
+  # --- Ajustement ---
+  mod_pois <- glm(number ~ age, family = poisson, data = data)
   
-  # Tester la sur-dispersion
+  # --- Test de sur-dispersion ---
   disp_test <- dispersiontest(mod_pois, alternative = "greater")
-  disp_value <- unname(disp_test$estimate["dispersion"])
-  disp_value <- round(disp_value, 2)
+  disp_value <- unname(disp_test$estimate["dispersion"]) |> round(2)
   
   # Interprétation
   message <- if (disp_value > 1.5) {
@@ -46,7 +58,7 @@ mortalite_test_surdispersion_poisson <- function(df) {
     glue("Aucune sur-dispersion majeure détectée (valeur = {disp_value}). Le modèle de Poisson pourrait être acceptable.")
   }
   
-  # Graphique : résidus de Pearson vs valeurs ajustées
+  # --- Graphique des résidus ---
   df_plot <- tibble(
     fitted = fitted(mod_pois),
     residuals = residuals(mod_pois, type = "pearson")
@@ -68,16 +80,3 @@ mortalite_test_surdispersion_poisson <- function(df) {
     plot = plot
   ))
 }
-
-# dispersiontest <- function(data) {
-#   #Mainguy et Moral (2021) ont appliqué l’idée d’avoir recours à des extensions de la distribution de Poisson pour tenir
-#   #compte de la sur-dispersion plutôt que d’appliquer un facteur de correction comme le font les estimateurs CRCB (Smith et al. 2012) et le PM adapté de Nelson (2019).
-#   #si les données sont sur-dispersées, un modèle s’appuyant sur une distribution de Poisson, soit un GLMPoisson, ne s’ajustera pas suffisamment bien aux données observées car l’équidispersion
-#   #requise ne sera pas respectée et ainsi, la SE calculée sera biaisée à la baisse, ce qui aura des incidences sur les inférences statistiques.
-#   m.data.p <- glm(number ~ age, family = poisson, data = data)
-#   
-#   #il faut tester la sur-dispersion sur les données originale et non celles avec extensions de zéros
-#   dispersiontest <-
-#     dispersiontest(m.data.p , alternative = "greater")
-#   dispersiontest[["estimate"]][["dispersion"]]  #sur-dispersion si val >> 1
-# }

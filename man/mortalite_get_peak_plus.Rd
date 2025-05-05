@@ -7,12 +7,39 @@
 mortalite_get_peak_plus(data)
 }
 \arguments{
-\item{data}{Un \code{data.frame} contenant une colonne \code{age} et déjà filtré pour une seule espèce.}
+\item{data}{Un \code{data.frame} contenant une colonne \code{age}, de type numérique ou entier.}
 }
 \value{
-Un entier correspondant au Peak Plus
+Un entier (\code{integer}) correspondant au Peak Plus, ou \code{NA_integer_} si le calcul est impossible.
 }
 \description{
-Cette fonction retourne l’âge le plus fréquent (le mode) dans la structure d’âge,
-augmenté de 1 (selon la définition du Peak Plus).
+Cette fonction retourne l’âge le plus fréquent (le mode) dans la colonne \code{age},
+augmenté de 1, conformément à la définition du Peak Plus utilisée en analyse de mortalité.
+Elle suppose que les données ont été filtrées au préalable pour une seule espèce.
+}
+\details{
+La fonction gère les cas particuliers suivants :
+\itemize{
+\item Si plusieurs âges partagent la fréquence maximale, le plus petit âge est retenu.
+\item Les valeurs manquantes (\code{NA}) sont ignorées.
+\item Si toutes les valeurs sont manquantes ou si aucune ligne n'est présente, la fonction retourne \code{NA_integer_}.
+\item Une erreur est générée si la colonne \code{age} est absente.
+}
+}
+\examples{
+# Jeu de données simple avec un mode clair
+df <- data.frame(age = c(1, 2, 2, 3, 3, 3, 4))
+mortalite_get_peak_plus(df) # retourne 4 (mode = 3, +1)
+
+# Cas avec ex aequo : le plus petit est retenu
+df <- data.frame(age = c(2, 2, 3, 3))
+mortalite_get_peak_plus(df) # retourne 3 (mode = 2 ou 3, on retient 2 + 1)
+
+# Données avec NA
+df <- data.frame(age = c(NA, 2, 2, NA, 3))
+mortalite_get_peak_plus(df) # retourne 3
+
+# Données vides ou toutes manquantes
+mortalite_get_peak_plus(data.frame(age = numeric(0))) # retourne NA_integer_
+mortalite_get_peak_plus(data.frame(age = c(NA, NA)))   # retourne NA_integer_
 }

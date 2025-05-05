@@ -2,17 +2,19 @@
 % Please edit documentation in R/internal_utils.R
 \name{sans_warning_proba}
 \alias{sans_warning_proba}
-\title{Exécute une expression glm() en filtrant le warning "probabilités ajustées à 0 ou 1"}
+\title{Supprimer les warnings liés aux probabilités ajustées à 0 ou 1 dans glm()}
 \usage{
 sans_warning_proba(expr)
 }
 \arguments{
-\item{expr}{Une expression \code{glm()} passée sans guillemets}
+\item{expr}{Une expression (non entre guillemets) à évaluer, typiquement un appel à \code{glm()}}
 }
 \value{
-Le résultat de \code{glm()}, sans émettre de warning si celui-ci correspond à l'ajustement numérique
+Le résultat de \code{expr}, avec les warnings filtrés si pertinents
 }
 \description{
-Exécute une expression glm() en filtrant le warning "probabilités ajustées à 0 ou 1"
+Cette fonction évalue une expression de type \code{glm()} tout en filtrant les avertissements
+du type « les probabilités ont été ajustées numériquement à 0 ou 1 », souvent bénins
+et dus à la séparation quasi-parfaite dans les données binaires.
 }
 \keyword{internal}

@@ -2,21 +2,20 @@
 % Please edit documentation in R/maturite_eval_modele.R
 \name{build_individual_model_row}
 \alias{build_individual_model_row}
-\title{Évaluer les critères d’un modèle individuel L50}
+\title{Évaluer les critères d’un modèle individuel de maturité}
 \usage{
 build_individual_model_row(mod, id)
 }
 \arguments{
-\item{mod}{Un objet de type \code{glm} (ou \code{NULL} si le modèle n’a pas pu être ajusté).}
+\item{mod}{Un objet \code{glm}, ou \code{NULL} si l’ajustement a échoué}
 
-\item{id}{Identifiant du modèle (ex. combinaison lien + variable).}
+\item{id}{Identifiant du modèle (ex. : "ltm_logit", "age_cloglog")}
 }
 \value{
-Un \code{data.frame} avec les critères d’ajustement pour un seul modèle.
+Un \code{data.frame} avec les critères d’ajustement du modèle
 }
 \description{
-Fonction interne utilisée pour extraire les critères d’ajustement
-(convergence, p-valeurs, AICc, etc.) d’un modèle de type \code{glm} utilisé
-dans l’évaluation de la maturité (L50).
+Fonction interne utilisée par \code{maturite_eval_modele()} pour extraire les indicateurs
+d’ajustement d’un modèle de type \code{glm} : convergence, p-valeurs, AICc, etc.
 }
 \keyword{internal}

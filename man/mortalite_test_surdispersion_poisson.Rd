@@ -4,23 +4,41 @@
 \alias{mortalite_test_surdispersion_poisson}
 \title{Tester la sur-dispersion dans un modèle de Poisson (mortalité)}
 \usage{
-mortalite_test_surdispersion_poisson(df)
+mortalite_test_surdispersion_poisson(data)
 }
 \arguments{
-\item{df}{Un data.frame contenant les colonnes \code{age} et \code{number}}
+\item{data}{Un \code{data.frame} contenant au minimum deux colonnes :
+\itemize{
+\item \code{age} : l’âge des poissons (entier ou numérique),
+\item \code{number} : la fréquence d’individus observés pour chaque âge.
+}}
 }
 \value{
-Une liste avec \code{dispersion}, \code{message}, \code{plot}
+Une liste nommée avec trois éléments :
+\itemize{
+\item \code{dispersion} : (numérique) valeur estimée de dispersion ;
+\item \code{message} : (caractère) interprétation textuelle de la valeur ;
+\item \code{plot} : (ggplot) graphique des résidus de Pearson.
+}
 }
 \description{
-Cette fonction applique \code{dispersiontest()} à un modèle de type Poisson
-ajusté sur les fréquences d’âge (\code{number ~ age}), et retourne une liste contenant :
+Cette fonction applique un test de sur-dispersion (\code{dispersiontest()})
+à un modèle de Poisson ajusté sur les fréquences d’âge (\code{number ~ age}).
+Elle retourne :
 \itemize{
-\item la valeur de dispersion,
-\item un message interprétatif,
-\item un graphique des résidus vs ajustés.
+\item la valeur numérique de dispersion,
+\item un message d’interprétation textuel,
+\item un graphique des résidus de Pearson vs les valeurs ajustées.
 }
 }
 \examples{
-mortalite_test_surdispersion_poisson(df)
+# Exemple simulé
+set.seed(1)
+df_test <- data.frame(
+  age = 1:10,
+  number = rpois(10, lambda = c(5, 10, 15, 20, 15, 10, 5, 4, 3, 2))
+)
+res <- mortalite_test_surdispersion_poisson(df_test)
+print(res$message)
+print(res$plot)
 }

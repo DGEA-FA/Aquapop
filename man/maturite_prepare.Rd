@@ -2,18 +2,20 @@
 % Please edit documentation in R/maturite_prepare.R
 \name{maturite_prepare}
 \alias{maturite_prepare}
-\title{Prépare les données pour l’ajustement d’un modèle de maturité (L50 ou A50)}
+\title{Préparer les données pour l’ajustement d’un modèle de maturité (L50 ou A50)}
 \usage{
 maturite_prepare(specimen_data, variable = c("ltm", "age"))
 }
 \arguments{
-\item{specimen_data}{Jeu de données contenant les colonnes \code{maturite}, \code{sexe}, et la variable quantitative (\code{ltm} ou \code{age})}
+\item{specimen_data}{Un data.frame contenant les colonnes \code{maturite}, \code{sexe} et \code{ltm} ou \code{age}}
 
 \item{variable}{Variable quantitative à utiliser : \code{"ltm"} (par défaut) ou \code{"age"}}
 }
 \value{
-Un data.frame filtré et transformé prêt pour le modèle
+Un data.frame filtré et prêt pour l’ajustement du modèle
 }
 \description{
-Prépare les données pour l’ajustement d’un modèle de maturité (L50 ou A50)
+Cette fonction filtre et structure les données en vue de l’ajustement d’un modèle de maturité.
+Elle supprime les individus indéterminés (\code{maturite == "IND"} ou \code{sexe == "IND"}) et les valeurs manquantes
+dans la variable quantitative (\code{ltm} ou \code{age}), puis définit les niveaux de facteurs attendus.
 }
