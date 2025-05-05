@@ -20,8 +20,3 @@ Une liste avec deux éléments : \code{data} (tableau brut), \code{flextable} (
 Cette fonction applique la méthode Chapman-Robson via \code{agesurv()}
 et retourne une liste contenant un tableau brut (\code{data.frame}) et une version formatée (\code{flextable}).
 }
-\examples{
-res <- mortalite_chaprob(specimen, pp = 2, age_max = 8)
-res$data
-res$flextable
-}

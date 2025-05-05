@@ -6,6 +6,12 @@
 \usage{
 o.r.test(obj)
 }
+\arguments{
+\item{obj}{Un objet de modèle de type \code{glm} ajusté avec une famille binomiale.}
+}
+\value{
+Une valeur p (\code{p.value}) du test d’overdispersion.
+}
 \description{
 Test d'ajustement de Osius & Rojek
 }

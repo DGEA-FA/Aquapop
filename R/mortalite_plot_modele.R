@@ -4,35 +4,30 @@
 #' la courbe prédite à partir d’un modèle de mortalité ajusté (`modele`). Le style graphique
 #' est cohérent avec les autres figures de structure d’âge (voir `structure_age()`).
 #'
-#' @importFrom ggplot2 scale_y_continuous
-#' @importFrom ggplot2 scale_x_continuous
-#' @importFrom ggplot2 labs
-#' @importFrom ggplot2 geom_line
-#' @importFrom ggplot2 geom_histogram
-#' @importFrom ggplot2 aes
-#' @importFrom glue glue
-#' @importFrom dplyr case_when
-#' @importFrom stats predict
-#' @importFrom ggplot2 ggplot
-#' @importFrom cli cli_warn
-#' @importFrom dplyr mutate
-#' @importFrom dplyr filter
-#' @importFrom tibble tibble
 #' @param specimen Un `data.frame` contenant au moins les colonnes `sp` (code de l’espèce) et `age`.
 #' @param modele Un objet de modèle ajusté (`glm`, `glm.nb`, `glmmTMB`, etc.) pour prédire la fréquence selon l’âge.
 #' @param info_modele Un `data.frame` issu de `mortalite_compare_modele()$data` contenant les estimations de A et IC 95%.
 #'
 #' @return Un objet `ggplot2` combinant histogramme observé et courbe prédite.
+#'
+#' @importFrom dplyr case_when mutate filter
+#' @importFrom ggplot2 ggplot aes geom_histogram geom_line labs
+#'   scale_x_continuous scale_y_continuous
+#' @importFrom glue glue
+#' @importFrom cli cli_warn
+#' @importFrom stats predict
+#' @importFrom tibble tibble
+#'
 #' @export
 #'
 #' @examples
 #' # Exemple fictif avec données simulées
-#' data_exemple <- tibble(
+#' data_exemple <- tibble::tibble(
 #'   sp = "SAFO",
 #'   age = sample(0:10, size = 200, replace = TRUE)
 #' )
 #' modele_exemple <- glm(age ~ 1, data = data_exemple, family = poisson())
-#' info_modele_exemple <- tibble(
+#' info_modele_exemple <- tibble::tibble(
 #'   Méthode = "poisson", A = 38, `IC 95%` = "32–45"
 #' )
 #' mortalite_plot_modele(data_exemple, modele_exemple, info_modele_exemple)

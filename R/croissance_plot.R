@@ -21,12 +21,12 @@
 #' @export
 #'
 #' @examples
-#' dfspecimen <- tibble(
+#' dfspecimen <- tibble::tibble(
 #'   ltm = c(100, 120, 140, 150),
 #'   age = c(1, 2, 3, 4),
 #'   no_specimen = 1:4
 #' )
-#' tablemodele <- tibble(
+#' tablemodele <- tibble::tibble(
 #'   methode = "Von Bertalanffy",
 #'   l_inf = 160,
 #'   k = 0.3,

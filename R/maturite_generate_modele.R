@@ -165,7 +165,7 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
     donnees_prediction <- data.frame(temp = seq(from = x_min, to = x_max, by = 1))
     names(donnees_prediction) <- variable
   } else {
-    form <- as.formula(glue("{variable} ~ sexe"))
+    form <- stats::as.formula(glue("{variable} ~ sexe"))
     var_minmax <- Summarize(form, data = donnees_modeles)
     donnees_prediction <- bind_rows(
       data.frame(sexe = "F", temp = seq(from = var_minmax$min[var_minmax$sexe == "F"], to = var_minmax$max[var_minmax$sexe == "F"], by = 1)),
@@ -327,13 +327,13 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
   
   if (modele %in% c("COM", "ADD", "INT")) {
     if (modele == "COM") {
-      vmin_m <- min(donnees_modeles %>% filter(sexe == "M") %>% pull(.data[[variable]]))
-      vmin_f <- min(donnees_modeles %>% filter(sexe == "F") %>% pull(.data[[variable]]))
+      vmin_m <- min(donnees_modeles |> filter(sexe == "M") |> pull(.data[[variable]]))
+      vmin_f <- min(donnees_modeles |> filter(sexe == "F") |> pull(.data[[variable]]))
     } else {
-      form <- as.formula(glue("{variable} ~ sexe"))
+      form <- stats::as.formula(glue("{variable} ~ sexe"))
       var_minmax <- Summarize(form, data = donnees_modeles)
-      vmin_m <- var_minmax %>% filter(sexe == "M") %>% pull(min)
-      vmin_f <- var_minmax %>% filter(sexe == "F") %>% pull(min)
+      vmin_m <- var_minmax |> filter(sexe == "M") |> pull(min)
+      vmin_f <- var_minmax |> filter(sexe == "F") |> pull(min)
     }
     
     graphique <- graphique +

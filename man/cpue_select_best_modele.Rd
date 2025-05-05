@@ -18,8 +18,3 @@ parmi les modèles Poisson, NB1, NB2, CMP et GP. La sélection est effectuée se
 le plus bas AICc parmi les modèles bien ajustés (ajustement HNP < 10).
 Si aucun modèle ne satisfait ce critère, la fonction retourne celui avec le plus bas AICc global.
 }
-\examples{
-cpue <- cpue_prepare(capture, specimen, group = "tous")
-tableau <- modele_cpue_comparaison(cpue, format = "data.frame")
-cpue_select_best_modele(tableau)
-}

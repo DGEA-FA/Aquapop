@@ -8,10 +8,6 @@
 #' @return Une chaîne de caractères (nom du meilleur modèle) ou un message en cas d'erreur
 #' @importFrom dplyr filter pull
 #' @export
-#'
-#' @examples
-#' mod <- croissance_compare_modele(specimen)
-#' croissance_select_best_modele(mod)
 croissance_select_best_modele <- function(tablemodele) {
   if (!"methode" %in% names(tablemodele) || !"AICc" %in% names(tablemodele)) {
     stop("Le tableau de modèle n’est pas valide. Assurez-vous qu’il provient bien de `croissance_compare_modele()`.")

@@ -21,7 +21,7 @@
 #' @importFrom ggplot2 ggplot aes geom_point geom_hline labs
 #' @importFrom glue glue
 #' @importFrom tibble tibble
-#'
+#' @importFrom stats fitted
 #' @export
 #'
 #' @examples

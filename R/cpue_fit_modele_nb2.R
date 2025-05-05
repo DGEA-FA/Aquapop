@@ -20,7 +20,7 @@
 #' }
 #'
 #' @examples
-#' fake_data <- tibble(
+#' fake_data <- tibble::tibble(
 #'   no_station = 1:10,
 #'   CPUE = rnbinom(10, mu = 5, size = 1)
 #' )

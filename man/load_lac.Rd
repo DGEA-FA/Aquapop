@@ -42,7 +42,7 @@ df <- data.frame(
   "Année" = "2022"
 )
 path <- tempfile(fileext = ".xlsx")
-write_xlsx(list("Lac" = df), path)
+writexl::write_xlsx(list("Lac" = df), path)
 load_lac(path)
 
 }

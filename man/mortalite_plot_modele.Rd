@@ -23,12 +23,12 @@ est cohérent avec les autres figures de structure d’âge (voir \code{structur
 }
 \examples{
 # Exemple fictif avec données simulées
-data_exemple <- tibble(
+data_exemple <- tibble::tibble(
   sp = "SAFO",
   age = sample(0:10, size = 200, replace = TRUE)
 )
 modele_exemple <- glm(age ~ 1, data = data_exemple, family = poisson())
-info_modele_exemple <- tibble(
+info_modele_exemple <- tibble::tibble(
   Méthode = "poisson", A = 38, `IC 95\%` = "32–45"
 )
 mortalite_plot_modele(data_exemple, modele_exemple, info_modele_exemple)

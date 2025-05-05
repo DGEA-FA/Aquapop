@@ -29,7 +29,7 @@ pour évaluer la qualité de l’ajustement. En cas d’ajustement marginal (ent
 trois simulations supplémentaires sont effectuées.
 }
 \examples{
-fake_data <- tibble(
+fake_data <- tibble::tibble(
   no_station = 1:10,
   CPUE = rnbinom(10, mu = 5, size = 1)
 )

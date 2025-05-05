@@ -6,6 +6,10 @@
 \usage{
 get_info_pen(input)
 }
+\arguments{
+\item{input}{Une chaîne de caractères indiquant un code d'espèce (ex : \code{"SANA"})
+ou un type de pêche (ex : \code{"PENT"}). Utilisé pour chercher l'entrée correspondante dans \code{pen_constants}.}
+}
 \value{
 Une liste nommée contenant :
 \describe{

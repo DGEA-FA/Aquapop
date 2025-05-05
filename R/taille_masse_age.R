@@ -37,15 +37,15 @@ taille_masse_age <- function(data) {
   }
   
   # Calcul des statistiques morphologiques ----
-  table_ltm   <- .regrouper_stats_morpho(data, "ltm")   %>% rename_with(~ paste0("ltm_", .), -sexe)
-  table_masse <- .regrouper_stats_morpho(data, "masse") %>% rename_with(~ paste0("masse_", .), -sexe)
-  table_age   <- .regrouper_stats_morpho(data, "age")   %>% rename_with(~ paste0("age_", .), -sexe)
+  table_ltm   <- regrouper_stats_morpho(data, "ltm")   |> rename_with(~ paste0("ltm_", .), -sexe)
+  table_masse <- regrouper_stats_morpho(data, "masse") |> rename_with(~ paste0("masse_", .), -sexe)
+  table_age   <- regrouper_stats_morpho(data, "age")  |> rename_with(~ paste0("age_", .), -sexe)
   
   # Fusion des tableaux ----
-  table_resultats <- table_ltm %>%
-    inner_join(table_masse, by = "sexe") %>%
-    inner_join(table_age, by = "sexe") %>%
-    rename(Sexe = sexe) %>%
+  table_resultats <- table_ltm |>
+    inner_join(table_masse, by = "sexe") |>
+    inner_join(table_age, by = "sexe") |>
+    rename(Sexe = sexe) |>
     mutate(across(ends_with(c("min", "max", "moy", "e_t")),
                   ~ ifelse(. %in% c("Inf", "-Inf") | is.na(.), "-", .)))
   
@@ -57,23 +57,23 @@ taille_masse_age <- function(data) {
     Niveau2 = c("", rep(c("N", "Moyenne", "ÉT", "Min", "Max"), 3))
   )
   
-  table_flextable <- table_resultats %>%
-    flextable() %>%
-    set_header_df(mapping = en_tete, key = "col_keys") %>%
-    merge_h(part = "header") %>%
-    border(i = 2, border.bottom = bordure_normale, part = "header") %>%
+  table_flextable <- table_resultats |>
+    flextable()|>
+    set_header_df(mapping = en_tete, key = "col_keys") |>
+    merge_h(part = "header") |>
+    border(i = 2, border.bottom = bordure_normale, part = "header") |>
     style_flextable_aquapop()
   
   
   for (col in c("ltm_max", "masse_max")) {
     table_flextable <- table_flextable |>
-      border(i = 1:2, j = col, border.right = bordure_normale, part = "header") %>%
+      border(i = 1:2, j = col, border.right = bordure_normale, part = "header") |>
       border(j = col, border.right = bordure_normale, part = "body")
   }
   
   ligne_bloc_repro <- which(table_resultats$Sexe == "Reprod. actifs femelles")
   if (length(ligne_bloc_repro) == 1) {
-    table_flextable <- table_flextable %>%
+    table_flextable <- table_flextable |>
       border(i = ligne_bloc_repro - 1, border.bottom = bordure_normale, part = "body")
   }
   
@@ -87,7 +87,7 @@ taille_masse_age <- function(data) {
 
 #' Regrouper les statistiques morphologiques par sexe et statut reproducteur
 #'
-#' Fonction interne. Applique `.stats_morpho()` à différents sous-groupes définis
+#' Fonction interne. Applique `stats_morpho()` à différents sous-groupes définis
 #' par les variables `sexe` et `maturite`. Retourne un tableau consolidé prêt pour fusion.
 #'
 #' @param data Un `data.frame` contenant les données morphologiques.
@@ -95,20 +95,20 @@ taille_masse_age <- function(data) {
 #'
 #' @return Un `data.frame` avec une colonne `sexe` (groupe) et les statistiques associées.
 #' @keywords internal
-.regrouper_stats_morpho <- function(data, var) {
+regrouper_stats_morpho <- function(data, var) {
   
   # --- Calcul des statistiques pour chaque sous-groupe ---
   table_groupes <- bind_rows(
-    .stats_morpho(data, var, "sexe"),
-    .stats_morpho(data, var) %>% mutate(sexe = NA),
-    .stats_morpho(filter(data, maturite == "O" & sexe == "M"), var) %>% mutate(sexe = "Reprod. actifs mâles"),
-    .stats_morpho(filter(data, maturite == "N"), var) %>% mutate(sexe = "Imm. ou reprod. inactifs"),
-    .stats_morpho(filter(data, maturite == "O" & sexe == "F"), var) %>% mutate(sexe = "Reprod. actifs femelles"),
-    .stats_morpho(filter(data, maturite == "IND"), var) %>% mutate(sexe = "Statut reprod. inconnu")
+    stats_morpho(data, var, "sexe"),
+    stats_morpho(data, var) |> mutate(sexe = NA),
+    stats_morpho(filter(data, maturite == "O" & sexe == "M"), var) |> mutate(sexe = "Reprod. actifs mâles"),
+    stats_morpho(filter(data, maturite == "N"), var) |> mutate(sexe = "Imm. ou reprod. inactifs"),
+    stats_morpho(filter(data, maturite == "O" & sexe == "F"), var) |> mutate(sexe = "Reprod. actifs femelles"),
+    stats_morpho(filter(data, maturite == "IND"), var) |> mutate(sexe = "Statut reprod. inconnu")
   )
   
   # --- Nettoyage et harmonisation des libellés de groupes ---
-  table_groupes <- table_groupes %>%
+  table_groupes <- table_groupes |>
     mutate(
       sexe = as.character(sexe),
       sexe = ifelse(is.na(sexe), "Tous", sexe),
@@ -122,7 +122,7 @@ taille_masse_age <- function(data) {
         "Reprod. actifs femelles", "Reprod. actifs mâles",
         "Imm. ou reprod. inactifs", "Statut reprod. inconnu"
       ))
-    ) %>%
+    ) |>
     arrange(sexe)
   
   return(table_groupes)
@@ -137,17 +137,20 @@ taille_masse_age <- function(data) {
 #' @param var Nom de la variable numérique à résumer (chaîne de caractères).
 #' @param group_var Nom de la variable de regroupement (optionnel, ex: `"sexe"`).
 #'
+#' @importFrom dplyr group_by summarise
+#' @importFrom rlang sym
+#' @importFrom stats sd
 #' @return Un `data.frame` avec les statistiques résumées, par groupe si applicable.
 #' @keywords internal
-.stats_morpho <- function(data, var, group_var = NULL) {
+stats_morpho <- function(data, var, group_var = NULL) {
   
   # --- Regroupement (si applicable) ---
   if (!is.null(group_var)) {
-    data <- data %>% group_by(!!sym(group_var), .drop = FALSE)
+    data <- data |> group_by(!!sym(group_var), .drop = FALSE)
   }
   
   # --- Calcul des statistiques descriptives ---
-  data %>%
+  data |>
     summarise(
       nb  = sum(!is.na(!!sym(var))),
       moy = ifelse(all(is.na(!!sym(var))), NA, mean(!!sym(var), na.rm = TRUE)) |> round(1),

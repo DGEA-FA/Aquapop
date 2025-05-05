@@ -66,47 +66,6 @@ shiny::runApp()
 
  Ou bien, ouvrez simplement le fichier `app.R` dans RStudio et cliquez sur "Run App".
 
-## Dépendances
-
- Les packages suivants sont utilisés par cette application, et leurs versions minimales sont spécifiées dans le fichier `DESCRIPTION` :
-
- - shiny
- - car
- - DT
- - kableExtra
- - reactable
- - FSA
- - nlstools
- - shinyBS
- - gghighlight
- - htmltools
- - markdown
- - readxl
- - ggplot2
- - scales
- - dplyr
- - patchwork
- - reactlog
- - stringr
- - chron
- - purrr
- - writexl
- - shinycssloaders
- - glue
- - fishmethods
- - hnp
- - MASS
- - glmmTMB
- - MuMIn
- - plotly
- - gapminder
- - AER
- - pROC
- - DescTools
- - emdbook
- - AICcmodavg
- - investr
-
 ## Contribution
 
  Si vous souhaitez contribuer à ce projet, veuillez soumettre une pull request ou ouvrir une issue pour discuter de vos modifications.

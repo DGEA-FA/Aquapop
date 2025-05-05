@@ -22,7 +22,7 @@ Un \code{data.frame} d’une ligne contenant :
 \item{Z}{Coefficient de l'âge estimé dans le modèle}
 \item{SE}{Erreur standard de Z}
 \item{A}{Taux de mortalité annuel estimé (\%)}
-\item{IC 95\%}{Intervalle de confiance de A (format "\link{x-y}")}
+\item{IC 95\%}{Intervalle de confiance de A}
 \item{commentaire}{Appréciation qualitative de l’ajustement}
 \item{convergence}{Toujours TRUE (glm.nb échoue sinon)}
 \item{nb_iterations_hnp}{Nombre total de simulations HNP (2 ou 5)}
@@ -34,7 +34,7 @@ Elle applique un test HNP (Half-Normal Plot) avec 2 à 5 simulations pour évalu
 puis retourne les estimations de mortalité et leur intervalle de confiance.
 }
 \examples{
-df_fake <- tibble(age = 1:6, number = c(180, 120, 70, 40, 25, 10))
+df_fake <- tibble::tibble(age = 1:6, number = c(180, 120, 70, 40, 25, 10))
 mortalite_fit_modele_nb2(df_fake)
 
 }

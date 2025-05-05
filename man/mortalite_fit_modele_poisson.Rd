@@ -22,7 +22,7 @@ Un \code{data.frame} d’une ligne contenant :
 \item{Z}{Coefficient d’âge estimé}
 \item{SE}{Erreur standard associée à Z}
 \item{A}{Taux de mortalité annuel estimé en \%}
-\item{IC 95\%}{Intervalle de confiance du taux A (ex: "\link{12.5-22.8}")}
+\item{IC 95\%}{Intervalle de confiance du taux A}
 \item{commentaire}{Appréciation qualitative de l’ajustement}
 \item{convergence}{Convergence du modèle (toujours TRUE pour GLM Poisson)}
 \item{nb_iterations_hnp}{Nombre de simulations HNP (2 ou 5)}
@@ -34,7 +34,7 @@ Cette fonction ajuste un modèle de mortalité sur les données étendues de fr�
 selon la qualité de l’ajustement. Elle retourne un résumé des statistiques du modèle.
 }
 \examples{
-df_fake <- tibble(age = 1:6, number = c(180, 120, 70, 40, 25, 10))
+df_fake <- tibble::tibble(age = 1:6, number = c(180, 120, 70, 40, 25, 10))
 mortalite_fit_modele_poisson(df_fake)
 
 }

@@ -31,7 +31,7 @@ test_that("taille_masse_age() gère les cas normaux et limites", {
                                    "Imm. ou reprod. inactifs", "Statut reprod. inconnu"))
   
   # Vérifie que toutes les valeurs NA / Inf ont été remplacées par "-"
-  res_chr <- dplyr::select(res$data, -Sexe) %>% purrr::map_chr(~ paste0(unique(.), collapse = " "))
+  res_chr <- dplyr::select(res$data, -Sexe) |> purrr::map_chr(~ paste0(unique(.), collapse = " "))
   expect_true(all(stringr::str_detect(res_chr, "-") | stringr::str_detect(res_chr, "\\d")))
   
   # Vérifie que les colonnes "max" et "moy" sont bien arrondies (pas de valeur longue ou scientifique)

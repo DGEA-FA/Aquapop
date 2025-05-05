@@ -16,10 +16,6 @@
 #' @return Une liste avec deux éléments : `data` (tableau brut), `flextable` (tableau formaté).
 #' @export
 #'
-#' @examples
-#' res <- mortalite_chaprob(specimen, pp = 2, age_max = 8)
-#' res$data
-#' res$flextable
 mortalite_chaprob <- function(specimen, pp, age_max) {
   df <- subset(specimen, !is.na(age))
   

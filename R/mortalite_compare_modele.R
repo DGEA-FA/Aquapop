@@ -15,11 +15,6 @@
 #' }
 #'
 #' @export
-#'
-#' @examples
-#' df_corr <- mortalite_prepare_corr(...)
-#' df_etendue <- mortalite_prepare_extended(df_corr, age_max = 10)
-#' mortalite_compare_modele_res <- mortalite_compare_modele(data = df_etendue)
 mortalite_compare_modele <- function(data) {
   
   # Ajustement des modèles

@@ -16,14 +16,21 @@ as_reactive <- function(x) {
 
 #' Affiche un tableau flextable dans une application Shiny
 #'
-#' @param output_id Identifiant utilisé dans `uiOutput()`
-#' @param flextable Une expression, un objet `flextable`, ou une fonction `reactive()`
+#' Cette fonction permet d’insérer dynamiquement un tableau `flextable` dans une interface Shiny,
+#' à l’intérieur d’un `uiOutput()` identifié par `output_id`. Elle prend en charge les objets réactifs
+#' ou non, en convertissant toute entrée en fonction réactive.
 #'
+#' @param output_id Identifiant utilisé dans `uiOutput()` pour insérer le tableau.
+#' @param flextable Une expression, un objet `flextable`, ou une fonction `reactive()`.
+#'
+#' @importFrom shiny renderUI HTML req
+#' @importFrom flextable save_as_html
+#' @importFrom rlang as_function
 #' @export
 render_table_flextable <- function(output_id, flextable) {
   output <- get("output", envir = parent.frame())
   
-  # Crée une fonction réactive différee quelle que soit l'entrée
+  # Crée une fonction réactive différée quelle que soit l'entrée
   get_ft <- as_reactive(force_lazy(flextable))
   
   output[[output_id]] <- renderUI({
@@ -35,6 +42,7 @@ render_table_flextable <- function(output_id, flextable) {
     HTML(readLines(tmpfile, warn = FALSE))
   })
 }
+
 
 
 
@@ -57,7 +65,7 @@ force_lazy <- function(expr) {
 #' @param height Hauteur en pixels
 #' @param res Résolution en DPI
 #' @param message_si_vide Message à afficher si graphique vide ou invalide
-#' @importFrom shiny downloadButton showNotification getDefaultReactiveDomain
+#' @importFrom shiny downloadButton showNotification getDefaultReactiveDomain renderPlot
 #' @export
 render_plot_ggplot <- function(output_id, plot,
                                height = 500, res = 96,
@@ -88,17 +96,23 @@ render_plot_ggplot <- function(output_id, plot,
 
 #' Crée un bouton de téléchargement pour un tableau (.xlsx)
 #'
+#' Cette fonction crée dynamiquement un bouton de téléchargement (Shiny) qui permet d’exporter un `data.frame`
+#' en format `.xlsx`, à partir d’un objet réactif ou non. Le bouton doit être déclaré côté `ui` avec l’`id` fourni.
+#'
 #' @param id Identifiant du bouton (ex: "masselongueur_dl")
 #' @param data Un objet `data.frame` ou un `reactive()` le retournant
 #' @param filename Nom du fichier à enregistrer (.xlsx). Peut être une chaîne ou un `reactive()`
 #' @param label (non utilisé ici – texte défini dans le `ui`)
 #'
+#' @return Un `downloadHandler` affecté à l’objet `output[[id]]`
+#'
+#' @importFrom shiny reactive downloadHandler
+#' @importFrom writexl write_xlsx
 #' @export
 render_download_table <- function(id,
                                   data,
                                   filename = NULL,
                                   label = NULL) {
-  
   output <- get("output", envir = parent.frame())
   
   get_data     <- if (inherits(data, "reactive"))     data     else reactive(data)
@@ -111,6 +125,7 @@ render_download_table <- function(id,
     }
   )
 }
+
 
 
 

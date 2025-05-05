@@ -16,7 +16,3 @@ Une chaîne de caractères (nom du meilleur modèle) ou un message en cas d'erre
 Cette fonction identifie automatiquement le meilleur modèle (parmi Von Bertalanffy, Gompertz ou Logistique)
 selon le critère d’AICc le plus faible.
 }
-\examples{
-mod <- croissance_compare_modele(specimen)
-croissance_select_best_modele(mod)
-}

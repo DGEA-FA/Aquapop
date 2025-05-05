@@ -1,12 +1,13 @@
-#' @importFrom htmltools includeMarkdown
-#' @importFrom shiny fluidPage navbarPage tabPanel
+#' @import htmltools
+#' @import shiny 
 #' @importFrom shinycssloaders withSpinner
+#' 
 #' @importFrom reactable reactableOutput renderReactable
 app_ui <- function() {
   myspinner <- 6
   
   render_user_guide_if_needed()
-  
+
   
   fluidPage(
     

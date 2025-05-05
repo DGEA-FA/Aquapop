@@ -22,10 +22,6 @@
 #' @importFrom flextable set_caption flextable
 
 #' @export
-#'
-#' @examples
-#' croissance_compare_modele(data = specimen)$data
-#' croissance_compare_modele(data = specimen)$flextable
 croissance_compare_modele <- function(data, format = c("data.frame", "flextable")) {
   format <- match.arg(format)
   

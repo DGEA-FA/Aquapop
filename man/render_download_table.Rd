@@ -15,6 +15,10 @@ render_download_table(id, data, filename = NULL, label = NULL)
 
 \item{label}{(non utilisé ici – texte défini dans le \code{ui})}
 }
+\value{
+Un \code{downloadHandler} affecté à l’objet \code{output[[id]]}
+}
 \description{
-Crée un bouton de téléchargement pour un tableau (.xlsx)
+Cette fonction crée dynamiquement un bouton de téléchargement (Shiny) qui permet d’exporter un \code{data.frame}
+en format \code{.xlsx}, à partir d’un objet réactif ou non. Le bouton doit être déclaré côté \code{ui} avec l’\code{id} fourni.
 }

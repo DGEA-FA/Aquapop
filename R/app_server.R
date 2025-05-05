@@ -1,7 +1,8 @@
 #' @importFrom dplyr filter
 #' @importFrom glue glue
 #' @importFrom stringr str_extract
-#' @importFrom reactable colDef reactable
+#' @importFrom reactable colDef reactable getReactableState
+#' @import shiny 
 app_server <- function(input, output, session) {
 
 # Telechargement des donnees ----

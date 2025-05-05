@@ -23,7 +23,3 @@ Cette fonction ajuste trois modèles de croissance non linéaire (Von Bertalanff
 à un jeu de données de spécimens. Elle retourne un tableau comparatif des paramètres estimés, des
 intervalles de confiance et du critère d'information corrigé (AICc) pour chacun des modèles.
 }
-\examples{
-croissance_compare_modele(data = specimen)$data
-croissance_compare_modele(data = specimen)$flextable
-}

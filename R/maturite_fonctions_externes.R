@@ -10,7 +10,9 @@
 # ---
 
 #' Test d'ajustement de Osius & Rojek
-
+#' @param obj Un objet de modèle de type `glm` ajusté avec une famille binomiale.
+#'
+#' @return Une valeur p (`p.value`) du test d’overdispersion.
 o.r.test <- function(obj) {
   mf <- obj$model
   trials <- rep(1, times = nrow(mf))
@@ -33,7 +35,7 @@ o.r.test <- function(obj) {
   J <- nrow(mf)
   A <- 2*(J - sum(1/trials))
   z <- (pearson - (J - ncol(vars) - 1))/sqrt(A + rss)
-  p.value <- 2*(1 - pnorm(abs(z)))
+  p.value <- 2*(1 - stats::pnorm(abs(z)))
   return(p.value)
 }
 
@@ -65,7 +67,7 @@ ld_delta <- function(object, p, cf, level) {
   se <- attr(dose_object, "SE")[parm]
   p <- attr(dose_object, "p")[parm]
   dose_object <- as.vector(dose_object[parm])
-  z <- sqrt(qchisq(level, 1))
+  z <- sqrt(stats::qchisq(level, 1))
   res <- cbind(lower = dose_object - z*se,
                estimate = dose_object,
                upper = dose_object + z*se)
@@ -89,7 +91,7 @@ fieller_ci <- function(b, xi, v, chi2) {
     iter <- iter + 1
     if(iter > maxit) stop("maximum number of iterations exceeded")
   }
-  low <- uniroot(fieller_ofun, interval = c(xl, min(xhat, xl + 1)),
+  low <- stats::uniroot(fieller_ofun, interval = c(xl, min(xhat, xl + 1)),
                  b = b, xi = xi, v = v, chi2 = chi2)$root
   xu <- xhat + 1
   iter <- 1
@@ -98,16 +100,16 @@ fieller_ci <- function(b, xi, v, chi2) {
     iter <- iter + 1
     if(iter > maxit) stop("maximum number of iterations exceeded")
   }
-  upp <- uniroot(fieller_ofun, interval = c(max(xhat, xu - 1), xu),
+  upp <- stats::uniroot(fieller_ofun, interval = c(max(xhat, xu - 1), xu),
                  b = b, xi = xi, v = v, chi2 = chi2)$root
   return(c(lower = as.vector(low), estimate = as.vector(xhat), upper = as.vector(upp)))
 }
 
 ld_fieller <- function(object, cf = 1:2, p = 0.5, level = 0.95) {
   b <- coef(object)[cf]
-  V <- vcov(object)[cf, cf]
+  V <- stats::vcov(object)[cf, cf]
   xiv <- family(object)$linkfun(p)
-  chi2 <- qchisq(level, df = 1)
+  chi2 <- stats::qchisq(level, df = 1)
   
   R <- NULL
   for(xi in xiv) {
@@ -143,7 +145,7 @@ prof_ci <- function(b, xi, fam, Y, X0, x, etastart, wts, control, chi2, D0, off)
     iter <- iter + 1
     if(iter > maxit) stop("maximum number of iterations exceeded")
   }
-  low <- uniroot(prof_ofun, interval = c(theta_p_l, min(theta_p, theta_p_l+1)),
+  low <- stats::uniroot(prof_ofun, interval = c(theta_p_l, min(theta_p, theta_p_l+1)),
                  fam = fam, Y = Y, X0 = X0, x = x, etastart = etastart,
                  wts = wts, control = control, chi2 = chi2, D0 = D0, off = off)$root
   theta_p_u <- theta_p+1
@@ -153,7 +155,7 @@ prof_ci <- function(b, xi, fam, Y, X0, x, etastart, wts, control, chi2, D0, off)
     iter <- iter + 1
     if(iter > maxit) stop("maximum number of iterations exceeded")
   }
-  upp <- uniroot(prof_ofun, interval = c(max(theta_p, theta_p_u-1), theta_p_u),
+  upp <- stats::uniroot(prof_ofun, interval = c(max(theta_p, theta_p_u-1), theta_p_u),
                  fam = fam, Y = Y, X0 = X0, x = x, etastart = etastart,
                  wts = wts, control = control, chi2 = chi2, D0 = D0, off = off)$root
   c(lower = as.vector(low), estimate = as.vector(theta_p), upper = as.vector(upp))
@@ -167,13 +169,13 @@ prof <- function(b, xi, R, fam, Y, X0, x, etastart, wts, control, chi2, D0, off,
   dev.x <- seq(theta_p - inc, theta_p + inc, length=50)
   dev.y <- prof_ofun(dev.x, fam, Y, X0, x, etastart, wts, control, chi2, D0, off) + dc
   plot(dev.x, dev.y, type="l", ylab="Deviance", las=1, ...)
-  abline(h=dc, lty=2)
-  arrows(R, c(0,0,0), R, c(dc,min(dev.y),dc), 
+  graphics::abline(h=dc, lty=2)
+  graphics::arrows(R, c(0,0,0), R, c(dc,min(dev.y),dc), 
          code = 3, length = 0, lty = 2)
-  points(R[c(1,3)], rep(par("usr")[3], 2), xpd = TRUE, pch = 16, cex = .8)
-  points(R[2], par("usr")[3], xpd = TRUE, pch = "*", cex = 1.8)
+  graphics::points(R[c(1,3)], rep(graphics::par("usr")[3], 2), xpd = TRUE, pch = 16, cex = .8)
+  graphics::points(R[2], graphics::par("usr")[3], xpd = TRUE, pch = "*", cex = 1.8)
   #axis(1, at = R[c(1,3)], labels = FALSE)
-  text(x = R[c(1,3)], par("usr")[3], cex = .7,
+  graphics::text(x = R[c(1,3)], graphics::par("usr")[3], cex = .7,
        labels = c("lower limit","upper limit"), 
        xpd = TRUE, srt = 45, pos = 1)
 }
@@ -186,7 +188,7 @@ ld_proflik <- function(object, cf = 1:2, p = 0.5, level = 0.95, profile = FALSE,
   x <- X[, cf[2]]
   b <- as.vector(coef(object)[cf])
   etastart <- object$linear.predictors
-  wts <- weights(object)
+  wts <- stats::weights(object)
   originalOffset <- if(is.null(o <- object$offset)) {
     0
   } else {
@@ -194,8 +196,8 @@ ld_proflik <- function(object, cf = 1:2, p = 0.5, level = 0.95, profile = FALSE,
   }
   control <- object$control
   xiv <- fam$linkfun(p)
-  chi2 <- qchisq(level, 1)
-  D0 <- deviance(object)
+  chi2 <- stats::qchisq(level, 1)
+  D0 <- stats::deviance(object)
   R <- NULL
   for(xi in xiv) {
     off <- originalOffset + xi
@@ -222,7 +224,7 @@ print.LR_glm_dose <- function(x, ...) {
 ld_boot <- function(object, p = 0.5, cf = 1:2, level = 0.95, nboot = 1000,
                     interval_type = c("eti","hdi")) {
   data <- object$data
-  fmla <- formula(delete.response(terms(formula(object))))
+  fmla <- formula(stats::delete.response(terms(formula(object))))
   X <- model.matrix(fmla, data = data)
   original_d_hat <- dose.p(object, p = p, cf = cf)
   
@@ -303,7 +305,7 @@ ld_boot <- function(object, p = 0.5, cf = 1:2, level = 0.95, nboot = 1000,
 ld_boot_nonpar <- function(object, p = 0.5, cf = 1:2, level = 0.95, nboot = 1000,
                            interval_type = c("eti","hdi","bca","all")) {
   data <- object$data
-  fmla <- formula(delete.response(terms(formula(object))))
+  fmla <- formula(stats::delete.response(terms(formula(object))))
   X <- model.matrix(fmla, data = data)
   original_d_hat <- dose.p(object, p = p, cf = cf)
   
@@ -462,9 +464,9 @@ model
                     model.file = textConnection(model_code),
                     progress.bar = progress.bar,
                     n.chains = n.chains, n.burnin = n.burnin, n.iter = n.iter, n.thin = n.thin,
-                    inits = list(list(beta = coef(object) + rnorm(model_data$N_betas, 0, .001)),
-                                 list(beta = coef(object) + rnorm(model_data$N_betas, 0, .001)),
-                                 list(beta = coef(object) + rnorm(model_data$N_betas, 0, .001))))
+                    inits = list(list(beta = coef(object) + stats::rnorm(model_data$N_betas, 0, .001)),
+                                 list(beta = coef(object) + stats::rnorm(model_data$N_betas, 0, .001)),
+                                 list(beta = coef(object) + stats::rnorm(model_data$N_betas, 0, .001))))
   
   ld_post <- model_run$BUGSoutput$sims.list$ld
   ld_quantile <- as.numeric(apply(ld_post, 2, quantile, prob = c((1-level)/2, (1+level)/2)))
@@ -493,7 +495,7 @@ print.ld_bayesian <- function(x, ...) {
 ld_montecarlo <- function(object, p = 0.5, cf = 1:2, level = 0.95, nboot = 1000,
                           interval_type = c("eti","hdi","bca","all")) {
   original_d_hat <- dose.p(object, p = p, cf = cf)
-  varcovar_mat <- vcov(object)[cf,cf]
+  varcovar_mat <- stats::vcov(object)[cf,cf]
   mean_vec <- coef(object)[cf]
   
   beta_sim <- rmvnorm(n = nboot, mean = mean_vec, sigma = varcovar_mat)
@@ -578,12 +580,12 @@ get_bca <- function(object, p, cf, d_hat, original_d_hat, nboot, level) {
   for(i in 1:n) {
     u[i] <- as.numeric(dose.p(update(object, data = object$data[-i,]), p = p, cf = cf))
   }
-  z0 <- qnorm(sum(d_hat < original_d_hat)/nboot)
+  z0 <- stats::qnorm(sum(d_hat < original_d_hat)/nboot)
   uu <- mean(u) - u
   acc <- sum(uu * uu * uu)/(6 * (sum(uu * uu))^1.5)
-  zalpha <- qnorm(alpha)
-  tt <- pnorm(z0 + (z0 + zalpha)/(1 - acc * (z0 + zalpha)))
-  confpoints <- as.numeric(quantile(x = d_hat, probs = tt, type = 1))
+  zalpha <- stats::qnorm(alpha)
+  tt <- stats::pnorm(z0 + (z0 + zalpha)/(1 - acc * (z0 + zalpha)))
+  confpoints <- as.numeric(stats::quantile(x = d_hat, probs = tt, type = 1))
   return(confpoints)
 }
 

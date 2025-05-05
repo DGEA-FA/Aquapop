@@ -33,7 +33,7 @@ mortalite_get_peak_plus(df) # retourne 4 (mode = 3, +1)
 
 # Cas avec ex aequo : le plus petit est retenu
 df <- data.frame(age = c(2, 2, 3, 3))
-mortalite_get_peak_plus(df) # retourne 3 (mode = 2 ou 3, on retient 2 + 1)
+mortalite_get_peak_plus(df) # retourne 3
 
 # Données avec NA
 df <- data.frame(age = c(NA, 2, 2, NA, 3))

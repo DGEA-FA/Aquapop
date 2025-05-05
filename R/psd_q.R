@@ -7,13 +7,10 @@
 #' ainsi qu’un intervalle de confiance à 95 %, calculé selon une méthode binomiale.
 #'
 #' @importFrom flextable flextable
-#' @importFrom dplyr select
+#' @importFrom dplyr select rename mutate filter
+#' @importFrom stats rnorm xtabs
 #' @importFrom glue glue
-#' @importFrom dplyr rename
-#' @importFrom FSA psdCI
-#' @importFrom FSA lencat
-#' @importFrom dplyr mutate
-#' @importFrom dplyr filter
+#' @importFrom FSA psdCI lencat
 #' @param data Un `data.frame` contenant les données pour une seule espèce.
 #'             Doit inclure les colonnes :
 #'             - `ltm` : Longueur totale (en mm)

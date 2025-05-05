@@ -12,11 +12,6 @@
 #' @importFrom dplyr filter pull
 #'
 #' @export
-#'
-#' @examples
-#' cpue <- cpue_prepare(capture, specimen, group = "tous")
-#' tableau <- modele_cpue_comparaison(cpue, format = "data.frame")
-#' cpue_select_best_modele(tableau)
 cpue_select_best_modele <- function(tablemodele) {
   if (!"Méthode" %in% names(tablemodele) || !"AICc" %in% names(tablemodele)) {
     stop("Le tableau fourni n’est pas valide. Assurez-vous qu’il provient de `modele_cpue_comparaison()`.")

@@ -27,14 +27,14 @@
 #'   \item{Z}{Coefficient d'âge (valeur absolue)}
 #'   \item{SE}{Erreur standard de Z}
 #'   \item{A}{Taux de mortalité annuel estimé (%)}
-#'   \item{IC 95%}{Intervalle de confiance de A (format "[min-max]")}
+#'   \item{IC 95%}{Intervalle de confiance de A (bornes min–max)}
 #'   \item{commentaire}{Appréciation qualitative de l’ajustement}
 #'   \item{convergence}{Convergence du modèle (booléen)}
 #'   \item{nb_iterations_hnp}{Nombre d’itérations HNP effectuées}
 #' }
 #'
 #' @examples
-#' df_fake <- tibble(age = 1:6, number = c(180, 120, 70, 40, 25, 10))
+#' df_fake <- tibble::tibble(age = 1:6, number = c(180, 120, 70, 40, 25, 10))
 #' mortalite_fit_modele_gp(df_fake)
 #'
 #' @export

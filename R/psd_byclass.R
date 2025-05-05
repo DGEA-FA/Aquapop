@@ -97,17 +97,17 @@ psd_byclass <- function(data) {
     table_resumee,
     by = c("classe", "intervalle"),
     all.x = TRUE
-  ) %>%
+  ) |>
     mutate(
       classe = factor(classe, levels = noms_classes),
       freq   = round(as.numeric(freq), 0),
       freq   = ifelse(is.na(freq), "0", freq),
       n      = replace_na(n, 0)
-    ) %>%
+    ) |>
     arrange(classe)
   
   # Ajout de la classe <P (non incluse dans gcat)
-  table_finale[1, "n"] <- data %>%
+  table_finale[1, "n"] <- data |>
     filter(sp == espece, ltm < seuil_min_stock) |>
     summarise(n = n()) |>
     pull(n)
