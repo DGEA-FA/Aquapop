@@ -1,6 +1,7 @@
 #' @importFrom dplyr filter
 #' @importFrom glue glue
 #' @importFrom stringr str_extract
+#' @importFrom DT renderDT
 #' @importFrom reactable colDef reactable getReactableState
 #' @import shiny 
 app_server <- function(input, output, session) {
@@ -156,11 +157,11 @@ app_server <- function(input, output, session) {
     updateTabsetPanel(inputId = "switcher", selected = input$controller)
   })
  
-  output$table_lac      <- renderDataTable(data_lac(), options = list(pageLength = 10, autoWidth = TRUE, searching = FALSE))
-  output$table_station  <- renderDataTable(data_station(), options = list(pageLength = 10, autoWidth = TRUE, searching = FALSE))
-  output$table_specimen  <- renderDataTable(specimen(), options = list(pageLength = 10, autoWidth = TRUE, searching = FALSE))
-  output$table_specimen_valid  <- renderDataTable(specimen_valid(), options = list(pageLength = 10, autoWidth = TRUE, searching = FALSE))
-  output$table_capture <- renderDataTable(capture(), options = list(pageLength = 10, autoWidth = TRUE, searching = FALSE))
+  output$table_lac      <- renderDT(data_lac(), options = list(pageLength = 10, autoWidth = TRUE, searching = FALSE))
+  output$table_station  <- renderDT(data_station(), options = list(pageLength = 10, autoWidth = TRUE, searching = FALSE))
+  output$table_specimen  <- renderDT(specimen(), options = list(pageLength = 10, autoWidth = TRUE, searching = FALSE))
+  output$table_specimen_valid  <- renderDT(specimen_valid(), options = list(pageLength = 10, autoWidth = TRUE, searching = FALSE))
+  output$table_capture <- renderDT(capture(), options = list(pageLength = 10, autoWidth = TRUE, searching = FALSE))
   
   
   filename_suffix <- reactive({

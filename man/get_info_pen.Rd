@@ -2,33 +2,31 @@
 % Please edit documentation in R/get_info_pen.R
 \name{get_info_pen}
 \alias{get_info_pen}
-\title{Obtenir les informations biologiques associées à une espèce ou un type de pêche}
+\title{Obtenir les métadonnées biologiques d'une espèce ou d'un type de pêche}
 \usage{
 get_info_pen(input)
 }
 \arguments{
-\item{input}{Une chaîne de caractères indiquant un code d'espèce (ex : \code{"SANA"})
-ou un type de pêche (ex : \code{"PENT"}). Utilisé pour chercher l'entrée correspondante dans \code{pen_constants}.}
+\item{input}{Un code d’espèce (ex: \code{"SANA"}) ou un type de pêche (ex: \code{"PENT"}), au format \code{character(1)}.}
 }
 \value{
 Une liste nommée contenant :
 \describe{
 \item{code_sp}{Code de l’espèce (ex: \code{"SAFO"})}
 \item{nom_sp}{Nom complet de l’espèce (ex: \code{"Omble de fontaine"})}
-\item{binwidth}{Largeur des classes pour histogramme}
-\item{breaks}{Vecteur des bornes de classes}
-\item{break_labels}{Étiquettes associées aux classes}
+\item{binwidth}{Largeur des classes pour les histogrammes}
+\item{breaks}{Vecteur des bornes de classes numériques}
+\item{break_labels}{Étiquettes textuelles associées aux bornes}
 }
-
-Retourne \code{NULL} si le code d’espèce est inconnu dans \code{pen_constants}.
+Retourne \code{NULL} si l’entrée est invalide ou inconnue dans \code{pen_constants}.
 }
 \description{
-Cette fonction retourne les métadonnées définies dans \code{pen_constants} pour une espèce cible.
-L’entrée doit être un code d’espèce (\code{"SANA"}, \code{"SAFO"}, \code{"SAVI"}) ou un type de pêche
-(\code{"PENT"}, \code{"PENOF"}, \code{"PENDJ"}), auquel cas le code d’espèce sera automatiquement déduit.
+Cette fonction retourne les métadonnées associées à une espèce cible, à partir
+du tableau \code{pen_constants}. Elle accepte soit un code d’espèce (\code{"SANA"}, \code{"SAFO"}, \code{"SAVI"}),
+soit un type de pêche (\code{"PENT"}, \code{"PENOF"}, \code{"PENDJ"}), auquel cas le code espèce est automatiquement déduit.
 }
-\examples{
-get_info_pen("SAFO")
-get_info_pen("PENT")
-
+\details{
+Le tableau \code{pen_constants} est une table interne (data.frame ou tibble)
+contenant les métadonnées des espèces ciblées. Il doit inclure les colonnes :
+\code{sp}, \code{nom_sp}, \code{binwidth}, \code{breaks}, \code{break_labels}.
 }

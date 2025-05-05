@@ -7,20 +7,21 @@
 mortalite_prepare_extended(df_corrigee, age_max)
 }
 \arguments{
-\item{df_corrigee}{Un \code{data.frame} avec les colonnes \code{age} et \code{number} produit par
-\code{mortalite_prepare_corr()}.}
+\item{df_corrigee}{Un \code{data.frame} contenant les colonnes \code{age} (âge) et \code{number} (fréquence),
+généralement produit par la fonction \code{mortalite_prepare_corr()}.}
 
-\item{age_max}{Âge maximal observé (typiquement obtenu avec \code{mortalite_get_age_max()}).}
+\item{age_max}{Un entier indiquant l’âge maximal observé (souvent issu de \code{mortalite_get_age_max()}).}
 }
 \value{
-Un \code{data.frame} contenant les âges observés + les âges étendus avec \code{number = 0}.
+Un \code{data.frame} combinant les âges observés avec les âges fictifs ajoutés, avec \code{number = 0}.
+Les lignes sont triées par âge croissant.
 }
 \description{
 Cette fonction ajoute des classes d’âge fictives avec un nombre de captures nul (\code{number = 0})
-au-delà de l’âge maximal observé, jusqu’à trois fois cet âge. Cette étape est décrite
-dans Mainguy et Moral (2021) et permet d’améliorer l’ajustement des modèles.
+au-delà de l’âge maximal observé, jusqu’à trois fois cet âge. Cette étape permet d'améliorer
+l’ajustement de certains modèles de mortalité (voir Mainguy & Moral, 2021).
 }
 \examples{
-df_etendue <- mortalite_prepare_extended(df_corrigee, age_max = 10)
-print(df_etendue)
+df <- data.frame(age = 2:5, number = c(4, 3, 2, 1))
+mortalite_prepare_extended(df, age_max = 5)
 }

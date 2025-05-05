@@ -12,7 +12,6 @@ Imports:
     AER (>= 1.2.12),
     AICcmodavg (>= 2.3.3),
     checkmate,
-    DescTools (>= 0.99.54),
     dplyr (>= 1.1.4),
     DT (>= 0.32),
     fishmethods (>= 1.12.1),
@@ -28,7 +27,6 @@ Imports:
     labelled,
     lubridate,
     MASS (>= 7.3.60.0.1),
-    markdown (>= 1.12),
     MuMIn (>= 1.47.5),
     mvtnorm,
     officer (>= 0.6.2),
@@ -54,6 +52,7 @@ Suggests:
     knitr,
     reactlog,
     graphics,
+    DescTools,
     utils,
     purrr,
     renv

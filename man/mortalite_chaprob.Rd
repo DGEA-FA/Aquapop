@@ -9,14 +9,25 @@ mortalite_chaprob(specimen, pp, age_max)
 \arguments{
 \item{specimen}{Un \code{data.frame} produit par \code{mortalite_prepare_corr()}, contenant une colonne \code{age}.}
 
-\item{pp}{Valeur du peak-plus.}
+\item{pp}{Valeur de "peak-plus", soit la classe d’âge au-delà de laquelle les âges sont regroupés.}
 
-\item{age_max}{Âge maximum observé.}
+\item{age_max}{Âge maximum à considérer dans le calcul.}
 }
 \value{
-Une liste avec deux éléments : \code{data} (tableau brut), \code{flextable} (tableau formaté).
+Une liste avec deux éléments :
+\describe{
+\item{data}{Un \code{data.frame} contenant les estimations de mortalité. Colonnes :  \code{z}, \code{se}, \code{a}, \code{ic_95}}
+\item{flextable}{Une version formatée du tableau, prête à être affichée ou exportée}
+}
 }
 \description{
-Cette fonction applique la méthode Chapman-Robson via \code{agesurv()}
-et retourne une liste contenant un tableau brut (\code{data.frame}) et une version formatée (\code{flextable}).
+Cette fonction applique la méthode Chapman-Robson via \code{fishmethods::agesurv()} pour estimer
+le coefficient de mortalité (Z) à partir d'une distribution d'âge, puis calcule le taux de mortalité (A).
+Elle retourne à la fois un tableau brut (\code{data.frame}) et une version formatée (\code{flextable}).
+}
+\examples{
+fake_data <- data.frame(age = c(2, 3, 3, 4, 4, 4, 5, 5, 6))
+mort <- mortalite_chaprob(fake_data, pp = 3, age_max = 6)
+mort$data
+mort$flextable
 }

@@ -4,7 +4,7 @@ library(tibble)
 library(stringr)
 
 # Étape 1 : lister les fonctions du package
-fonctions_nlstools <- getNamespaceExports("shinyBS")
+fonctions_nlstools <- getNamespaceExports("DescTools")
 
 # Étape 2 : définir les fichiers à analyser
 chemin_projet <- "C:/Users/bruca03/aqua_local/aquapop"

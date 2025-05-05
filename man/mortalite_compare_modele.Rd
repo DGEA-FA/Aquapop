@@ -21,8 +21,3 @@ Une liste contenant :
 Ajuste cinq modèles (Poisson, NB1, NB2, CMP, GP) sur les fréquences d’âge
 et retourne un tableau comparatif avec AICc, HNP, estimation de Z et A (\%), etc.
 }
-\examples{
-df_corr <- mortalite_prepare_corr(...)
-df_etendue <- mortalite_prepare_extended(df_corr, age_max = 10)
-mortalite_compare_modele_res <- mortalite_compare_modele(data = df_etendue)
-}

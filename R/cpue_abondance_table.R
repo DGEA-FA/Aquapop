@@ -44,47 +44,47 @@ cpue_abondance_table <- function(data,
   # Groupes de base
   tous <- tibble(
     group = "Tous",
-    abundance = total,
+    abondance = total,
     proportion = 100,
     mf_ratio = calculate_mf_ratio(sum(data$sexe == "M"), sum(data$sexe == "F"))
   )
   
   sexe_group <- data |>
-    count(sexe, name = "abundance") |>
+    count(sexe, name = "abondance") |>
     mutate(
       group = recode(sexe,
                             "F" = "Femelle",
                             "M" = "Mâle",
                             "IND" = "Sexe inconnu"
       ),
-      proportion = round(abundance / total * 100),
+      proportion = round(abondance / total * 100),
       mf_ratio = NA_character_
     ) |>
-    select(group, abundance, proportion, mf_ratio)
+    select(group, abondance, proportion, mf_ratio)
   
   repro_group <- data |>
     filter(maturite == "O", sexe %in% c("M", "F")) |>
-    count(sexe, name = "abundance") |>
+    count(sexe, name = "abondance") |>
     mutate(
       group = recode(sexe,
                             "F" = "Repro. actifs femelles",
                             "M" = "Repro. actifs mâles"
       ),
-      proportion = round(abundance / total * 100),
+      proportion = round(abondance / total * 100),
       mf_ratio = NA_character_
     ) |>
-    select(group, abundance, proportion, mf_ratio) |>
+    select(group, abondance, proportion, mf_ratio) |>
     complete(
       group = c("Repro. actifs femelles", "Repro. actifs mâles"),
-      fill = list(abundance = 0, proportion = 0, mf_ratio = NA_character_)
+      fill = list(abondance = 0, proportion = 0, mf_ratio = NA_character_)
     )
   
   inactif_group <- data |>
     filter(maturite == "N") |>
     summarise(
       group = "Immatures ou reprod. inactifs",
-      abundance = n(),
-      proportion = round(abundance / total * 100),
+      abondance = n(),
+      proportion = round(abondance / total * 100),
       mf_ratio = calculate_mf_ratio(sum(sexe == "M"), sum(sexe == "F"))
     )
   
@@ -92,8 +92,8 @@ cpue_abondance_table <- function(data,
     filter(maturite == "IND") |>
     summarise(
       group = "Statut reprod. inconnu",
-      abundance = n(),
-      proportion = round(abundance / total * 100),
+      abondance = n(),
+      proportion = round(abondance / total * 100),
       mf_ratio = calculate_mf_ratio(sum(sexe == "M"), sum(sexe == "F"))
     )
   
@@ -124,7 +124,7 @@ cpue_abondance_table <- function(data,
   table <- set_variable_labels(
     table,
     group = "Groupe",
-    abundance = "Nombre",
+    abondance = "Nombre",
     proportion = "Proportion (%)",
     cpue = "CPUE",
     ic95 = "IC 95%",

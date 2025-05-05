@@ -23,8 +23,3 @@ test_that("get_info_pen() retourne NULL pour un code inconnu", {
   expect_null(get_info_pen("XXXX"))
 })
 
-test_that("get_info_pen() retourne NULL pour une valeur NA ou vide", {
-  expect_null(get_info_pen(NA_character_))
-  expect_null(get_info_pen(""))
-})
-

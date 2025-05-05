@@ -1,32 +1,35 @@
-#' Obtenir les informations biologiques associées à une espèce ou un type de pêche
+#' Obtenir les métadonnées biologiques d'une espèce ou d'un type de pêche
 #'
-#' Cette fonction retourne les métadonnées définies dans `pen_constants` pour une espèce cible.
-#' L’entrée doit être un code d’espèce (`"SANA"`, `"SAFO"`, `"SAVI"`) ou un type de pêche
-#' (`"PENT"`, `"PENOF"`, `"PENDJ"`), auquel cas le code d’espèce sera automatiquement déduit.
+#' Cette fonction retourne les métadonnées associées à une espèce cible, à partir
+#' du tableau `pen_constants`. Elle accepte soit un code d’espèce (`"SANA"`, `"SAFO"`, `"SAVI"`),
+#' soit un type de pêche (`"PENT"`, `"PENOF"`, `"PENDJ"`), auquel cas le code espèce est automatiquement déduit.
 #'
-#' @param input Une chaîne de caractères indiquant un code d'espèce (ex : `"SANA"`)
-#' ou un type de pêche (ex : `"PENT"`). Utilisé pour chercher l'entrée correspondante dans `pen_constants`.
-#'
+#' @param input Un code d’espèce (ex: `"SANA"`) ou un type de pêche (ex: `"PENT"`), au format `character(1)`.
 #' @return Une liste nommée contenant :
 #' \describe{
 #'   \item{code_sp}{Code de l’espèce (ex: `"SAFO"`)}
 #'   \item{nom_sp}{Nom complet de l’espèce (ex: `"Omble de fontaine"`)}
-#'   \item{binwidth}{Largeur des classes pour histogramme}
-#'   \item{breaks}{Vecteur des bornes de classes}
-#'   \item{break_labels}{Étiquettes associées aux classes} 
+#'   \item{binwidth}{Largeur des classes pour les histogrammes}
+#'   \item{breaks}{Vecteur des bornes de classes numériques}
+#'   \item{break_labels}{Étiquettes textuelles associées aux bornes}
 #' }
-#' 
-#' Retourne `NULL` si le code d’espèce est inconnu dans `pen_constants`.
+#' Retourne `NULL` si l’entrée est invalide ou inconnue dans `pen_constants`.
 #'
-#' @importFrom dplyr pull filter
+#' @details
+#' Le tableau `pen_constants` est une table interne (data.frame ou tibble)
+#' contenant les métadonnées des espèces ciblées. Il doit inclure les colonnes :
+#' `sp`, `nom_sp`, `binwidth`, `breaks`, `break_labels`.
+#'
+#' @importFrom dplyr filter pull
 #' @importFrom tibble tibble
-#'
-#' @examples
-#' get_info_pen("SAFO")
-#' get_info_pen("PENT")
-#'
 #' @export
 get_info_pen <- function(input) {
+  # --- Validation de l’entrée ---
+  if (missing(input) || !is.character(input) || length(input) != 1 || is.na(input) || input == "") {
+    stop("`input` doit être une chaîne de caractères non vide représentant un code d'espèce ou un type de pêche.")
+  }
+  
+  # --- Traduction typ_pech → code d’espèce ---
   mapping_typ_pech <- tibble(
     typ_pech = c("PENT", "PENOF", "PENDJ"),
     sp       = c("SANA", "SAFO", "SAVI")
@@ -38,15 +41,17 @@ get_info_pen <- function(input) {
     input
   }
   
-  info <- pen_constants |> filter(sp == sp_code)
+  # --- Extraction dans le tableau pen_constants ---
+  info_sp <- pen_constants |> filter(sp == sp_code)
   
-  if (nrow(info) == 0) return(NULL)
+  if (nrow(info_sp) == 0) return(NULL)
   
-  list(
-    code_sp      = info$sp,
-    nom_sp       = info$nom_sp,
-    binwidth     = info$binwidth,
-    breaks       = info$breaks[[1]],
-    break_labels = info$break_labels[[1]]
-  )
+  # --- Construction de la liste de sortie ---
+  return(list(
+    code_sp      = info_sp$sp,
+    nom_sp       = info_sp$nom_sp,
+    binwidth     = info_sp$binwidth,
+    breaks       = info_sp$breaks[[1]],
+    break_labels = info_sp$break_labels[[1]]
+  ))
 }

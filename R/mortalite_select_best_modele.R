@@ -11,10 +11,6 @@
 #'
 #' @return Une chaîne de caractères (`Méthode`) correspondant au meilleur modèle.
 #' @export
-#'
-#' @examples
-#' mortalite_compare_modele_res_data <- mortalite_compare_modele(data = df_age_etendue)$data
-#' mortalite_select_best_modele(mortalite_compare_modele_res_data)
 mortalite_select_best_modele <- function(tablemodele) {
   if (!"Méthode" %in% names(tablemodele) || !"AICc" %in% names(tablemodele)) {
     stop("Le tableau fourni n’est pas valide. Assurez-vous qu’il provient de `mortalite_compare_modele()$data`.")

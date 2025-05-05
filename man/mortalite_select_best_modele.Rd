@@ -18,7 +18,3 @@ parmi Poisson, NB1, NB2, CMP et GP, basé sur le plus bas AICc parmi
 les modèles bien ajustés (ajustement HNP < 10). Si aucun modèle n’est
 bien ajusté, elle sélectionne celui avec le plus bas AICc global.
 }
-\examples{
-mortalite_compare_modele_res_data <- mortalite_compare_modele(data = df_age_etendue)$data
-mortalite_select_best_modele(mortalite_compare_modele_res_data)
-}

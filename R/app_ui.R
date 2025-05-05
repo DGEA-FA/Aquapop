@@ -1,7 +1,7 @@
 #' @import htmltools
 #' @import shiny 
 #' @importFrom shinycssloaders withSpinner
-#' 
+#' @importFrom DT DTOutput
 #' @importFrom reactable reactableOutput renderReactable
 app_ui <- function() {
   myspinner <- 6
@@ -87,11 +87,11 @@ app_ui <- function() {
               id = "switcher",
               type = "hidden",
               selected = NULL,
-              tabPanelBody("data_lac", dataTableOutput(outputId = "table_lac")),
-              tabPanelBody("data_station", dataTableOutput(outputId = "table_station")),
-              tabPanelBody("specimen", dataTableOutput(outputId = "table_specimen")),
-              tabPanelBody("specimen_valid", dataTableOutput(outputId = "table_specimen_valid")),
-              tabPanelBody("capture", dataTableOutput(outputId = "table_capture"))
+              tabPanelBody("data_lac", DTOutput(outputId = "table_lac")),
+              tabPanelBody("data_station", DTOutput(outputId = "table_station")),
+              tabPanelBody("specimen", DTOutput(outputId = "table_specimen")),
+              tabPanelBody("specimen_valid", DTOutput(outputId = "table_specimen_valid")),
+              tabPanelBody("capture", DTOutput(outputId = "table_capture"))
             )
           )
         )

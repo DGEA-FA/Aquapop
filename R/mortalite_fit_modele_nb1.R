@@ -35,7 +35,7 @@
 #' }
 #'
 #' @examples
-#' df_fake <- tibble(age = 1:6, number = c(180, 120, 70, 40, 25, 10))
+#' df_fake <- tibble::tibble(age = 1:6, number = c(180, 120, 70, 40, 25, 10))
 #' mortalite_fit_modele_nb1(df_fake)
 #'
 #' @export
