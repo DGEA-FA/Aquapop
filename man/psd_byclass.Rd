@@ -7,17 +7,36 @@
 psd_byclass(data)
 }
 \arguments{
-\item{data}{Un \code{data.frame} contenant au moins les colonnes \code{ltm} et \code{sp}.}
+\item{data}{Un \code{data.frame} filtré pour une seule espèce, contenant les colonnes \code{ltm} (longueur en mm)
+et \code{sp} (code espèce). La variable \code{ltm} est utilisée pour attribuer chaque poisson à une classe PSD.}
 }
 \value{
 Une liste contenant :
 \describe{
-\item{\code{data}}{Un \code{data.frame} résumant les fréquences par classe PSD.}
+\item{\code{data}}{Un \code{data.frame} résumant les fréquences par classe PSD, avec colonnes \code{classe},
+\code{intervalle}, \code{n} et \code{freq}.}
 \item{\code{flextable}}{Une version formatée du tableau (pour Word, Shiny, etc.).}
 \item{\code{plot}}{Un graphique en barres montrant la fréquence relative par classe.}
 }
 }
 \description{
 Cette fonction retourne le nombre de poissons et leur fréquence relative (\%) pour chaque
-classe de taille du PSD. Les données doivent être filtrées pour une seule espèce.
+classe de taille du PSD. Elle s'appuie sur les seuils définis dans \code{get_info_pen()} pour
+l'espèce analysée. Les données doivent être filtrées pour contenir une seule espèce.
+}
+\details{
+La fonction retourne un tableau de synthèse prêt à l'usage, un graphique et un \code{flextable}
+formaté pour des rapports Word ou des interfaces Shiny.
+}
+\examples{
+# Exemple avec données simulées
+data_ex <- tibble::tibble(
+  sp = rep("SANA", 100),
+  ltm = sample(100:1000, 100, replace = TRUE)
+)
+psd_byclass(data_ex)
+
+}
+\seealso{
+\code{\link[=get_info_pen]{get_info_pen()}}, \link{psd_classnames}
 }

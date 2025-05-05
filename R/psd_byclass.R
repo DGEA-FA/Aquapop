@@ -11,8 +11,9 @@
 #' @importFrom ggplot2 scale_x_discrete ylab scale_y_continuous xlab geom_bar aes ggplot
 #' @importFrom tidyr replace_na
 #' @importFrom tibble tibble
-#' @importFrom dplyr select rename
+#' @importFrom dplyr select
 #' @importFrom plyr mapvalues
+#' @importFrom janitor clean_names
 #' @importFrom FSA lencat
 #' @importFrom labelled set_variable_labels
 #'
@@ -22,7 +23,7 @@
 #' @return Une liste contenant :
 #' \describe{
 #'   \item{`data`}{Un `data.frame` résumant les fréquences par classe PSD, avec colonnes `classe`,
-#'     `Intervalle (mm)`, `n` et `%`.}
+#'     `intervalle`, `n` et `freq`.}
 #'   \item{`flextable`}{Une version formatée du tableau (pour Word, Shiny, etc.).}
 #'   \item{`plot`}{Un graphique en barres montrant la fréquence relative par classe.}
 #' }
@@ -69,9 +70,15 @@ psd_byclass <- function(data) {
   
   donnees_classes <- merge(donnees_classes, n_par_classe, by = c("gcat", "classe", "intervalle"))
   
-  table_frequence <- (prop.table(xtabs(~ gcat, data = donnees_classes)) * 100) |>
-    as.data.frame() |>
-    rename(freq = Freq)
+  
+  if (nrow(donnees_classes) == 0) {
+    table_frequence <- tibble(gcat = factor(levels = seuils_psd), freq = numeric(0))
+  } else {
+    table_frequence <- (prop.table(xtabs(~ gcat, data = donnees_classes)) * 100) |>
+      as.data.frame() |>
+      clean_names()
+  }
+  
   
   donnees_classes <- merge(donnees_classes, table_frequence, by = "gcat")
   
