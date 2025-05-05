@@ -9,16 +9,16 @@ cpue_prepare(capture, specimen, group = c("tous", "femelles"))
 \arguments{
 \item{capture}{Un \code{data.frame} de captures, contenant au minimum les colonnes \code{no_station}, \code{nb_capture}, \code{nb_pese}.}
 
-\item{specimen}{Un \code{data.frame} de spécimens, déjà filtré pour l’espèce et les stations pertinentes.}
+\item{specimen}{Un \code{data.frame} de spécimens, déjà filtré pour une seule espèce, les stations valides et aléatoires.}
 
-\item{group}{Une chaîne de caractères, \code{"tous"} (valeur par défaut) ou \code{"femelles"}, indiquant le groupe à analyser.}
+\item{group}{Une chaîne de caractères, "tous" (valeur par défaut) ou "femelles", indiquant le groupe à analyser.}
 }
 \value{
 Un \code{data.frame} contenant les colonnes suivantes :
 \describe{
 \item{no_station}{Identifiant de la station}
 \item{CPUE}{Nombre de spécimens observés à la station, divisé par l’effort (station)}
-\item{Group}{Libellé du groupe analysé : \code{"Tous"} ou \code{"Femelles"}}
+\item{Group}{Libellé du groupe analysé : "Tous" ou "Femelles"}
 }
 }
 \description{
@@ -28,5 +28,18 @@ soit la CPUE restreinte aux femelles, selon l’argument \code{group}.
 }
 \details{
 Elle suppose que les objets \code{capture} et \code{specimen} sont déjà filtrés pour ne contenir que les stations valides et aléatoires
-(par exemple via \code{get_analysis_data()}).
+(par exemple via \code{get_analysis_data()}) ainsi que les individus d’une seule espèce.
+}
+\examples{
+capture <- tibble::tibble(
+  no_station = c(1, 2),
+  nb_capture = c(3, 2),
+  nb_pese = c(3, 2)
+)
+specimen <- tibble::tibble(
+  no_station = c(1, 1, 2, 2, 2),
+  sexe = c("F", "M", "F", "F", "M")
+)
+cpue_prepare(capture, specimen, group = "femelles")
+
 }
