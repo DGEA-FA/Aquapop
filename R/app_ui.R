@@ -172,112 +172,18 @@ app_ui <- function() {
           
         )
       ),
-      # Panel 3 
       
       # Indice de condition ----
     
      mod_wri_ui("wri_1"),
-      # Panel 4
       
       # Croissance ----
      
-      tabPanel(
-        "Croissance",
-        
-        ## Tableau de sélection de modèles ----
-        
-        p("Si les trois modèles convergent, sélectionnez celui ayant le plus petit AICc. 
-     Prenez note également que le modèle de von Bertalanffy utilise la méthode pondérée 
-     avec t₀ variable. Attention : les IC95 % des prédictions ne peuvent pas être calculés 
-     à partir des IC95 % des estimations des paramètres L, K et t₀."),
-        
-        h3("Table de sélection du modèle de croissance"),
-        withSpinner(reactableOutput("table_modeles_croissance_table"), type = myspinner),
-        download_button_ui("download_table_modeles_croissance"),
-        
-        br(),
-        
-        ## Graphique du modele choisi ----
-        p("Le graphique suivant illustre la longueur observée des spécimens en fonction de leur âge, 
-     ainsi que la courbe de croissance modélisée selon le modèle sélectionné. Les points représentent 
-     les données observées, tandis que la ligne montre la prédiction du modèle."),
-        
-        h3("Longueur à l’âge des spécimens capturés et modèle de croissance"),
-        
-        div(
-          style = "max-width: 900px; margin: auto;",
-          withSpinner(plotOutput("selectedmodelcroissanceplot", height = "500px"), type = myspinner),
-          br(),
-          downloadButton("download_selectedmodelcroissanceplot", "Téléchargement du graphique")
-        )
-        
-        
-      ),
-      # Panel 5 
+     mod_croissance_ui("croissance_1"),
       
       # Mortalite ----
-      tabPanel(
-        title = "Mortalité",
-        
-        ## Test de sur-dispersion ----
-        h3("Test de sur-dispersion du modèle Poisson"),
-        
-        p("Ce test évalue si les données de mortalité par âge violent l’hypothèse d’équidispersion du modèle de Poisson. 
-    En cas de sur-dispersion, l’utilisation de modèles alternatifs est recommandée."),
-        
-        strong("Interprétation :"),
-        verbatimTextOutput("dispersion_msg"),
-        br(),
-        
-        div(
-          style = "max-width: 900px; margin: auto;",
-          withSpinner(plotOutput("plot_dispersion_poisson", height = "500px"), type = myspinner),
-          br(),
-          downloadButton("download_plot_dispersion_poisson", "Téléchargement du graphique")
-        ),
-        
-        br(),
-        
-        h4("Paramètre avancé : recalcul avec un autre Peak Plus"),
-        p("Par défaut, la valeur du Peak Plus est déterminée automatiquement selon la structure d’âge observée. 
-Vous pouvez toutefois forcer un recalcul avec une autre valeur."),
-        uiOutput("ui_custom_peak_plus"),
-        actionButton("recalculer_mortalite", "Recalculer avec ce Peak Plus"),
-        em(textOutput("texte_pp_utilise")),
-        
-        br(), br(),
-        
-        
-        ## Comparaison des modeles ----
-        p("Le tableau suivant présente les résultats pour l’ensemble des modèles testés. Le modèle le mieux adapté aux données est celui avec le plus faible AICc."),
-        
-        h3("Table de sélection du modèle de mortalité"),
-        withSpinner(reactableOutput("comparaison_mortalite_table"), type = myspinner),
-        download_button_ui("download_comparaison_mortalite_table"),
-        textOutput("phrase_mortalite"),
-        br(),
-        
-        ## Graphique du modele choisi ----
-        h3("Distribution d'âge et modèle de mortalité retenu"),
-        
-        div(
-          style = "max-width: 900px; margin: auto;",
-          withSpinner(plotOutput("plot_mortalite", height = "500px"), type = myspinner),
-          br(),
-          downloadButton("download_plot_mortalite", "Téléchargement du graphique")
-        ),
-        
-        br(),
-        
-        ## Chapman-Robson ----
-        p("La mortalité estimée selon le modèle de Chapman-Robson est présentée à titre comparatif seulement, car son utilisation n’est pas recommandée."),
-        
-        h3("Chapman-Robson"),
-        withSpinner(uiOutput("table_chaprob"), type = myspinner),
-        download_button_ui("download_chaprob_df")
-      ),
+     mod_mortalite_ui("mortalite_1"),
       
-      # Panel 6
       
       # Maturite sexuelle ----
       tabPanel(title = "Maturité sexuelle",

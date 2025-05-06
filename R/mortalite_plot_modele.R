@@ -47,7 +47,7 @@ mortalite_plot_modele <- function(specimen, modele, info_modele) {
   
   max_age <- max(donnees_age$age, na.rm = TRUE)
   max_y <- ceiling(max(table(donnees_age$age)) * 1.1)
-  nom_espece <- get_info_pen(unique(donnees_age$sp))$nom_sp
+  nom_espece <- get_info_pen(as.character(unique(donnees_age$sp)))$nom_sp
   
   # --- Prédiction du modèle ---
   donnees_prediction <- tibble(age = 0:(max_age + 2))
