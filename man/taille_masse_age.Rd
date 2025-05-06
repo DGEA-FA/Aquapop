@@ -2,22 +2,35 @@
 % Please edit documentation in R/taille_masse_age.R
 \name{taille_masse_age}
 \alias{taille_masse_age}
-\title{Génère un tableau morphologique (taille, masse, âge) au format brut et flextable}
+\title{Tableau des statistiques morphologiques (taille, masse, âge)}
 \usage{
 taille_masse_age(data)
 }
 \arguments{
-\item{data}{Un data.frame contenant les colonnes \code{ltm}, \code{masse}, \code{age}, \code{sexe} et \code{maturite}.}
+\item{data}{Un \code{data.frame} contenant au minimum les colonnes \code{ltm}, \code{masse}, \code{age}, \code{sexe} et \code{maturite}.}
 }
 \value{
-Une liste contenant deux éléments :
+Une liste avec deux éléments :
 \describe{
-\item{data}{Tableau brut (\code{data.frame}) des statistiques morphologiques}
-\item{flextable}{Version mise en page du tableau avec \code{flextable}}
+\item{data}{Tableau brut (\code{data.frame}) des statistiques morphologiques par groupe}
+\item{flextable}{Tableau mis en forme avec \code{flextable} pour affichage ou export}
 }
 }
 \description{
-Cette fonction calcule des statistiques descriptives (N, moyenne, écart-type, min, max)
-pour la longueur totale (ltm), la masse et l'âge des spécimens, regroupés par sexe et statut reproducteur.
-Elle retourne à la fois un \code{data.frame} brut et un tableau \code{flextable} mis en page.
+Calcule des statistiques descriptives (effectif, moyenne, écart-type, minimum, maximum)
+pour la longueur totale (ltm), la masse et l'âge des spécimens, selon différents groupes
+biologiques (sexe et statut reproducteur). Retourne à la fois un tableau brut (\code{data.frame})
+et une version formatée avec \code{flextable}.
+}
+\examples{
+data_exemple <- data.frame(
+  ltm = c(150, 180, 170, 190, NA),
+  masse = c(80, 90, 85, 95, NA),
+  age = c(2, 3, 2, 3, NA),
+  sexe = c("M", "F", "F", "M", "IND"),
+  maturite = c("O", "O", "N", "N", "IND")
+)
+res <- taille_masse_age(data_exemple)
+res$data
+if (requireNamespace("flextable", quietly = TRUE)) res$flextable
 }

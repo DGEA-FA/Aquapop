@@ -15,3 +15,6 @@ fs::dir_tree(path = ".", depth = 2)
 
 
 
+tools::showNonASCIIfile("R/taille_masse_age.R")
+stringi::stri_escape_unicode("Écart-type, Âge, Mâle, à, prêt, résumé")
+?taille_masse_age

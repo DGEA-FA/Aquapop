@@ -1,24 +1,36 @@
-#' Génère un tableau morphologique (taille, masse, âge) au format brut et flextable
+#' Tableau des statistiques morphologiques (taille, masse, âge)
 #'
-#' Cette fonction calcule des statistiques descriptives (N, moyenne, écart-type, min, max)
-#' pour la longueur totale (ltm), la masse et l'âge des spécimens, regroupés par sexe et statut reproducteur.
-#' Elle retourne à la fois un `data.frame` brut et un tableau `flextable` mis en page.
+#' Calcule des statistiques descriptives (effectif, moyenne, écart-type, minimum, maximum)
+#' pour la longueur totale (ltm), la masse et l'âge des spécimens, selon différents groupes
+#' biologiques (sexe et statut reproducteur). Retourne à la fois un tableau brut (`data.frame`)
+#' et une version formatée avec `flextable`.
+#'
+#' @param data Un `data.frame` contenant au minimum les colonnes `ltm`, `masse`, `age`, `sexe` et `maturite`.
+#'
+#' @return Une liste avec deux éléments :
+#' \describe{
+#'   \item{data}{Tableau brut (`data.frame`) des statistiques morphologiques par groupe}
+#'   \item{flextable}{Tableau mis en forme avec `flextable` pour affichage ou export}
+#' }
 #'
 #' @importFrom tidyselect starts_with ends_with
 #' @importFrom dplyr arrange recode filter bind_rows mutate inner_join rename_with group_by summarise sym
-#' @importFrom flextable border flextable merge_h set_header_df
 #' @importFrom tibble tibble
+#' @importFrom flextable flextable merge_h set_header_df border
 #' @importFrom officer fp_border
-#' @importFrom checkmate assert_numeric assert_subset
-#' @param data Un data.frame contenant les colonnes `ltm`, `masse`, `age`, `sexe` et `maturite`.
+#' @importFrom checkmate assert_data_frame assert_numeric assert_subset
 #'
-#' @return Une liste contenant deux éléments :
-#' \describe{
-#'   \item{data}{Tableau brut (`data.frame`) des statistiques morphologiques}
-#'   \item{flextable}{Version mise en page du tableau avec `flextable`}
-#' }
-#'
-#' @importFrom checkmate assert_data_frame assert_subset assert_numeric assert_character
+#' @examples
+#' data_exemple <- data.frame(
+#'   ltm = c(150, 180, 170, 190, NA),
+#'   masse = c(80, 90, 85, 95, NA),
+#'   age = c(2, 3, 2, 3, NA),
+#'   sexe = c("M", "F", "F", "M", "IND"),
+#'   maturite = c("O", "O", "N", "N", "IND")
+#' )
+#' res <- taille_masse_age(data_exemple)
+#' res$data
+#' if (requireNamespace("flextable", quietly = TRUE)) res$flextable
 #' @export
 taille_masse_age <- function(data) {
   
@@ -62,6 +74,7 @@ taille_masse_age <- function(data) {
     set_header_df(mapping = en_tete, key = "col_keys") |>
     merge_h(part = "header") |>
     border(i = 2, border.bottom = bordure_normale, part = "header") |>
+    set_caption("Aperçu des données morphologiques") |>
     style_flextable_aquapop()
   
   
@@ -85,15 +98,16 @@ taille_masse_age <- function(data) {
   ))
 }
 
-#' Regrouper les statistiques morphologiques par sexe et statut reproducteur
+#' Regrouper les statistiques morphologiques par groupe biologique
 #'
-#' Fonction interne. Applique `stats_morpho()` à différents sous-groupes définis
-#' par les variables `sexe` et `maturite`. Retourne un tableau consolidé prêt pour fusion.
+#' Fonction interne. Applique `stats_morpho()` à plusieurs sous-groupes définis
+#' par les variables `sexe` et `maturite`, et retourne un tableau consolidé prêt à fusionner.
 #'
-#' @param data Un `data.frame` contenant les données morphologiques.
-#' @param var Nom de la variable numérique à résumer (`"ltm"`, `"masse"`, `"age"`).
+#' @param data Un `data.frame` contenant les variables morphologiques.
+#' @param var Chaîne de caractères correspondant à la variable numérique à résumer (`"ltm"`, `"masse"`, `"age"`).
 #'
-#' @return Un `data.frame` avec une colonne `sexe` (groupe) et les statistiques associées.
+#' @return Un `data.frame` avec une colonne `sexe` (libellé du groupe) et les statistiques correspondantes.
+#'
 #' @keywords internal
 regrouper_stats_morpho <- function(data, var) {
   
@@ -128,19 +142,22 @@ regrouper_stats_morpho <- function(data, var) {
   return(table_groupes)
 }
 
-#' Calculer des statistiques descriptives sur une variable morphologique
+#' Statistiques descriptives sur une variable morphologique
 #'
 #' Fonction utilitaire interne. Résume une variable numérique (`ltm`, `masse`, `age`)
-#' par groupe (ou globalement), en calculant : N, moyenne, écart-type, minimum, maximum.
+#' globalement ou par groupe, en calculant le nombre de valeurs non manquantes, la moyenne,
+#' l’écart-type, le minimum et le maximum.
 #'
 #' @param data Un `data.frame` contenant la variable à résumer.
-#' @param var Nom de la variable numérique à résumer (chaîne de caractères).
-#' @param group_var Nom de la variable de regroupement (optionnel, ex: `"sexe"`).
+#' @param var Chaîne de caractères : nom de la variable numérique à résumer.
+#' @param group_var Chaîne de caractères : nom de la variable de regroupement (optionnelle).
+#'
+#' @return Un `data.frame` avec les statistiques résumées.
 #'
 #' @importFrom dplyr group_by summarise
 #' @importFrom rlang sym
 #' @importFrom stats sd
-#' @return Un `data.frame` avec les statistiques résumées, par groupe si applicable.
+#'
 #' @keywords internal
 stats_morpho <- function(data, var, group_var = NULL) {
   

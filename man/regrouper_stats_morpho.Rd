@@ -2,20 +2,20 @@
 % Please edit documentation in R/taille_masse_age.R
 \name{regrouper_stats_morpho}
 \alias{regrouper_stats_morpho}
-\title{Regrouper les statistiques morphologiques par sexe et statut reproducteur}
+\title{Regrouper les statistiques morphologiques par groupe biologique}
 \usage{
 regrouper_stats_morpho(data, var)
 }
 \arguments{
-\item{data}{Un \code{data.frame} contenant les données morphologiques.}
+\item{data}{Un \code{data.frame} contenant les variables morphologiques.}
 
-\item{var}{Nom de la variable numérique à résumer (\code{"ltm"}, \code{"masse"}, \code{"age"}).}
+\item{var}{Chaîne de caractères correspondant à la variable numérique à résumer (\code{"ltm"}, \code{"masse"}, \code{"age"}).}
 }
 \value{
-Un \code{data.frame} avec une colonne \code{sexe} (groupe) et les statistiques associées.
+Un \code{data.frame} avec une colonne \code{sexe} (libellé du groupe) et les statistiques correspondantes.
 }
 \description{
-Fonction interne. Applique \code{stats_morpho()} à différents sous-groupes définis
-par les variables \code{sexe} et \code{maturite}. Retourne un tableau consolidé prêt pour fusion.
+Fonction interne. Applique \code{stats_morpho()} à plusieurs sous-groupes définis
+par les variables \code{sexe} et \code{maturite}, et retourne un tableau consolidé prêt à fusionner.
 }
 \keyword{internal}

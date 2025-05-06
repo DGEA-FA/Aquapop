@@ -12,14 +12,12 @@ mod_taille_masse_age_ui <- function(id){
 
     tabPanel(
       title = "Taille, masse et âge moyens",
-      p("Le tableau suivant reprend les statistiques descriptives, soit le nombre de spécimens mesurés/pesés/âgés (N) 
-        ainsi que la moyenne (Moy.), l’écart-type (ET), les valeurs minimale (Min) et maximale (Max) de la longueur
-        totale maximale (LTMax), de la masse et de l’âge des poissons pour différents groupes."),
-      h3("Aperçu des données morphologiques"),
+      p("Ce tableau présente, par groupe biologique, le nombre de spécimens mesurés (N), 
+   la moyenne, l’écart-type (ÉT), ainsi que les valeurs minimale et maximale de 
+   la longueur totale (LTMax), de la masse et de l’âge."),
       withSpinner(uiOutput(ns("table")), type = myspinner),
       download_button_ui(ns("table_dl"))
     )
-
 }
 
 #' taille_masse_age Server Functions
@@ -46,7 +44,8 @@ mod_taille_masse_age_server <- function(id, specimen_valid, filename_suffix){
     render_download_table(
       "table_dl",
       data = reactive(taille_masse_age_res()$data),
-      filename = reactive(build_export_filename("taille_masse_age", filename_suffix()))
+      filename = reactive(build_export_filename("taille_masse_age", filename_suffix())),
+      label = "Télécharger le tableau (.xlsx)"
     )
   })
 }
