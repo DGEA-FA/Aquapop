@@ -349,30 +349,31 @@ app_server <- function(input, output, session) {
   
   
   # Indice de condition ----
+  mod_wri_server("wri_1", specimen = specimen_valid, filename_suffix = filename_suffix)
   
-  # Reactive : retourne la liste {data, flextable, plot_tous, plot_byclass}
-  wri_res <- reactive({
-    req(specimen_valid())
-    wri(data = specimen_valid())
-  })
-  
-  ## Tableau Wr ----
-  
-  render_table_flextable("wri_table", reactive(wri_res()$flextable))
-  render_download_table(
-    "wri_table_dl",
-    data = reactive(wri_res()$data),
-    filename = reactive(build_export_filename("wri", filename_suffix()))
-  )  
-  ## Graphique Wr par sexe ----
-  render_plot_ggplot("wri_plot_tous", reactive(wri_res()$plot_tous))
-  
-  render_download_plot("download_wri_plot_tous", reactive(wri_res()$plot_tous), filename_suffix = filename_suffix())
-  
-  ## Graphique Wr par classe de taille ----
-  render_plot_ggplot("wri_plot_byclass", reactive(wri_res()$plot_byclass))
-  render_download_plot("download_wri_plot_byclass", reactive(wri_res()$plot_byclass), filename_suffix = filename_suffix())
-  
+  # # Reactive : retourne la liste {data, flextable, plot_tous, plot_byclass}
+  # wri_res <- reactive({
+  #   req(specimen_valid())
+  #   wri(data = specimen_valid())
+  # })
+  # 
+  # ## Tableau Wr ----
+  # 
+  # render_table_flextable("wri_table", reactive(wri_res()$flextable))
+  # render_download_table(
+  #   "wri_table_dl",
+  #   data = reactive(wri_res()$data),
+  #   filename = reactive(build_export_filename("wri", filename_suffix()))
+  # )  
+  # ## Graphique Wr par sexe ----
+  # render_plot_ggplot("wri_plot_tous", reactive(wri_res()$plot_tous))
+  # 
+  # render_download_plot("download_wri_plot_tous", reactive(wri_res()$plot_tous), filename_suffix = filename_suffix())
+  # 
+  # ## Graphique Wr par classe de taille ----
+  # render_plot_ggplot("wri_plot_byclass", reactive(wri_res()$plot_byclass))
+  # render_download_plot("download_wri_plot_byclass", reactive(wri_res()$plot_byclass), filename_suffix = filename_suffix())
+  # 
 
   # Croissance ----
   ## Tableau de selection de modeles ----

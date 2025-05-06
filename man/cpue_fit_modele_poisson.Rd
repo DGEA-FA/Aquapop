@@ -34,7 +34,7 @@ trois simulations supplémentaires sont effectuées.
 }
 \examples{
 set.seed(1)
-fake_data <- tibble::tibble(no_station = 1:10, CPUE = rpois(10, lambda = 5))
+fake_data <- tibble::tibble(no_station = 1:10, CPUE = stats::rpois(10, lambda = 5))
 cpue_fit_modele_poisson(fake_data)
 
 }

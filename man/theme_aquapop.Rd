@@ -14,7 +14,7 @@ Applique un thème visuel conforme aux lignes directrices de présentation gouve
 Utilise la police Google "Open Sans", des marges harmonisées et une palette neutre.
 }
 \examples{
-ggplot(mtcars, aes(mpg, wt)) +
-  geom_point() +
+ggplot2::ggplot(mtcars, ggplot2::aes(mpg, wt)) +
+  ggplot2::geom_point() +
   theme_aquapop()
 }

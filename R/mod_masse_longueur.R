@@ -53,7 +53,9 @@ mod_masse_longueur_server <- function(id, specimen, filename_suffix) {
     })
     
     # Graphique
-    render_plot_ggplot(output_id =  "plot", plot =  reactive(fit_res()$plot))
+    render_plot_ggplot(
+      output_id =  "plot", 
+      plot =  reactive(fit_res()$plot))
     
     render_download_plot(
       "download_plot",

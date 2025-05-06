@@ -38,5 +38,5 @@ psd_byclass(data_ex)
 
 }
 \seealso{
-\code{\link[=get_info_pen]{get_info_pen()}}, \link{psd_classnames}
+\link{get_info_pen}, \link{psd_classnames}
 }

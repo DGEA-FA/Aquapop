@@ -69,7 +69,7 @@ wri <- function(data) {
     stop(glue("Colonnes manquantes : {paste(colonnes_absentes, collapse = ', ')}"))
   }
   
-  espece <- unique(data$sp)
+  espece <- as.character(unique(data$sp))
   if (length(espece) != 1) stop("Les données doivent contenir une seule espèce.")
   
   info_pen <- get_info_pen(espece)
