@@ -48,7 +48,7 @@ structure_age <- function(data, groupement = "tous") {
     }
   }
   
-  especes_uniques <- unique(data$sp)
+  especes_uniques <- as.character(unique(data$sp))
   assert(
     length(especes_uniques) == 1,
     "Les données doivent contenir une seule espèce (`sp`)."

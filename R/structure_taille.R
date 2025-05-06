@@ -17,7 +17,7 @@
 structure_taille <- function(data,
                              groupement = "tous") {
   # Vérifications
-  espece <- unique(data$sp)
+  espece <- as.character(unique(data$sp))
   if (length(espece) != 1) stop("Les données doivent contenir une seule espèce.")
   
   info <- get_info_pen(espece)

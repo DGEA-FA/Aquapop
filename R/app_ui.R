@@ -158,85 +158,10 @@ app_ui <- function() {
           
           
           # Structure de taille ----
-          tabPanel(
-            title = "Structure de taille",
-            
-            sidebarPanel(
-              radioButtons(
-                inputId = "groupetailleplot",
-                label = "Filtrer des poissons",
-                choices  = c(
-                  "Tous" = "tous",
-                  "Origine (marqué ou non-marqué)" = "marquage",
-                  "Sexe" = "sexe",
-                  "Statut reproducteur" = "maturite"
-                )
-              )
-            ),
-            
-            mainPanel(
-              p("La sélection des intervalles pour
-                les classes de taille est basée sur les recommandations de Anderson et Neumann (1996) 
-                et Neumann et al. (2012). Ainsi, des intervalles de 20 mm sont utilisés pour l’omble 
-                de fontaine, alors qu’ils sont de 50 mm pour le doré jaune et le touladi."),
-              h3("Histogramme de fréquence des longueurs"),
-              p("La figure ci-dessous représente l’histogramme de fréquence des
-                longueurs selon le filtre sélectionné à gauche."),
-              
-              div(
-                style = "max-width: 900px; margin: auto;",
-                withSpinner(plotOutput("structuretailleplot", height = "500px"), type = myspinner),
-                br(),
-                downloadButton("download_groupetailleplot", "Téléchargement du graphique")
-              ),
-              
-              br(),
-              
-          
-              download_button_ui("download_data4plot_taille",
-                             label = "Téléchargement des données du graphique"
-              )
-            )
-          ),
+          mod_structure_taille_ui("structure_taille_1"),
           
           # Structure d'age ----
-          tabPanel(
-            title = "Structure d'âge",
-            
-            sidebarPanel(
-              radioButtons(
-                inputId = "groupeageplot",
-                label = "Filtrer des poissons",
-                choices  = c(
-                  "Tous" = "tous",
-                  "Origine (marqué ou non-marqué)" = "marquage",
-                  "Sexe" = "sexe",
-                  "Statut reproducteur" = "maturite"
-                )
-              )
-            ),
-            
-            mainPanel(
-              p("L’histogramme de fréquence d'âge permettant de caractériser la structure d'âge 
-                de la population est réalisée avec la fonction geom_histogram de la librairie ggplot2 (Chang et al. 2021)."),
-              h3("Histogramme de fréquence des âges"),
-              p("La figure ci-dessous représente l’histogramme de fréquences des âges 
-                selon le filtre sélectionné à gauche."),
-              
-              div(
-                style = "max-width: 900px; margin: auto;",
-                withSpinner(plotOutput("structureageplot", height = "500px"), type = myspinner),
-                br(),
-                downloadButton("download_groupeageplot", "Téléchargement du graphique")
-              ),
-              
-              br(),
-             
-              download_button_ui("download_data4plot_age",
-                label = "Téléchargement des données du graphique"
-              )
-            )
-          ),
+          mod_structure_age_ui("structure_age_1"),
           
           # PSD ----
           mod_psd_ui("psd_1"),
@@ -250,47 +175,7 @@ app_ui <- function() {
       # Panel 3 
       
       # Indice de condition ----
-     #  tabPanel(
-     #    title = "Indice de condition",
-     #    
-     #    # Tableau Wr
-     #    p("Le tableau ci-dessous présente l’indice de masse relative (Wr) et son intervalle de confiance 
-     # à 95 % pour l’ensemble de la population, par sexe et par classe de PSD (classe selon 
-     # Gabelhouse 1984)."),
-     #    uiOutput("wri_table"),
-     #    download_button_ui("wri_table_dl"),
-     #    
-     #    br(),
-     #    
-     #    # Graphique Wr par sexe
-     #    p("Le graphique suivant illustre, pour chaque spécimen capturé, l’indice de condition en 
-     # fonction de la longueur totale maximale et du sexe. La valeur moyenne est indiquée par une 
-     # ligne pointillée en rouge (tous), en bleu foncé (femelles) et en bleu pâle. La ligne en gris 
-     # représente la référence standard pour l’espèce selon Hyatt & Hubert 2011 (SAFO), 
-     # Murphy et al. 1990 (SAVI) et Piccolo et al. 1993 (SANA)."),
-     #    h3("Indice de condition (Wr) selon la longueur et le sexe"),
-     #    
-     #    div(
-     #      style = "max-width: 900px; margin: auto;",
-     #      withSpinner(plotOutput("wri_plot_tous", height = "500px"), type = myspinner),
-     #      br(),
-     #      downloadButton("download_wri_plot_tous", "Téléchargement du graphique")
-     #    ),
-     #    
-     #    br(),
-     #    
-     #    # Graphique Wr par classe de taille
-     #    p("Ce graphique présente la variation de l’indice de condition selon les classes de PSD. 
-     # Les valeurs moyenne et les intervalles de confiance sont illustrés."),
-     #    h3("Indice de condition (Wr) moyen par classe de taille"),
-     #    
-     #    div(
-     #      style = "max-width: 900px; margin: auto;",
-     #      plotOutput("wri_plot_byclass", height = "500px"),
-     #      br(),
-     #      downloadButton("download_wri_plot_byclass", "Téléchargement du graphique")
-     #    )
-     #  )
+    
      mod_wri_ui("wri_1"),
       # Panel 4
       

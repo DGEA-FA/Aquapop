@@ -281,55 +281,11 @@ app_server <- function(input, output, session) {
   
   # Structure de taille ----
   
-  # Resultat combine : graphique + donnees
-  res_structure_taille <- reactive({
-    req(specimen_valid(), input$groupetailleplot)
-    structure_taille(
-      data = specimen_valid(),
-      groupement = input$groupetailleplot
-    )
-  })
+  mod_structure_taille_server("structure_taille_1", specimen = specimen_valid, filename_suffix = filename_suffix)
   
-  # Rendu du graphique dans l'interface
-  render_plot_ggplot("structuretailleplot", reactive(res_structure_taille()$plot))
-  
-  # Telechargement du graphique (PNG)
-  render_download_plot("download_groupetailleplot", reactive(res_structure_taille()$plot), filename_suffix = filename_suffix())
-  
-  render_download_table(
-    "download_data4plot_taille",
-    data = reactive(res_structure_taille()$data),
-    filename = reactive(build_export_filename("structure_taille", filename_suffix()))
-  )
   # Structure d'age ----
   
-  # Resultat combine : graphique + tableau
-  res_structure_age <- reactive({
-    req(specimen_valid(), input$groupeageplot)
-    structure_age(
-      data = specimen_valid(),
-      groupement = input$groupeageplot
-    )
-  })
-  
-  # Affichage du graphique
-  
-  render_plot_ggplot(
-    "structureageplot",
-    reactive(res_structure_age()$plot), 
-    message_si_vide = "Aucun graphique n’a pu être généré : données d’âge manquantes ou inexploitables."
-  )
-
-  
-  
-  # Telechargement PNG
-  render_download_plot("download_groupeageplot", reactive(res_structure_age()$plot), filename_suffix = filename_suffix())
-  # Telechargement des donnees
-  render_download_table(
-    "download_data4plot_age",
-    data = reactive(res_structure_age()$data),
-    filename = reactive(build_export_filename("structure_age", filename_suffix()))
-  )
+  mod_structure_age_server("structure_age_1", specimen = specimen_valid, filename_suffix = filename_suffix)
   
   # PSD ----
   mod_psd_server(
@@ -350,30 +306,6 @@ app_server <- function(input, output, session) {
   
   # Indice de condition ----
   mod_wri_server("wri_1", specimen = specimen_valid, filename_suffix = filename_suffix)
-  
-  # # Reactive : retourne la liste {data, flextable, plot_tous, plot_byclass}
-  # wri_res <- reactive({
-  #   req(specimen_valid())
-  #   wri(data = specimen_valid())
-  # })
-  # 
-  # ## Tableau Wr ----
-  # 
-  # render_table_flextable("wri_table", reactive(wri_res()$flextable))
-  # render_download_table(
-  #   "wri_table_dl",
-  #   data = reactive(wri_res()$data),
-  #   filename = reactive(build_export_filename("wri", filename_suffix()))
-  # )  
-  # ## Graphique Wr par sexe ----
-  # render_plot_ggplot("wri_plot_tous", reactive(wri_res()$plot_tous))
-  # 
-  # render_download_plot("download_wri_plot_tous", reactive(wri_res()$plot_tous), filename_suffix = filename_suffix())
-  # 
-  # ## Graphique Wr par classe de taille ----
-  # render_plot_ggplot("wri_plot_byclass", reactive(wri_res()$plot_byclass))
-  # render_download_plot("download_wri_plot_byclass", reactive(wri_res()$plot_byclass), filename_suffix = filename_suffix())
-  # 
 
   # Croissance ----
   ## Tableau de selection de modeles ----
