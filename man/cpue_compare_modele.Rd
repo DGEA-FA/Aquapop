@@ -2,17 +2,23 @@
 % Please edit documentation in R/cpue_compare_modele.R
 \name{cpue_compare_modele}
 \alias{cpue_compare_modele}
-\title{Comparer les modèles de CPUE et recommander le meilleur}
+\title{Comparer les modèles CPUE et recommander le meilleur}
 \usage{
 cpue_compare_modele(cpue_data)
 }
 \arguments{
-\item{cpue_data}{Un \code{data.frame} produit par \code{cpue_prepare()} contenant les colonnes \code{no_station} et \code{CPUE}.}
+\item{cpue_data}{Un \code{data.frame} produit par \code{cpue_prepare()}, contenant au minimum
+la colonne \code{CPUE} et les identifiants des stations (\code{no_station}).}
 }
 \value{
-Une liste avec deux éléments : \code{data} (tableau brut) et \code{flextable} (tableau formaté).
+Une liste contenant :
+\describe{
+\item{data}{Un \code{data.frame} comparatif des modèles.}
+\item{flextable}{Une version formatée (\code{flextable}) pour exportation.}
+}
 }
 \description{
-Cette fonction ajuste cinq modèles (Poisson, NB1, NB2, CMP, GP) sur les données de CPUE
-et retourne une liste contenant un tableau comparatif brut (\code{data.frame}) et sa version formatée (\code{flextable}).
+Cette fonction ajuste cinq modèles (Poisson, NB1, NB2, CMP, GP) sur les données de CPUE.
+Elle retourne un tableau comparatif des ajustements, des AICc, de la moyenne de CPUE
+et des intervalles de confiance, tout en identifiant le meilleur modèle recommandé.
 }

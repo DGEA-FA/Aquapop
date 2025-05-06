@@ -4,7 +4,6 @@
 #' @importFrom DT DTOutput
 #' @importFrom reactable reactableOutput renderReactable
 app_ui <- function() {
-  myspinner <- 6
   
   render_user_guide_if_needed()
 
@@ -155,15 +154,8 @@ app_ui <- function() {
           
           # Taille, masse, age ----
           
-          tabPanel(
-            title = "Taille, masse et âge moyens",
-            p("Le tableau suivant reprend les statistiques descriptives, soit le nombre de spécimens mesurés/pesés/âgés (N) 
-              ainsi que la moyenne (Moy.), l’écart-type (ET), les valeurs minimale (Min) et maximale (Max) de la longueur
-              totale maximale (LTMax), de la masse et de l’âge des poissons pour différents groupes."),
-            h3("Aperçu des données morphologiques"),
-            withSpinner(uiOutput("taillemasseage_table"), type = myspinner),
-            download_button_ui("taillemasseage_table_dl")
-          ),
+          mod_taille_masse_age_ui("taille_masse_age_1"),
+          
           
           # Structure de taille ----
           tabPanel(

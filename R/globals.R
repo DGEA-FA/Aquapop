@@ -15,3 +15,4 @@ utils::globalVariables(c(
   "k", "cpue_moyenne", "bpue", "percent","ic_95", "freq", "abondance", "group", "a", "z", "se"
 ))
 
+myspinner <- 6

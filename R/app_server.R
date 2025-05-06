@@ -273,20 +273,10 @@ app_server <- function(input, output, session) {
   
   # Taille, masse, age ----
   
-  # Resultat combine (data + flextable)
-  taille_masse_age_res <- reactive({
-    req(specimen_valid())
-    taille_masse_age(specimen_valid())
-  })
-  
-  # Affichage du tableau flextable
-  render_table_flextable("taillemasseage_table", reactive(taille_masse_age_res()$flextable))
-  
-  # Bouton de telechargement des donnees brutes
-  render_download_table(
-    "taillemasseage_table_dl",
-    data = reactive(taille_masse_age_res()$data),
-    filename = reactive(build_export_filename("taillemasseage", filename_suffix()))
+  mod_taille_masse_age_server(
+    id = "taille_masse_age_1",
+    specimen_valid = specimen_valid,
+    filename_suffix = filename_suffix
   )
   
   # Structure de taille ----
