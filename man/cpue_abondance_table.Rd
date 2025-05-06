@@ -2,7 +2,7 @@
 % Please edit documentation in R/cpue_abondance_table.R
 \name{cpue_abondance_table}
 \alias{cpue_abondance_table}
-\title{Créer une table d’abondance structurée par groupe biologique}
+\title{Créer un tableau d’abondance structuré par groupe biologique}
 \usage{
 cpue_abondance_table(
   data,
@@ -13,25 +13,25 @@ cpue_abondance_table(
 )
 }
 \arguments{
-\item{data}{Un \code{data.frame} de spécimens filtrés (issu de \code{load_specimen()}), pour un lac, une année, etc.}
+\item{data}{Un \code{data.frame} de spécimens filtrés, contenant minimalement les colonnes \code{sexe} et \code{maturite}.}
 
-\item{cpue_table_tous}{Un \code{data.frame} issu de \code{cpue_compare_modele(..., group = "tous", format = "data.frame")}.}
+\item{cpue_table_tous}{Résultats des modèles CPUE pour tous les individus (format = "data.frame").}
 
-\item{cpue_table_femelles}{Idem, pour les femelles matures (\code{group = "femelles"}).}
+\item{cpue_table_femelles}{Résultats des modèles CPUE pour les femelles reproductrices.}
 
-\item{best_model_tous}{Nom du meilleur modèle pour les CPUE totales (ex. \code{"nb1"}).}
+\item{best_model_tous}{Nom du meilleur modèle CPUE pour le groupe "Tous".}
 
-\item{best_model_femelles}{Nom du meilleur modèle pour les femelles matures (ex. \code{"nb2"}).}
+\item{best_model_femelles}{Nom du meilleur modèle CPUE pour le groupe "Repro. actifs femelles".}
 }
 \value{
 Une liste contenant :
 \describe{
-\item{\code{data}}{Un \code{data.frame} résumant les effectifs, proportions, CPUE et IC 95 \% pour chaque groupe biologique.}
-\item{\code{flextable}}{Une version formatée (\code{flextable}) du tableau pour exportation dans Word, Shiny, etc.}
+\item{data}{Un \code{data.frame} résumant les abondances, proportions, CPUE et IC 95 \% par groupe.}
+\item{flextable}{Un objet \code{flextable} prêt à l’exportation.}
 }
 }
 \description{
-Cette fonction calcule les effectifs et proportions de différents groupes (tous spécimens,
-par sexe, par statut reproducteur) à partir des spécimens d’une espèce cible. Elle ajoute les
-colonnes de CPUE et les intervalles de confiance (IC à 95 \%) en extrayant les valeurs des meilleurs modèles sélectionnés.
+Cette fonction calcule les effectifs et proportions de différents groupes biologiques
+à partir d’un jeu de spécimens filtré (une espèce cible, un lac, une année, etc.).
+Elle ajoute les colonnes de CPUE et d'intervalles de confiance (IC 95 \%) extraites des meilleurs modèles.
 }
