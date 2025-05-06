@@ -332,42 +332,11 @@ app_server <- function(input, output, session) {
   )
   
   # PSD ----
-  
-  ## Indice Q ----
-  
-  psd_q_res <- reactive({
-    req(specimen_valid())
-    psd_q(data = specimen_valid())
-  })
-  
-  # Rendu du tableau flextable dans l'interface
-  render_table_flextable("psd_indice_ui", reactive(psd_q_res()$flextable))
-  
-  
-  ## Repartition par classe de taille - Tableau ----
-  
-  # Reactive : retourne la liste {data, flextable, plot}
-  psd_byclass_res <- reactive({
-    req(specimen_valid())
-    psd_byclass(data = specimen_valid())
-  })
-  
-  # Rendu du tableau flextable dans l'interface
-  render_table_flextable("psd_byclass_table", reactive(psd_byclass_res()$flextable))
-  
-  # Bouton de telechargement du tableau brut
-  render_download_table(
-    "psd_byclass_table_dl",
-    data = reactive(psd_byclass_res()$data),
-    filename = reactive(build_export_filename("psd_byclass", filename_suffix()))
-  )  
-  ## Repartition par classe de taille - Graphique ----
-  
-  # Affichage du graphique dans l'interface
-  render_plot_ggplot("psd_byclass_plot", reactive(psd_byclass_res()$plot))
-  
-  # Bouton de telechargement du graphique (PNG)
-  render_download_plot("download_psd_byclass_plot", reactive(psd_byclass_res()$plot), filename_suffix = filename_suffix())
+  mod_psd_server(
+    id = "psd_1",
+    specimen = specimen_valid,             
+    filename_suffix = filename_suffix      
+  )
   
   # Relation masse-longueur ----
   

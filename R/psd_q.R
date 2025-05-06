@@ -45,7 +45,7 @@ psd_q <- function(data) {
     stop("Le jeu de données doit contenir les colonnes `ltm` et `sp`.")
   }
   
-  sp <- unique(data$sp)
+  sp <- as.character(unique(data$sp))
   if (length(sp) != 1)
     stop("Les données doivent être filtrées pour une seule espèce.")
   

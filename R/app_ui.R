@@ -239,35 +239,7 @@ app_ui <- function() {
           ),
           
           # PSD ----
-          tabPanel(
-            title = "PSD",
-            p("Autrefois appelé *Proportional stock density*, l’indice *Proportional size distribution* est un descripteur 
-              numérique de la distribution de fréquence des longueurs. Il permet de comparer de manière objective la 
-              structure de taille de deux populations d’une même espèce (ou d’une même population lors de deux inventaires 
-              distincts). Les classes de taille sont établies en fonction de la taille record enregistrée pour une espèce 
-              et les autres classes sont dérivées à partir de celle-ci (Gabelhouse 1984)."),
-            
-            ## Indice Q ----
-            
-            withSpinner(uiOutput("psd_indice_ui"), type = myspinner),
-            
-            ## Repartition par classe de taille - Tableau ----
-            
-            uiOutput("psd_byclass_table"),
-            download_button_ui("psd_byclass_table_dl"),
-            
-            ## Repartition par classe de taille - Graphique ----
-            
-            h3("Distribution de fréquence de longueurs avec les classes de PSD"),
-            div(
-              style = "max-width: 900px; margin: auto;",
-              withSpinner(plotOutput("psd_byclass_plot", height = "500px"), type = myspinner),
-              br(),
-              downloadButton("download_psd_byclass_plot", "Téléchargement du graphique")
-            )
-            
-            
-          ),
+          mod_psd_ui("psd_1"),
          
           
           # Relation masse-longueur ----

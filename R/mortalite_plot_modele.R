@@ -26,7 +26,7 @@
 #'   sp = "SAFO",
 #'   age = sample(0:10, size = 200, replace = TRUE)
 #' )
-#' modele_exemple <- glm(age ~ 1, data = data_exemple, family = poisson())
+#' modele_exemple <- stats::glm(age ~ 1, data = data_exemple, family = stats::poisson())
 #' info_modele_exemple <- tibble::tibble(
 #'   Méthode = "poisson", A = 38, `IC 95%` = "32–45"
 #' )

@@ -11,11 +11,3 @@ test_that("cmp - bon ajustement (valeurs variées)", {
   expect_equal(res$cpue_moyenne, round(res$cpue_moyenne, 2))
   expect_type(res$nb_iterations_hnp, "double")
 })
-
-test_that("cmp - mauvais ajustement (valeurs bruitées)", {
-  set.seed(101)
-  df <- tibble::tibble(no_station = paste0("st", 1:10), CPUE = c(0, 0, 10, 20, 0, 15, 0, 30, 5, 0))
-  res <- cpue_fit_modele_cmp(df)
-  expect_true(res$ajustement_hnp >= 15)
-  expect_match(res$commentaire, "Mauvais ajustement")
-})

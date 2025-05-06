@@ -14,8 +14,8 @@ px_to_pt <- function(px) px / 0.75
 #' @export
 #'
 #' @examples
-#' ggplot(mtcars, aes(mpg, wt)) +
-#'   geom_point() +
+#' ggplot2::ggplot(mtcars, ggplot2::aes(mpg, wt)) +
+#'   ggplot2::geom_point() +
 #'   theme_aquapop()
 theme_aquapop <- function() {
   # Charger la police Open Sans depuis Google Fonts (si pas déjà chargée)

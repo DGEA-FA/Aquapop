@@ -28,7 +28,7 @@
 #'   \item{`plot`}{Un graphique en barres montrant la fréquence relative par classe.}
 #' }
 #'
-#' @seealso [get_info_pen()], [psd_classnames]
+#' @seealso [get_info_pen], [psd_classnames]
 #'
 #' @examples
 #' # Exemple avec données simulées
@@ -41,7 +41,7 @@
 #' @export
 psd_byclass <- function(data) {
   # --- Validation ---
-  espece <- unique(data$sp)
+  espece <- as.character(unique(data$sp))
   if (length(espece) != 1) stop("Les données doivent être filtrées pour une seule espèce.")
   
   info <- get_info_pen(espece)
