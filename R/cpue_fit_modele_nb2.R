@@ -1,29 +1,27 @@
 #' Ajuster un modèle de CPUE de type NB2 (Negative Binomial 2)
 #'
-#' Cette fonction ajuste un modèle de type NB2 (Negative Binomial 2) à l’aide de `glm.nb()`
-#' sur les données de CPUE par station. Elle applique également un test HNP (Half-Normal Plot)
-#' pour évaluer la qualité de l’ajustement. En cas d’ajustement marginal (entre 10 % et 15 % d’observations hors bande),
-#' trois simulations supplémentaires sont effectuées.
+#' Cette fonction ajuste un modèle NB2 via `glm.nb()` sur les données de CPUE par station.
+#' Elle applique un test HNP (Half-Normal Plot) pour évaluer la qualité de l'ajustement.
+#' Si l'ajustement est marginal (entre 10 % et 15 % d'observations hors bande),
+#' trois simulations supplémentaires sont effectuées. Elle retourne un résumé synthétique.
 #'
-#' @param cpue_data Un `data.frame` produit par `cpue_prepare()`, contenant au minimum les colonnes `no_station` et `CPUE`.
+#' @param cpue_data Un `data.frame` produit par `cpue_prepare()` contenant au minimum :
+#'   - `no_station` : identifiant de la station,
+#'   - `CPUE` : valeur de capture par unité d'effort.
 #'
-#' @return Un `data.frame` d’une seule ligne résumant le modèle ajusté, avec les colonnes suivantes :
-#' \describe{
-#'   \item{methode}{Type de modèle utilisé (`"nb2"`)}
-#'   \item{ajustement_hnp}{Pourcentage moyen d’observations hors bande du test HNP}
-#'   \item{aicc}{Critère d'information corrigé (AICc)}
-#'   \item{cpue_moyenne}{Valeur moyenne prédite par le modèle (exponentielle du lien)}
-#'   \item{ic_95}{Intervalle de confiance à 95 % sous forme de chaîne de caractères}
-#'   \item{commentaire}{Texte interprétant l’ajustement : bon, marginal ou mauvais}
-#'   \item{convergence}{État de convergence (`TRUE`, car `glm.nb()` converge toujours sauf erreur)}
-#'   \item{nb_iterations_hnp}{Nombre total d’itérations HNP effectuées (2 ou 5)}
-#' }
+#' @return Un `data.frame` d'une ligne contenant :
+#'   - `methode` : "nb2"
+#'   - `ajustement_hnp` : % moyen d'observations hors bande
+#'   - `aicc` : AICc du modèle
+#'   - `cpue_moyenne` : moyenne prédite sur l'échelle d'origine
+#'   - `ic_95` : intervalle de confiance (ex. : "(1.2-2.3)")
+#'   - `commentaire` : qualité de l'ajustement
+#'   - `convergence` : booléen toujours à `TRUE` (glm.nb converge ou échoue)
+#'   - `nb_iterations_hnp` : nombre total d'itérations HNP
 #'
 #' @examples
-#' fake_data <- tibble::tibble(
-#'   no_station = 1:10,
-#'   CPUE = rnbinom(10, mu = 5, size = 1)
-#' )
+#' set.seed(1)
+#' fake_data <- tibble::tibble(no_station = 1:10, CPUE = stats::rnbinom(10, mu = 5, size = 1))
 #' cpue_fit_modele_nb2(fake_data)
 #'
 #' @importFrom MASS glm.nb
@@ -37,62 +35,61 @@
 cpue_fit_modele_nb2 <- function(cpue_data) {
   
   # --- Fonction interne : test HNP NB2 ---
-  simuler_hnp_nb2 <- function(model, n_iter = 2) {
+  simuler_hnp_nb2 <- function(model_nb2, n_iter = 2) {
     replicate(
       n_iter,
       hnp(
-        model,
+        model_nb2,
         resid.type = "pearson",
         how.many.out = TRUE,
         plot.sim = FALSE
       ),
       simplify = FALSE
-    ) |>
-      sapply(function(x) x$out / x$total * 100)
+    ) |> sapply(function(x) x$out / x$total * 100)
   }
   
   # --- Ajustement du modèle NB2 ---
-  model <- glm.nb(CPUE ~ 1, data = cpue_data)
+  model_nb2 <- glm.nb(CPUE ~ 1, data = cpue_data)
   
-  # --- Test HNP initial ---
+  # --- Test HNP initial (2 itérations) ---
   message("Test HNP : Modèle NB2 (2 simulations initiales)...")
   set.seed(2023)
-  hnp_valeurs <- simuler_hnp_nb2(model, n_iter = 2)
-  ajustement_hnp <- round(mean(hnp_valeurs), 2)
-  nb_iterations_hnp <- 2
+  hnp_perc <- simuler_hnp_nb2(model_nb2, n_iter = 2)
+  perc_out <- round(mean(hnp_perc), 2)
+  nb_iter <- 2
   
-  # --- Test HNP supplémentaire si ajustement marginal ---
-  if (ajustement_hnp >= 10 && ajustement_hnp < 15) {
+  # --- Simulations supplémentaires si ajustement marginal ---
+  if (perc_out >= 10 && perc_out < 15) {
     message("Ajustement marginal : Ajout de 3 simulations HNP supplémentaires...")
-    hnp_valeurs_suppl <- simuler_hnp_nb2(model, n_iter = 3)
-    hnp_valeurs <- c(hnp_valeurs, hnp_valeurs_suppl)
-    ajustement_hnp <- round(mean(hnp_valeurs), 2)
-    nb_iterations_hnp <- 5
+    hnp_extra <- simuler_hnp_nb2(model_nb2, n_iter = 3)
+    hnp_perc <- c(hnp_perc, hnp_extra)
+    perc_out <- round(mean(hnp_perc), 2)
+    nb_iter <- 5
   }
   
-  # --- Prédiction moyenne et IC 95% ---
-  pred <- predict(model, type = "link", se.fit = TRUE)
-  cpue_moyenne <- round(exp(pred$fit[1]), 2)
-  ic_borne_inf <- round(exp(pred$fit[1] - 1.96 * pred$se.fit[1]), 2)
-  ic_borne_sup <- round(exp(pred$fit[1] + 1.96 * pred$se.fit[1]), 2)
-  ic_95 <- sprintf("(%s-%s)", ic_borne_inf, ic_borne_sup)
+  # --- Prédictions et intervalle de confiance ---
+  pred <- predict(model_nb2, type = "link", se.fit = TRUE)
+  pred_mean <- round(exp(pred$fit[1]), 2)
+  ic_low <- round(exp(pred$fit[1] - 1.96 * pred$se.fit[1]), 2)
+  ic_up  <- round(exp(pred$fit[1] + 1.96 * pred$se.fit[1]), 2)
+  pred_ic95 <- sprintf("(%s-%s)", ic_low, ic_up)
   
-  # --- Commentaire sur la qualité d’ajustement ---
+  # --- Commentaire sur l'ajustement ---
   commentaire <- case_when(
-    ajustement_hnp < 10 ~ "Bon ajustement.",
-    ajustement_hnp < 15 ~ "Ajustement marginal.",
+    perc_out < 10 ~ "Bon ajustement.",
+    perc_out < 15 ~ "Ajustement marginal.",
     TRUE ~ "Mauvais ajustement."
   )
   
   # --- Résultat final ---
   tibble(
     methode = "nb2",
-    ajustement_hnp = ajustement_hnp,
-    aicc = AICc(model),
-    cpue_moyenne = cpue_moyenne,
-    ic_95 = ic_95,
+    ajustement_hnp = perc_out,
+    aicc = AICc(model_nb2),
+    cpue_moyenne = pred_mean,
+    ic_95 = pred_ic95,
     commentaire = commentaire,
     convergence = TRUE,
-    nb_iterations_hnp = nb_iterations_hnp
+    nb_iterations_hnp = nb_iter
   )
 }

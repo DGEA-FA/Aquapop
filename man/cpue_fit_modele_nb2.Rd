@@ -7,32 +7,34 @@
 cpue_fit_modele_nb2(cpue_data)
 }
 \arguments{
-\item{cpue_data}{Un \code{data.frame} produit par \code{cpue_prepare()}, contenant au minimum les colonnes \code{no_station} et \code{CPUE}.}
+\item{cpue_data}{Un \code{data.frame} produit par \code{cpue_prepare()} contenant au minimum :
+\itemize{
+\item \code{no_station} : identifiant de la station,
+\item \code{CPUE} : valeur de capture par unité d'effort.
+}}
 }
 \value{
-Un \code{data.frame} d’une seule ligne résumant le modèle ajusté, avec les colonnes suivantes :
-\describe{
-\item{methode}{Type de modèle utilisé (\code{"nb2"})}
-\item{ajustement_hnp}{Pourcentage moyen d’observations hors bande du test HNP}
-\item{aicc}{Critère d'information corrigé (AICc)}
-\item{cpue_moyenne}{Valeur moyenne prédite par le modèle (exponentielle du lien)}
-\item{ic_95}{Intervalle de confiance à 95 \% sous forme de chaîne de caractères}
-\item{commentaire}{Texte interprétant l’ajustement : bon, marginal ou mauvais}
-\item{convergence}{État de convergence (\code{TRUE}, car \code{glm.nb()} converge toujours sauf erreur)}
-\item{nb_iterations_hnp}{Nombre total d’itérations HNP effectuées (2 ou 5)}
+Un \code{data.frame} d'une ligne contenant :
+\itemize{
+\item \code{methode} : "nb2"
+\item \code{ajustement_hnp} : \% moyen d'observations hors bande
+\item \code{aicc} : AICc du modèle
+\item \code{cpue_moyenne} : moyenne prédite sur l'échelle d'origine
+\item \code{ic_95} : intervalle de confiance (ex. : "(1.2-2.3)")
+\item \code{commentaire} : qualité de l'ajustement
+\item \code{convergence} : booléen toujours à \code{TRUE} (glm.nb converge ou échoue)
+\item \code{nb_iterations_hnp} : nombre total d'itérations HNP
 }
 }
 \description{
-Cette fonction ajuste un modèle de type NB2 (Negative Binomial 2) à l’aide de \code{glm.nb()}
-sur les données de CPUE par station. Elle applique également un test HNP (Half-Normal Plot)
-pour évaluer la qualité de l’ajustement. En cas d’ajustement marginal (entre 10 \% et 15 \% d’observations hors bande),
-trois simulations supplémentaires sont effectuées.
+Cette fonction ajuste un modèle NB2 via \code{glm.nb()} sur les données de CPUE par station.
+Elle applique un test HNP (Half-Normal Plot) pour évaluer la qualité de l'ajustement.
+Si l'ajustement est marginal (entre 10 \% et 15 \% d'observations hors bande),
+trois simulations supplémentaires sont effectuées. Elle retourne un résumé synthétique.
 }
 \examples{
-fake_data <- tibble::tibble(
-  no_station = 1:10,
-  CPUE = rnbinom(10, mu = 5, size = 1)
-)
+set.seed(1)
+fake_data <- tibble::tibble(no_station = 1:10, CPUE = stats::rnbinom(10, mu = 5, size = 1))
 cpue_fit_modele_nb2(fake_data)
 
 }

@@ -1,23 +1,28 @@
 #' Ajuster un modèle de CPUE de type Poisson
 #'
 #' Cette fonction ajuste un modèle linéaire généralisé (GLM) avec distribution de Poisson
-#' sur les données de CPUE par station. Elle applique également un test HNP (Half-Normal Plot)
-#' pour évaluer la qualité de l’ajustement. En cas d’ajustement marginal (entre 10 % et 15 % d’observations hors bande),
-#' des simulations supplémentaires sont effectuées.
+#' sur les données de CPUE par station. Elle applique un test HNP (Half-Normal Plot)
+#' pour évaluer la qualité de l'ajustement. En cas d'ajustement marginal (entre 10 % et 15 % d'observations hors bande),
+#' trois simulations supplémentaires sont effectuées.
 #'
-#' @param cpue_data Un `data.frame` produit par `cpue_prepare()`, contenant au minimum les colonnes `no_station` et `CPUE`.
+#' @param cpue_data Un `data.frame` produit par `cpue_prepare()` contenant au minimum :
+#'   - `no_station` : identifiant de la station,
+#'   - `CPUE` : valeur de capture par unité d'effort.
 #'
-#' @return Un `data.frame` d’une seule ligne résumant le modèle ajusté, avec les colonnes suivantes :
-#' \describe{
-#'   \item{methode}{Type de modèle utilisé (`"poisson"`)}
-#'   \item{ajustement_hnp}{Pourcentage moyen d’observations hors bande du test HNP}
-#'   \item{aicc}{Critère d'information corrigé (AICc)}
-#'   \item{cpue_moyenne}{Valeur moyenne prédite par le modèle (exponentielle du lien)}
-#'   \item{ic_95}{Intervalle de confiance à 95 % sous forme de chaîne de caractères}
-#'   \item{commentaire}{Texte interprétant l’ajustement : bon, marginal ou mauvais}
-#'   \item{convergence}{État de convergence (`TRUE` ou `FALSE`) selon le modèle}
-#'   \item{nb_iterations_hnp}{Nombre total d’itérations HNP effectuées (2 ou 5)}
-#' }
+#' @return Un `data.frame` d'une ligne contenant :
+#'   - `methode` : "poisson"
+#'   - `ajustement_hnp` : % moyen d'observations hors bande
+#'   - `aicc` : AICc du modèle
+#'   - `cpue_moyenne` : moyenne prédite sur l'échelle d'origine
+#'   - `ic_95` : intervalle de confiance (ex. : "(1.2-2.3)")
+#'   - `commentaire` : qualité de l'ajustement
+#'   - `convergence` : état de convergence (`TRUE` ou `FALSE`)
+#'   - `nb_iterations_hnp` : nombre total d'itérations HNP
+#'
+#' @examples
+#' set.seed(1)
+#' fake_data <- tibble::tibble(no_station = 1:10, CPUE = rpois(10, lambda = 5))
+#' cpue_fit_modele_poisson(fake_data)
 #'
 #' @importFrom stats glm predict simulate residuals
 #' @importFrom hnp hnp
@@ -27,59 +32,58 @@
 #'
 #' @export
 cpue_fit_modele_poisson <- function(cpue_data) {
-  # 1. Ajustement du modèle
-  model <- glm(CPUE ~ 1, family = poisson, data = cpue_data)
   
-  # 2. Test HNP initial
+  # --- Ajustement du modèle Poisson ---
+  model_poisson <- glm(CPUE ~ 1, family = poisson, data = cpue_data)
+  
+  # --- Test HNP initial (2 itérations) ---
   message("Test HNP : Modèle Poisson (2 simulations initiales)...")
   set.seed(2023)
-  hnp_results <- replicate(
+  hnp_list <- replicate(
     2,
-    hnp(model, resid.type = "pearson", how.many.out = TRUE, plot.sim = FALSE),
+    hnp(model_poisson, resid.type = "pearson", how.many.out = TRUE, plot.sim = FALSE),
     simplify = FALSE
   )
-  hnp_out <- sapply(hnp_results, function(x) x$out / x$total * 100)
-  ajustement <- mean(hnp_out) |> round(2)
+  hnp_perc <- sapply(hnp_list, function(x) x$out / x$total * 100)
+  perc_out <- round(mean(hnp_perc), 2)
   nb_iter <- 2
   
-  # 3. Répétitions supplémentaires si ajustement marginal
-  if (ajustement >= 10 && ajustement < 15) {
+  # --- Simulations supplémentaires si ajustement marginal ---
+  if (perc_out >= 10 && perc_out < 15) {
     message("Ajustement marginal : Ajout de 3 simulations HNP...")
     hnp_extra <- replicate(
       3,
-      hnp(model, resid.type = "pearson", how.many.out = TRUE, plot.sim = FALSE),
+      hnp(model_poisson, resid.type = "pearson", how.many.out = TRUE, plot.sim = FALSE),
       simplify = FALSE
     )
-    hnp_out_extra <- sapply(hnp_extra, function(x) x$out / x$total * 100)
-    ajustement <- mean(c(hnp_out, hnp_out_extra)) |> round(2)
+    hnp_extra_perc <- sapply(hnp_extra, function(x) x$out / x$total * 100)
+    perc_out <- round(mean(c(hnp_perc, hnp_extra_perc)), 2)
     nb_iter <- 5
   }
   
-  # 4. Prédictions
-  pred <- predict(model, type = "link", se.fit = TRUE)
-  fit_mean <- exp(pred$fit[1])
-  ic95 <- paste0("(", round(exp(pred$fit[1] - 1.96 * pred$se.fit[1]), 2), "-",
-                 round(exp(pred$fit[1] + 1.96 * pred$se.fit[1]), 2), ")")
+  # --- Prédictions et intervalle de confiance ---
+  pred <- predict(model_poisson, type = "link", se.fit = TRUE)
+  pred_mean <- round(exp(pred$fit[1]), 2)
+  ic_low <- round(exp(pred$fit[1] - 1.96 * pred$se.fit[1]), 2)
+  ic_up  <- round(exp(pred$fit[1] + 1.96 * pred$se.fit[1]), 2)
+  pred_ic95 <- sprintf("(%s-%s)", ic_low, ic_up)
   
-  # 5. Commentaire d’interprétation
+  # --- Commentaire sur l'ajustement ---
   commentaire <- case_when(
-    ajustement < 10 ~ "Bon ajustement.",
-    ajustement < 15 ~ "Ajustement marginal.",
+    perc_out < 10 ~ "Bon ajustement.",
+    perc_out < 15 ~ "Ajustement marginal.",
     TRUE ~ "Mauvais ajustement."
   )
   
-  # 6. Résultat (noms simples)
-  result <- tibble(
+  # --- Résultat final ---
+  tibble(
     methode = "poisson",
-    ajustement_hnp = ajustement,
-    aicc = AICc(model),
-    cpue_moyenne = round(fit_mean, 2),
-    ic_95 = ic95,
+    ajustement_hnp = perc_out,
+    aicc = AICc(model_poisson),
+    cpue_moyenne = pred_mean,
+    ic_95 = pred_ic95,
     commentaire = commentaire,
-    convergence = model$converged %||% TRUE,
+    convergence = model_poisson$converged %||% TRUE,
     nb_iterations_hnp = nb_iter
   )
-  
-  return(result)
 }
-
