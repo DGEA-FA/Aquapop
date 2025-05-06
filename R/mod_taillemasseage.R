@@ -38,7 +38,9 @@ mod_taille_masse_age_server <- function(id, specimen_valid, filename_suffix){
     })
     
     # Affichage du tableau flextable
-    render_table_flextable("table", reactive(taille_masse_age_res()$flextable))
+    render_table_flextable(
+      "table", 
+      reactive(taille_masse_age_res()$flextable))
     
     # Bouton de téléchargement
     render_download_table(

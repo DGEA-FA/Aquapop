@@ -271,30 +271,8 @@ app_ui <- function() {
          
           
           # Relation masse-longueur ----
-          tabPanel(
-            title = "Relation masse-longueur",
-            
-            # Texte explicatif
-            p("La figure suivante représente la relation allométrique entre la longueur totale
-              maximale (mm) et la masse (g). L’équation et la valeur des paramètres sont indiqués sur 
-              le graphique."),
-            
-            ## Graphique ----
-            h3("Relation masse-longueur"),
-            div(
-              style = "max-width: 900px; margin: auto;",
-              withSpinner(plotOutput("plot_masselongueur", height = "500px"), type = myspinner),
-              br(),
-              downloadButton("download_masselongueur_plot", "Téléchargement du graphique")
-            ),
+          mod_masse_longueur_ui("masselongueur_1")
           
-            br(),
-
-            ## Tableau des coefficients ----
-            h3("Tableau des coefficients"),
-            uiOutput("table_masselongueur_ui"),
-            download_button_ui("download_masselongueur_table")
-          )
         )
       ),
       # Panel 3 

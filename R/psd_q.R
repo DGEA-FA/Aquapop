@@ -26,7 +26,7 @@
 #' # Exemple avec données simulées
 #' set.seed(123)
 #' data_ex <- data.frame(
-#'   ltm = stats::rnorm(100, mean = 250, stats::sd = 50),
+#'   ltm = stats::rnorm(100, mean = 250, sd = 50),
 #'   sp = "SAFO"
 #' )
 #' data_ex <- dplyr::filter(data_ex, ltm > 0)

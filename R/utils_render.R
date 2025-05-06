@@ -88,7 +88,6 @@ render_plot_ggplot <- function(output_id, plot,
     }
     p
   },
-  width = function() session$clientData[[paste0("output_", output_id, "_width")]],
   height = height,
   res = res
   )

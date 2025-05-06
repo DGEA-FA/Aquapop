@@ -17,5 +17,5 @@ Applique un style professionnel et uniforme à un objet flextable, avec
 police Arial, texte centré, bordures simples et taille de police adaptée aux rapports.
 }
 \examples{
-flextable(head(iris)) |> style_flextable_aquapop()
+flextable::flextable(head(iris)) |> style_flextable_aquapop()
 }

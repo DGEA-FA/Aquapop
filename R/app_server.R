@@ -371,30 +371,12 @@ app_server <- function(input, output, session) {
   
   # Relation masse-longueur ----
   
-  # Reactive : retourne la liste {data, flextable, plot}
-  masse_longueur_fit_res <- reactive({
-    req(specimen())
-    masse_longueur_fit(data = specimen())
-  })
+  mod_masse_longueur_server(
+    id = "masselongueur_1",
+    specimen = specimen,
+    filename_suffix = filename_suffix
+  )
   
-  ## Graphique ----
-  
-  render_plot_ggplot("plot_masselongueur", reactive(masse_longueur_fit_res()$plot))
-  
-  
-  render_download_plot("download_masselongueur_plot", reactive(masse_longueur_fit_res()$plot), filename_suffix = filename_suffix())
-  
-  
-  ## Tableau des coefficients ----
-  
-
-  render_table_flextable("table_masselongueur_ui", reactive(masse_longueur_fit_res()$flextable))
-  
-  render_download_table(
-    "download_masselongueur_table",
-    data = reactive(masse_longueur_fit_res()$data),
-    filename = reactive(build_export_filename("masselongueur", filename_suffix()))
-  ) 
   
   
   # Indice de condition ----

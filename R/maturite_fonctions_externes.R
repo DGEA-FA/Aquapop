@@ -108,7 +108,7 @@ fieller_ci <- function(b, xi, v, chi2) {
 ld_fieller <- function(object, cf = 1:2, p = 0.5, level = 0.95) {
   b <- coef(object)[cf]
   V <- stats::vcov(object)[cf, cf]
-  xiv <- family(object)$linkfun(p)
+  xiv <- stats::family(object)$linkfun(p)
   chi2 <- stats::qchisq(level, df = 1)
   
   R <- NULL
@@ -181,7 +181,7 @@ prof <- function(b, xi, R, fam, Y, X0, x, etastart, wts, control, chi2, D0, off,
 }
 
 ld_proflik <- function(object, cf = 1:2, p = 0.5, level = 0.95, profile = FALSE, ...) {
-  fam <- family(object)
+  fam <- stats::family(object)
   Y <- object$y
   X <- model.matrix(object)
   X0 <- X[, -cf]

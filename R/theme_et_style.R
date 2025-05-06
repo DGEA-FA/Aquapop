@@ -100,7 +100,7 @@ geom_text_aquapop <- function(...) {
 #' @export
 #' @importFrom flextable flextable set_table_properties fontsize font align border_remove border_outer
 #' @examples
-#' flextable(head(iris)) |> style_flextable_aquapop()
+#' flextable::flextable(head(iris)) |> style_flextable_aquapop()
 style_flextable_aquapop <- function(ft) {
   ft |>
     set_table_properties(layout = "autofit") |>
