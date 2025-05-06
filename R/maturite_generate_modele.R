@@ -91,10 +91,13 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
   modele_avec_eta2 <- sans_warning_proba(update(modele_glm, . ~ . + eta2))
   pval_lien <- anova(modele_glm, modele_avec_eta2, test = "Chisq")$`Pr(>Chi)`[2]
   
-  commentaire <- NA_character_
-  if (!modele_glm$converged) {
+  # Valeurs par défaut sûres
+  commentaire <- "Modèle généré, sans commentaire spécifique."
+  
+  # Si convergence connue → on peut évaluer
+  if (!isTRUE(modele_glm$converged)) {
     commentaire <- "Ce modèle ne converge pas et devrait être rejeté."
-  } else if (pval_ajustement < 0.05 || pval_lien < 0.05) {
+  } else if (isTRUE(pval_ajustement < 0.05) || isTRUE(pval_lien < 0.05)) {
     commentaire <- "Ce modèle ne s’ajuste pas bien aux données. Il est préférable de choisir un autre modèle."
   }
   

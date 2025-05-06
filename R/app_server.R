@@ -302,8 +302,6 @@ app_server <- function(input, output, session) {
     filename_suffix = filename_suffix
   )
   
-  
-  
   # Indice de condition ----
   mod_wri_server("wri_1", specimen = specimen_valid, filename_suffix = filename_suffix)
 
@@ -607,95 +605,8 @@ app_server <- function(input, output, session) {
   # Maturite sexuelle ----
   ## Longueur a maturite ----
   
-  ### Tableau de selection de modeles ----
+  mod_maturite_l50_server("maturite_l50_1", specimen = specimen_valid, filename_suffix = filename_suffix)
   
-  # Resultat complet : modeles et tables
-  table_modeles_l50_resultats <- reactive({
-    req(specimen())
-    maturite_compare_modele(
-      specimen_data = specimen(),
-      prefer_combined = FALSE,
-      variable = "ltm"
-    )
-  })
-  
-  # Index du meilleur modele pour selection par defaut
-  default_model_index_l50 <- reactive({
-    table <- table_modeles_l50_resultats()$table$df
-    req(nrow(table) > 0)
-    idx <- which(table$recommande)
-    if (length(idx) == 0) idx <- 1
-    idx
-  })
-  
-  # Tableau interactif des modeles
-  output$table_modeles_l50_table <- renderReactable({
-    req(table_modeles_l50_resultats())
-    table <- table_modeles_l50_resultats()$table$df
-    idx <- default_model_index_l50()
-    
-    reactable(
-      labelled_data(table),
-      selection = "single",
-      sortable = FALSE,
-      onClick = "select",
-      highlight = TRUE,
-      defaultPageSize = 20,
-      defaultSelected = idx,
-      defaultColDef = colDef(
-        align = "center",
-        headerStyle = list(textAlign = "center")
-      )
-    )
-  })
-  
-  # Modele actuellement selectionne
-  selected_model_info_l50 <- reactive({
-    selected <- getReactableState("table_modeles_l50_table", "selected")
-    req(!is.null(selected), table_modeles_l50_resultats())
-    table <- table_modeles_l50_resultats()$table$df
-    model_id <- table[selected, "modele_id", drop = TRUE]
-    
-    list(
-      modele = str_extract(model_id, "TLO|ADD|INT|COM"),
-      lien = str_extract(model_id, "logit|probit|cloglog"),
-      variable = "ltm"
-    )
-  })
-  
-  
-  # Message explicatif sur les modeles evalues
-  output$message_l50 <- renderText({
-    req(table_modeles_l50_resultats())
-    table_modeles_l50_resultats()$message
-  })
-  
-  
-  # Resultat du modele selectionne
-  l50_generate_modele_res <- reactive({
-    req(specimen(), selected_model_info_l50())
-    maturite_generate_modele(
-      data = specimen(),
-      variable = selected_model_info_l50()$variable,
-      modele = selected_model_info_l50()$modele,
-      lien = selected_model_info_l50()$lien
-    )
-  })
-  
-  
-  ### Tableau du modele choisi ----
-  render_table_flextable("ogive_l50_table", reactive(l50_generate_modele_res()$table_resultats_flextable))
-  render_download_table(
-    "ogive_l50_table_dl",
-    data = reactive(l50_generate_modele_res()$table_resultats),
-    filename = reactive(build_export_filename("ogive_maturite", filename_suffix()))
-  )
-  
-  ### Graphique du modele choisi ----
-  render_plot_ggplot("plot_ogive_l50", reactive(l50_generate_modele_res()$graphique))
-  render_download_plot("download_ogive_l50_plot", reactive(l50_generate_modele_res()$graphique), filename_suffix = filename_suffix())
-  
-   
   ## Age a maturite ----
   ### Tableau de selection de modeles ----
   

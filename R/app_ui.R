@@ -284,45 +284,7 @@ Vous pouvez toutefois forcer un recalcul avec une autre valeur."),
                tabsetPanel(
                  ## Longueur a maturite ----
                  
-                 tabPanel(
-                   title = "Longueur à maturité",
-                   
-                   ### Tableau de selection de modeles ----
-                   
-                   # Message explicatif
-                   h3(HTML("Sélection des modèles L<sub>50</sub>")),
-                   verbatimTextOutput("message_l50"),
-                   br(),
-                   
-                   # Tableau des modeles evalues
-                   h3("Tableau interactif des modèles évalués"),
-                   withSpinner(reactableOutput("table_modeles_l50_table"), type = myspinner),
-                   download_button_ui("ogive_l50_table_dl"),
-                   
-                   br(),
-                   h3("Résultats du modèle sélectionné"),
-                   
-                   ### Tableau du modele choisi ----
-                   
-                   
-                   # Tableau des resultats
-                   uiOutput("ogive_l50_table"),
-                   uiOutput("download_ogive_l50_table_ui"),
-                   
-                   ### Graphique du modele choisi ----
-                   
-                   
-                   # Graphique des resultats
-                   div(
-                     style = "max-width: 900px; margin: auto;",
-                     withSpinner(plotOutput("plot_ogive_l50", height = "500px"), type = myspinner),
-                     br(),
-                     downloadButton("download_ogive_l50_plot", "Téléchargement du graphique")
-                   ),
-                   
-                   br()
-                   
-                 ),
+                 mod_maturite_l50_ui("maturite_l50_1"),
                  
                  ## Age a maturite ----
                  

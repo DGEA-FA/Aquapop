@@ -174,6 +174,19 @@ res$table_sep$flextable
 res$table_comb$flextable
 
 ### Tableau du modèle choisi ----
+
+l50_modele <- maturite_generate_modele(
+  data = specimen,
+  variable = "ltm",
+  modele = res$best_model$modele,
+  lien = res$best_model$lien
+)
+
+# 5. Afficher les résultats
+print(l50_modele$table_resultats)
+print(l50_modele$graphique)
+print(l50_modele$table_resultats_flextable)
+
 ### Graphique du modèle choisi ----
 
 
