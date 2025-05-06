@@ -288,22 +288,8 @@ Vous pouvez toutefois forcer un recalcul avec une autre valeur."),
                  
                  ## Age a maturite ----
                  
-                 tabPanel(
-                   title = "Âge à maturité",
-                   
-                   ### Tableau de selection de modeles ----
-                   
-                   h3(HTML("Sélection des modèles A<sub>50</sub>")),
-                   
-                   p("Sélectionnez un modèle pour faire apparaître les valeurs et le graphique. Le modèle le mieux adapté aux données est celui avec le plus faible AICc."),
-                   
-                   ### Tableau du modele choisi ----
-                   
-                   
-                   ### Graphique du modele choisi ----
-                   
-                   
-                 )
+                 mod_maturite_a50_ui("maturite_a50_1")
+                 
                ))
       
     )

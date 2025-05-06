@@ -193,6 +193,32 @@ print(l50_modele$table_resultats_flextable)
 
 
 ## Âge à maturité ----
+
+
+res <- maturite_compare_modele(specimen, variable = "age")
+res$table$df
+res$table$flextable
+
+res$best_model
+res$message
+res$table_sep$flextable
+res$table_comb$flextable
+
+### Tableau du modèle choisi ----
+
+a50_modele <- maturite_generate_modele(
+  data = specimen,
+  variable = "age",
+  modele = res$best_model$modele,
+  lien = res$best_model$lien
+)
+
+# 5. Afficher les résultats
+print(a50_modele$table_resultats)
+print(a50_modele$graphique)
+print(a50_modele$table_resultats_flextable)
+
+
 ### Tableau de sélection de modèles ----
 ### Tableau du modèle choisi ----
 ### Graphique du modèle choisi ----

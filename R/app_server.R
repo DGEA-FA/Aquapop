@@ -608,10 +608,8 @@ app_server <- function(input, output, session) {
   mod_maturite_l50_server("maturite_l50_1", specimen = specimen_valid, filename_suffix = filename_suffix)
   
   ## Age a maturite ----
-  ### Tableau de selection de modeles ----
+  mod_maturite_a50_server("maturite_a50_1", specimen = specimen_valid, filename_suffix = filename_suffix)
   
-  ### Tableau du modele choisi ----
-  ### Graphique du modele choisi ----
   
   
 }
