@@ -1,24 +1,32 @@
 #' Extraire le modèle de mortalité correspondant à la meilleure méthode sélectionnée
 #'
-#' Cette fonction ajuste les 5 modèles de mortalité, sélectionne le meilleur
-#' via `mortalite_select_best_modele()` et retourne l’objet `modele` correspondant.
+#' Cette fonction ajuste les cinq modèles de mortalité (Poisson, NB1, NB2, CMP, GP),
+#' sélectionne automatiquement le meilleur via `mortalite_select_best_modele()`,
+#' et retourne l’objet `modele` correspondant. Si `methode` est précisé, il est utilisé directement.
 #'
-#' @importFrom glmmTMB genpois compois nbinom1 glmmTMB
-#' @importFrom MASS glm.nb
-#' @param data Un data.frame contenant `age` et `number`(habituellement df_age_etendue)
-#' @param methode Optionnel. Si fourni (e.g. "NB2"), retourne ce modèle directement.
+#' @param data Un `data.frame` contenant au minimum les colonnes `age` et `number`
+#'   (habituellement produit par `mortalite_prepare()`)
+#' @param methode Chaîne de caractères optionnelle ("poisson", "nb1", "nb2", "cmp", "gp").
+#'   Si précisée, ce modèle est ajusté directement sans comparaison.
 #'
-#' @return Un objet de classe `glm`, `glm.nb` ou `glmmTMB`
+#' @return Un objet de classe `glm`, `glm.nb` ou `glmmTMB`, selon la méthode choisie
 #' @export
+#'
+#' @importFrom glmmTMB glmmTMB genpois compois nbinom1
+#' @importFrom MASS glm.nb
 mortalite_fit_best_modele <- function(data, methode = NULL) {
+  
   if (is.null(methode)) {
-    mortalite_compare_modele_res_data <- mortalite_compare_modele(data = data)$data
-    methode <- mortalite_select_best_modele(mortalite_compare_modele_res_data)
+    res_compare <- mortalite_compare_modele(data = data)$data
+    methode <- mortalite_select_best_modele(res_compare)
   }
   
-  stopifnot(!is.null(methode), methode %in% c("poisson", "nb1", "nb2", "cmp", "gp"))
+  stopifnot(
+    !is.null(methode),
+    methode %in% c("poisson", "nb1", "nb2", "cmp", "gp")
+  )
   
-  # Ajuster et retourner le modèle brut
+  # Ajuster le modèle selon la méthode sélectionnée
   model <- switch(methode,
                   poisson = glm(number ~ age, family = poisson, data = data),
                   nb1     = glmmTMB(number ~ age, family = nbinom1(), data = data),
