@@ -2,17 +2,29 @@
 % Please edit documentation in R/croissance_select_best_modele.R
 \name{croissance_select_best_modele}
 \alias{croissance_select_best_modele}
-\title{Sélectionne le meilleur modèle de croissance basé sur le plus bas AICc}
+\title{Sélectionner le meilleur modèle de croissance selon le plus bas AICc}
 \usage{
 croissance_select_best_modele(tablemodele)
 }
 \arguments{
-\item{tablemodele}{Un \code{data.frame} retourné par \code{croissance_compare_modele()}}
+\item{tablemodele}{Un \code{data.frame} produit par \code{croissance_compare_modele()},
+contenant au minimum les colonnes \code{methode} et \code{AICc}.}
 }
 \value{
-Une chaîne de caractères (nom du meilleur modèle) ou un message en cas d'erreur
+Une chaîne de caractères correspondant au nom du meilleur modèle sélectionné.
+Retourne \code{NA} avec un avertissement si aucun modèle ne peut être sélectionné.
 }
 \description{
-Cette fonction identifie automatiquement le meilleur modèle (parmi Von Bertalanffy, Gompertz ou Logistique)
-selon le critère d’AICc le plus faible.
+Cette fonction identifie automatiquement le meilleur modèle parmi
+Von Bertalanffy, Gompertz ou Logistique en se basant sur le plus faible
+critère d'information corrigé (AICc). En cas d'égalité, elle retourne
+le premier modèle ex aequo.
+}
+\examples{
+df <- tibble::tibble(
+  methode = c("Von Bertalanffy", "Gompertz", "Logistique"),
+  AICc = c(120.3, 118.5, 121.0)
+)
+croissance_select_best_modele(df)
+
 }

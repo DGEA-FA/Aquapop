@@ -1,23 +1,33 @@
 #' Sélectionner le meilleur modèle CPUE selon le plus bas AICc
 #'
-#' Cette fonction identifie automatiquement le meilleur modèle d’abondance (CPUE)
-#' parmi les modèles Poisson, NB1, NB2, CMP et GP. La sélection est effectuée selon
-#' le plus bas AICc parmi les modèles bien ajustés (ajustement HNP < 10).
-#' Si aucun modèle ne satisfait ce critère, la fonction retourne celui avec le plus bas AICc global.
+#' Cette fonction identifie automatiquement le meilleur modèle d’abondance
+#' (CPUE) parmi les modèles Poisson, NB1, NB2, CMP et GP, en se basant sur le
+#' critère d'information corrigé (AICc). La priorité est donnée aux modèles
+#' bien ajustés (ajustement HNP < 10). Si aucun modèle ne satisfait ce critère,
+#' la sélection est effectuée parmi tous les modèles disponibles.
 #'
-#' @param tablemodele Un `data.frame` retourné par `modele_cpue_comparaison(..., format = "data.frame")`.
+#' @param tablemodele Un `data.frame` retourné par
+#'   `cpue_compare_modele(..., format = "data.frame")`, contenant au minimum
+#'   les colonnes `Méthode`, `AICc` et `Ajustement (résultat du test HNP)`.
 #'
-#' @return Une chaîne de caractères (`Méthode`) correspondant au nom du meilleur modèle sélectionné.
+#' @return Une chaîne de caractères correspondant à la méthode du meilleur modèle sélectionné.
+#'   Retourne `NA` avec un avertissement si aucun modèle ne peut être sélectionné.
 #'
-#' @importFrom dplyr filter pull
+#' @examples
+#' df <- tibble::tibble(
+#'   Méthode = c("poisson", "nb1", "nb2"),
+#'   `Ajustement (résultat du test HNP)` = c(5, 12, 9),
+#'   AICc = c(110, 105, 100)
+#' )
+#' cpue_select_best_modele(df)
 #'
 #' @export
+#' @importFrom dplyr filter pull
 cpue_select_best_modele <- function(tablemodele) {
   if (!"Méthode" %in% names(tablemodele) || !"AICc" %in% names(tablemodele)) {
-    stop("Le tableau fourni n’est pas valide. Assurez-vous qu’il provient de `modele_cpue_comparaison()`.")
+    stop("Le tableau fourni n’est pas valide. Assurez-vous qu’il provient de `cpue_compare_modele()`.")
   }
   
-  # Priorité aux modèles bien ajustés
   bien_ajuste <- tablemodele |>
     filter(`Ajustement (résultat du test HNP)` < 10)
   
