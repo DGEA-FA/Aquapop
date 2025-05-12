@@ -1,27 +1,26 @@
 #' Comparer trois modèles de croissance (Von Bertalanffy, Gompertz, Logistique)
 #'
-#' Cette fonction ajuste trois modèles de croissance non linéaire (Von Bertalanffy, Gompertz, Logistique)
-#' à un jeu de données de spécimens. Elle retourne un tableau comparatif des paramètres estimés, des
-#' intervalles de confiance et du critère d'information corrigé (AICc) pour chacun des modèles.
+#' Cette fonction ajuste trois modèles de croissance non linéaire à un jeu de données de spécimens
+#' et retourne un tableau comparatif des paramètres estimés, des intervalles de confiance
+#' et du critère d'information corrigé (AICc).
 #'
-#' @param data Un `data.frame` de spécimens, contenant au minimum les colonnes `sp`, `ltm`, `age` et `no_specimen`.
-#' @param format Format de sortie souhaité : `"data.frame"` (par défaut) ou `"flextable"`.
+#' @param data Un `data.frame` contenant au minimum : `sp`, `ltm`, `age`, `no_specimen`
+#' @param format Format de sortie souhaité : `"data.frame"` (par défaut) ou `"flextable"`
 #'
 #' @return Une liste avec deux éléments :
 #' \describe{
-#'   \item{data}{Un `data.frame` résumant les résultats des trois modèles (paramètres, IC, AICc).}
-#'   \item{flextable}{Une version formatée (`flextable`) du tableau comparatif.}
+#'   \item{data}{`data.frame` résumant les résultats des trois modèles}
+#'   \item{flextable}{Tableau formaté prêt pour insertion dans un document}
 #' }
 #'
+#' @export
 #' @importFrom labelled set_variable_labels
 #' @importFrom dplyr if_else mutate left_join rename select filter arrange
 #' @importFrom AICcmodavg aictab
 #' @importFrom stats confint
 #' @importFrom fishmethods growth
 #' @importFrom FSA vbStarts
-#' @importFrom flextable set_caption flextable
-
-#' @export
+#' @importFrom flextable flextable set_caption
 croissance_compare_modele <- function(data, format = c("data.frame", "flextable")) {
   format <- match.arg(format)
   
@@ -42,65 +41,48 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
   
   modele_names <- c("Von Bertalanffy", "Gompertz", "Logistique")
   
-  extract_param <- function(res, index) {
-    tryCatch(confint(res, level = 0.95)[index, , drop = TRUE], error = handle_error)
-  }
-  
-  extract_from_env <- function(mod) {
-    environment(mod[["m"]][["deviance"]])[["env"]][["Sinf"]]
-  }
-  
   tableresult <- data.frame(
     methode = modele_names,
     l_inf = c(
-      extract_from_env(result[["vout"]]),
-      extract_from_env(result[["gout"]]),
-      extract_from_env(result[["lout"]])
+      extract_from_env(result$vout),
+      extract_from_env(result$gout),
+      extract_from_env(result$lout)
     ),
     k = c(
-      extract_param(result[["vout"]], 2)[1],
-      extract_param(result[["gout"]], 2)[1],
-      extract_param(result[["lout"]], 2)[1]
+      extract_param(result$vout, 2)[1],
+      extract_param(result$gout, 2)[1],
+      extract_param(result$lout, 2)[1]
     ),
     t0 = c(
-      extract_param(result[["vout"]], 3)[1],
-      extract_param(result[["gout"]], 3)[1],
-      extract_param(result[["lout"]], 3)[1]
+      extract_param(result$vout, 3)[1],
+      extract_param(result$gout, 3)[1],
+      extract_param(result$lout, 3)[1]
     ),
-    l_inf_ic = mapply(
-      function(res) {
-        ic <- extract_param(res, 1)
-        if (is.numeric(ic)) paste0("[", round(ic[1]), "-", round(ic[2]), "]") else ""
-      },
-      list(result[["vout"]], result[["gout"]], result[["lout"]])
-    ),
-    k_ic = mapply(
-      function(res) {
-        ic <- extract_param(res, 2)
-        if (is.numeric(ic)) paste0("[", round(ic[1], 3), "-", round(ic[2], 3), "]") else ""
-      },
-      list(result[["vout"]], result[["gout"]], result[["lout"]])
-    ),
-    t0_ic = mapply(
-      function(res) {
-        ic <- extract_param(res, 3)
-        if (is.numeric(ic)) paste0("[", round(ic[1], 3), "-", round(ic[2], 3), "]") else ""
-      },
-      list(result[["vout"]], result[["gout"]], result[["lout"]])
-    ),
+    l_inf_ic = mapply(function(res) {
+      ic <- extract_param(res, 1)
+      if (is.numeric(ic)) paste0("[", round(ic[1]), "-", round(ic[2]), "]") else ""
+    }, list(result$vout, result$gout, result$lout)),
+    k_ic = mapply(function(res) {
+      ic <- extract_param(res, 2)
+      if (is.numeric(ic)) paste0("[", round(ic[1], 3), "-", round(ic[2], 3), "]") else ""
+    }, list(result$vout, result$gout, result$lout)),
+    t0_ic = mapply(function(res) {
+      ic <- extract_param(res, 3)
+      if (is.numeric(ic)) paste0("[", round(ic[1], 3), "-", round(ic[2], 3), "]") else ""
+    }, list(result$vout, result$gout, result$lout)),
     converged = c(
-      result[["vout"]][["convInfo"]][["stopMessage"]],
-      result[["gout"]][["convInfo"]][["stopMessage"]],
-      result[["lout"]][["convInfo"]][["stopMessage"]]
+      result$vout$convInfo$stopMessage,
+      result$gout$convInfo$stopMessage,
+      result$lout$convInfo$stopMessage
     )
   )
   
   aic_tab <- aictab(
-    list(result[["vout"]], result[["gout"]], result[["lout"]]),
+    list(result$vout, result$gout, result$lout),
     modnames = modele_names
   ) |>
     rename(methode = Modnames) |>
-    select(-c("K", "LL", "Cum.Wt", "ModelLik"))
+    select(-K, -LL, -Cum.Wt, -ModelLik)
   
   final <- left_join(tableresult, aic_tab, by = "methode") |>
     mutate(
@@ -132,7 +114,34 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
   
   ft <- flextable(final) |>
     set_caption("Paramètres des modèles de croissance (VB, Gompertz, Logistique)") |>
-    style_flextable_aquapop() 
+    style_flextable_aquapop()
   
   return(list(data = final, flextable = ft))
+}
+
+#' Extraire un paramètre et son intervalle de confiance à partir d’un modèle
+#'
+#' Fonction interne utilisée par `croissance_compare_modele()` pour obtenir un
+#' intervalle de confiance pour un paramètre donné (1 = L∞, 2 = K, 3 = t0).
+#'
+#' @param res Un objet de modèle (`nls`) provenant de `growth()`
+#' @param index Position du paramètre (1 = L∞, 2 = K, 3 = t0)
+#'
+#' @return Un vecteur numérique ou NA en cas d’erreur
+#' @keywords internal
+extract_param <- function(res, index) {
+  tryCatch(confint(res, level = 0.95)[index, , drop = TRUE], error = function(e) NA)
+}
+
+#' Extraire la valeur de L∞ à partir de l’environnement du modèle
+#'
+#' Fonction interne utilisée par `croissance_compare_modele()` pour lire `Sinf`
+#' depuis l’environnement du modèle.
+#'
+#' @param mod Un objet `nls` contenu dans `growth()`
+#'
+#' @return Un nombre correspondant à L∞
+#' @keywords internal
+extract_from_env <- function(mod) {
+  environment(mod[["m"]][["deviance"]])[["env"]][["Sinf"]]
 }

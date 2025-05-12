@@ -7,11 +7,12 @@
 maturite_eval_modele(models)
 }
 \arguments{
-\item{models}{Liste des modèles retournée}
+\item{models}{Liste des modèles retournée par \code{maturite_generate_modele()}}
 }
 \value{
-Un \code{data.frame} avec les critères d’évaluation, trié par AICc
+Un \code{data.frame} trié par AICc avec les indicateurs : convergence, tests d’ajustement, commentaire
 }
 \description{
-Évaluer l'ajustement des modèles de maturité (L50 ou A50)
+Cette fonction compile les critères d’évaluation de plusieurs modèles de maturité
+(logistique, probit, etc.) pour les comparer selon leur qualité d’ajustement.
 }

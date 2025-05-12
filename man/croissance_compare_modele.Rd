@@ -7,19 +7,19 @@
 croissance_compare_modele(data, format = c("data.frame", "flextable"))
 }
 \arguments{
-\item{data}{Un \code{data.frame} de spécimens, contenant au minimum les colonnes \code{sp}, \code{ltm}, \code{age} et \code{no_specimen}.}
+\item{data}{Un \code{data.frame} contenant au minimum : \code{sp}, \code{ltm}, \code{age}, \code{no_specimen}}
 
-\item{format}{Format de sortie souhaité : \code{"data.frame"} (par défaut) ou \code{"flextable"}.}
+\item{format}{Format de sortie souhaité : \code{"data.frame"} (par défaut) ou \code{"flextable"}}
 }
 \value{
 Une liste avec deux éléments :
 \describe{
-\item{data}{Un \code{data.frame} résumant les résultats des trois modèles (paramètres, IC, AICc).}
-\item{flextable}{Une version formatée (\code{flextable}) du tableau comparatif.}
+\item{data}{\code{data.frame} résumant les résultats des trois modèles}
+\item{flextable}{Tableau formaté prêt pour insertion dans un document}
 }
 }
 \description{
-Cette fonction ajuste trois modèles de croissance non linéaire (Von Bertalanffy, Gompertz, Logistique)
-à un jeu de données de spécimens. Elle retourne un tableau comparatif des paramètres estimés, des
-intervalles de confiance et du critère d'information corrigé (AICc) pour chacun des modèles.
+Cette fonction ajuste trois modèles de croissance non linéaire à un jeu de données de spécimens
+et retourne un tableau comparatif des paramètres estimés, des intervalles de confiance
+et du critère d'information corrigé (AICc).
 }

@@ -7,14 +7,17 @@
 mortalite_fit_best_modele(data, methode = NULL)
 }
 \arguments{
-\item{data}{Un data.frame contenant \code{age} et \code{number}(habituellement df_age_etendue)}
+\item{data}{Un \code{data.frame} contenant au minimum les colonnes \code{age} et \code{number}
+(habituellement produit par \code{mortalite_prepare()})}
 
-\item{methode}{Optionnel. Si fourni (e.g. "NB2"), retourne ce modèle directement.}
+\item{methode}{Chaîne de caractères optionnelle ("poisson", "nb1", "nb2", "cmp", "gp").
+Si précisée, ce modèle est ajusté directement sans comparaison.}
 }
 \value{
-Un objet de classe \code{glm}, \code{glm.nb} ou \code{glmmTMB}
+Un objet de classe \code{glm}, \code{glm.nb} ou \code{glmmTMB}, selon la méthode choisie
 }
 \description{
-Cette fonction ajuste les 5 modèles de mortalité, sélectionne le meilleur
-via \code{mortalite_select_best_modele()} et retourne l’objet \code{modele} correspondant.
+Cette fonction ajuste les cinq modèles de mortalité (Poisson, NB1, NB2, CMP, GP),
+sélectionne automatiquement le meilleur via \code{mortalite_select_best_modele()},
+et retourne l’objet \code{modele} correspondant. Si \code{methode} est précisé, il est utilisé directement.
 }
