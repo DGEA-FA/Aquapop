@@ -15,10 +15,11 @@ maturite_fit_combined_modele <- function(df, variable = c("ltm", "age")) {
     stop("Le dataframe doit contenir les colonnes : ", paste(missing_cols, collapse = ", "))
   }
   
-  # Vérifier que les données contiennent au moins 2 sexes
-  if (!all(c("M", "F") %in% levels(df$sexe))) {
-    stop("Les données doivent contenir au moins deux sexes : 'M' et 'F'.")
+  if (!all(c("M", "F") %in% df$sexe)) {
+    warning("Les données ne contiennent qu’un seul sexe. Modèles combinés non ajustés.")
+    return(list())
   }
+  
   
   if (variable == "ltm") {
     list(

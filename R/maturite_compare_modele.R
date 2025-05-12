@@ -10,7 +10,7 @@
 #' @return Une liste contenant :
 #' \itemize{
 #'   \item `table` : liste avec `df` et `flextable` pour le tableau principal
-#'   \item `best_model` : une liste (ou une liste de deux) avec `modele`, `lien`, `variable`
+#'   \item `best_model` : une liste contenant toujours les trois éléments `best_model_M`, `best_model_F`, `best_model_combined`
 #'   \item `message` : texte explicatif
 #'   \item `table_sep` : liste avec `df` et `flextable` pour les modèles séparés
 #'   \item `table_comb` : liste avec `df` et `flextable` pour les modèles combinés
@@ -20,7 +20,6 @@
 maturite_compare_modele <- function(specimen_data, prefer_combined = FALSE, variable = c("ltm", "age")) {
   variable <- match.arg(variable)
   
-  # Fonction interne de conversion
   to_dual_format <- function(df) {
     list(
       df = df,
@@ -28,7 +27,6 @@ maturite_compare_modele <- function(specimen_data, prefer_combined = FALSE, vari
     )
   }
   
-  # Fonction interne pour ajouter les labels aux colonnes de modèles de maturité
   add_labels_maturite <- function(df) {
     var_labels <- list()
     if ("modele_id" %in% names(df)) var_labels$modele_id <- "Modèle"
@@ -41,27 +39,28 @@ maturite_compare_modele <- function(specimen_data, prefer_combined = FALSE, vari
     if ("commentaire" %in% names(df)) var_labels$commentaire <- "Commentaire"
     if ("type" %in% names(df))      var_labels$type      <- "Type de modèle"
     if ("recommande" %in% names(df)) var_labels$recommande <- "✔ Recommandé"
-    
     var_label(df) <- var_labels
     return(df)
   }
   
-  # Préparation des données
   df <- maturite_prepare(specimen_data, variable = variable)
   
-  # Ajustement des modèles séparés
   models_sep <- maturite_fit_separated_modele(df, variable = variable)
   eval_sep <- maturite_eval_modele(models_sep)
   best_sep <- maturite_select_best_separated_modele(eval_sep)
   eval_sep$type <- ifelse(grepl("^M_", eval_sep$modele_id), "séparé_M", "séparé_F")
   
-  # Ajustement des modèles combinés
   models_comb <- maturite_fit_combined_modele(df, variable = variable)
   eval_comb <- maturite_eval_modele(models_comb)
   eval_comb$type <- "combiné"
   
   best_comb <- maturite_select_best_combined_modele(eval_comb)
-  eval_comb$recommande <- eval_comb$modele_id == best_comb$best_model
+  
+  # Recommandation pour modèles combinés
+  eval_comb$recommande <- rep(FALSE, nrow(eval_comb))
+  if (!is.null(best_comb$best_model) && length(best_comb$best_model) > 0) {
+    eval_comb$recommande <- eval_comb$modele_id %in% best_comb$best_model
+  }
   
   # Formatage des p-values
   eval_sep$pearson_x2_pval <- format_pval(eval_sep$pearson_x2_pval)
@@ -69,30 +68,41 @@ maturite_compare_modele <- function(specimen_data, prefer_combined = FALSE, vari
   eval_comb$pearson_x2_pval <- format_pval(eval_comb$pearson_x2_pval)
   eval_comb$goodness_of_link_pval <- format_pval(eval_comb$goodness_of_link_pval)
   
-  # Message explicatif
+  # Message
   message <- paste0(best_sep$message, "\n", best_comb$message)
-  if (is.null(best_comb$best_model) && (is.null(best_sep$best_model_M) || is.null(best_sep$best_model_F))) {
+  if (is.null(best_comb$best_model) &&
+      (is.null(best_sep$best_model_M) || is.null(best_sep$best_model_F))) {
     message <- paste0(message, "\n⚠️ Aucun modèle utilisable n’a pu être sélectionné.")
     warning("Aucun modèle utilisable trouvé.")
   }
   
-  # Ajouter les labels
+  # Appliquer les labels
   eval_sep <- add_labels_maturite(eval_sep)
   eval_comb <- add_labels_maturite(eval_comb)
   
-  # Structure des sorties
+  # Sélection des modèles
   if (prefer_combined || best_sep$use_combined) {
     table_main <- to_dual_format(eval_comb)
-    best_model <- if (!is.null(best_comb$best_model)) {
-      list(
+    best_model <- list(
+      best_model_M = NULL,
+      best_model_F = NULL,
+      best_model_combined = NULL
+    )
+    if (!is.null(best_comb$best_model)) {
+      best_model$best_model_combined <- list(
         modele = str_extract(best_comb$best_model, "TLO|ADD|INT|COM"),
         lien = str_extract(best_comb$best_model, "logit|probit|cloglog"),
         variable = variable
       )
-    } else {
-      NULL
     }
   } else {
+    table_main <- to_dual_format(eval_sep)
+    modele_ids_valides <- c(best_sep$best_model_M, best_sep$best_model_F) %||% character(0)
+    eval_sep$recommande <- rep(FALSE, nrow(eval_sep))
+    if (length(modele_ids_valides) > 0) {
+      eval_sep$recommande <- eval_sep$modele_id %in% modele_ids_valides
+    }
+    
     best_model <- list(
       best_model_M = if (!is.null(best_sep$best_model_M)) {
         list(
@@ -107,17 +117,15 @@ maturite_compare_modele <- function(specimen_data, prefer_combined = FALSE, vari
           lien = str_extract(best_sep$best_model_F, "logit|probit|cloglog"),
           variable = variable
         )
-      } else NULL
+      } else NULL,
+      best_model_combined = NULL
     )
-    eval_sep$recommande <- eval_sep$modele_id %in% c(best_sep$best_model_M, best_sep$best_model_F)
-    table_main <- to_dual_format(eval_sep)
   }
   
-  # Valeur par défaut pour la colonne `recommande` si elle est absente
+  # Valeurs par défaut
   eval_sep$recommande <- eval_sep$recommande %||% FALSE
   eval_comb$recommande <- eval_comb$recommande %||% FALSE
   
-  # Résultat final
   list(
     table = table_main,
     best_model = best_model,

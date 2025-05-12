@@ -21,7 +21,7 @@ maturite_compare_modele(
 Une liste contenant :
 \itemize{
 \item \code{table} : liste avec \code{df} et \code{flextable} pour le tableau principal
-\item \code{best_model} : une liste (ou une liste de deux) avec \code{modele}, \code{lien}, \code{variable}
+\item \code{best_model} : une liste contenant toujours les trois éléments \code{best_model_M}, \code{best_model_F}, \code{best_model_combined}
 \item \code{message} : texte explicatif
 \item \code{table_sep} : liste avec \code{df} et \code{flextable} pour les modèles séparés
 \item \code{table_comb} : liste avec \code{df} et \code{flextable} pour les modèles combinés

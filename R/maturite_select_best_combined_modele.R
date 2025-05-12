@@ -29,7 +29,8 @@ maturite_select_best_combined_modele <- function(evaluation_df) {
   
   best_model <- valid_models |>
     filter(aicc == min(aicc)) |>
-    pull(modele_id)
+    pull(modele_id) |>
+    head(1) 
   
   return(list(
     best_model = best_model,

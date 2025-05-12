@@ -54,11 +54,13 @@ maturite_select_best_separated_modele <- function(evaluation_df) {
   # Cas 4 — Les deux sexes ont au moins un modèle valide
   best_M <- valid_M |>
     filter(aicc == min(aicc)) |>
-    pull(modele_id)
+    pull(modele_id)  |>
+    head(1)
   
   best_F <- valid_F |>
     filter(aicc == min(aicc)) |>
-    pull(modele_id)
+    pull(modele_id) |>
+    head(1)
   
   return(list(
     best_model_M = best_M,

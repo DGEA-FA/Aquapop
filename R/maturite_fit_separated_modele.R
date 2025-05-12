@@ -16,9 +16,11 @@ maturite_fit_separated_modele <- function(df, variable = c("ltm", "age")) {
   }
   
   # Vérifier que les deux sexes sont présents
-  if (!all(c("M", "F") %in% levels(df$sexe))) {
-    stop("Les données doivent contenir les sexes 'M' et 'F'.")
+  if (!all(c("M", "F") %in% df$sexe)) {
+    warning("Un seul sexe observé. L’ajustement des modèles séparés est impossible.")
+    return(NULL)
   }
+  
   
   if (variable == "ltm") {
     list(

@@ -1,18 +1,32 @@
 #' Évaluer l'ajustement des modèles de maturité (L50 ou A50)
 #'
-#' @param models Liste des modèles retournée 
+#' @param models Liste des modèles retournée
 #'
 #' @return Un `data.frame` avec les critères d’évaluation, trié par AICc
 #' @importFrom dplyr bind_rows arrange desc
 #' @importFrom labelled var_label<-
 #' @importFrom glue glue
+#' @importFrom tibble tibble
 #' @export
 maturite_eval_modele <- function(models) {
-
-  results <- lapply(names(models), function(n)
-    build_individual_model_row(models[[n]], n)) |>
-    bind_rows() |>
-    arrange(desc(convergence), aicc)
+  
+  if (length(models) == 0) {
+    results <- tibble(
+      modele_id = character(),
+      modele = character(),
+      lien = character(),
+      convergence = logical(),
+      pearson_x2_pval = numeric(),
+      goodness_of_link_pval = numeric(),
+      aicc = numeric(),
+      commentaire = character()
+    )
+  } else {
+    results <- lapply(names(models), function(n)
+      build_individual_model_row(models[[n]], n)) |>
+      bind_rows() |>
+      arrange(desc(convergence), aicc)
+  }
   
   # Ajout de labels pour un affichage plus clair dans l'application
   var_label(results) <- list(
