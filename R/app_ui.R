@@ -137,12 +137,8 @@ app_ui <- function() {
                  
                  # BPUE - Biomasse ----
                  
-                 tabPanel(
-                   title = "BPUE",
-                   p("Le tableau ci-dessous présente la répartition de la biomasse capturée."),
-                   withSpinner(uiOutput("biomasse_table"), type = myspinner),
-                   download_button_ui("biomasse_table_dl")
-                 )
+                 mod_biomasse_bpue_ui("biomasse")
+                 
                  
                )),
       

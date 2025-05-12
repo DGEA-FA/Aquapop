@@ -183,7 +183,7 @@ prof <- function(b, xi, R, fam, Y, X0, x, etastart, wts, control, chi2, D0, off,
 ld_proflik <- function(object, cf = 1:2, p = 0.5, level = 0.95, profile = FALSE, ...) {
   fam <- stats::family(object)
   Y <- object$y
-  X <- model.matrix(object)
+  X <- stats::model.matrix(object)
   X0 <- X[, -cf]
   x <- X[, cf[2]]
   b <- as.vector(coef(object)[cf])
@@ -224,8 +224,8 @@ print.LR_glm_dose <- function(x, ...) {
 ld_boot <- function(object, p = 0.5, cf = 1:2, level = 0.95, nboot = 1000,
                     interval_type = c("eti","hdi")) {
   data <- object$data
-  fmla <- formula(stats::delete.response(terms(formula(object))))
-  X <- model.matrix(fmla, data = data)
+  fmla <- formula(stats::delete.response(stats::terms(formula(object))))
+  X <- stats::model.matrix(fmla, data = data)
   original_d_hat <- dose.p(object, p = p, cf = cf)
   
   d_hat <- matrix(NA, ncol = length(p), nrow = nboot)
@@ -305,8 +305,8 @@ ld_boot <- function(object, p = 0.5, cf = 1:2, level = 0.95, nboot = 1000,
 ld_boot_nonpar <- function(object, p = 0.5, cf = 1:2, level = 0.95, nboot = 1000,
                            interval_type = c("eti","hdi","bca","all")) {
   data <- object$data
-  fmla <- formula(stats::delete.response(terms(formula(object))))
-  X <- model.matrix(fmla, data = data)
+  fmla <- formula(stats::delete.response(stats::terms(formula(object))))
+  X <- stats::model.matrix(fmla, data = data)
   original_d_hat <- dose.p(object, p = p, cf = cf)
   
   d_hat <- matrix(NA, ncol = length(p), nrow = nboot)
@@ -452,9 +452,9 @@ model
   
   model_data <- list(y = as.numeric(object$y * object$prior.weights),
                      m = as.numeric(object$prior.weights),
-                     X = model.matrix(object),
-                     N = nrow(model.matrix(object)),
-                     N_betas = ncol(model.matrix(object)),
+                     X = stats::model.matrix(object),
+                     N = nrow(stats::model.matrix(object)),
+                     N_betas = ncol(stats::model.matrix(object)),
                      cf = cf, p_const = p_const)
   
   model_parameters <- "ld"

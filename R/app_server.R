@@ -254,22 +254,29 @@ app_server <- function(input, output, session) {
   
   # BPUE - Biomasse ----
   
-  biomasse1 <- reactive({
-    req(specimen(), station_hasard_valide())
-    bpue_generate_biomasse(
-      data_specimen = specimen(),
-      data_station  = station_hasard_valide()
-    )
-  })
+  # biomasse1 <- reactive({
+  #   req(specimen(), station_hasard_valide())
+  #   bpue_generate_biomasse(
+  #     data_specimen = specimen(),
+  #     data_station  = station_hasard_valide()
+  #   )
+  # })
+  # 
+  # render_table_flextable("biomasse_table", reactive(biomasse1()$flextable))
+  # 
+  # 
+  # render_download_table(
+  #   "biomasse_table_dl",
+  #   data = reactive(biomasse1()$data),
+  #   filename = reactive(build_export_filename("biomasse", filename_suffix()))
+  # ) 
+  mod_biomasse_bpue_server(
+    id = "biomasse",
+    specimen = specimen,
+    station = station_hasard_valide,
+    filename_suffix = filename_suffix
+  )
   
-  render_table_flextable("biomasse_table", reactive(biomasse1()$flextable))
-  
-  
-  render_download_table(
-    "biomasse_table_dl",
-    data = reactive(biomasse1()$data),
-    filename = reactive(build_export_filename("biomasse", filename_suffix()))
-  ) 
   
   # Taille, masse, age ----
   

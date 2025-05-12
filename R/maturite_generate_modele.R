@@ -18,7 +18,7 @@
 #' - `donnees_ogive`: données prédictives
 #'
 #' @export
-#' @importFrom stats glm binomial predict anova coef update plogis
+#' @importFrom stats glm binomial predict anova coef update plogis pnorm
 #' @importFrom glue glue
 #' @importFrom dplyr bind_rows filter mutate pull
 #' @importFrom ggplot2 ggplot aes geom_line geom_ribbon geom_point labs annotate theme

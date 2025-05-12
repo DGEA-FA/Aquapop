@@ -49,10 +49,10 @@
 #'
 #' @examples
 #' df <- data.frame(
-#'   sp = rep("SANA", 10),
-#'   ltm = seq(300, 500, by = 20),
-#'   masse = seq(200, 400, by = 20),
-#'   sexe = rep(c("F", "M"), 5)
+#'   sp    = rep("SANA", 10),
+#'   ltm   = seq(300, 480, by = 20),  
+#'   masse = seq(200, 380, by = 20),  
+#'   sexe  = rep(c("F", "M"), 5)      
 #' )
 #' wri(df)
 #' 
