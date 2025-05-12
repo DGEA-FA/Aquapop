@@ -176,100 +176,91 @@ app_server <- function(input, output, session) {
   
   
   # CPUE - Abondance ----
-  
-  ## Tableau CPUE - Tous ----
-  cpue_table_tous <- reactive({
-    req(specimen(), capture())
-    cpue_prepare(capture = capture(), specimen = specimen(), group = "tous")
-  })
-  
-  cpue_modele_tous <- reactive({
-    req(cpue_table_tous())
-    cpue_compare_modele(cpue_table_tous())
-  })
-  
-  render_table_flextable("cpue_tous_table", reactive(cpue_modele_tous()$flextable))
-  
-  
-  render_download_table(
-    "cpue_tous_table_dl",
-    data = reactive(cpue_modele_tous()$data),
-    filename = reactive(build_export_filename("cpue_tous", filename_suffix()))
+  mod_abondance_cpue_server(
+    id = "cpue",
+    specimen = specimen,
+    capture = capture,
+    filename_suffix = filename_suffix
   )
   
-  ## Tableau CPUE - Femelles matures ----
-  cpue_table_femelles <- reactive({
-    req(specimen(), capture())
-    cpue_prepare(capture = capture(), specimen = specimen(), group = "femelles")
-  })
-  
-  cpue_modele_femelles <- reactive({
-    req(cpue_table_femelles())
-    cpue_compare_modele(cpue_table_femelles())
-  })
-  
-  render_table_flextable("cpue_femelles_table", reactive(cpue_modele_femelles()$flextable))
-  render_download_table(
-    "cpue_femelles_table_dl",
-    data = reactive(cpue_modele_femelles()$data),
-    filename = reactive(build_export_filename("cpue_femelles", filename_suffix()))
-  )
-  
-  ## Tableau d'abondance ----
-  
-  best_model_tous <- reactive({
-    req(cpue_modele_tous())
-    cpue_select_best_modele(cpue_modele_tous()$data)
-  })
-  
-  best_model_femelles <- reactive({
-    req(cpue_modele_femelles())
-    cpue_select_best_modele(cpue_modele_femelles()$data)
-  })
-  
-  abondance1 <- reactive({
-    req(
-      specimen(),
-      cpue_modele_tous(),
-      cpue_modele_femelles(),
-      best_model_tous(),
-      best_model_femelles()
-    )
-    
-    cpue_abondance_table(
-      data = specimen(),
-      cpue_table_tous = cpue_modele_tous()$data,
-      cpue_table_femelles = cpue_modele_femelles()$data,
-      best_model_tous = best_model_tous(),
-      best_model_femelles = best_model_femelles()
-    )
-  })
-  
-  render_table_flextable("abondance_table", reactive(abondance1()$flextable))
-  render_download_table(
-    "abondance_table_dl",
-    data = reactive(abondance1()$data),
-    filename = reactive(build_export_filename("abondance", filename_suffix()))
-  )
-  
-  # BPUE - Biomasse ----
-  
-  # biomasse1 <- reactive({
-  #   req(specimen(), station_hasard_valide())
-  #   bpue_generate_biomasse(
-  #     data_specimen = specimen(),
-  #     data_station  = station_hasard_valide()
-  #   )
+  # 
+  # ## Tableau CPUE - Tous ----
+  # cpue_table_tous <- reactive({
+  #   req(specimen(), capture())
+  #   cpue_prepare(capture = capture(), specimen = specimen(), group = "tous")
   # })
   # 
-  # render_table_flextable("biomasse_table", reactive(biomasse1()$flextable))
+  # cpue_modele_tous <- reactive({
+  #   req(cpue_table_tous())
+  #   cpue_compare_modele(cpue_table_tous())
+  # })
+  # 
+  # render_table_flextable("cpue_tous_table", reactive(cpue_modele_tous()$flextable))
   # 
   # 
   # render_download_table(
-  #   "biomasse_table_dl",
-  #   data = reactive(biomasse1()$data),
-  #   filename = reactive(build_export_filename("biomasse", filename_suffix()))
-  # ) 
+  #   "cpue_tous_table_dl",
+  #   data = reactive(cpue_modele_tous()$data),
+  #   filename = reactive(build_export_filename("cpue_tous", filename_suffix()))
+  # )
+  # 
+  # ## Tableau CPUE - Femelles matures ----
+  # cpue_table_femelles <- reactive({
+  #   req(specimen(), capture())
+  #   cpue_prepare(capture = capture(), specimen = specimen(), group = "femelles")
+  # })
+  # 
+  # cpue_modele_femelles <- reactive({
+  #   req(cpue_table_femelles())
+  #   cpue_compare_modele(cpue_table_femelles())
+  # })
+  # 
+  # render_table_flextable("cpue_femelles_table", reactive(cpue_modele_femelles()$flextable))
+  # render_download_table(
+  #   "cpue_femelles_table_dl",
+  #   data = reactive(cpue_modele_femelles()$data),
+  #   filename = reactive(build_export_filename("cpue_femelles", filename_suffix()))
+  # )
+  # 
+  # ## Tableau d'abondance ----
+  # 
+  # best_model_tous <- reactive({
+  #   req(cpue_modele_tous())
+  #   cpue_select_best_modele(cpue_modele_tous()$data)
+  # })
+  # 
+  # best_model_femelles <- reactive({
+  #   req(cpue_modele_femelles())
+  #   cpue_select_best_modele(cpue_modele_femelles()$data)
+  # })
+  # 
+  # abondance1 <- reactive({
+  #   req(
+  #     specimen(),
+  #     cpue_modele_tous(),
+  #     cpue_modele_femelles(),
+  #     best_model_tous(),
+  #     best_model_femelles()
+  #   )
+  #   
+  #   cpue_abondance_table(
+  #     data = specimen(),
+  #     cpue_table_tous = cpue_modele_tous()$data,
+  #     cpue_table_femelles = cpue_modele_femelles()$data,
+  #     best_model_tous = best_model_tous(),
+  #     best_model_femelles = best_model_femelles()
+  #   )
+  # })
+  # 
+  # render_table_flextable("abondance_table", reactive(abondance1()$flextable))
+  # render_download_table(
+  #   "abondance_table_dl",
+  #   data = reactive(abondance1()$data),
+  #   filename = reactive(build_export_filename("abondance", filename_suffix()))
+  # )
+  # 
+  # BPUE - Biomasse ----
+ 
   mod_biomasse_bpue_server(
     id = "biomasse",
     specimen = specimen,

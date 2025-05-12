@@ -29,7 +29,6 @@ as_reactive <- function(x) {
 #' @export
 render_table_flextable <- function(output_id, flextable) {
   output <- get("output", envir = parent.frame())
-  
   get_ft <- as_reactive(force_lazy(flextable))
   
   output[[output_id]] <- renderUI({
@@ -37,13 +36,12 @@ render_table_flextable <- function(output_id, flextable) {
     req(ft)
     
     tmpfile <- tempfile(fileext = ".html")
+    on.exit(unlink(tmpfile), add = TRUE)
     
-    tryCatch({
-      save_as_html(ft, path = tmpfile)
-      HTML(paste(readLines(tmpfile, warn = FALSE), collapse = "\n"))
-    }, error = function(e) {
-      HTML("Une erreur est survenue lors de l'affichage du tableau.")
-    })
+    flextable::save_as_html(ft, path = tmpfile)
+    
+    contenu <- paste(readLines(tmpfile, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+    HTML(contenu)
   })
 }
 

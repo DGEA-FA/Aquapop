@@ -103,37 +103,39 @@ app_ui <- function() {
                  
                  # CPUE - Abondance ----
                  
-                 tabPanel(
-                   title = "CPUE",
-                   p("Le tableau ci-dessous présente le nombre de captures de 
-                   l’espèce visée selon la table *Récolte* et le nombres d’individus
-                   dans la table *Spécimens*.  
-                   Si la récolte est plus élevée que le nombre de spécimens,
-                   il peut s’agir d’un poisson échappé ou trop magané pour
-                   prendre des mesures, etc. Si le nombre de spécimens est plus 
-                   élevé que la récolte, il y a erreur à corriger dans la base
-                   de données. Les modèles d’abondance globale (CPUE_tous)
-                   sont calculés à partir du nombre de captures indiqués 
-                   dans la *Récolte* alors que le tableau récapitulatif 
-                   est calculé à partir des données de la table *Spécimens*."),
-                   
-                   ## Tableau CPUE - Tous ----
-                   
-                   withSpinner(uiOutput("cpue_tous_table"), type = myspinner),
-                   download_button_ui("cpue_tous_table_dl"),
-                   
-                   br(),
-                   
-                   ## Tableau CPUE - Femelles matures ----
-                   uiOutput("cpue_femelles_table"),
-                   download_button_ui("cpue_femelles_table_dl"),
-                   br(),
-                   
-                   ## Tableau d'abondance ----
-                   uiOutput("abondance_table"),
-                   download_button_ui("abondance_table_dl"),
-                   
-                 ),
+                 # tabPanel(
+                 #   title = "CPUE",
+                 #   p("Le tableau ci-dessous présente le nombre de captures de 
+                 #   l’espèce visée selon la table *Récolte* et le nombres d’individus
+                 #   dans la table *Spécimens*.  
+                 #   Si la récolte est plus élevée que le nombre de spécimens,
+                 #   il peut s’agir d’un poisson échappé ou trop magané pour
+                 #   prendre des mesures, etc. Si le nombre de spécimens est plus 
+                 #   élevé que la récolte, il y a erreur à corriger dans la base
+                 #   de données. Les modèles d’abondance globale (CPUE_tous)
+                 #   sont calculés à partir du nombre de captures indiqués 
+                 #   dans la *Récolte* alors que le tableau récapitulatif 
+                 #   est calculé à partir des données de la table *Spécimens*."),
+                 #   
+                 #   ## Tableau CPUE - Tous ----
+                 #   
+                 #   withSpinner(uiOutput("cpue_tous_table"), type = myspinner),
+                 #   download_button_ui("cpue_tous_table_dl"),
+                 #   
+                 #   br(),
+                 #   
+                 #   ## Tableau CPUE - Femelles matures ----
+                 #   uiOutput("cpue_femelles_table"),
+                 #   download_button_ui("cpue_femelles_table_dl"),
+                 #   br(),
+                 #   
+                 #   ## Tableau d'abondance ----
+                 #   uiOutput("abondance_table"),
+                 #   download_button_ui("abondance_table_dl"),
+                 #   
+                 # )
+                 mod_abondance_cpue_ui("cpue")
+                 ,
                  
                  # BPUE - Biomasse ----
                  
