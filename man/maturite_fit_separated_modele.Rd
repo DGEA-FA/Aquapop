@@ -2,18 +2,34 @@
 % Please edit documentation in R/maturite_fit_separated_modele.R
 \name{maturite_fit_separated_modele}
 \alias{maturite_fit_separated_modele}
-\title{Ajuste les modèles de maturité séparés par sexe (L50 ou A50)}
+\title{Ajuster les modèles de maturité séparés par sexe (L50 ou A50)}
 \usage{
 maturite_fit_separated_modele(df, variable = c("ltm", "age"))
 }
 \arguments{
-\item{df}{Un dataframe contenant les colonnes \code{maturite}, \code{sexe} et la variable quantitative (\code{ltm} ou \code{age})}
+\item{df}{Un \code{data.frame} contenant les colonnes \code{maturite}, \code{sexe}, et la variable
+quantitative sélectionnée (\code{ltm} ou \code{age}).}
 
-\item{variable}{Variable quantitative à utiliser : \code{"ltm"} (par défaut) ou \code{"age"}}
+\item{variable}{Chaîne \code{"ltm"} (par défaut) ou \code{"age"}, indiquant la variable
+à utiliser comme prédicteur principal.}
 }
 \value{
-Une liste contenant les modèles logistiques (\code{logit}, \code{probit}, \code{cloglog}) pour M et F.
+Une liste contenant les six modèles séparés (\code{glm}), avec les noms :
+\code{M_logit}, \code{M_probit}, \code{M_cloglog}, \code{F_logit}, \code{F_probit}, \code{F_cloglog}.
+Retourne \code{NULL} si un seul sexe est présent dans les données.
 }
 \description{
-Ajuste les modèles de maturité séparés par sexe (L50 ou A50)
+Cette fonction ajuste six modèles logistiques binaires (logit, probit, cloglog)
+pour les sexes mâle et femelle séparément, en fonction de la taille (\code{ltm}) ou
+de l’âge (\code{age}). Elle retourne une liste contenant les six modèles si les deux
+sexes sont présents. Si un seul sexe est observé, elle retourne \code{NULL} avec un avertissement.
+}
+\examples{
+df <- tibble::tibble(
+  maturite = rep(c("N", "O"), each = 30),
+  sexe = rep(c("M", "F"), each = 30),
+  ltm = c(stats::runif(30, 100, 250), stats::runif(30, 120, 260))
+)
+models <- maturite_fit_separated_modele(df, variable = "ltm")
+
 }

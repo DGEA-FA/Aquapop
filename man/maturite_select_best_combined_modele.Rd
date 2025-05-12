@@ -2,21 +2,34 @@
 % Please edit documentation in R/maturite_select_best_combined_modele.R
 \name{maturite_select_best_combined_modele}
 \alias{maturite_select_best_combined_modele}
-\title{Sélectionne le meilleur modèle parmi les modèles combinés}
+\title{Sélectionner le meilleur modèle combiné (L50)}
 \usage{
 maturite_select_best_combined_modele(evaluation_df)
 }
 \arguments{
-\item{evaluation_df}{Un data.frame retourné par \code{evaluate_L50_models()} appliqué aux modèles combinés.}
+\item{evaluation_df}{Un \code{data.frame} retourné par \code{maturite_eval_modele()}
+appliqué aux modèles combinés. Il doit inclure au minimum les colonnes :
+\code{modele_id}, \code{convergence}, \code{commentaire}, \code{aicc}.}
 }
 \value{
 Une liste contenant :
-\itemize{
-\item \code{best_model} : identifiant du meilleur modèle (ou \code{NULL} si aucun n'est valide)
-\item \code{message} : texte descriptif à afficher
+\describe{
+\item{best_model}{Identifiant du meilleur modèle combiné (\code{modele_id}), ou \code{NULL} si aucun modèle n’est valide}
+\item{message}{Message interprétatif indiquant la sélection ou l’absence de modèles valides}
 }
 }
 \description{
-À partir du tableau d’évaluation, cette fonction sélectionne le modèle combiné
-ayant le plus bas AICc parmi ceux qui ont convergé et qui s'ajustent bien.
+Cette fonction identifie automatiquement le meilleur modèle combiné (sexes confondus)
+parmi ceux qui ont convergé et obtenu un bon ajustement (aucun rejet dans le commentaire),
+en se basant sur le plus faible AICc.
+}
+\examples{
+df <- tibble::tibble(
+  modele_id = c("C_logit", "C_probit"),
+  convergence = c(TRUE, TRUE),
+  commentaire = c("Modèle valide.", "Modèle valide."),
+  aicc = c(102.3, 99.8)
+)
+maturite_select_best_combined_modele(df)
+
 }

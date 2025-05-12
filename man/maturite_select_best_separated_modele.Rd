@@ -2,24 +2,27 @@
 % Please edit documentation in R/maturite_select_best_separated_modele.R
 \name{maturite_select_best_separated_modele}
 \alias{maturite_select_best_separated_modele}
-\title{Sélectionne les meilleurs modèles L50 pour chaque sexe}
+\title{Sélectionner les meilleurs modèles L50 pour chaque sexe (approche séparée)}
 \usage{
 maturite_select_best_separated_modele(evaluation_df)
 }
 \arguments{
-\item{evaluation_df}{Un data.frame retourné par \code{evaluate_L50_models()}.
-Il doit inclure les colonnes \code{modele_id}, \code{convergence}, \code{commentaire}, et \code{aicc}.}
+\item{evaluation_df}{Un \code{data.frame} retourné par \code{maturite_eval_modele()}, contenant
+au minimum les colonnes suivantes : \code{modele_id}, \code{convergence}, \code{commentaire}, \code{aicc}.}
 }
 \value{
 Une liste contenant :
-\itemize{
-\item \code{best_model_M}, \code{best_model_F} : identifiants des meilleurs modèles par sexe (si applicables)
-\item \code{use_combined} : booléen indiquant si une approche combinée est requise
-\item \code{message} : texte décrivant la décision
+\describe{
+\item{best_model_M}{Identifiant du meilleur modèle pour les mâles, ou \code{NULL}}
+\item{best_model_F}{Identifiant du meilleur modèle pour les femelles, ou \code{NULL}}
+\item{use_combined}{Booléen indiquant si une approche combinée est recommandée}
+\item{message}{Texte interprétatif décrivant la décision}
 }
 }
 \description{
-À partir du tableau d’évaluation, cette fonction sélectionne les modèles L50 qui convergent
-et qui ont un bon ajustement pour les mâles et les femelles, en choisissant celui avec le plus bas AICc.
-Si aucun modèle n’est valide pour un des deux sexes, elle recommande de passer à l’approche combinée.
+Cette fonction identifie les meilleurs modèles L50 pour les mâles et les femelles
+à partir d’un tableau d’évaluation. Elle retient uniquement les modèles ayant
+convergé et un commentaire favorable (pas de rejet), puis sélectionne celui
+avec le plus bas AICc pour chaque sexe. Si un des deux sexes ne dispose
+d’aucun modèle valide, elle recommande de passer à une approche combinée.
 }

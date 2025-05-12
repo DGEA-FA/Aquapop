@@ -1,33 +1,37 @@
-#' Sélectionne les meilleurs modèles L50 pour chaque sexe
+#' Sélectionner les meilleurs modèles L50 pour chaque sexe (approche séparée)
 #'
-#' À partir du tableau d’évaluation, cette fonction sélectionne les modèles L50 qui convergent
-#' et qui ont un bon ajustement pour les mâles et les femelles, en choisissant celui avec le plus bas AICc.
-#' Si aucun modèle n’est valide pour un des deux sexes, elle recommande de passer à l’approche combinée.
+#' Cette fonction identifie les meilleurs modèles L50 pour les mâles et les femelles
+#' à partir d’un tableau d’évaluation. Elle retient uniquement les modèles ayant
+#' convergé et un commentaire favorable (pas de rejet), puis sélectionne celui
+#' avec le plus bas AICc pour chaque sexe. Si un des deux sexes ne dispose
+#' d’aucun modèle valide, elle recommande de passer à une approche combinée.
 #'
-#' @importFrom dplyr pull
-#' @importFrom dplyr filter
-#' @param evaluation_df Un data.frame retourné par `evaluate_L50_models()`.
-#'                      Il doit inclure les colonnes `modele_id`, `convergence`, `commentaire`, et `aicc`.
+#' @param evaluation_df Un `data.frame` retourné par `maturite_eval_modele()`, contenant
+#'   au minimum les colonnes suivantes : `modele_id`, `convergence`, `commentaire`, `aicc`.
 #'
 #' @return Une liste contenant :
-#' - `best_model_M`, `best_model_F` : identifiants des meilleurs modèles par sexe (si applicables)
-#' - `use_combined` : booléen indiquant si une approche combinée est requise
-#' - `message` : texte décrivant la décision
+#' \describe{
+#'   \item{best_model_M}{Identifiant du meilleur modèle pour les mâles, ou `NULL`}
+#'   \item{best_model_F}{Identifiant du meilleur modèle pour les femelles, ou `NULL`}
+#'   \item{use_combined}{Booléen indiquant si une approche combinée est recommandée}
+#'   \item{message}{Texte interprétatif décrivant la décision}
+#' }
 #'
 #' @export
+#' @importFrom dplyr filter pull
 maturite_select_best_separated_modele <- function(evaluation_df) {
-  # Filtrer les modèles valides : convergence et commentaire favorable
+  # --- Étape 1 : Filtrer les modèles valides ---
   valid_models <- evaluation_df |>
     filter(
       convergence == TRUE,
       !grepl("rejeter|choisir un autre modèle", commentaire)
     )
   
-  # Séparer les modèles par sexe
+  # --- Étape 2 : Séparer les modèles par sexe ---
   valid_M <- filter(valid_models, grepl("^M_", modele_id))
   valid_F <- filter(valid_models, grepl("^F_", modele_id))
   
-  # Cas 1 — Aucun modèle valide
+  # --- Étape 3 : Aucun modèle valide du tout ---
   if (nrow(valid_M) == 0 && nrow(valid_F) == 0) {
     return(list(
       use_combined = TRUE,
@@ -35,7 +39,7 @@ maturite_select_best_separated_modele <- function(evaluation_df) {
     ))
   }
   
-  # Cas 2 — Mâles absents
+  # --- Étape 4 : Aucun modèle valide pour les mâles ---
   if (nrow(valid_M) == 0) {
     return(list(
       use_combined = TRUE,
@@ -43,7 +47,7 @@ maturite_select_best_separated_modele <- function(evaluation_df) {
     ))
   }
   
-  # Cas 3 — Femelles absentes
+  # --- Étape 5 : Aucun modèle valide pour les femelles ---
   if (nrow(valid_F) == 0) {
     return(list(
       use_combined = TRUE,
@@ -51,10 +55,10 @@ maturite_select_best_separated_modele <- function(evaluation_df) {
     ))
   }
   
-  # Cas 4 — Les deux sexes ont au moins un modèle valide
+  # --- Étape 6 : Modèles valides pour les deux sexes ---
   best_M <- valid_M |>
     filter(aicc == min(aicc)) |>
-    pull(modele_id)  |>
+    pull(modele_id) |>
     head(1)
   
   best_F <- valid_F |>

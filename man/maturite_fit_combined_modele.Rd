@@ -2,18 +2,30 @@
 % Please edit documentation in R/maturite_fit_combined_modele.R
 \name{maturite_fit_combined_modele}
 \alias{maturite_fit_combined_modele}
-\title{Ajuste les modèles de maturité pour une approche sexes combinés (L50 ou A50)}
+\title{Ajuster les modèles de maturité combinés (L50 ou A50)}
 \usage{
 maturite_fit_combined_modele(df, variable = c("ltm", "age"))
 }
 \arguments{
-\item{df}{Un dataframe contenant les colonnes \code{maturite}, \code{sexe} et la variable quantitative (\code{ltm} ou \code{age})}
+\item{df}{Un \code{data.frame} contenant les colonnes \code{maturite}, \code{sexe} et la
+variable quantitative choisie (\code{ltm} ou \code{age}).}
 
-\item{variable}{Variable quantitative à utiliser : \code{"ltm"} (par défaut) ou \code{"age"}}
+\item{variable}{Chaîne \code{"ltm"} (par défaut) ou \code{"age"}, indiquant la variable
+à utiliser comme prédicteur principal.}
 }
 \value{
-Une liste contenant les 12 modèles combinés
+Une liste nommée contenant les 12 modèles combinés (objets \code{glm}).
+Retourne une liste vide avec un avertissement si un seul sexe est présent.
 }
 \description{
-Ajuste les modèles de maturité pour une approche sexes combinés (L50 ou A50)
+Cette fonction ajuste automatiquement douze modèles logistiques binaires pour
+estimer la maturité sexuelle en fonction de la taille (\code{ltm}) ou de l’âge (\code{age}),
+en tenant compte du sexe. Elle retourne un ensemble de modèles combinés incluant :
+\itemize{
+\item TLO : modèle sans sexe (\code{~ variable})
+\item ADD : effet additif du sexe (\code{~ variable + sexe})
+\item INT : interaction complète (\code{~ variable * sexe})
+\item COM : interaction explicitée (\code{~ variable + sexe + variable:sexe})
+}
+Chaque forme est testée avec trois liens : logit, probit et cloglog.
 }

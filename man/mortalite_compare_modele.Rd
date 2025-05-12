@@ -14,10 +14,13 @@ tel que produit par la fonction \code{mortalite_prepare_extended()}.}
 Une liste contenant :
 \describe{
 \item{data}{Le tableau comparatif des modèles sous forme de \code{data.frame}}
-\item{flextable}{Le même tableau formaté avec \code{flextable} pour affichage}
+\item{flextable}{Le même tableau formaté avec \code{flextable} pour affichage ou exportation}
 }
 }
 \description{
-Ajuste cinq modèles (Poisson, NB1, NB2, CMP, GP) sur les fréquences d’âge
-et retourne un tableau comparatif avec AICc, HNP, estimation de Z et A (\%), etc.
+Cette fonction ajuste cinq modèles statistiques (Poisson, NB1, NB2, CMP, GP)
+sur les fréquences d’âge, puis retourne un tableau comparatif incluant :
+le critère d'information corrigé (AICc), le pourcentage d’ajustement HNP,
+l’estimation de Z, l’intervalle de confiance de A (\%), et les commentaires
+interprétatifs pour guider la sélection du meilleur modèle.
 }
