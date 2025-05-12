@@ -78,6 +78,10 @@ psd_byclass_res$plot
 
 masse_longueur_fit_res <- masse_longueur_fit(data = specimen)
 
+print(masse_longueur_fit_res$plot)
+
+print(masse_longueur_fit_res$data)
+masse_longueur_fit_res$flextable
 ## Graphique ----
 
 masse_longueur_fit_res$plot
