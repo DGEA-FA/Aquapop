@@ -6,7 +6,7 @@
 #' le premier modèle ex aequo.
 #'
 #' @param tablemodele Un `data.frame` produit par `croissance_compare_modele()`,
-#'   contenant au minimum les colonnes `methode` et `AICc`.
+#'   contenant au minimum les colonnes `methode` et `aicc`.
 #'
 #' @return Une chaîne de caractères correspondant au nom du meilleur modèle sélectionné.
 #'   Retourne `NA` avec un avertissement si aucun modèle ne peut être sélectionné.
@@ -14,19 +14,19 @@
 #' @examples
 #' df <- tibble::tibble(
 #'   methode = c("Von Bertalanffy", "Gompertz", "Logistique"),
-#'   AICc = c(120.3, 118.5, 121.0)
+#'   aicc = c(120.3, 118.5, 121.0)
 #' )
 #' croissance_select_best_modele(df)
 #'
 #' @export
 #' @importFrom dplyr filter pull
 croissance_select_best_modele <- function(tablemodele) {
-  if (!"methode" %in% names(tablemodele) || !"AICc" %in% names(tablemodele)) {
+  if (!"methode" %in% names(tablemodele) || !"aicc" %in% names(tablemodele)) {
     stop("Le tableau de modèle n’est pas valide. Assurez-vous qu’il provient bien de `croissance_compare_modele()`.")
   }
   
   best_row <- tablemodele |>
-    filter(AICc == min(AICc, na.rm = TRUE)) |>
+    filter(aicc == min(aicc, na.rm = TRUE)) |>
     pull(methode)
   
   if (length(best_row) == 0) {

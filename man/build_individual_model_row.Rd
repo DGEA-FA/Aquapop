@@ -16,6 +16,6 @@ Un \code{data.frame} avec les critères d’ajustement du modèle
 }
 \description{
 Fonction interne utilisée par \code{maturite_eval_modele()} pour extraire les indicateurs
-d’ajustement d’un modèle de type \code{glm} : convergence, p-valeurs, AICc, etc.
+d’ajustement d’un modèle de type \code{glm} : convergence, p-valeurs, aicc, etc.
 }
 \keyword{internal}

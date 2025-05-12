@@ -10,7 +10,7 @@ cpue_fit_modele_nb1(cpue_data)
 \item{cpue_data}{Un \code{data.frame} produit par \code{cpue_prepare()} contenant au minimum :
 \itemize{
 \item \code{no_station} : identifiant de la station,
-\item \code{CPUE} : valeur de capture par unité d'effort.
+\item \code{cpue} : valeur de capture par unité d'effort.
 }}
 }
 \value{
@@ -18,7 +18,7 @@ Un \code{data.frame} d'une ligne contenant :
 \itemize{
 \item \code{methode} : "nb1"
 \item \code{ajustement_hnp} : \% moyen d'observations hors bande
-\item \code{aicc} : AICc du modèle
+\item \code{aicc} : aicc du modèle
 \item \code{cpue_moyenne} : moyenne prédite sur l'échelle d'origine
 \item \code{ic_95} : intervalle de confiance (ex. : "(1.2-2.3)")
 \item \code{commentaire} : qualité de l'ajustement
@@ -34,7 +34,7 @@ trois simulations supplémentaires sont effectuées. Elle retourne un résumé s
 }
 \examples{
 set.seed(1)
-d <- data.frame(no_station = 1:30, CPUE = rnbinom(30, mu = 4, size = 2))
+d <- data.frame(no_station = 1:30, cpue = rnbinom(30, mu = 4, size = 2))
 cpue_fit_modele_nb1(d)
 
 }

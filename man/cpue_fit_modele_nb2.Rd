@@ -10,7 +10,7 @@ cpue_fit_modele_nb2(cpue_data)
 \item{cpue_data}{Un \code{data.frame} produit par \code{cpue_prepare()} contenant au minimum :
 \itemize{
 \item \code{no_station} : identifiant de la station,
-\item \code{CPUE} : valeur de capture par unité d'effort.
+\item \code{cpue} : valeur de capture par unité d'effort.
 }}
 }
 \value{
@@ -34,7 +34,7 @@ trois simulations supplémentaires sont effectuées. Elle retourne un résumé s
 }
 \examples{
 set.seed(1)
-fake_data <- tibble::tibble(no_station = 1:10, CPUE = stats::rnbinom(10, mu = 5, size = 1))
+fake_data <- tibble::tibble(no_station = 1:10, cpue = stats::rnbinom(10, mu = 5, size = 1))
 cpue_fit_modele_nb2(fake_data)
 
 }

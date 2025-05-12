@@ -9,7 +9,7 @@ cpue_select_best_modele(tablemodele)
 \arguments{
 \item{tablemodele}{Un \code{data.frame} retourné par
 \code{cpue_compare_modele(..., format = "data.frame")}, contenant au minimum
-les colonnes \code{Méthode}, \code{AICc} et \verb{Ajustement (résultat du test HNP)}.}
+les colonnes \code{methode}, \code{aicc} et \code{ajustement_hnp}.}
 }
 \value{
 Une chaîne de caractères correspondant à la méthode du meilleur modèle sélectionné.
@@ -24,9 +24,9 @@ la sélection est effectuée parmi tous les modèles disponibles.
 }
 \examples{
 df <- tibble::tibble(
-  Méthode = c("poisson", "nb1", "nb2"),
-  `Ajustement (résultat du test HNP)` = c(5, 12, 9),
-  AICc = c(110, 105, 100)
+  methode = c("poisson", "nb1", "nb2"),
+  ajustement_hnp = c(5, 12, 9),
+  aicc = c(110, 105, 100)
 )
 cpue_select_best_modele(df)
 

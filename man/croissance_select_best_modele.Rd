@@ -8,7 +8,7 @@ croissance_select_best_modele(tablemodele)
 }
 \arguments{
 \item{tablemodele}{Un \code{data.frame} produit par \code{croissance_compare_modele()},
-contenant au minimum les colonnes \code{methode} et \code{AICc}.}
+contenant au minimum les colonnes \code{methode} et \code{aicc}.}
 }
 \value{
 Une chaîne de caractères correspondant au nom du meilleur modèle sélectionné.
@@ -23,7 +23,7 @@ le premier modèle ex aequo.
 \examples{
 df <- tibble::tibble(
   methode = c("Von Bertalanffy", "Gompertz", "Logistique"),
-  AICc = c(120.3, 118.5, 121.0)
+  aicc = c(120.3, 118.5, 121.0)
 )
 croissance_select_best_modele(df)
 

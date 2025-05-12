@@ -19,7 +19,7 @@ mod_abondance_cpue_ui <- function(id) {
       il peut s’agir d’un poisson échappé ou trop abîmé pour
       prendre des mesures, etc. Si le nombre de spécimens est plus 
       élevé que la récolte, il y a erreur à corriger dans la base
-      de données. Les modèles d’abondance globale (CPUE_tous)
+      de données. Les modèles d’abondance globale (cpue_tous)
       sont calculés à partir du nombre de captures indiqués 
       dans la *Récolte* alors que le tableau récapitulatif 
       est calculé à partir des données de la table *Spécimens*."),

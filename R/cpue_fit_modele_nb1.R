@@ -7,12 +7,12 @@
 #'
 #' @param cpue_data Un `data.frame` produit par `cpue_prepare()` contenant au minimum :
 #'   - `no_station` : identifiant de la station,
-#'   - `CPUE` : valeur de capture par unité d'effort.
+#'   - `cpue` : valeur de capture par unité d'effort.
 #'
 #' @return Un `data.frame` d'une ligne contenant :
 #'   - `methode` : "nb1"
 #'   - `ajustement_hnp` : % moyen d'observations hors bande
-#'   - `aicc` : AICc du modèle
+#'   - `aicc` : aicc du modèle
 #'   - `cpue_moyenne` : moyenne prédite sur l'échelle d'origine
 #'   - `ic_95` : intervalle de confiance (ex. : "(1.2-2.3)")
 #'   - `commentaire` : qualité de l'ajustement
@@ -21,7 +21,7 @@
 #'
 #' @examples
 #' set.seed(1)
-#' d <- data.frame(no_station = 1:30, CPUE = rnbinom(30, mu = 4, size = 2))
+#' d <- data.frame(no_station = 1:30, cpue = rnbinom(30, mu = 4, size = 2))
 #' cpue_fit_modele_nb1(d)
 #'
 #' @importFrom glmmTMB glmmTMB nbinom1
@@ -33,7 +33,7 @@
 #' @export
 cpue_fit_modele_nb1 <- function(cpue_data) {
   # --- Ajustement du modèle NB1 ---
-  model_nb1 <- glmmTMB(CPUE ~ 1, family = nbinom1(), data = cpue_data)
+  model_nb1 <- glmmTMB(cpue ~ 1, family = nbinom1(), data = cpue_data)
   
   # --- Test HNP initial (2 itérations) ---
   message("Test HNP : Modèle NB1 (2 simulations initiales)...")

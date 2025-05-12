@@ -10,7 +10,7 @@ cpue_fit_modele_poisson(cpue_data)
 \item{cpue_data}{Un \code{data.frame} produit par \code{cpue_prepare()} contenant au minimum :
 \itemize{
 \item \code{no_station} : identifiant de la station,
-\item \code{CPUE} : valeur de capture par unité d'effort.
+\item \code{cpue} : valeur de capture par unité d'effort.
 }}
 }
 \value{
@@ -34,7 +34,7 @@ trois simulations supplémentaires sont effectuées.
 }
 \examples{
 set.seed(1)
-fake_data <- tibble::tibble(no_station = 1:10, CPUE = stats::rpois(10, lambda = 5))
+fake_data <- tibble::tibble(no_station = 1:10, cpue = stats::rpois(10, lambda = 5))
 cpue_fit_modele_poisson(fake_data)
 
 }

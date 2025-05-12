@@ -24,7 +24,7 @@ test_that("Retourne NULL si tous les modèles sont rejetés malgré convergence"
   expect_match(res$message, "Aucun modèle combiné valide")
 })
 
-test_that("Retourne le meilleur modèle combiné (AICc minimal)", {
+test_that("Retourne le meilleur modèle combiné (aicc minimal)", {
   df <- tibble::tibble(
     modele_id = c("C_TLO", "C_ADD", "C_COM"),
     convergence = c(TRUE, TRUE, TRUE),
@@ -37,7 +37,7 @@ test_that("Retourne le meilleur modèle combiné (AICc minimal)", {
   expect_match(res$message, "Modèle combiné sélectionné : C_ADD")
 })
 
-test_that("Retourne le premier modèle si égalité de AICc", {
+test_that("Retourne le premier modèle si égalité de aicc", {
   df <- tibble::tibble(
     modele_id = c("C_TLO", "C_ADD"),
     convergence = c(TRUE, TRUE),

@@ -1,8 +1,8 @@
 test_that("sélectionne le meilleur modèle parmi les modèles bien ajustés", {
   df <- tibble::tibble(
-    Méthode = c("poisson", "nb1", "nb2", "cmp", "gp"),
-    `Ajustement (résultat du test HNP)` = c(5, 8, 12, 15, 20),
-    AICc = c(120, 110, 115, 130, 125)
+    methode = c("poisson", "nb1", "nb2", "cmp", "gp"),
+    ajustement_hnp = c(5, 8, 12, 15, 20),
+    aicc = c(120, 110, 115, 130, 125)
   )
   
   best <- cpue_select_best_modele(df)
@@ -11,9 +11,9 @@ test_that("sélectionne le meilleur modèle parmi les modèles bien ajustés", {
 
 test_that("sélectionne le meilleur modèle global si aucun bien ajusté", {
   df <- tibble::tibble(
-    Méthode = c("poisson", "nb1", "nb2", "cmp", "gp"),
-    `Ajustement (résultat du test HNP)` = c(12, 15, 18, 20, 22),
-    AICc = c(125, 118, 130, 140, 135)
+    methode = c("poisson", "nb1", "nb2", "cmp", "gp"),
+    ajustement_hnp = c(12, 15, 18, 20, 22),
+    aicc = c(125, 118, 130, 140, 135)
   )
   
   best <- cpue_select_best_modele(df)
@@ -34,9 +34,9 @@ test_that("retourne une erreur si colonnes absentes", {
 
 test_that("retourne NA et un warning si aucune ligne exploitable", {
   df_vide <- tibble::tibble(
-    Méthode = character(),
-    `Ajustement (résultat du test HNP)` = numeric(),
-    AICc = numeric()
+    methode = character(),
+    ajustement_hnp = numeric(),
+    aicc = numeric()
   )
   
   expect_warning({
@@ -47,9 +47,9 @@ test_that("retourne NA et un warning si aucune ligne exploitable", {
 
 test_that("retourne le premier modèle en cas d’ex-aequo", {
   df <- tibble::tibble(
-    Méthode = c("nb1", "nb2"),
-    `Ajustement (résultat du test HNP)` = c(5, 5),
-    AICc = c(100, 100)
+    methode = c("nb1", "nb2"),
+    ajustement_hnp = c(5, 5),
+    aicc = c(100, 100)
   )
   
   best <- cpue_select_best_modele(df)

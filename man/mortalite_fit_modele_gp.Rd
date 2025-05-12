@@ -18,7 +18,7 @@ Un \code{data.frame} d’une ligne contenant :
 \describe{
 \item{methode}{Modèle utilisé (\code{"gp"})}
 \item{ajustement_hnp}{Pourcentage moyen d’observations hors bande (HNP)}
-\item{aicc}{Critère d’information corrigé AICc}
+\item{aicc}{Critère d’information corrigé aicc}
 \item{Z}{Coefficient d'âge (valeur absolue)}
 \item{SE}{Erreur standard de Z}
 \item{A}{Taux de mortalité annuel estimé (\%)}

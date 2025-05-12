@@ -11,9 +11,9 @@ test_that("Retourne un ggplot valide avec données simulées (Poisson)", {
   attr(modele, "methode") <- "poisson"
   
   info_modele <- tibble::tibble(
-    Méthode = "poisson",
+    methode = "poisson",
     A = 42,
-    `IC 95%` = "36–48"
+    ic95 = "36–48"
   )
   
   p <- mortalite_plot_modele(specimen, modele, info_modele)
@@ -28,7 +28,7 @@ test_that("Retourne un ggplot valide avec données simulées (Poisson)", {
 test_that("Retourne un ggplot vide mais valide si aucun âge présent", {
   specimen <- tibble::tibble(sp = "TEST", age = NA)
   modele <- glm(age ~ 1, data = tibble(age = 0:1, sp = "TEST"), family = poisson())
-  info_modele <- tibble::tibble(Méthode = "poisson", A = 42, `IC 95%` = "36–48")
+  info_modele <- tibble::tibble(methode = "poisson", A = 42, ic95 = "36–48")
   
   expect_warning({
     p <- mortalite_plot_modele(specimen, modele, info_modele)
@@ -39,7 +39,7 @@ test_that("Retourne un ggplot vide mais valide si aucun âge présent", {
 
 test_that("Erreur si colonne 'age' ou 'sp' est manquante", {
   modele <- glm(age ~ 1, data = tibble(age = 0:1, sp = "TEST"), family = poisson())
-  info_modele <- tibble::tibble(Méthode = "poisson", A = 42, `IC 95%` = "36–48")
+  info_modele <- tibble::tibble(methode = "poisson", A = 42, ic95 = "36–48")
   
   df1 <- tibble::tibble(age = 1:10)    # manque 'sp'
   df2 <- tibble::tibble(sp = "TEST")   # manque 'age'

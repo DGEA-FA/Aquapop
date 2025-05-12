@@ -1,11 +1,11 @@
 #' Comparer les modèles CPUE et recommander le meilleur
 #'
 #' Cette fonction ajuste cinq modèles (Poisson, NB1, NB2, CMP, GP) sur les données de CPUE.
-#' Elle retourne un tableau comparatif des ajustements, des AICc, de la moyenne de CPUE
+#' Elle retourne un tableau comparatif des ajustements, des aicc, de la moyenne de CPUE
 #' et des intervalles de confiance, tout en identifiant le meilleur modèle recommandé.
 #'
 #' @param cpue_data Un `data.frame` produit par `cpue_prepare()`, contenant au minimum
-#' la colonne `CPUE` et les identifiants des stations (`no_station`).
+#' la colonne `cpue` et les identifiants des stations (`no_station`).
 #'
 #' @return Une liste contenant :
 #' \describe{
@@ -60,7 +60,7 @@ cpue_compare_modele <- function(cpue_data) {
     resultats_final <- resultats_final |>
       mutate(commentaire = ifelse(
         methode == best$methode,
-        paste0(commentaire, " Ce modèle est recommandé car son AICc est le plus faible."),
+        paste0(commentaire, " Ce modèle est recommandé car son aicc est le plus faible."),
         commentaire
       ))
   } else {
@@ -76,20 +76,20 @@ cpue_compare_modele <- function(cpue_data) {
   # --- Étape 7 : Sélection et renommage des colonnes finales ---
   tableau_final <- resultats_final |>
     select(
-      Méthode = methode,
-      `Ajustement (résultat du test HNP)` = ajustement_hnp,
-      AICc = aicc,
-      `Delta_AICc` = delta_aicc,
-      CPUE = cpue_moyenne,
-      `IC 95%` = ic_95,
-      Commentaires = commentaire,
-      Convergence = convergence
+      methode = methode,
+      ajustement_hnp = ajustement_hnp,
+      aicc = aicc,
+      delta_aicc = delta_aicc,
+      cpue = cpue_moyenne,
+      ic95 = ic_95,
+      commentaires = commentaire,
+      convergence = convergence
     ) |>
     as.data.frame()
   
   # --- Étape 8 : Création du titre dynamique ---
   titre_caption <- "Comparaison des modèles : tous les spécimens"
-  if ("Group" %in% names(cpue_data) && any(grepl("Femelles", cpue_data$Group))) {
+  if ("group" %in% names(cpue_data) && any(grepl("Femelles", cpue_data$group))) {
     titre_caption <- "Comparaison des modèles : femelles reproductrices actives"
   }
   

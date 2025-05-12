@@ -4,13 +4,13 @@
 #' Elle effectue également un test HNP pour évaluer la qualité de l’ajustement.
 #'
 #' @param cpue_data Un `data.frame` produit par `cpue_prepare()` contenant au minimum
-#'   les colonnes `no_station` et `CPUE`.
+#'   les colonnes `no_station` et `cpue`.
 #'
 #' @return Un `data.frame` d’une seule ligne résumant le modèle ajusté, avec les colonnes suivantes :
 #' \describe{
 #'   \item{methode}{Type de modèle utilisé (`"cmp"`)}
 #'   \item{ajustement_hnp}{Pourcentage moyen d’observations hors bande du test HNP}
-#'   \item{aicc}{Critère d'information corrigé (AICc)}
+#'   \item{aicc}{Critère d'information corrigé (aicc)}
 #'   \item{cpue_moyenne}{Valeur moyenne prédite par le modèle (exponentielle du lien)}
 #'   \item{ic_95}{Intervalle de confiance à 95 % sous forme de chaîne de caractères}
 #'   \item{commentaire}{Texte interprétant l’ajustement : bon, marginal ou mauvais}
@@ -27,7 +27,7 @@
 #' @export
 cpue_fit_modele_cmp <- function(cpue_data) {
   # --- Ajustement du modèle CMP ---
-  model <- glmmTMB(CPUE ~ 1, family = compois(link = "log"), data = cpue_data)
+  model <- glmmTMB(cpue ~ 1, family = compois(link = "log"), data = cpue_data)
   
   # --- Fonction interne sécurisée pour réajustement ---
   safe_fit_cmp <- function(y) {

@@ -153,14 +153,14 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
     selected_model_mortalite <- reactive({
       selected <- getReactableState("comparaison_mortalite_table", "selected")
       req(!is.null(selected), table_modeles_mortalite())
-      table_modeles_mortalite()[selected, "Méthode", drop = TRUE]
+      table_modeles_mortalite()[selected, "methode", drop = TRUE]
     })
     
     default_model_index_mortalite <- reactive({
       table <- table_modeles_mortalite()
       req(nrow(table) > 0)
       best_model <- mortalite_select_best_modele(table)
-      idx <- match(best_model, table$Méthode)
+      idx <- match(best_model, table$methode)
       validate(need(!is.na(idx), "Le meilleur modèle n'a pas été trouvé dans les résultats"))
       idx
     })

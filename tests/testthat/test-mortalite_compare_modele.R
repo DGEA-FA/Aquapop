@@ -18,8 +18,8 @@ test_that("Retourne une liste avec data et flextable valides", {
   
   # Colonnes attendues
   expected_cols <- c(
-    "Méthode", "Ajustement HNP (%)", "AICc", "Δ AICc",
-    "Z", "SE", "A", "IC 95%", "Convergence", "Commentaires"
+    "methode", "Ajustement HNP (%)", "aicc", "delta_aic",
+    "Z", "SE", "A", "IC 95%", "convergence", "commentaires"
   )
   expect_true(all(expected_cols %in% names(res$data)))
   
@@ -27,21 +27,21 @@ test_that("Retourne une liste avec data et flextable valides", {
   expect_equal(nrow(res$data), 5)
   
   # Types numériques cohérents
-  expect_type(res$data$`AICc`, "double")
-  expect_type(res$data$`Δ AICc`, "double")
+  expect_type(res$data$aicc, "double")
+  expect_type(res$data$delta_aic, "double")
   expect_type(res$data$`Z`, "double")
   expect_type(res$data$`Ajustement HNP (%)`, "double")
   
   # Convergence doit être booléenne
-  expect_type(res$data$Convergence, "logical")
+  expect_type(res$data$convergence, "logical")
   
-  # Δ AICc doit avoir au moins un 0
-  expect_true(any(res$data$`Δ AICc` == 0))
+  # delta_aic doit avoir au moins un 0
+  expect_true(any(res$data$delta_aic == 0))
   
   # Le commentaire du modèle à ΔAICc == 0 doit être adapté
   lignes_min <- res$data |>
-    dplyr::filter(`Δ AICc` == 0)
-  for (c in lignes_min$Commentaires) {
+    dplyr::filter(delta_aic == 0)
+  for (c in lignes_min$commentaires) {
     expect_true(
       grepl("AICc est le plus faible", c) ||
         grepl("Il s’agit toutefois du meilleur modèle", c)

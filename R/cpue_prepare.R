@@ -14,8 +14,8 @@
 #' @return Un `data.frame` contenant les colonnes suivantes :
 #' \describe{
 #'   \item{no_station}{Identifiant de la station}
-#'   \item{CPUE}{Nombre de spécimens observés à la station, divisé par l’effort (station)}
-#'   \item{Group}{Libellé du groupe analysé : "Tous" ou "Femelles"}
+#'   \item{cpue}{Nombre de spécimens observés à la station, divisé par l’effort (station)}
+#'   \item{group}{Libellé du groupe analysé : "Tous" ou "Femelles"}
 #' }
 #'
 #' @importFrom dplyr filter group_by summarise right_join mutate
@@ -55,8 +55,8 @@ cpue_prepare <- function(capture, specimen, group = c("tous", "femelles")) {
   cpue_par_station <- specimens_avec_stations |>
     group_by(no_station) |>
     summarise(
-      CPUE = sum(count),
-      Group = group_label,
+      cpue = sum(count),
+      group = group_label,
       .groups = "drop"
     )
   

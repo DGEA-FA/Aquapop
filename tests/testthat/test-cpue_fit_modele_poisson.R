@@ -1,6 +1,6 @@
 test_that("cpue_fit_modele_poisson() retourne un tableau bien structuré", {
   set.seed(123)
-  df <- data.frame(no_station = 1:30, CPUE = rpois(30, lambda = 4))
+  df <- data.frame(no_station = 1:30, cpue = rpois(30, lambda = 4))
   result <- cpue_fit_modele_poisson(df)
   
   expect_s3_class(result, "data.frame")

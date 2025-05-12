@@ -5,15 +5,15 @@ test_that("cpue_abondance_table() retourne un tableau structuré avec CPUE", {
   )
   
   cpue_table_tous <- tibble::tibble(
-    Méthode = c("poisson", "nb1"),
-    CPUE = c(12.3, 15.8),
-    `IC 95%` = c("10.5–14.1", "13.2–18.4")
+    methode = c("poisson", "nb1"),
+    cpue = c(12.3, 15.8),
+    ic95 = c("10.5–14.1", "13.2–18.4")
   )
   
   cpue_table_femelles <- tibble::tibble(
-    Méthode = c("nb2", "cmp"),
-    CPUE = c(7.4, 6.8),
-    `IC 95%` = c("6.1–8.7", "5.5–8.1")
+    methode = c("nb2", "cmp"),
+    cpue = c(7.4, 6.8),
+    ic95 = c("6.1–8.7", "5.5–8.1")
   )
   
   res <- cpue_abondance_table(
@@ -29,7 +29,7 @@ test_that("cpue_abondance_table() retourne un tableau structuré avec CPUE", {
   expect_s3_class(tab, "data.frame")
   expect_true(all(c("groupe", "abondance", "proportion", "cpue", "ic95", "mf_ratio") %in% names(tab)))
   
-  # Groupes avec CPUE attendue
+  # Groupes avec cpue attendue
   ligne_tous <- tab[tab$groupe == "Tous", ]
   ligne_f <- tab[tab$groupe == "Repro. actifs femelles", ]
   

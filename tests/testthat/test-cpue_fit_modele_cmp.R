@@ -1,5 +1,5 @@
 test_that("cmp - bon ajustement (valeurs variées)", {
-  df <- tibble::tibble(no_station = paste0("st", 1:10), CPUE = 1:10)
+  df <- tibble::tibble(no_station = paste0("st", 1:10), cpue = 1:10)
   res <- cpue_fit_modele_cmp(df)
   expect_s3_class(res, "data.frame")
   expect_equal(nrow(res), 1)

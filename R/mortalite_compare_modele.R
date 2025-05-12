@@ -31,11 +31,11 @@ mortalite_compare_modele <- function(data) {
   
   # --- Étape 3 : Calcul du Δ AICc et commentaires interprétatifs ---
   resultats <- resultats |>
-    mutate(`Δ AICc` = round(aicc - min(aicc, na.rm = TRUE), 2)) |>
+    mutate(delta_aic = round(aicc - min(aicc, na.rm = TRUE), 2)) |>
     mutate(commentaire = case_when(
-      ajustement_hnp < 10 & `Δ AICc` == 0 ~
+      ajustement_hnp < 10 & delta_aic == 0 ~
         "Le modèle s’ajuste bien à vos données. Ce modèle est recommandé car son AICc est le plus faible.",
-      ajustement_hnp >= 10 & `Δ AICc` == 0 ~
+      ajustement_hnp >= 10 & delta_aic == 0 ~
         "Le modèle ne s’ajuste pas bien à vos données. Il s’agit toutefois du meilleur modèle parmi les options disponibles.",
       TRUE ~ commentaire
     ))
@@ -44,13 +44,13 @@ mortalite_compare_modele <- function(data) {
   df_final <- resultats |>
     arrange(aicc) |>
     select(
-      Méthode = methode,
+      methode = methode,
       `Ajustement HNP (%)` = ajustement_hnp,
-      AICc = aicc,
-      `Δ AICc`,
-      Z, SE, A, `IC 95%`,
-      Convergence = convergence,
-      Commentaires = commentaire
+      aicc = aicc,
+      delta_aic,
+      Z, SE, A, ic95,
+      convergence = convergence,
+      commentaire = commentaire
     )
   
   # --- Étape 5 : Création du tableau formaté ---

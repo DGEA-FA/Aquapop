@@ -1,5 +1,5 @@
 test_that("mortalite_phrase_resume fonctionne dans les cas standards", {
-  df <- data.frame(Méthode = c("Poisson", "NB1", "NB2"), A = c(45, 37, 52))
+  df <- data.frame(methode = c("Poisson", "NB1", "NB2"), A = c(45, 37, 52))
   
   expect_equal(
     mortalite_phrase_resume(df, "NB1"),
@@ -8,7 +8,7 @@ test_that("mortalite_phrase_resume fonctionne dans les cas standards", {
 })
 
 test_that("mortalite_phrase_resume retourne une erreur si le modèle est absent", {
-  df <- data.frame(Méthode = c("Poisson", "NB2"), A = c(45, 52))
+  df <- data.frame(methode = c("Poisson", "NB2"), A = c(45, 52))
   
   expect_error(
     mortalite_phrase_resume(df, "NB1"),
@@ -17,7 +17,7 @@ test_that("mortalite_phrase_resume retourne une erreur si le modèle est absent"
 })
 
 test_that("mortalite_phrase_resume retourne une phrase partielle si A est manquant", {
-  df <- data.frame(Méthode = c("NB1"), A = NA)
+  df <- data.frame(methode = c("NB1"), A = NA)
   
   expect_match(
     mortalite_phrase_resume(df, "NB1"),
@@ -26,7 +26,7 @@ test_that("mortalite_phrase_resume retourne une phrase partielle si A est manqua
 })
 
 test_that("mortalite_phrase_resume gère un modèle vide", {
-  df <- data.frame(Méthode = c("NB1"), A = 37)
+  df <- data.frame(methode = c("NB1"), A = 37)
   
   expect_error(
     mortalite_phrase_resume(df, ""),
@@ -35,7 +35,7 @@ test_that("mortalite_phrase_resume gère un modèle vide", {
 })
 
 test_that("mortalite_phrase_resume gère une table vide", {
-  df <- data.frame(Méthode = character(0), A = numeric(0))
+  df <- data.frame(methode = character(0), A = numeric(0))
   
   expect_error(
     mortalite_phrase_resume(df, "NB1"),

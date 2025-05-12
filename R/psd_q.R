@@ -96,8 +96,8 @@ psd_q <- function(data) {
       LCI = `95% LCI`,
       UCI = `95% UCI`
     ) |>
-    mutate(`IC 95%` = glue("[{round(LCI, 1)}-{round(UCI, 1)}]")) |>
-    select(Q, `IC 95%`)
+    mutate(ic95 = glue("[{round(LCI, 1)}-{round(UCI, 1)}]")) |>
+    select(Q, ic95)
   
   # --- Construction du tableau flextable ---
   

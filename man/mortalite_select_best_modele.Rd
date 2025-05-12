@@ -2,7 +2,7 @@
 % Please edit documentation in R/mortalite_select_best_modele.R
 \name{mortalite_select_best_modele}
 \alias{mortalite_select_best_modele}
-\title{Sélectionner le meilleur modèle de mortalité selon AICc et ajustement HNP}
+\title{Sélectionner le meilleur modèle de mortalité selon aicc et ajustement HNP}
 \usage{
 mortalite_select_best_modele(tablemodele)
 }
@@ -12,13 +12,13 @@ Une chaîne de caractères correspondant au nom du meilleur modèle, ou \code{NA
 \description{
 Cette fonction identifie automatiquement le meilleur modèle parmi ceux comparés (Poisson, NB1, NB2, CMP, GP),
 en priorisant les modèles avec un bon ajustement HNP (inférieur à 10 \%). Si aucun modèle ne satisfait ce critère,
-le modèle avec le plus faible AICc est sélectionné.
+le modèle avec le plus faible aicc est sélectionné.
 }
 \examples{
 # Exemple minimal
 df <- data.frame(
-  Méthode = c("Poisson", "NB1", "NB2", "CMP", "GP"),
-  AICc = c(112, 108, 109, 107, 106),
+  methode = c("Poisson", "NB1", "NB2", "CMP", "GP"),
+  aicc = c(112, 108, 109, 107, 106),
   "Ajustement HNP (\%)" = c(15, 12, 8, 6, 11)
 )
 mortalite_select_best_modele(df)

@@ -23,7 +23,7 @@
 #' \describe{
 #'   \item{methode}{Modèle utilisé (`"gp"`)}
 #'   \item{ajustement_hnp}{Pourcentage moyen d’observations hors bande (HNP)}
-#'   \item{aicc}{Critère d’information corrigé AICc}
+#'   \item{aicc}{Critère d’information corrigé aicc}
 #'   \item{Z}{Coefficient d'âge (valeur absolue)}
 #'   \item{SE}{Erreur standard de Z}
 #'   \item{A}{Taux de mortalité annuel estimé (%)}
@@ -135,7 +135,7 @@ mortalite_fit_modele_gp <- function(df_age_etendue) {
     Z = round(Z, 4),
     SE = round(SE, 4),
     A = round(A, 1),
-    `IC 95%` = ic_95,
+    ic95 = ic_95,
     commentaire = case_when(
       ajustement_hnp < 10 ~ "Bon ajustement",
       ajustement_hnp < 15 ~ "Ajustement marginal",

@@ -22,7 +22,7 @@ test_that("Cas nominal : modèle Poisson retourne un tableau structuré", {
   expect_lte(res$A, 100)
   
   # IC 95% formaté
-  expect_match(res$`IC 95%`, "^\\[[0-9.]+-[0-9.]+\\]$")
+  expect_match(res$ic95, "^\\[[0-9.]+-[0-9.]+\\]$")
   
   # HNP entre 0 et 100
   expect_gte(res$ajustement_hnp, 0)

@@ -1,17 +1,17 @@
 #' Ajuster un modèle de CPUE de type GP (Generalized Poisson)
 #'
-#' Cette fonction ajuste un modèle de type Generalized Poisson (GP) avec `glmmTMB` sur les données de CPUE par station.
+#' Cette fonction ajuste un modèle de type Generalized Poisson (GP) avec `glmmTMB` sur les données de cpue par station.
 #' Elle applique également un test HNP (Half-Normal Plot) pour évaluer la qualité de l'ajustement.
 #' En cas d'ajustement marginal (entre 10 % et 15 % d'observations hors bande), des simulations supplémentaires sont effectuées.
 #'
 #' @param cpue_data Un `data.frame` produit par `cpue_prepare()`, contenant au minimum :
 #'   - `no_station` : identifiant de la station,
-#'   - `CPUE` : valeur de capture par unité d'effort.
+#'   - `cpue` : valeur de capture par unité d'effort.
 #'
 #' @return Un `data.frame` d'une ligne contenant :
 #'   - `methode` : "gp"
 #'   - `ajustement_hnp` : % moyen d'observations hors bande
-#'   - `aicc` : AICc du modèle
+#'   - `aicc` : aicc du modèle
 #'   - `cpue_moyenne` : moyenne prédite sur l'échelle d'origine
 #'   - `ic_95` : intervalle de confiance (ex. : "(1.2-2.3)")
 #'   - `commentaire` : qualité de l'ajustement
@@ -29,7 +29,7 @@
 cpue_fit_modele_gp <- function(cpue_data) {
   
   # --- Ajustement du modèle GP ---
-  model_gp <- glmmTMB(CPUE ~ 1, family = genpois(link = "log"), data = cpue_data)
+  model_gp <- glmmTMB(cpue ~ 1, family = genpois(link = "log"), data = cpue_data)
   
   # --- Fonction interne : réessaie glmmTMB en cas d'échec ---
   safe_fit_gp <- function(y) {

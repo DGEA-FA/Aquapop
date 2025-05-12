@@ -20,7 +20,7 @@
 #' \describe{
 #'   \item{methode}{Nom du modèle (`"poisson"`)}
 #'   \item{ajustement_hnp}{Pourcentage moyen d’observations hors bande (test HNP)}
-#'   \item{aicc}{Critère d'information corrigé (AICc)}
+#'   \item{aicc}{Critère d'information corrigé (aicc)}
 #'   \item{Z}{Coefficient d’âge estimé}
 #'   \item{SE}{Erreur standard associée à Z}
 #'   \item{A}{Taux de mortalité annuel estimé en %}
@@ -100,7 +100,7 @@ mortalite_fit_modele_poisson <- function(df_age_etendue) {
     Z = round(Z, 4),
     SE = round(SE, 4),
     A = round(A, 1),
-    `IC 95%` = ic_95,
+    ic95 = ic_95,
     commentaire = case_when(
       ajustement_hnp < 10 ~ "Bon ajustement",
       ajustement_hnp < 15 ~ "Ajustement marginal",

@@ -1,17 +1,17 @@
-test_that("sélectionne le modèle avec le plus bas AICc", {
+test_that("sélectionne le modèle avec le plus bas aicc", {
   df <- tibble::tibble(
     methode = c("Von Bertalanffy", "Gompertz", "Logistique"),
-    AICc = c(120.5, 115.2, 118.9)
+    aicc = c(120.5, 115.2, 118.9)
   )
   
   best <- croissance_select_best_modele(df)
   expect_equal(best, "Gompertz")
 })
 
-test_that("retourne le premier en cas d'ex-aequo sur l'AICc", {
+test_that("retourne le premier en cas d'ex-aequo sur l'aicc", {
   df <- tibble::tibble(
     methode = c("Von Bertalanffy", "Gompertz", "Logistique"),
-    AICc = c(115.2, 115.2, 118.9)
+    aicc = c(115.2, 115.2, 118.9)
   )
   
   best <- croissance_select_best_modele(df)
@@ -33,7 +33,7 @@ test_that("retourne une erreur si le tableau ne contient pas les bonnes colonnes
 test_that("retourne NA avec un warning si aucun modèle ne peut être sélectionné", {
   df_vide <- tibble::tibble(
     methode = character(),
-    AICc = numeric()
+    aicc = numeric()
   )
   
   expect_warning({

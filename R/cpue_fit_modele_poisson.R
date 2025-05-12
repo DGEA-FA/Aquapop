@@ -7,7 +7,7 @@
 #'
 #' @param cpue_data Un `data.frame` produit par `cpue_prepare()` contenant au minimum :
 #'   - `no_station` : identifiant de la station,
-#'   - `CPUE` : valeur de capture par unité d'effort.
+#'   - `cpue` : valeur de capture par unité d'effort.
 #'
 #' @return Un `data.frame` d'une ligne contenant :
 #'   - `methode` : "poisson"
@@ -21,7 +21,7 @@
 #'
 #' @examples
 #' set.seed(1)
-#' fake_data <- tibble::tibble(no_station = 1:10, CPUE = stats::rpois(10, lambda = 5))
+#' fake_data <- tibble::tibble(no_station = 1:10, cpue = stats::rpois(10, lambda = 5))
 #' cpue_fit_modele_poisson(fake_data)
 #'
 #' @importFrom stats glm predict simulate residuals
@@ -34,7 +34,7 @@
 cpue_fit_modele_poisson <- function(cpue_data) {
   
   # --- Ajustement du modèle Poisson ---
-  model_poisson <- glm(CPUE ~ 1, family = poisson, data = cpue_data)
+  model_poisson <- glm(cpue ~ 1, family = poisson, data = cpue_data)
   
   # --- Test HNP initial (2 itérations) ---
   message("Test HNP : Modèle Poisson (2 simulations initiales)...")

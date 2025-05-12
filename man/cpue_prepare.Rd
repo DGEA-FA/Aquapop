@@ -17,8 +17,8 @@ cpue_prepare(capture, specimen, group = c("tous", "femelles"))
 Un \code{data.frame} contenant les colonnes suivantes :
 \describe{
 \item{no_station}{Identifiant de la station}
-\item{CPUE}{Nombre de spécimens observés à la station, divisé par l’effort (station)}
-\item{Group}{Libellé du groupe analysé : "Tous" ou "Femelles"}
+\item{cpue}{Nombre de spécimens observés à la station, divisé par l’effort (station)}
+\item{group}{Libellé du groupe analysé : "Tous" ou "Femelles"}
 }
 }
 \description{

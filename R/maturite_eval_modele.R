@@ -50,7 +50,7 @@ maturite_eval_modele <- function(models) {
 #' Évaluer les critères d’un modèle individuel de maturité
 #'
 #' Fonction interne utilisée par `maturite_eval_modele()` pour extraire les indicateurs
-#' d’ajustement d’un modèle de type `glm` : convergence, p-valeurs, AICc, etc.
+#' d’ajustement d’un modèle de type `glm` : convergence, p-valeurs, aicc, etc.
 #'
 #' @param mod Un objet `glm`, ou `NULL` si l’ajustement a échoué
 #' @param id  Identifiant du modèle (ex. : "ltm_logit", "age_cloglog")

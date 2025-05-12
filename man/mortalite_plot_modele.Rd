@@ -29,7 +29,7 @@ data_exemple <- tibble::tibble(
 )
 modele_exemple <- stats::glm(age ~ 1, data = data_exemple, family = stats::poisson())
 info_modele_exemple <- tibble::tibble(
-  Méthode = "poisson", A = 38, `IC 95\%` = "32–45"
+  methode = "poisson", A = 38, ic95 = "32–45"
 )
 mortalite_plot_modele(data_exemple, modele_exemple, info_modele_exemple)
 }

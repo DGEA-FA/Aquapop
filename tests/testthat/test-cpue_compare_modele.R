@@ -3,7 +3,7 @@ test_that("cpue_compare_modele() retourne une liste bien formée", {
   
   # Génère un jeu de données valide
   set.seed(123)
-  df <- data.frame(no_station = 1:30, CPUE = rpois(30, lambda = 5))
+  df <- data.frame(no_station = 1:30, cpue = rpois(30, lambda = 5))
   
   result <- suppressMessages(cpue_compare_modele(df))
   
@@ -15,14 +15,14 @@ test_that("cpue_compare_modele() retourne une liste bien formée", {
   expect_s3_class(result$data, "data.frame")
   expect_true(nrow(result$data) >= 5)  # un par modèle
   expect_true(all(c(
-    "Méthode",
-    "Ajustement (résultat du test HNP)",
-    "AICc",
-    "Delta_AICc",
-    "CPUE",
+    "methode",
+    "ajustement_hnp",
+    "aicc",
+    "delta_aicc",
+    "cpue",
     "IC 95%",
-    "Commentaires",
-    "Convergence"
+    "commentaires",
+    "convergence"
   ) %in% colnames(result$data)))
   
   # Vérifie le type flextable

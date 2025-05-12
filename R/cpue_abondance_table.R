@@ -32,14 +32,14 @@ cpue_abondance_table <- function(data,
   total_individus <- nrow(data)
 
   # --- Étape 2 : Extraction des CPUE et IC 95 % ---
-  best_tous <- cpue_table_tous[cpue_table_tous$Méthode == best_model_tous, ]
-  best_femelles <- cpue_table_femelles[cpue_table_femelles$Méthode == best_model_femelles, ]
+  best_tous <- cpue_table_tous[cpue_table_tous$methode == best_model_tous, ]
+  best_femelles <- cpue_table_femelles[cpue_table_femelles$methode == best_model_femelles, ]
 
-  cpue_tous <- best_tous$CPUE
-  ic95_tous <- best_tous$`IC 95%`
+  cpue_tous <- best_tous$cpue
+  ic95_tous <- best_tous$ic95
 
-  cpue_femelles <- best_femelles$CPUE
-  ic95_femelles <- best_femelles$`IC 95%`
+  cpue_femelles <- best_femelles$cpue
+  ic95_femelles <- best_femelles$ic95
 
   # --- Étape 3 : Tableaux par groupe biologique ---
 

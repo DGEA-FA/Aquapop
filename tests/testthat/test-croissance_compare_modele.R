@@ -23,7 +23,7 @@ test_that("croissance_compare_modele retourne un data.frame avec les bonnes colo
   expect_s3_class(df_out, "data.frame")
   expect_true(all(c(
     "methode", "l_inf", "l_inf_ic", "k", "k_ic",
-    "t0", "t0_ic", "AICc", "Delta_AICc", "AICcWt", "converged"
+    "t0", "t0_ic", "aicc", "delta_aicc", "AICcWt", "converged"
   ) %in% names(df_out)))
 })
 

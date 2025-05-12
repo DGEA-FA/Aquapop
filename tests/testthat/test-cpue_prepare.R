@@ -14,40 +14,40 @@ test_that("cpue_prepare() retourne un data.frame structuré correctement", {
   res_all <- cpue_prepare(capture, specimen, group = "tous")
   
   expect_s3_class(res_all, "data.frame")
-  expect_named(res_all, c("no_station", "CPUE", "Group"))
-  expect_true(all(res_all$Group == "Tous"))
-  expect_equal(res_all$CPUE[res_all$no_station == "A"], 2)
-  expect_equal(res_all$CPUE[res_all$no_station == "B"], 2)
-  expect_equal(res_all$CPUE[res_all$no_station == "C"], 1)
+  expect_named(res_all, c("no_station", "cpue", "group"))
+  expect_true(all(res_all$group == "Tous"))
+  expect_equal(res_all$cpue[res_all$no_station == "A"], 2)
+  expect_equal(res_all$cpue[res_all$no_station == "B"], 2)
+  expect_equal(res_all$cpue[res_all$no_station == "C"], 1)
   expect_true("D" %in% res_all$no_station) # Station sans spécimens
   
   # Cas 2 : group = "femelles"
   res_f <- cpue_prepare(capture, specimen, group = "femelles")
   
   expect_s3_class(res_f, "data.frame")
-  expect_named(res_f, c("no_station", "CPUE", "Group"))
-  expect_true(all(res_f$Group == "Femelles"))
-  expect_equal(res_f$CPUE[res_f$no_station == "A"], 1)
-  expect_equal(res_f$CPUE[res_f$no_station == "B"], 2)
-  expect_equal(res_f$CPUE[res_f$no_station == "C"], 0)
-  expect_equal(res_f$CPUE[res_f$no_station == "D"], 0)
+  expect_named(res_f, c("no_station", "cpue", "group"))
+  expect_true(all(res_f$group == "Femelles"))
+  expect_equal(res_f$cpue[res_f$no_station == "A"], 1)
+  expect_equal(res_f$cpue[res_f$no_station == "B"], 2)
+  expect_equal(res_f$cpue[res_f$no_station == "C"], 0)
+  expect_equal(res_f$cpue[res_f$no_station == "D"], 0)
   
   # Cas 3 : que des femelles
   only_f <- specimen |> filter(sexe == "F")
   res_only_f <- cpue_prepare(capture, only_f, group = "femelles")
-  expect_true(all(res_only_f$Group == "Femelles"))
+  expect_true(all(res_only_f$group == "Femelles"))
   
   # Cas 4 : doublons dans capture
   capture_dup <- bind_rows(capture, capture[1, ])
   res_dup <- cpue_prepare(capture_dup, specimen, group = "tous")
   expect_true("A" %in% res_dup$no_station) # A doit apparaître une fois malgré doublon
   
-  # Cas 5 : vérifie que total CPUE = nb de spécimens filtrés
-  expect_equal(sum(res_all$CPUE), nrow(specimen))
-  expect_equal(sum(res_f$CPUE), sum(specimen$sexe == "F"))
+  # Cas 5 : vérifie que total cpue = nb de spécimens filtrés
+  expect_equal(sum(res_all$cpue), nrow(specimen))
+  expect_equal(sum(res_f$cpue), sum(specimen$sexe == "F"))
 })
 
-test_that("cpue_prepare() retourne CPUE = 0 pour une station sans spécimens capturés", {
+test_that("cpue_prepare() retourne cpue = 0 pour une station sans spécimens capturés", {
   capture <- tibble::tibble(
     no_station = c("X"),
     nb_capture = 1,
@@ -63,11 +63,11 @@ test_that("cpue_prepare() retourne CPUE = 0 pour une station sans spécimens cap
   expect_s3_class(res, "data.frame")
   expect_equal(nrow(res), 1)
   expect_equal(res$no_station, "X")
-  expect_equal(res$CPUE, 0)
-  expect_equal(res$Group, "Tous")
+  expect_equal(res$cpue, 0)
+  expect_equal(res$group, "Tous")
 })
 
-test_that("cpue_prepare() retourne CPUE = 0 pour une station sans femelles capturées", {
+test_that("cpue_prepare() retourne cpue = 0 pour une station sans femelles capturées", {
   capture <- tibble::tibble(
     no_station = c("Z"),
     nb_capture = 1,
@@ -83,7 +83,7 @@ test_that("cpue_prepare() retourne CPUE = 0 pour une station sans femelles captu
   expect_s3_class(res, "data.frame")
   expect_equal(nrow(res), 1)
   expect_equal(res$no_station, "Z")
-  expect_equal(res$CPUE, 0)
-  expect_equal(res$Group, "Femelles")
+  expect_equal(res$cpue, 0)
+  expect_equal(res$group, "Femelles")
 })
 

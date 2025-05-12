@@ -2,7 +2,7 @@
 #'
 #' Cette fonction ajuste trois modèles de croissance non linéaire à un jeu de données de spécimens
 #' et retourne un tableau comparatif des paramètres estimés, des intervalles de confiance
-#' et du critère d'information corrigé (AICc).
+#' et du critère d'information corrigé (aicc).
 #'
 #' @param data Un `data.frame` contenant au minimum : `sp`, `ltm`, `age`, `no_specimen`
 #' @param format Format de sortie souhaité : `"data.frame"` (par défaut) ou `"flextable"`
@@ -90,8 +90,8 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
       l_inf = round(l_inf, 0),
       k = round(as.numeric(k), 3),
       t0 = round(as.numeric(t0), 3),
-      AICc = round(AICc, 2),
-      Delta_AICc = round(Delta_AICc, 2),
+      aicc = round(AICc, 2),
+      delta_aicc = round(delta_aicc, 2),
       AICcWt = round(AICcWt, 2)
     ) |>
     set_variable_labels(
@@ -99,18 +99,18 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
       l_inf = "L∞", l_inf_ic = "L∞ IC 95%",
       k = "K", k_ic = "K IC 95%",
       t0 = "t\u2080", t0_ic = "t\u2080 IC 95%",
-      AICc = "AICc",
-      Delta_AICc = "Δ AICc",
+      aicc = "AICc",
+      delta_aicc = "Δ AICc",
       AICcWt = "Poids d’Akaike",
       converged = "Convergence"
     ) |>
     select(
       methode, l_inf, l_inf_ic,
       k, k_ic, t0, t0_ic,
-      AICc, Delta_AICc, AICcWt,
+      aicc, delta_aicc, AICcWt,
       converged
     ) |>
-    arrange(AICc)
+    arrange(aicc)
   
   ft <- flextable(final) |>
     set_caption("Paramètres des modèles de croissance (VB, Gompertz, Logistique)") |>

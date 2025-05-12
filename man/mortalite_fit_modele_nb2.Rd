@@ -18,7 +18,7 @@ Un \code{data.frame} d’une ligne contenant :
 \describe{
 \item{methode}{Nom du modèle (\code{"nb2"})}
 \item{ajustement_hnp}{Pourcentage moyen d’observations hors bande (test HNP)}
-\item{aicc}{Critère d'information corrigé (AICc)}
+\item{aicc}{Critère d'information corrigé (aicc)}
 \item{Z}{Coefficient de l'âge estimé dans le modèle}
 \item{SE}{Erreur standard de Z}
 \item{A}{Taux de mortalité annuel estimé (\%)}

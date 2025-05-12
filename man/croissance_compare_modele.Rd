@@ -21,5 +21,5 @@ Une liste avec deux éléments :
 \description{
 Cette fonction ajuste trois modèles de croissance non linéaire à un jeu de données de spécimens
 et retourne un tableau comparatif des paramètres estimés, des intervalles de confiance
-et du critère d'information corrigé (AICc).
+et du critère d'information corrigé (aicc).
 }

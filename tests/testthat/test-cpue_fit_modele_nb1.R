@@ -1,6 +1,6 @@
 test_that("cpue_fit_modele_nb1() retourne un tableau bien structuré", {
   set.seed(123)
-  df <- data.frame(no_station = 1:30, CPUE = rnbinom(30, mu = 4, size = 2))
+  df <- data.frame(no_station = 1:30, cpue = rnbinom(30, mu = 4, size = 2))
   result <- cpue_fit_modele_nb1(df)
   
   # Vérifie que la sortie est un data.frame/tibble d'une seule ligne

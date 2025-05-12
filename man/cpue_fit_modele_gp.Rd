@@ -10,7 +10,7 @@ cpue_fit_modele_gp(cpue_data)
 \item{cpue_data}{Un \code{data.frame} produit par \code{cpue_prepare()}, contenant au minimum :
 \itemize{
 \item \code{no_station} : identifiant de la station,
-\item \code{CPUE} : valeur de capture par unité d'effort.
+\item \code{cpue} : valeur de capture par unité d'effort.
 }}
 }
 \value{
@@ -18,7 +18,7 @@ Un \code{data.frame} d'une ligne contenant :
 \itemize{
 \item \code{methode} : "gp"
 \item \code{ajustement_hnp} : \% moyen d'observations hors bande
-\item \code{aicc} : AICc du modèle
+\item \code{aicc} : aicc du modèle
 \item \code{cpue_moyenne} : moyenne prédite sur l'échelle d'origine
 \item \code{ic_95} : intervalle de confiance (ex. : "(1.2-2.3)")
 \item \code{commentaire} : qualité de l'ajustement
@@ -27,7 +27,7 @@ Un \code{data.frame} d'une ligne contenant :
 }
 }
 \description{
-Cette fonction ajuste un modèle de type Generalized Poisson (GP) avec \code{glmmTMB} sur les données de CPUE par station.
+Cette fonction ajuste un modèle de type Generalized Poisson (GP) avec \code{glmmTMB} sur les données de cpue par station.
 Elle applique également un test HNP (Half-Normal Plot) pour évaluer la qualité de l'ajustement.
 En cas d'ajustement marginal (entre 10 \% et 15 \% d'observations hors bande), des simulations supplémentaires sont effectuées.
 }

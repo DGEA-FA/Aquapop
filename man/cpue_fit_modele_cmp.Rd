@@ -8,14 +8,14 @@ cpue_fit_modele_cmp(cpue_data)
 }
 \arguments{
 \item{cpue_data}{Un \code{data.frame} produit par \code{cpue_prepare()} contenant au minimum
-les colonnes \code{no_station} et \code{CPUE}.}
+les colonnes \code{no_station} et \code{cpue}.}
 }
 \value{
 Un \code{data.frame} d’une seule ligne résumant le modèle ajusté, avec les colonnes suivantes :
 \describe{
 \item{methode}{Type de modèle utilisé (\code{"cmp"})}
 \item{ajustement_hnp}{Pourcentage moyen d’observations hors bande du test HNP}
-\item{aicc}{Critère d'information corrigé (AICc)}
+\item{aicc}{Critère d'information corrigé (aicc)}
 \item{cpue_moyenne}{Valeur moyenne prédite par le modèle (exponentielle du lien)}
 \item{ic_95}{Intervalle de confiance à 95 \% sous forme de chaîne de caractères}
 \item{commentaire}{Texte interprétant l’ajustement : bon, marginal ou mauvais}

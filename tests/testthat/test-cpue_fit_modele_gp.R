@@ -4,7 +4,7 @@ test_that("cpue_fit_modele_gp() fonctionne correctement - cas nominal", {
   set.seed(123)
   cpue_data <- tibble::tibble(
     no_station = 1:10,
-    CPUE = rpois(10, lambda = 5)
+    cpue = rpois(10, lambda = 5)
   )
   
   res <- cpue_fit_modele_gp(cpue_data)

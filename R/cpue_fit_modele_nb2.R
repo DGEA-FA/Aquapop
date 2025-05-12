@@ -7,7 +7,7 @@
 #'
 #' @param cpue_data Un `data.frame` produit par `cpue_prepare()` contenant au minimum :
 #'   - `no_station` : identifiant de la station,
-#'   - `CPUE` : valeur de capture par unité d'effort.
+#'   - `cpue` : valeur de capture par unité d'effort.
 #'
 #' @return Un `data.frame` d'une ligne contenant :
 #'   - `methode` : "nb2"
@@ -21,7 +21,7 @@
 #'
 #' @examples
 #' set.seed(1)
-#' fake_data <- tibble::tibble(no_station = 1:10, CPUE = stats::rnbinom(10, mu = 5, size = 1))
+#' fake_data <- tibble::tibble(no_station = 1:10, cpue = stats::rnbinom(10, mu = 5, size = 1))
 #' cpue_fit_modele_nb2(fake_data)
 #'
 #' @importFrom MASS glm.nb
@@ -49,7 +49,7 @@ cpue_fit_modele_nb2 <- function(cpue_data) {
   }
   
   # --- Ajustement du modèle NB2 ---
-  model_nb2 <- glm.nb(CPUE ~ 1, data = cpue_data)
+  model_nb2 <- glm.nb(cpue ~ 1, data = cpue_data)
   
   # --- Test HNP initial (2 itérations) ---
   message("Test HNP : Modèle NB2 (2 simulations initiales)...")

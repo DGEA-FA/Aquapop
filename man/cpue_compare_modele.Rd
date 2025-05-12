@@ -8,7 +8,7 @@ cpue_compare_modele(cpue_data)
 }
 \arguments{
 \item{cpue_data}{Un \code{data.frame} produit par \code{cpue_prepare()}, contenant au minimum
-la colonne \code{CPUE} et les identifiants des stations (\code{no_station}).}
+la colonne \code{cpue} et les identifiants des stations (\code{no_station}).}
 }
 \value{
 Une liste contenant :
@@ -19,6 +19,6 @@ Une liste contenant :
 }
 \description{
 Cette fonction ajuste cinq modèles (Poisson, NB1, NB2, CMP, GP) sur les données de CPUE.
-Elle retourne un tableau comparatif des ajustements, des AICc, de la moyenne de CPUE
+Elle retourne un tableau comparatif des ajustements, des aicc, de la moyenne de CPUE
 et des intervalles de confiance, tout en identifiant le meilleur modèle recommandé.
 }
