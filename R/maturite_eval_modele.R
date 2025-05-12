@@ -1,13 +1,16 @@
 #' Évaluer l'ajustement des modèles de maturité (L50 ou A50)
 #'
-#' @param models Liste des modèles retournée
+#' Cette fonction compile les critères d’évaluation de plusieurs modèles de maturité
+#' (logistique, probit, etc.) pour les comparer selon leur qualité d’ajustement.
 #'
-#' @return Un `data.frame` avec les critères d’évaluation, trié par AICc
+#' @param models Liste des modèles retournée par `maturite_generate_modele()`
+#'
+#' @return Un `data.frame` trié par AICc avec les indicateurs : convergence, tests d’ajustement, commentaire
+#' @export
+#'
 #' @importFrom dplyr bind_rows arrange desc
 #' @importFrom labelled var_label<-
-#' @importFrom glue glue
 #' @importFrom tibble tibble
-#' @export
 maturite_eval_modele <- function(models) {
   
   if (length(models) == 0) {
@@ -22,13 +25,14 @@ maturite_eval_modele <- function(models) {
       commentaire = character()
     )
   } else {
-    results <- lapply(names(models), function(n)
-      build_individual_model_row(models[[n]], n)) |>
+    results <- lapply(names(models), function(n) {
+      build_individual_model_row(models[[n]], n)
+    }) |>
       bind_rows() |>
       arrange(desc(convergence), aicc)
   }
   
-  # Ajout de labels pour un affichage plus clair dans l'application
+  # Ajout de labels pour affichage clair dans l'application
   var_label(results) <- list(
     modele_id = "ID",
     modele = "Modèle",
@@ -57,6 +61,7 @@ maturite_eval_modele <- function(models) {
 #' @importFrom stats predict update anova formula
 #' @importFrom MuMIn AICc
 build_individual_model_row <- function(mod, id) {
+  
   if (is.null(mod)) {
     return(data.frame(
       modele_id = id,
@@ -74,19 +79,19 @@ build_individual_model_row <- function(mod, id) {
   formule_str <- as.character(formula(mod))[3]
   conv <- mod$converged
   
-  # Test d’ajustement : résidus de Pearson
+  # Test d’ajustement basé sur les résidus de Pearson
   p_fit <- tryCatch(o.r.test(mod), error = function(e) NA)
   
-  # Test de la qualité du lien via ajout de η²
+  # Test du lien (ajout du terme eta²)
   df <- mod$model
   df$eta2 <- predict(mod, type = "link")^2
   mod_eta2 <- tryCatch(update(mod, . ~ . + eta2, data = df), error = function(e) NA)
   p_link <- tryCatch(anova(mod, mod_eta2, test = "Chisq")$`Pr(>Chi)`[2], error = function(e) NA)
   
-  # Critère d'information corrigé AICc
+  # Critère AIC corrigé
   aicc_val <- tryCatch(AICc(mod), error = function(e) NA)
   
-  # Message d'interprétation
+  # Commentaire interprétatif
   comm <- "Modèle valide."
   if (!conv) {
     comm <- "Ce modèle ne converge pas et devrait être rejeté."
@@ -106,3 +111,4 @@ build_individual_model_row <- function(mod, id) {
     stringsAsFactors = FALSE
   )
 }
+
