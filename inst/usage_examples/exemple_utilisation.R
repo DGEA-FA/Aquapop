@@ -1,11 +1,6 @@
 # exemple_utilisation.R
 # Rôle : Démonstration simple de l’utilisation des fonctions métier AquaPop
 
-# Charger les dépendances et les fonctions du package aquapop ----
-
-# Charger les packages déclarés 
-# source("R/load_packages.R")
-
 # Charger toutes les fonctions du package en développement
 devtools::load_all()
 
