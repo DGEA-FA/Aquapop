@@ -84,7 +84,7 @@ cpue_fit_modele_nb1 <- function(cpue_data) {
     methode = "nb1",
     ajustement_hnp = perc_out,
     aicc = AICc(model_nb1),
-    cpue_moyenne = round(pred_mean, 2),
+    cpue_moyenne = pred_mean,
     ic_95 = pred_ic95,
     commentaire = commentaire,
     convergence = model_nb1$fit$convergence == 0,

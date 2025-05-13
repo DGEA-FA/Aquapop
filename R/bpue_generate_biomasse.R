@@ -164,9 +164,9 @@ bpue_generate_biomasse <- function(data_specimen, data_station) {
     ligne_inconnu
   ) |>
     mutate(
-      biomasse = round(biomasse, 1),
-      percent  = round(percent, 0),
-      bpue     = round(bpue, 1)
+      biomasse = format(round(biomasse, 2), nsmall = 2),
+      percent  = format(round(percent, 1), nsmall = 1),
+      bpue     = format(round(bpue, 2), nsmall = 2)
     )
   
   table_flex <- flextable(table_biomasse) |>

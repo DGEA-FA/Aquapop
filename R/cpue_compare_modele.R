@@ -87,6 +87,30 @@ cpue_compare_modele <- function(cpue_data) {
     ) |>
     as.data.frame()
   
+  # --- Formatage numérique conditionnel ---
+  tableau_final <- tableau_final |>
+    mutate(
+      ajustement_hnp = format(round(ajustement_hnp, 2), nsmall = 2),
+      cpue           = format(round(cpue, 2), nsmall = 2),
+      aicc           = ifelse(aicc == 0, "0", format(round(aicc, 2), nsmall = 2)),
+      delta_aicc     = ifelse(delta_aicc == 0, "0", format(round(delta_aicc, 2), nsmall = 2))
+    )
+  
+  
+  tableau_final <- set_variable_labels(
+    tableau_final,
+    methode = "Méthode",
+    ajustement_hnp = "Ajustement HNP",
+    aicc = "AICc",
+    delta_aicc = "Δ AICc",
+    cpue = "CPUE moyenne",
+    ic95 = "IC 95 %",
+    commentaires = "Commentaires",
+    convergence = "Convergence"
+  )
+  
+  
+  
   # --- Étape 8 : Création du titre dynamique ---
   titre_caption <- "Comparaison des modèles : tous les spécimens"
   if ("group" %in% names(cpue_data) && any(grepl("Femelles", cpue_data$group))) {
@@ -96,6 +120,7 @@ cpue_compare_modele <- function(cpue_data) {
   # --- Étape 9 : Création de la table formatée ---
   ft_final <- flextable(tableau_final) |>
     set_caption(titre_caption) |>
+    labelled_data() |>
     style_flextable_aquapop()
   
   # --- Étape 10 : Retour des résultats ---

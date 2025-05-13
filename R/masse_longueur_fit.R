@@ -49,9 +49,18 @@ masse_longueur_fit <- function(data) {
     )
   )
   
+  table_resultats <- set_variable_labels(
+    table_resultats,
+    coefficient = "Coefficient",
+    estimation = "Estimation",
+    erreur_standard = "ET",
+    ic95 = "IC 95%"
+  )
+  
   # --- Tableau formaté ---
   table_flextable <- table_resultats |>
     flextable() |>
+    labelled_data() |>
     style_flextable_aquapop()
   
   # --- Génération du graphique ---

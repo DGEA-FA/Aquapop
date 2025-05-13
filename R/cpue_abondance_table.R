@@ -47,7 +47,7 @@ cpue_abondance_table <- function(data,
   table_tous <- tibble(
     groupe = "Tous",
     abondance = total_individus,
-    proportion = 100,
+    proportion = format(100, nsmall =1),
     mf_ratio = calculate_mf_ratio(sum(data$sexe == "M"), sum(data$sexe == "F"))
   )
 
@@ -60,7 +60,7 @@ cpue_abondance_table <- function(data,
         "M" = "Mâle",
         "IND" = "Sexe inconnu"
       ),
-      proportion = round(abondance / total_individus * 100),
+      proportion = format(round(abondance / total_individus * 100, digits = 1), nsmall = 1),
       mf_ratio = NA_character_
     ) |>
     select(groupe, abondance, proportion, mf_ratio)
@@ -74,7 +74,7 @@ cpue_abondance_table <- function(data,
         "F" = "Repro. actifs femelles",
         "M" = "Repro. actifs mâles"
       ),
-      proportion = round(abondance / total_individus * 100),
+      proportion = format(round(abondance / total_individus * 100, digits = 1), nsmall = 1),
       mf_ratio = NA_character_
     ) |>
     complete(
@@ -88,7 +88,7 @@ cpue_abondance_table <- function(data,
     summarise(
       groupe = "Immatures ou reprod. inactifs",
       abondance = n(),
-      proportion = round(abondance / total_individus * 100),
+      proportion = format(round(abondance / total_individus * 100, digits = 1), nsmall = 1),
       mf_ratio = calculate_mf_ratio(sum(sexe == "M"), sum(sexe == "F"))
     )
 
@@ -98,7 +98,7 @@ cpue_abondance_table <- function(data,
     summarise(
       groupe = "Statut reprod. inconnu",
       abondance = n(),
-      proportion = round(abondance / total_individus * 100),
+      proportion = format(round(abondance / total_individus * 100, digits = 1), nsmall = 1),
       mf_ratio = calculate_mf_ratio(sum(sexe == "M"), sum(sexe == "F"))
     )
 
@@ -118,14 +118,14 @@ cpue_abondance_table <- function(data,
       cpue = case_when(
         groupe == "Tous" ~ cpue_tous,
         groupe == "Repro. actifs femelles" ~ cpue_femelles,
-        TRUE ~ NA_real_
+        TRUE ~ NA_character_
       ),
       ic95 = case_when(
         groupe == "Tous" ~ ic95_tous,
         groupe == "Repro. actifs femelles" ~ ic95_femelles,
         TRUE ~ NA_character_
       )
-    )
+    ) |> select(-sexe)
 
   # --- Étape 5 : Ajout des labels et création flextable ---
   table_finale <- set_variable_labels(

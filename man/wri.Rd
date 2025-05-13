@@ -2,33 +2,34 @@
 % Please edit documentation in R/wri.R
 \name{wri}
 \alias{wri}
-\title{Calculer l’indice de condition (Wr) à partir des spécimens d’une espèce}
+\title{Calculer l’indice de condition relatif (Wr) pour une espèce}
 \usage{
 wri(data)
 }
 \arguments{
-\item{data}{Un \code{data.frame} contenant les colonnes \code{sp}, \code{ltm}, \code{masse} et \code{sexe}}
+\item{data}{Un \code{data.frame} contenant au minimum les colonnes suivantes :
+\code{sp}, \code{ltm} (longueur totale en mm), \code{masse} (masse en g) et \code{sexe}.}
 }
 \value{
-Une liste avec les éléments :
+Une liste contenant :
 \describe{
-\item{data}{Tableau synthèse (\code{data.frame}) des Wr moyens par groupe}
-\item{flextable}{Version formatée du tableau (objet \code{flextable})}
-\item{plot_tous}{Graphique Wr selon la longueur, coloré par sexe}
-\item{plot_byclass}{Graphique Wr par classe de taille}
+\item{data}{Un \code{data.frame} avec les Wr moyens et effectifs par groupe}
+\item{flextable}{Une version formatée (\code{flextable}) prête pour exportation}
+\item{plot_tous}{Un graphique \code{ggplot2} du Wr en fonction de la longueur, coloré par sexe}
+\item{plot_byclass}{Un graphique \code{ggplot2} du Wr moyen par classe de taille}
 }
 }
 \description{
-Cette fonction calcule l’indice de condition relatif (Wr) pour une espèce donnée, à partir des longueurs et masses
-des spécimens mesurés. Elle retourne une liste incluant un tableau brut, une version formatée,
-ainsi que deux graphiques : l’un pour l’ensemble des données, l’autre par classe de taille.
+Cette fonction calcule l’indice de condition relatif (Wr) à partir des longueurs et masses des spécimens d’une espèce donnée.
+Elle retourne un tableau de synthèse, une version formatée (\code{flextable}), ainsi que deux graphiques illustrant les résultats
+: l’un selon la longueur individuelle, l’autre par classe de taille.
 }
 \examples{
 df <- data.frame(
   sp    = rep("SANA", 10),
-  ltm   = seq(300, 480, by = 20),  
-  masse = seq(200, 380, by = 20),  
-  sexe  = rep(c("F", "M"), 5)      
+  ltm   = seq(300, 480, by = 20),
+  masse = seq(200, 380, by = 20),
+  sexe  = rep(c("F", "M"), 5)
 )
 wri(df)
 

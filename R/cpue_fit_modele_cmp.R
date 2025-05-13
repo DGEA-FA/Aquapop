@@ -97,7 +97,7 @@ cpue_fit_modele_cmp <- function(cpue_data) {
     methode = "cmp",
     ajustement_hnp = ajustement,
     aicc = AICc(model),
-    cpue_moyenne = round(fit_mean, 2),
+    cpue_moyenne = fit_mean,
     ic_95 = ic95,
     commentaire = commentaire,
     convergence = model$fit$convergence == 0,

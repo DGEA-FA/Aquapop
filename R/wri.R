@@ -1,63 +1,41 @@
-#' Calculer l’indice de condition (Wr) à partir des spécimens d’une espèce
+#' Calculer l’indice de condition relatif (Wr) pour une espèce
 #'
-#' Cette fonction calcule l’indice de condition relatif (Wr) pour une espèce donnée, à partir des longueurs et masses
-#' des spécimens mesurés. Elle retourne une liste incluant un tableau brut, une version formatée,
-#' ainsi que deux graphiques : l’un pour l’ensemble des données, l’autre par classe de taille.
+#' Cette fonction calcule l’indice de condition relatif (Wr) à partir des longueurs et masses des spécimens d’une espèce donnée.
+#' Elle retourne un tableau de synthèse, une version formatée (`flextable`), ainsi que deux graphiques illustrant les résultats
+#' : l’un selon la longueur individuelle, l’autre par classe de taille.
 #'
-#' @importFrom dplyr slice
-#' @importFrom dplyr rename
-#' @importFrom rlang sym
-#' @importFrom flextable set_caption
-#' @importFrom dplyr bind_rows
-#' @importFrom dplyr arrange
-#' @importFrom tidyr complete
-#' @importFrom plyr mapvalues
-#' @importFrom dplyr select
-#' @importFrom ggplot2 scale_x_discrete
-#' @importFrom ggplot2 ylab
-#' @importFrom ggplot2 xlab
-#' @importFrom ggplot2 geom_errorbar
-#' @importFrom dplyr bind_cols
-#' @importFrom dplyr n_distinct
-#' @importFrom dplyr count
-#' @importFrom dplyr recode
-#' @importFrom FSA lencat
-#' @importFrom ggplot2 geom_hline
-#' @importFrom ggplot2 annotate
-#' @importFrom ggplot2 labs
-#' @importFrom ggplot2 scale_color_manual
-#' @importFrom ggplot2 geom_point
-#' @importFrom ggplot2 aes
-#' @importFrom dplyr summarise
-#' @importFrom dplyr group_by
-#' @importFrom dplyr left_join
-#' @importFrom ggplot2 ggplot
-#' @importFrom flextable flextable
-#' @importFrom tibble tibble
-#' @importFrom dplyr mutate
-#' @importFrom dplyr filter
-#' @importFrom glue glue
-#' @param data Un `data.frame` contenant les colonnes `sp`, `ltm`, `masse` et `sexe`
+#' @param data Un `data.frame` contenant au minimum les colonnes suivantes :
+#' `sp`, `ltm` (longueur totale en mm), `masse` (masse en g) et `sexe`.
 #'
-#' @return Une liste avec les éléments :
+#' @return Une liste contenant :
 #' \describe{
-#'   \item{data}{Tableau synthèse (`data.frame`) des Wr moyens par groupe}
-#'   \item{flextable}{Version formatée du tableau (objet `flextable`)}
-#'   \item{plot_tous}{Graphique Wr selon la longueur, coloré par sexe}
-#'   \item{plot_byclass}{Graphique Wr par classe de taille}
+#'   \item{data}{Un `data.frame` avec les Wr moyens et effectifs par groupe}
+#'   \item{flextable}{Une version formatée (`flextable`) prête pour exportation}
+#'   \item{plot_tous}{Un graphique `ggplot2` du Wr en fonction de la longueur, coloré par sexe}
+#'   \item{plot_byclass}{Un graphique `ggplot2` du Wr moyen par classe de taille}
 #' }
 #'
 #' @examples
 #' df <- data.frame(
 #'   sp    = rep("SANA", 10),
-#'   ltm   = seq(300, 480, by = 20),  
-#'   masse = seq(200, 380, by = 20),  
-#'   sexe  = rep(c("F", "M"), 5)      
+#'   ltm   = seq(300, 480, by = 20),
+#'   masse = seq(200, 380, by = 20),
+#'   sexe  = rep(c("F", "M"), 5)
 #' )
 #' wri(df)
-#' 
+#'
+#' @importFrom dplyr filter mutate select group_by summarise left_join count n_distinct bind_cols bind_rows arrange recode rename slice
+#' @importFrom tidyr complete
+#' @importFrom ggplot2 ggplot aes geom_point geom_errorbar geom_hline annotate labs scale_color_manual scale_x_discrete xlab ylab
+#' @importFrom flextable flextable set_caption
+#' @importFrom labelled set_variable_labels
+#' @importFrom tibble tibble
+#' @importFrom FSA lencat
+#' @importFrom rlang sym
+#' @importFrom plyr mapvalues
+#' @importFrom glue glue
 #' @importFrom stats lm setNames
-#' 
+#'
 #' @export
 wri <- function(data) {
   
