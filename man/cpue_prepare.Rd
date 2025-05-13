@@ -11,35 +11,25 @@ cpue_prepare(capture, specimen, group = c("tous", "femelles"))
 
 \item{specimen}{Un \code{data.frame} de spécimens, déjà filtré pour une seule espèce, les stations valides et aléatoires.}
 
-\item{group}{Une chaîne de caractères, "tous" (valeur par défaut) ou "femelles", indiquant le groupe à analyser.}
+\item{group}{Une chaîne de caractères, \code{"tous"} (par défaut) ou \code{"femelles"}, indiquant le groupe à analyser.}
 }
 \value{
 Un \code{data.frame} contenant les colonnes suivantes :
 \describe{
 \item{no_station}{Identifiant de la station}
-\item{cpue}{Nombre de spécimens observés à la station, divisé par l’effort (station)}
+\item{cpue}{Nombre d’individus du groupe, divisé par le nombre de filets (1 par station)}
 \item{group}{Libellé du groupe analysé : "Tous" ou "Femelles"}
 }
 }
 \description{
 Cette fonction prépare un tableau de CPUE (captures par unité d'effort) à l’échelle de la station,
 à partir des données de captures et des spécimens observés. Elle permet de calculer soit la CPUE totale,
-soit la CPUE restreinte aux femelles, selon l’argument \code{group}.
+soit la CPUE restreinte aux femelles matures, selon l’argument \code{group}.
 }
 \details{
 Elle suppose que les objets \code{capture} et \code{specimen} sont déjà filtrés pour ne contenir que les stations valides et aléatoires
 (par exemple via \code{get_analysis_data()}) ainsi que les individus d’une seule espèce.
-}
-\examples{
-capture <- tibble::tibble(
-  no_station = c(1, 2),
-  nb_capture = c(3, 2),
-  nb_pese = c(3, 2)
-)
-specimen <- tibble::tibble(
-  no_station = c(1, 1, 2, 2, 2),
-  sexe = c("F", "M", "F", "F", "M")
-)
-cpue_prepare(capture, specimen, group = "femelles")
 
+Lorsque \code{group = "femelles"}, la fonction filtre les spécimens pour \code{sexe == "F"} et \code{maturite == "O"}.
+Dans ce cas, la colonne \code{maturite} doit obligatoirement être présente dans le tableau \code{specimen}.
 }

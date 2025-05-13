@@ -2,7 +2,7 @@ test_that("Sélectionne le meilleur modèle avec HNP < 10", {
   tablemodele <- tibble::tibble(
     methode = c("Poisson", "NB1", "NB2"),
     aicc = c(120, 110, 105),
-    `Ajustement HNP (%)` = c(15, 9, 6)
+    ajustement_hnp = c(15, 9, 6)
   )
   
   res <- mortalite_select_best_modele(tablemodele)
@@ -13,7 +13,7 @@ test_that("Sélectionne le meilleur modèle global si aucun HNP < 10", {
   tablemodele <- tibble::tibble(
     methode = c("Poisson", "NB1", "NB2"),
     aicc = c(120, 110, 105),
-    `Ajustement HNP (%)` = c(20, 19, 18)
+    ajustement_hnp = c(20, 19, 18)
   )
   
   res <- mortalite_select_best_modele(tablemodele)
@@ -24,7 +24,7 @@ test_that("Renvoie NA avec avertissement si aucune ligne", {
   tablemodele <- tibble::tibble(
     methode = character(0),
     aicc = numeric(0),
-    `Ajustement HNP (%)` = numeric(0)
+    ajustement_hnp = numeric(0)
   )
   
   expect_warning(res <- mortalite_select_best_modele(tablemodele))

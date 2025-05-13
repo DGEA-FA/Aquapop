@@ -18,8 +18,8 @@ test_that("Retourne une liste avec data et flextable valides", {
   
   # Colonnes attendues
   expected_cols <- c(
-    "methode", "Ajustement HNP (%)", "aicc", "delta_aic",
-    "Z", "SE", "A", "IC 95%", "convergence", "commentaires"
+    "methode", "ajustement_hnp", "aicc", "delta_aic",
+    "Z", "SE", "A", "ic95", "convergence", "commentaire"
   )
   expect_true(all(expected_cols %in% names(res$data)))
   
@@ -29,8 +29,8 @@ test_that("Retourne une liste avec data et flextable valides", {
   # Types numériques cohérents
   expect_type(res$data$aicc, "double")
   expect_type(res$data$delta_aic, "double")
-  expect_type(res$data$`Z`, "double")
-  expect_type(res$data$`Ajustement HNP (%)`, "double")
+  expect_type(res$data$Z, "double")
+  expect_type(res$data$ajustement_hnp, "double")
   
   # Convergence doit être booléenne
   expect_type(res$data$convergence, "logical")

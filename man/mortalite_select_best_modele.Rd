@@ -19,7 +19,7 @@ le modèle avec le plus faible aicc est sélectionné.
 df <- data.frame(
   methode = c("Poisson", "NB1", "NB2", "CMP", "GP"),
   aicc = c(112, 108, 109, 107, 106),
-  "Ajustement HNP (\%)" = c(15, 12, 8, 6, 11)
+  ajustement_hnp = c(15, 12, 8, 6, 11)
 )
 mortalite_select_best_modele(df)
 }

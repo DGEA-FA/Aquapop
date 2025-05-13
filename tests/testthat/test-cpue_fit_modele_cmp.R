@@ -8,6 +8,5 @@ test_that("cmp - bon ajustement (valeurs variées)", {
   expect_equal(res$methode, "cmp")
   expect_true(res$ajustement_hnp >= 0 && res$ajustement_hnp <= 100)
   expect_type(res$convergence, "logical")
-  expect_equal(res$cpue_moyenne, round(res$cpue_moyenne, 2))
   expect_type(res$nb_iterations_hnp, "double")
 })

@@ -7,7 +7,8 @@ test_that("cpue_prepare() retourne un data.frame structuré correctement", {
   
   specimen <- tibble::tibble(
     no_station = c("A", "A", "B", "B", "C"),
-    sexe = c("F", "M", "F", "F", "M")
+    sexe = c("F", "M", "F", "F", "M"),
+    maturite = c("O", "O", "O", "N", "O")  # Ajout nécessaire
   )
   
   # Cas 1 : group = "tous"
@@ -21,14 +22,14 @@ test_that("cpue_prepare() retourne un data.frame structuré correctement", {
   expect_equal(res_all$cpue[res_all$no_station == "C"], 1)
   expect_true("D" %in% res_all$no_station) # Station sans spécimens
   
-  # Cas 2 : group = "femelles"
+  # Cas 2 : group = "femelles" (filtrage sur sexe == "F" & maturite == "O")
   res_f <- cpue_prepare(capture, specimen, group = "femelles")
   
   expect_s3_class(res_f, "data.frame")
   expect_named(res_f, c("no_station", "cpue", "group"))
   expect_true(all(res_f$group == "Femelles"))
-  expect_equal(res_f$cpue[res_f$no_station == "A"], 1)
-  expect_equal(res_f$cpue[res_f$no_station == "B"], 2)
+  expect_equal(res_f$cpue[res_f$no_station == "A"], 1)  # 1 F mature
+  expect_equal(res_f$cpue[res_f$no_station == "B"], 1)  # 1 F mature
   expect_equal(res_f$cpue[res_f$no_station == "C"], 0)
   expect_equal(res_f$cpue[res_f$no_station == "D"], 0)
   
@@ -44,8 +45,9 @@ test_that("cpue_prepare() retourne un data.frame structuré correctement", {
   
   # Cas 5 : vérifie que total cpue = nb de spécimens filtrés
   expect_equal(sum(res_all$cpue), nrow(specimen))
-  expect_equal(sum(res_f$cpue), sum(specimen$sexe == "F"))
+  expect_equal(sum(res_f$cpue), sum(specimen$sexe == "F" & specimen$maturite == "O"))
 })
+
 
 test_that("cpue_prepare() retourne cpue = 0 pour une station sans spécimens capturés", {
   capture <- tibble::tibble(
@@ -75,7 +77,8 @@ test_that("cpue_prepare() retourne cpue = 0 pour une station sans femelles captu
   )
   specimen <- tibble::tibble(
     no_station = c("Z"),
-    sexe = c("M")  # aucun spécimen femelle
+    sexe = c("M"),  # aucun spécimen femelle
+    maturite = c("O")  # nécessaire pour éviter l'erreur, même si sans effet ici
   )
   
   res <- cpue_prepare(capture, specimen, group = "femelles")
@@ -87,3 +90,20 @@ test_that("cpue_prepare() retourne cpue = 0 pour une station sans femelles captu
   expect_equal(res$group, "Femelles")
 })
 
+test_that("cpue_prepare() échoue clairement si `maturite` est manquant pour le groupe femelles", {
+  capture <- tibble::tibble(
+    no_station = c("X"),
+    nb_capture = 1,
+    nb_pese = 1
+  )
+  
+  specimen <- tibble::tibble(
+    no_station = c("X"),
+    sexe = c("F")  # Pas de colonne `maturite`
+  )
+  
+  expect_error(
+    cpue_prepare(capture, specimen, group = "femelles"),
+    regexp = "maturite.*requise"
+  )
+})

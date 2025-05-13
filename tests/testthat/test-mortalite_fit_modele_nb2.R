@@ -12,7 +12,7 @@ test_that("Cas nominal : modèle NB2 retourne un tableau structuré", {
   
   # Colonnes attendues
   expected_cols <- c("methode", "ajustement_hnp", "aicc", "Z", "SE", "A",
-                     "IC 95%", "commentaire", "convergence", "nb_iterations_hnp")
+                     "ic95", "commentaire", "convergence", "nb_iterations_hnp")
   expect_true(all(expected_cols %in% colnames(res)))
   
   # Valeurs numériques

@@ -18,7 +18,7 @@ test_that("psd_q() retourne les bons éléments avec des données valides", {
   expect_named(res, c("data", "flextable"))
   
   expect_s3_class(res$data, "data.frame")
-  expect_true(all(c("Q", "IC 95%") %in% colnames(res$data)))
+  expect_true(all(c("Q", "ic95") %in% colnames(res$data)))
   
   expect_s3_class(res$flextable, "flextable")
 })

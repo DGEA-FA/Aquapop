@@ -1,7 +1,0 @@
----
-title: "L50_texte.rmd"
-author: "Caroline Brule"
-date: "28 octobre 2023"
----
-
-Sélectionner un modèle pour faire apparaître les valeurs et le graphique. Le modèle le mieux adapté aux données est celui avec le plus faible AICc. 

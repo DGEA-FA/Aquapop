@@ -81,8 +81,12 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
     list(result$vout, result$gout, result$lout),
     modnames = modele_names
   ) |>
-    rename(methode = Modnames) |>
-    select(-K, -LL, -Cum.Wt, -ModelLik)
+    rename(
+      methode = Modnames,
+      aicc = AICc,
+      delta_aicc = Delta_AICc
+    ) |>
+    select(methode, aicc, delta_aicc, AICcWt)  # modification minimale ici
   
   final <- left_join(tableresult, aic_tab, by = "methode") |>
     mutate(
@@ -90,7 +94,7 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
       l_inf = round(l_inf, 0),
       k = round(as.numeric(k), 3),
       t0 = round(as.numeric(t0), 3),
-      aicc = round(AICc, 2),
+      aicc = round(aicc, 2),
       delta_aicc = round(delta_aicc, 2),
       AICcWt = round(AICcWt, 2)
     ) |>
@@ -118,6 +122,7 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
   
   return(list(data = final, flextable = ft))
 }
+
 
 #' Extraire un paramètre et son intervalle de confiance à partir d’un modèle
 #'

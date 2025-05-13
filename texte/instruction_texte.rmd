@@ -16,5 +16,3 @@ Il est néanmoins recommandé de vérifier que vos données sont correctement sa
 
 Pour les utilisateurs souhaitant utiliser leur propre fichier Excel, consulter le guide de l'utilisateur pour connaître la structure requise du fichier, afin d'assurer le bon fonctionnement de l'outil.
 
-
-Gros test

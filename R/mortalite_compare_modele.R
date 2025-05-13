@@ -44,13 +44,13 @@ mortalite_compare_modele <- function(data) {
   df_final <- resultats |>
     arrange(aicc) |>
     select(
-      methode = methode,
-      `Ajustement HNP (%)` = ajustement_hnp,
-      aicc = aicc,
+      methode,
+      ajustement_hnp,
+      aicc,
       delta_aic,
       Z, SE, A, ic95,
-      convergence = convergence,
-      commentaire = commentaire
+      convergence,
+      commentaire
     )
   
   # --- Étape 5 : Création du tableau formaté ---

@@ -20,7 +20,7 @@ test_that("cpue_compare_modele() retourne une liste bien formée", {
     "aicc",
     "delta_aicc",
     "cpue",
-    "IC 95%",
+    "ic95",
     "commentaires",
     "convergence"
   ) %in% colnames(result$data)))

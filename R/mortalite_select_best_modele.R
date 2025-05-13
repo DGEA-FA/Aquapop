@@ -15,18 +15,18 @@
 #' df <- data.frame(
 #'   methode = c("Poisson", "NB1", "NB2", "CMP", "GP"),
 #'   aicc = c(112, 108, 109, 107, 106),
-#'   "Ajustement HNP (%)" = c(15, 12, 8, 6, 11)
+#'   ajustement_hnp = c(15, 12, 8, 6, 11)
 #' )
 #' mortalite_select_best_modele(df)
 mortalite_select_best_modele <- function(tablemodele) {
   # Validation ----
-  if (!all(c("methode", "aicc", "Ajustement HNP (%)") %in% names(tablemodele))) {
-    stop("Le tableau fourni n’est pas valide. Il doit contenir les colonnes : 'methode', 'aicc' et 'Ajustement HNP (%)'.")
+  if (!all(c("methode", "aicc","ajustement_hnp") %in% names(tablemodele))) {
+    stop("Le tableau fourni n’est pas valide. Il doit contenir les colonnes : 'methode', 'aicc' et 'ajustement_hnp'.")
   }
   
   # Filtrage des modèles bien ajustés (HNP < 10) ----
   modeles_bien_ajustes <- tablemodele |>
-    filter(`Ajustement HNP (%)` < 10)
+    filter(ajustement_hnp < 10)
   
   # Sélection finale selon le plus faible AICc ----
   if (nrow(modeles_bien_ajustes) > 0) {

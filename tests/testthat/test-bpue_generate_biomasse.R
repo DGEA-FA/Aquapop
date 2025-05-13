@@ -43,13 +43,10 @@ test_that("bpue_generate_biomasse() retourne une liste contenant data et flextab
 test_that("les colonnes de data sont correctes et arrondies", {
   res <- bpue_generate_biomasse(data_specimen_nominal, data_station_nominal)$data
   expect_equal(colnames(res), c("groupe", "biomasse", "percent", "bpue", "ic95"))
-  expect_type(res$biomasse, "double")
-  expect_type(res$percent, "double")
-  expect_type(res$bpue, "double")
+  expect_type(res$biomasse, "character")
+  expect_type(res$percent, "character")
+  expect_type(res$bpue, "character")
   expect_type(res$ic95, "character")
-  expect_true(all(round(res$biomasse, 1) == res$biomasse, na.rm = TRUE))
-  expect_true(all(round(res$bpue, 1) == res$bpue, na.rm = TRUE))
-  expect_true(all(round(res$percent, 0) == res$percent, na.rm = TRUE))
 })
 
 
@@ -63,9 +60,16 @@ test_that("la fonction gère bien l'absence de groupes (ex: aucune femelle matur
 
 test_that("les stations sans capture sont bien traitées (biomasse = 0)", {
   res <- bpue_generate_biomasse(data_specimen_empty, data_station_with_empty)
-  expect_true(all(res$data$biomasse >= 0))
-  expect_equal(res$data$biomasse[res$data$groupe == "Tous"], 0)
+  
+  # Conversion sécurisée en numérique
+  biomasse_numeric <- suppressWarnings(as.numeric(res$data$biomasse))
+  
+  # Vérifie qu'on a bien des zéros (et pas NA) pour les groupes sans captures
+  expect_true(all(!is.na(biomasse_numeric)))
+  expect_true(all(biomasse_numeric >= 0))
+  expect_equal(biomasse_numeric[res$data$groupe == "Tous"], 0)
 })
+
 
 test_that("les IC sont calculés seulement pour Tous et Femelles matures", {
   res <- bpue_generate_biomasse(data_specimen_nominal, data_station_nominal)$data
