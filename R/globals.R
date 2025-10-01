@@ -10,9 +10,13 @@ utils::globalVariables(c(
   "h_pose", "date_leve", "h_leve", "no_lac", "typ_pech", "nom_lac",
   "comments", "annee", "nb_capture", "nb_pese", "marquage", "comments_specimen",
   "lat_dd.dec", "long_dd.dec", "prof_deb", "prof_fin", "min_pose", "heure_pose",
-  "min_leve", "heure_leve", "date_pose", "leve", "pose", "count",
+  "min_leve", "heure_leve", "date_pose", "leve", "pose", "count","aiccwt", "delta_aic", 
+  
+  "poisson", "hdi", "jags", "pred", "leve", "pose", "count",
+  
+  
   "st_valide", "superficie_ha", "t0", "st_hasard", "l_inf_ic", "l_inf", "ltm_interval", "ajustement_hnp", "no_specimen",
-  "k", "cpue_moyenne", "bpue", "percent","ic_95", "freq", "abondance", "group", "a", "z", "se"
+  "k", "cpue_moyenne", "bpue", "percent","ic_95", "freq", "abondance", "group", "a", "z", "se", "biomasse_g", "proportion", "cpue", "quantile"    
 ))
 
 myspinner <- 6

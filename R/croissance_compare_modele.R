@@ -84,9 +84,10 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
     rename(
       methode = Modnames,
       aicc = AICc,
-      delta_aicc = Delta_AICc
+      delta_aicc = Delta_AICc,
+      aiccwt = AICcWt
     ) |>
-    select(methode, aicc, delta_aicc, AICcWt)  # modification minimale ici
+    select(methode, aicc, delta_aicc, aiccwt) 
   
   final <- left_join(tableresult, aic_tab, by = "methode") |>
     mutate(
@@ -96,7 +97,7 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
       t0 = round(as.numeric(t0), 3),
       aicc = round(aicc, 2),
       delta_aicc = round(delta_aicc, 2),
-      AICcWt = round(AICcWt, 2)
+      aiccwt = round(aiccwt, 2)
     ) |>
     set_variable_labels(
       methode = "Modèles",
@@ -105,13 +106,13 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
       t0 = "t\u2080", t0_ic = "t\u2080 IC 95%",
       aicc = "AICc",
       delta_aicc = "Δ AICc",
-      AICcWt = "Poids d’Akaike",
+      aiccwt = "Poids d’Akaike",
       converged = "Convergence"
     ) |>
     select(
       methode, l_inf, l_inf_ic,
       k, k_ic, t0, t0_ic,
-      aicc, delta_aicc, AICcWt,
+      aicc, delta_aicc, aiccwt,
       converged
     ) |>
     arrange(aicc)

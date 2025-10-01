@@ -15,7 +15,7 @@
 #'   scale_x_continuous scale_y_continuous
 #' @importFrom glue glue
 #' @importFrom cli cli_warn
-#' @importFrom stats predict
+#' @importFrom stats predict poisson
 #' @importFrom tibble tibble
 #'
 #' @export
