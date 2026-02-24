@@ -46,7 +46,8 @@ Imports:
     stringi,
     plyr,
     rmarkdown,
-    tidyselect
+    tidyselect,
+    markdown
 Suggests:
     testthat (>= 3.1.10),
     knitr,
