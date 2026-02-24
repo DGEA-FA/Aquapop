@@ -23,12 +23,12 @@ mod_wri_ui <- function(id) {
     br(),
     
     # Graphique Wr par sexe
+    h3("Indice de condition (Wr) selon la longueur et le sexe"),
     p("Le graphique suivant illustre, pour chaque spécimen capturé, l’indice de condition en 
        fonction de la longueur totale maximale et du sexe. La valeur moyenne est indiquée par une 
-       ligne pointillée en rouge (tous), en bleu foncé (femelles) et en bleu pâle. La ligne en gris 
+       ligne pointillée en rouge (tous), en bleu foncé (femelles) et en bleu pâle (mâles). La ligne en gris 
        représente la référence standard pour l’espèce selon Hyatt & Hubert 2011 (SAFO), 
        Murphy et al. 1990 (SAVI) et Piccolo et al. 1993 (SANA)."),
-    h3("Indice de condition (Wr) selon la longueur et le sexe"),
     div(
       style = "max-width: 900px; margin: auto;",
       withSpinner(plotOutput(ns("wri_plot_tous"), height = "500px"), type = myspinner),
@@ -39,9 +39,9 @@ mod_wri_ui <- function(id) {
     br(),
     
     # Graphique Wr par classe de taille
+    h3("Indice de condition (Wr) moyen par classe de taille"),
     p("Ce graphique présente la variation de l’indice de condition selon les classes de PSD. 
        Les valeurs moyenne et les intervalles de confiance sont illustrés."),
-    h3("Indice de condition (Wr) moyen par classe de taille"),
     div(
       style = "max-width: 900px; margin: auto;",
       withSpinner(plotOutput(ns("wri_plot_byclass"), height = "500px"), type = myspinner),

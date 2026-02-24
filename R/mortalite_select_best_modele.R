@@ -4,6 +4,13 @@
 #' en priorisant les modèles avec un bon ajustement HNP (inférieur à 10 %). Si aucun modèle ne satisfait ce critère,
 #' le modèle avec le plus faible aicc est sélectionné.
 #'
+#' @param tablemodele Un `data.frame` (souvent `mortalite_compare_modele_res$data`)
+#'   contenant au minimum les colonnes :
+#'   \describe{
+#'     \item{methode}{Nom du modèle (ex. "Poisson", "NB1", "NB2", "CMP", "GP").}
+#'     \item{aicc}{Critère d'information corrigé (numérique).}
+#'     \item{ajustement_hnp}{Pourcentage d'ajustement HNP (numérique).}
+#'   }
 #'
 #' @return Une chaîne de caractères correspondant au nom du meilleur modèle, ou `NA` si aucun modèle n’est sélectionnable.
 #' @export

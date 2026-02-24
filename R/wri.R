@@ -26,7 +26,7 @@
 #'
 #' @importFrom dplyr filter mutate select group_by summarise left_join count n_distinct bind_cols bind_rows arrange recode rename slice
 #' @importFrom tidyr complete
-#' @importFrom ggplot2 ggplot aes geom_point geom_errorbar geom_hline annotate labs scale_color_manual scale_x_discrete xlab ylab
+#' @importFrom ggplot2 ggplot aes geom_point geom_errorbar geom_hline annotate labs scale_color_manual scale_x_discrete xlab ylab scale_linetype_manual guide_legend guides
 #' @importFrom flextable flextable set_caption
 #' @importFrom labelled set_variable_labels
 #' @importFrom tibble tibble
@@ -87,13 +87,37 @@ wri <- function(data) {
   
   plot_tous <- ggplot(data, aes(x = ltm, y = wr, color = sexe)) +
     geom_point(alpha = 0.8) +
-    scale_color_manual(values = group_colors$sexe, labels = group_labels$sexe, name = "", drop = FALSE) +
+    scale_color_manual(
+      values = group_colors$sexe,
+      labels = group_labels$sexe,
+      name = "",
+      drop = FALSE
+    ) +
     labs(x = "Longueur totale maximale (mm)", y = "Indice de condition (%)") +
-    annotate("segment", x = -Inf, xend = Inf, y = 100, yend = 100,
-                      color = "lightgrey", linewidth = 0.5, linetype = 2) +
-    geom_hline(data = moyenne_par_sexe, aes(yintercept = moyenne, color = sexe),
-                        linetype = 2, linewidth = 0.5) +
-    geom_hline(yintercept = moyenne_totale, color = "red", linetype = 2, linewidth = 0.5) +
+    annotate(
+      "segment",
+      x = -Inf, xend = Inf, y = 100, yend = 100,
+      color = "lightgrey", linewidth = 0.5, linetype = 2
+    ) +
+    geom_hline(
+      data = moyenne_par_sexe,
+      aes(yintercept = moyenne, color = sexe),
+      linetype = 2, linewidth = 0.5
+    ) +
+    # --- Ligne rouge (moyenne totale) + entrée de légende via linetype
+    geom_hline(
+      aes(yintercept = moyenne_totale, linetype = "Tous"),
+      color = "red",
+      linewidth = 0.5
+    ) +
+    scale_linetype_manual(
+      name = "",
+      values = c("Tous" = 2)
+    ) +
+    guides(
+      color = guide_legend(order = 1),
+      linetype = guide_legend(order = 2, override.aes = list(color = "red"))
+    ) +
     theme_aquapop()
   
   # ---- Graphique Wr par classe de taille (plot_byclass) ----

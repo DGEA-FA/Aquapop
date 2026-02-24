@@ -6,6 +6,15 @@
 \usage{
 mortalite_select_best_modele(tablemodele)
 }
+\arguments{
+\item{tablemodele}{Un \code{data.frame} (souvent \code{mortalite_compare_modele_res$data})
+contenant au minimum les colonnes :
+\describe{
+\item{methode}{Nom du modèle (ex. "Poisson", "NB1", "NB2", "CMP", "GP").}
+\item{aicc}{Critère d'information corrigé (numérique).}
+\item{ajustement_hnp}{Pourcentage d'ajustement HNP (numérique).}
+}}
+}
 \value{
 Une chaîne de caractères correspondant au nom du meilleur modèle, ou \code{NA} si aucun modèle n’est sélectionnable.
 }
