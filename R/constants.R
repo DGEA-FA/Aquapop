@@ -7,7 +7,7 @@
 #' @importFrom tibble tibble
 #' @format Un `tibble` avec une ligne par espece.
 #' @export
-pen_constants <- tibble(
+pen_constants <- tibble::tibble(
   sp       = c("SANA", "SAFO", "SAVI"),
   nom_sp   = c("touladis", "ombles de fontaine", "dorés jaunes"),
   binwidth = c(50, 20, 50),
@@ -41,8 +41,9 @@ psd_classnames <- c("Sous-stock", "Stock", "Qualité", "Préférée", "Mémorabl
 #' - `int` : Intercept de la regression log-log
 #' - `slope` : Pente de la regression log-log
 #' - `source` : Reference source
+#' @importFrom tibble tibble
 #' @export
-wr_constants <- tibble(
+wr_constants <-  tibble::tibble(
   sp      = c("SANA", "SAFO", "SAVI"),
   species = c("Lake Trout", "Brook Trout", "Walleye"),
   min_TL  = c(280, 120, 150),
