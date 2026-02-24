@@ -46,7 +46,6 @@ Imports:
     stringi,
     plyr,
     rmarkdown,
-    markdown,
     tidyselect
 Suggests:
     testthat (>= 3.1.10),
@@ -56,5 +55,8 @@ Suggests:
     DescTools,
     utils,
     purrr,
-    renv
+    renv,
+    curl
 VignetteBuilder: knitr
+Depends: 
+    R (>= 4.1.0)

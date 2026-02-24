@@ -82,11 +82,11 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
     modnames = modele_names
   ) |>
     rename(
-      methode = Modnames,
-      aicc = AICc,
-      delta_aicc = Delta_AICc,
-      aiccwt = AICcWt
-    ) |>
+      methode = .data$Modnames,
+      aicc = .data$AICc,
+      delta_aicc = .data$Delta_AICc,
+      aiccwt = .data$AICcWt
+      ) |>
     select(methode, aicc, delta_aicc, aiccwt) 
   
   final <- left_join(tableresult, aic_tab, by = "methode") |>

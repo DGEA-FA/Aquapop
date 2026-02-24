@@ -48,7 +48,10 @@ mortalite_compare_modele <- function(data) {
       ajustement_hnp,
       aicc,
       delta_aic,
-      Z, SE, A, ic95,
+      .data$Z,
+      .data$SE,
+      .data$A,
+      ic95,
       convergence,
       commentaire
     )

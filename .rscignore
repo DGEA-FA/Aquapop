@@ -1,8 +1,0 @@
-dev/
-inst/dev/
-inst/extdoc/
-inst/usage_examples/
-man/
-LICENSE*
-*.Rmd
-*.qmd

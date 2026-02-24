@@ -15,11 +15,23 @@
 #'   Retourne `NULL` si un seul sexe est présent dans les données.
 #'
 #' @examples
+#' set.seed(1)
+#'
 #' df <- tibble::tibble(
-#'   maturite = rep(c("N", "O"), each = 30),
-#'   sexe = rep(c("M", "F"), each = 30),
-#'   ltm = c(stats::runif(30, 100, 250), stats::runif(30, 120, 260))
-#' )
+#'   sexe = rep(c("M", "F"), each = 80),
+#'   ltm  = c(stats::runif(80, 100, 250), stats::runif(80, 120, 260))
+#' ) |>
+#'   dplyr::mutate(
+#'     # Probabilité de maturité qui augmente avec la longueur (exemple réaliste)
+#'     prob_maturite = dplyr::if_else(
+#'       sexe == "M",
+#'       stats::plogis((ltm - 180) / 18),  # M : maturité un peu plus "tard"
+#'       stats::plogis((ltm - 170) / 18)   # F : maturité un peu plus "tôt"
+#'     ),
+#'     maturite = stats::rbinom(dplyr::n(), size = 1, prob = prob_maturite)
+#'   ) |>
+#'   dplyr::select(-prob_maturite)
+#'
 #' models <- maturite_fit_separated_modele(df, variable = "ltm")
 #'
 #' @export

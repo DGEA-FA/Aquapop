@@ -92,9 +92,9 @@ psd_q <- function(data) {
   ) |>
     as.data.frame() |>
     rename(
-      Q   = Estimate,
-      LCI = `95% LCI`,
-      UCI = `95% UCI`
+      Q   = .data$Estimate,
+      LCI = .data$`95% LCI`,
+      UCI = .data$`95% UCI`
     ) |>
     mutate(ic95 = glue("[{round(LCI, 1)}-{round(UCI, 1)}]")) |>
     select(Q, ic95)

@@ -61,8 +61,8 @@ mortalite_chaprob <- function(specimen, pp, age_max) {
   # Construction du tableau brut ----
   table_resultats <- res_cr$results |>
     transmute(
-      z       = Estimate,
-      se      = SE,
+      z       = .data$Estimate,
+      se      = .data$SE,
       a       = round((1 - exp(-z)) * 100, 1),
       ic_95   = glue("[{round((1 - exp(-(z - se))) * 100, 1)}-{round((1 - exp(-(z + se))) * 100, 1)}]")
     )
