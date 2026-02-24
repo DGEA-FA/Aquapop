@@ -2,7 +2,7 @@
 % Please edit documentation in R/mortalite_get_peak_plus.R
 \name{mortalite_get_peak_plus}
 \alias{mortalite_get_peak_plus}
-\title{Déterminer l’âge Peak Plus à partir de la structure d’âge}
+\title{Déterminer l’âge Peak Plus (âge de départ) à partir de la structure d’âge}
 \usage{
 mortalite_get_peak_plus(data)
 }
@@ -10,11 +10,11 @@ mortalite_get_peak_plus(data)
 \item{data}{Un \code{data.frame} contenant une colonne \code{age}, de type numérique ou entier.}
 }
 \value{
-Un entier (\code{integer}) correspondant au Peak Plus, ou \code{NA_integer_} si le calcul est impossible.
+Un entier (\code{integer}) correspondant au Peak Plus (âge de départ), ou \code{NA_integer_} si le calcul est impossible.
 }
 \description{
 Cette fonction retourne l’âge le plus fréquent (le mode) dans la colonne \code{age},
-augmenté de 1, conformément à la définition du Peak Plus utilisée en analyse de mortalité.
+augmenté de 1, conformément à la définition du Peak Plus (âge de départ) utilisée en analyse de mortalité.
 Elle suppose que les données ont été filtrées au préalable pour une seule espèce.
 }
 \details{

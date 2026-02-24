@@ -17,10 +17,10 @@ mod_mortalite_ui <- function(id) {
     ),
     br(),
     
-    h4("Paramètre avancé : recalcul avec un autre Peak Plus"),
+    h4("Paramètre avancé : recalcul avec un autre âge de départ"),
     p("Vous pouvez forcer un recalcul avec une autre valeur."),
     uiOutput(ns("ui_custom_peak_plus")),
-    actionButton(ns("recalculer_mortalite"), "Recalculer avec ce Peak Plus"),
+    actionButton(ns("recalculer_mortalite"), "Recalculer avec cet âge de départ"),
     em(textOutput(ns("texte_pp_utilise"))),
     br(), br(),
     
@@ -70,7 +70,7 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
       
       selectInput(
         inputId = "custom_peak_plus",
-        label = "Recalculer avec un autre Peak Plus (facultatif)",
+        label = "Recalculer avec un autre age de départ (facultatif)",
         choices = age_min:age_max,
         selected = pp()
       )
@@ -81,7 +81,7 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
       age_max <- mortalite_get_age_max_res()
       validate(
         need(!is.null(custom_pp), "Aucun âge sélectionné."),
-        need(as.numeric(custom_pp) < age_max, "Le Peak Plus doit être inférieur à l’âge maximal.")
+        need(as.numeric(custom_pp) < age_max, "L'âge de départ doit être inférieur à l’âge maximal.")
       )
       as.numeric(custom_pp)
     }, ignoreNULL = FALSE, ignoreInit = TRUE)
@@ -93,9 +93,9 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
     output$texte_pp_utilise <- renderText({
       req(pp(), peak_plus_final())
       if (input$recalculer_mortalite == 0) {
-        glue::glue("Analyse effectuée avec la valeur par défaut du Peak Plus : {pp()}")
+        glue::glue("Analyse effectuée avec la valeur par défaut d'âge de départ : {pp()}")
       } else {
-        glue::glue("Analyse effectuée avec la valeur personnalisée du Peak Plus : {peak_plus_final()}")
+        glue::glue("Analyse effectuée avec la valeur personnalisée d'âge de départ : {peak_plus_final()}")
       } |> as.character()
     })
     

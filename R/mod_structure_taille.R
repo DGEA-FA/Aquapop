@@ -16,7 +16,7 @@ mod_structure_taille_ui <- function(id) {
     sidebarPanel(
       radioButtons(
         inputId = ns("groupetailleplot"),
-        label = "Filtrer des poissons",
+        label = "Grouper des poissons",
         choices  = c(
           "Tous" = "tous",
           "Origine (marqué ou non-marqué)" = "marquage",
@@ -34,7 +34,7 @@ mod_structure_taille_ui <- function(id) {
       
       h3("Histogramme de fréquence des longueurs"),
       p("La figure ci-dessous représente l’histogramme de fréquence des
-        longueurs selon le filtre sélectionné à gauche."),
+        longueurs selon le groupement sélectionné à gauche."),
       
       div(
         style = "max-width: 900px; margin: auto;",

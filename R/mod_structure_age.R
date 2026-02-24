@@ -16,7 +16,7 @@ mod_structure_age_ui <- function(id) {
     sidebarPanel(
       radioButtons(
         inputId = ns("groupeageplot"),
-        label = "Filtrer des poissons",
+        label = "Grouper des poissons",
         choices  = c(
           "Tous" = "tous",
           "Origine (marqué ou non-marqué)" = "marquage",
@@ -32,7 +32,7 @@ mod_structure_age_ui <- function(id) {
       
       h3("Histogramme de fréquence des âges"),
       p("La figure ci-dessous représente l’histogramme de fréquences des âges 
-         selon le filtre sélectionné à gauche."),
+         selon le groupement sélectionné à gauche."),
       
       div(
         style = "max-width: 900px; margin: auto;",
