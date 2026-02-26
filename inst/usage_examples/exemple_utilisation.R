@@ -7,9 +7,9 @@ devtools::load_all()
 # Téléchargement des données ----
 
 path     <- "inst/extdata/Extract_IFA_R04_AquaPop.xlsx"
-typ_pech <- "PENOF"
-no_lac   <- "01607"
-annee    <- 2021
+typ_pech <- "PENT"
+no_lac   <- "01589"
+annee    <- 2012
 
 df <- get_analysis_data(path, typ_pech, no_lac, annee)
 data_station         <- df$data_station

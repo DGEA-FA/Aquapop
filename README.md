@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="man/figures/logo.png" width="300">
+</p>
+
 # AquapopQC
 
 AquapopQC est une application R Shiny conçue pour automatiser les analyses les plus couramment utilisées pour décrire une population de poissons. Les analyses s’appliquent aux pêches expérimentales normalisées au touladi, au doré jaune et à l’omble de fontaine (PENT, PENDJ, PENOF). Les comparaisons spatiales et temporelles ne sont pas abordées dans cette version de l’outil.
