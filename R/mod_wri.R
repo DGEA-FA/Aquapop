@@ -15,7 +15,7 @@ mod_wri_ui <- function(id) {
     
     # Tableau Wr
     p("Le tableau ci-dessous présente l’indice de masse relative (Wr) et son intervalle de confiance 
-       à 95 % pour l’ensemble de la population, par sexe et par classe de PSD (classe selon 
+       à 95 % pour les individus à partir d'une taille minimale déterminée selon l'espèce, par sexe et par classe de PSD (classe selon 
        Gabelhouse 1984)."),
     uiOutput(ns("wri_table")),
     download_button_ui(ns("wri_table_dl")),

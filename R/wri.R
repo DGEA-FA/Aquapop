@@ -242,12 +242,12 @@ resumer_wr_par_groupe <- function(mod, var) {
 #' Cette fonction retourne les coefficients de référence pour le calcul de l’indice
 #' de condition (Wr) pour une espèce supportée, à partir de la table `wr_constants`.
 #'
-#' @param sp Code d’espèce (ex: "SANA", "SAFO", "SAVI")
+#' @param espece Code d’espèce (ex: "SANA", "SAFO", "SAVI")
 #'
 #' @return Un `data.frame` avec les colonnes `min_TL`, `int`, `slope`, etc.
 #' @keywords internal
-get_wr_constants <- function(sp) {
+get_wr_constants <- function(espece) {
   wr_constants |>
-    filter(sp == sp) |>
+    filter(sp == espece) |>
     slice(1)
 }

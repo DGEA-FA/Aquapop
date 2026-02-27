@@ -4,10 +4,10 @@
 \alias{get_wr_constants}
 \title{Récupérer les constantes Wr pour une espèce donnée}
 \usage{
-get_wr_constants(sp)
+get_wr_constants(espece)
 }
 \arguments{
-\item{sp}{Code d’espèce (ex: "SANA", "SAFO", "SAVI")}
+\item{espece}{Code d’espèce (ex: "SANA", "SAFO", "SAVI")}
 }
 \value{
 Un \code{data.frame} avec les colonnes \code{min_TL}, \code{int}, \code{slope}, etc.
