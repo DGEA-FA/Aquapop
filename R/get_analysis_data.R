@@ -19,8 +19,9 @@
 #'   \item{data_station}{Toutes les stations du lac sélectionné (filtrées par année et type de pêche)}
 #'   \item{station_valide}{Sous-ensemble des stations valides (`st_valide == "O"`)}
 #'   \item{station_hasard_valide}{Sous-ensemble des stations valides et au hasard (`st_valide == "O" & st_hasard == "O"`)}
-#'   \item{specimen}{Spécimens de l’espèce cible associés aux stations valides et au hasard}
+#'   \item{specimen_tous}{Spécimens de l’espèce cible associés aux stations valides et au hasard}
 #'   \item{specimen_valide}{Spécimens de l’espèce cible associés à toutes les stations valides (hasard + dirigées)}
+#'   \item{specimen_hasard_valide}{Spécimens de l’espèce cible associés à toutes les stations valides (hasard)}
 #'   \item{capture}{Table des captures par station (inclut les stations valides et au hasard, même sans capture)}
 #' }
 #'
@@ -60,7 +61,7 @@ get_analysis_data <- function(path, typ_pech, no_lac, annee,
   
   # Préparation des spécimens ----
   ## Spécimens associés aux stations valides et au hasard ----
-  specimen <- inner_join(
+  specimen_hasard_valide <- inner_join(
     data_specimen, station_hasard_valide,
     by = c("no_station", "annee", "no_lac", "typ_pech", "st_valide", "st_hasard" ),
     relationship = "many-to-one"
@@ -69,16 +70,13 @@ get_analysis_data <- function(path, typ_pech, no_lac, annee,
     droplevels()
   
   # Spécimens associés à toutes les stations valides ----
-  # specimen_valide <- inner_join(
-  #   data_specimen, station_valide,
-  #   by = c("no_station", "annee", "no_lac", "typ_pech", "st_valide", "st_hasard"),
-  #   relationship = "many-to-one"
-  # ) |>
-  #   distinct() |>
-  #   droplevels()
-  
-  specimen_valide <- data_specimen |>
+
+   specimen_valide <- data_specimen |>
     filter(st_valide == "O")
+  
+  # Spécimens associés à toutes les stations ----
+  
+  specimen_tous <- data_specimen
   
   # Préparation des captures (des stations valides et hasard) ----
   capture <- full_join(
@@ -96,11 +94,12 @@ get_analysis_data <- function(path, typ_pech, no_lac, annee,
   
   # Retour ----
   return(list(
-    data_station          = data_station,
-    station_valide       = station_valide,
+    data_station = data_station,
+    station_valide = station_valide,
     station_hasard_valide = station_hasard_valide,
-    specimen              = specimen,
-    specimen_valide        = specimen_valide,
-    capture               = capture
+    specimen_tous = specimen_tous,
+    specimen_valide = specimen_valide,    
+    specimen_hasard_valide = specimen_hasard_valide,
+    capture = capture
   ))
 }

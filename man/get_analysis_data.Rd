@@ -38,8 +38,9 @@ Une liste nommée contenant :
 \item{data_station}{Toutes les stations du lac sélectionné (filtrées par année et type de pêche)}
 \item{station_valide}{Sous-ensemble des stations valides (\code{st_valide == "O"})}
 \item{station_hasard_valide}{Sous-ensemble des stations valides et au hasard (\code{st_valide == "O" & st_hasard == "O"})}
-\item{specimen}{Spécimens de l’espèce cible associés aux stations valides et au hasard}
+\item{specimen_tous}{Spécimens de l’espèce cible associés aux stations valides et au hasard}
 \item{specimen_valide}{Spécimens de l’espèce cible associés à toutes les stations valides (hasard + dirigées)}
+\item{specimen_hasard_valide}{Spécimens de l’espèce cible associés à toutes les stations valides (hasard)}
 \item{capture}{Table des captures par station (inclut les stations valides et au hasard, même sans capture)}
 }
 }

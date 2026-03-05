@@ -41,8 +41,9 @@ mod_telechargement_ui <- function(id) {
           selected = NULL,
           tabPanelBody("data_lac", DTOutput(ns("table_lac"))),
           tabPanelBody("data_station", DTOutput(ns("table_station"))),
-          tabPanelBody("specimen", DTOutput(ns("table_specimen"))),
-          tabPanelBody("specimen_valide", DTOutput(ns("table_specimen_valid"))),
+          tabPanelBody("specimen_tous", DTOutput(ns("table_specimen_tous"))),
+          tabPanelBody("specimen_valide", DTOutput(ns("table_specimen_valide"))),
+          tabPanelBody("specimen_hasard_valide", DTOutput(ns("table_specimen_hasard_valide"))),
           tabPanelBody("capture", DTOutput(ns("table_capture")))
         )
       )
@@ -55,7 +56,7 @@ mod_telechargement_ui <- function(id) {
 #'
 #' @param id Identifiant du module
 #'
-#' @return Une liste de réactifs : data_lac, capture, specimen, specimen_valide,
+#' @return Une liste de réactifs : data_lac, capture, specimen_tous, specimen_valide,specimen_hasard_valide,
 #' data_station, station_valide, station_hasard_valide, filename_suffix, nom_lac
 #' @noRd
 mod_telechargement_server <- function(id) {
@@ -135,9 +136,10 @@ mod_telechargement_server <- function(id) {
       selectInput(ns("controller"), "Visualiser les données", 
                   choices = c(
                     "Lac" = "data_lac",
-                    "Stations" = "data_station",
-                    "Spécimens" = "specimen",
+                    "Stations (TOUS)" = "data_station",
+                    "Spécimens (TOUS)" = "specimen_tous",
                     "Spécimens valides" = "specimen_valide",
+                    "Spécimens hasards et valides" = "specimen_hasard_valide",
                     "Capture" = "capture"
                   ), selected = NULL)
     })
@@ -148,8 +150,9 @@ mod_telechargement_server <- function(id) {
     
     output$table_lac <- renderDT(data_lac())
     output$table_station <- renderDT(analysis_data()$data_station)
-    output$table_specimen <- renderDT(analysis_data()$specimen)
-    output$table_specimen_valid <- renderDT(analysis_data()$specimen_valide)
+    output$table_specimen_tous <- renderDT(analysis_data()$specimen_tous)
+    output$table_specimen_valide <- renderDT(analysis_data()$specimen_valide)
+    output$table_specimen_hasard_valide <- renderDT(analysis_data()$specimen_hasard_valide)
     output$table_capture <- renderDT(analysis_data()$capture)
     
     filename_suffix <- reactive({
@@ -164,7 +167,8 @@ mod_telechargement_server <- function(id) {
     return(list(
       data_lac = data_lac,
       capture = reactive(analysis_data()$capture),
-      specimen = reactive(analysis_data()$specimen),
+      specimen_tous = reactive(analysis_data()$specimen_tous),
+      specimen_hasard_valide = reactive(analysis_data()$specimen_hasard_valide),
       specimen_valide = reactive(analysis_data()$specimen_valide),
       data_station = reactive(analysis_data()$data_station),
       station_valide = reactive(analysis_data()$station_valide),

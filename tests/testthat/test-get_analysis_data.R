@@ -13,11 +13,11 @@ test_that("get_analysis_data retourne les objets attendus", {
   expect_type(res, "list")
   expect_named(res, c(
     "data_station", "station_valide", "station_hasard_valide",
-    "specimen", "specimen_valide", "capture"
+    "specimen_tous", "specimen_valide","specimen_hasard_valide", "capture"
   ))
   
   # Filtrage des spécimens par espèce cible
-  expect_true(all(res$specimen$sp == "SAFO"))
+  expect_true(all(res$specimen_tous$sp == "SAFO"))
   expect_true(all(res$specimen_valide$sp == "SAFO"))
   
   # Vérifie que les captures contiennent les colonnes obligatoires
@@ -29,7 +29,7 @@ test_that("get_analysis_data retourne les objets attendus", {
   expect_false(any(is.na(res$capture$nb_pese)))
   
   # Vérifie qu’il n’y a pas de doublons
-  expect_equal(nrow(res$specimen), nrow(dplyr::distinct(res$specimen)))
+  expect_equal(nrow(res$specimen_tous), nrow(dplyr::distinct(res$specimen_tous)))
   expect_equal(nrow(res$capture), nrow(dplyr::distinct(res$capture)))
   
   # Présence des stations sans capture
