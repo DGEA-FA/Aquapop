@@ -17,7 +17,7 @@
 #' @return Une liste nommée contenant :
 #' \describe{
 #'   \item{data_station}{Toutes les stations du lac sélectionné (filtrées par année et type de pêche)}
-#'   \item{station_valides}{Sous-ensemble des stations valides (`st_valide == "O"`)}
+#'   \item{station_valide}{Sous-ensemble des stations valides (`st_valide == "O"`)}
 #'   \item{station_hasard_valide}{Sous-ensemble des stations valides et au hasard (`st_valide == "O" & st_hasard == "O"`)}
 #'   \item{specimen}{Spécimens de l’espèce cible associés aux stations valides et au hasard}
 #'   \item{specimen_valide}{Spécimens de l’espèce cible associés à toutes les stations valides (hasard + dirigées)}
@@ -55,7 +55,7 @@ get_analysis_data <- function(path, typ_pech, no_lac, annee,
     filter(sp == code_sp)
   
   # Préparation des stations ----
-  station_valides <- filter(data_station, st_valide == "O")
+  station_valide <- filter(data_station, st_valide == "O")
   station_hasard_valide <- filter(data_station, st_valide == "O", st_hasard == "O")
   
   # Préparation des spécimens ----
@@ -70,7 +70,7 @@ get_analysis_data <- function(path, typ_pech, no_lac, annee,
   
   # Spécimens associés à toutes les stations valides ----
   # specimen_valide <- inner_join(
-  #   data_specimen, station_valides,
+  #   data_specimen, station_valide,
   #   by = c("no_station", "annee", "no_lac", "typ_pech", "st_valide", "st_hasard"),
   #   relationship = "many-to-one"
   # ) |>
@@ -97,7 +97,7 @@ get_analysis_data <- function(path, typ_pech, no_lac, annee,
   # Retour ----
   return(list(
     data_station          = data_station,
-    station_valides       = station_valides,
+    station_valide       = station_valide,
     station_hasard_valide = station_hasard_valide,
     specimen              = specimen,
     specimen_valide        = specimen_valide,

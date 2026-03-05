@@ -36,7 +36,7 @@ get_analysis_data(
 Une liste nommée contenant :
 \describe{
 \item{data_station}{Toutes les stations du lac sélectionné (filtrées par année et type de pêche)}
-\item{station_valides}{Sous-ensemble des stations valides (\code{st_valide == "O"})}
+\item{station_valide}{Sous-ensemble des stations valides (\code{st_valide == "O"})}
 \item{station_hasard_valide}{Sous-ensemble des stations valides et au hasard (\code{st_valide == "O" & st_hasard == "O"})}
 \item{specimen}{Spécimens de l’espèce cible associés aux stations valides et au hasard}
 \item{specimen_valide}{Spécimens de l’espèce cible associés à toutes les stations valides (hasard + dirigées)}

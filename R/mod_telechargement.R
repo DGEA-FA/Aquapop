@@ -56,7 +56,7 @@ mod_telechargement_ui <- function(id) {
 #' @param id Identifiant du module
 #'
 #' @return Une liste de réactifs : data_lac, capture, specimen, specimen_valide,
-#' data_station, station_valides, station_hasard_valide, filename_suffix, nom_lac
+#' data_station, station_valide, station_hasard_valide, filename_suffix, nom_lac
 #' @noRd
 mod_telechargement_server <- function(id) {
   moduleServer(id, function(input, output, session) {
@@ -167,7 +167,7 @@ mod_telechargement_server <- function(id) {
       specimen = reactive(analysis_data()$specimen),
       specimen_valide = reactive(analysis_data()$specimen_valide),
       data_station = reactive(analysis_data()$data_station),
-      station_valides = reactive(analysis_data()$station_valides),
+      station_valide = reactive(analysis_data()$station_valide),
       station_hasard_valide = reactive(analysis_data()$station_hasard_valide),
       filename_suffix = filename_suffix,
       nom_lac = nom_lac_reactif

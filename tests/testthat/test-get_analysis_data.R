@@ -12,7 +12,7 @@ test_that("get_analysis_data retourne les objets attendus", {
   # Structure générale
   expect_type(res, "list")
   expect_named(res, c(
-    "data_station", "station_valides", "station_hasard_valide",
+    "data_station", "station_valide", "station_hasard_valide",
     "specimen", "specimen_valide", "capture"
   ))
   

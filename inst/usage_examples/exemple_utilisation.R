@@ -15,7 +15,7 @@ annee    <- 2019
 
 df <- get_analysis_data(path, typ_pech, no_lac, annee)
 data_station         <- df$data_station
-station_valides      <- df$station_valides
+station_valide      <- df$station_valide
 station_hasard_valide <- df$station_hasard_valide
 specimen             <- df$specimen
 specimen_valide       <- df$specimen_valide

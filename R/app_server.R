@@ -13,7 +13,7 @@ app_server <- function(input, output, session) {
   # Variables à transmettre aux autres modules
   data_lac              <- telech$data_lac
   data_station          <- telech$data_station
-  station_valides       <- telech$station_valides
+  station_valide       <- telech$station_valide
   station_hasard_valide <- telech$station_hasard_valide
   specimen              <- telech$specimen
   specimen_valide        <- telech$specimen_valide
