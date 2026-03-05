@@ -23,18 +23,18 @@ mod_taille_masse_age_ui <- function(id){
 #' taille_masse_age Server Functions
 #'
 #' @param id Internal parameters for {shiny}.
-#' @param specimen_valide Reactive expression containing valid specimen data.
+#' @param specimen Reactive expression containing valid specimen data.
 #' @param filename_suffix Reactive expression for filename suffix.
 #'
 #' @noRd 
-mod_taille_masse_age_server <- function(id, specimen_valide, filename_suffix){
+mod_taille_masse_age_server <- function(id, specimen, filename_suffix){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
     
     # Résultat combiné (data + flextable)
     taille_masse_age_res <- reactive({
-      req(specimen_valide())
-      taille_masse_age(specimen_valide())
+      req(specimen())
+      taille_masse_age(specimen())
     })
     
     # Affichage du tableau flextable

@@ -45,17 +45,21 @@ app_server <- function(input, output, session) {
   
   mod_taille_masse_age_server(
     id = "taille_masse_age_1",
-    specimen_valide = specimen_valide,
+    specimen = specimen_valide,
     filename_suffix = filename_suffix
   )
   
   # Structure de taille ----
   
-  mod_structure_taille_server("structure_taille_1", specimen = specimen_valide, filename_suffix = filename_suffix)
+  mod_structure_taille_server("structure_taille_1",
+                              specimen = specimen_valide,
+                              filename_suffix = filename_suffix)
   
   # Structure d'age ----
   
-  mod_structure_age_server("structure_age_1", specimen = specimen_valide, filename_suffix = filename_suffix)
+  mod_structure_age_server("structure_age_1",
+                           specimen = specimen_valide,
+                           filename_suffix = filename_suffix)
   
   # PSD ----
   mod_psd_server(
@@ -73,11 +77,15 @@ app_server <- function(input, output, session) {
   )
   
   # Indice de condition ----
-  mod_wri_server("wri_1", specimen = specimen_valide, filename_suffix = filename_suffix)
-
+  mod_wri_server("wri_1",
+                 specimen = specimen_valide,
+                 filename_suffix = filename_suffix)
+  
   # Croissance ----
 
-  mod_croissance_server("croissance_1", specimen = specimen_valide, filename_suffix = filename_suffix)
+  mod_croissance_server("croissance_1",
+                        specimen = specimen_valide,
+                        filename_suffix = filename_suffix)
   
   # # Mortalite ----
 
@@ -89,10 +97,14 @@ app_server <- function(input, output, session) {
   # Maturite sexuelle ----
   ## Longueur a maturite ----
   
-  mod_maturite_l50_server("maturite_l50_1", specimen = specimen_valide, filename_suffix = filename_suffix)
+  mod_maturite_l50_server("maturite_l50_1",
+                          specimen = specimen_valide,
+                          filename_suffix = filename_suffix)
   
   ## Age a maturite ----
-  mod_maturite_a50_server("maturite_a50_1", specimen = specimen_valide, filename_suffix = filename_suffix)
+  mod_maturite_a50_server("maturite_a50_1",
+                          specimen = specimen_valide,
+                          filename_suffix = filename_suffix)
   
   
   
