@@ -110,8 +110,15 @@ load_station <- function(path,
   # --- Nettoyage des statuts ---
   station <- station |>
     mutate(
-      st_valide = case_when(is.na(st_valide) | st_valide %in% c("IND", "-") ~ "O", TRUE ~ st_valide),
-      st_hasard = case_when(is.na(st_hasard) | st_hasard %in% c("IND", "-") ~ "O", TRUE ~ st_hasard)
+      st_valide = case_when(
+        is.na(st_valide) | st_valide %in% c("IND", "-", "VALIDE") ~ "O",
+        TRUE ~ st_valide
+      ),
+      st_hasard = case_when(
+        st_hasard %in% c("REJETEE") ~ "N",
+        is.na(st_hasard) | st_hasard %in% c("IND", "-") ~ "O",
+        TRUE ~ st_hasard
+      )
     )
   
   # --- Conversion types de base ---
@@ -122,7 +129,7 @@ load_station <- function(path,
         TRUE              ~ suppressWarnings(as.integer(annee))
       ),
       across(
-        intersect(c("no_lac", "typ_pech", "no_station", "st_valide", "st_hasard", "type_maill"), names(station)),
+        intersect(c("no_lac", "typ_pech", "no_station", "type_maill", "st_hasard", "st_valide"), names(station)),
         as.factor
       ),
       lat_dd.dec  = suppressWarnings(as.numeric(lat_dd.dec)),

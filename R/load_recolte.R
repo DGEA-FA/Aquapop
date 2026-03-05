@@ -64,7 +64,9 @@ load_recolte <- function(path,
     sp         = c("sp", "espece"),
     nb_capture = c("nb_capture", "n_captur", "nbre_capture", "nbre_capturee"),
     nb_pese    = c("nb_pese", "n_pese", "nbre_pese", "nbre_pesee", "nbre_pesé"),
-    comments   = c("comments", "commentaires", "remarques", "notes")
+    comments   = c("comments", "commentaires", "remarques", "notes"),
+    st_valide  = c("lengin_na_pas_peche_normal", "valide"),     
+    st_hasard  = c("station_choisie_au_hasard", "hasard")
   )
   
   # --- Nettoyage des noms des colonnes du fichier ---
@@ -94,7 +96,7 @@ load_recolte <- function(path,
   }
   
   # --- Validation des colonnes essentielles ---
-  colonnes_obligatoires <- c("no_lac", "typ_pech", "annee", "no_station", "sp", "nb_capture", "nb_pese")
+  colonnes_obligatoires <- c("no_lac", "typ_pech", "annee", "no_station", "sp", "nb_capture", "nb_pese", "st_valide", "st_hasard")
   assert_names(names(recolte), must.include = colonnes_obligatoires)
   
   # --- Suppression optionnelle de nom_lac ---
@@ -109,10 +111,17 @@ load_recolte <- function(path,
     TRUE                      ~ suppressWarnings(as.integer(recolte$annee))
   )
   
+  # --- Nettoyage des statuts ---
+  recolte <- recolte |>
+    mutate(
+      st_valide = case_when(is.na(st_valide) | st_valide %in% c("IND", "-", "VALIDE") ~ "O", TRUE ~ st_valide),
+      st_hasard = case_when(is.na(st_hasard) | st_hasard %in% c("IND", "-") ~ "O", TRUE ~ st_hasard)
+    )
+  
   # --- Conversion des types ---
   recolte <- recolte |>
     mutate(
-      across(c(no_lac, typ_pech, no_station, sp), as.factor),
+      across(c(no_lac, typ_pech, no_station, sp, st_valide, st_hasard), as.factor),
       across(c(nb_capture, nb_pese), as.numeric),
       comments_recolte = if ("comments" %in% names(recolte)) as.character(recolte$comments) else NA_character_
     ) |>

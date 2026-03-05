@@ -76,6 +76,8 @@ test_that("load_specimen convertit les années Excel en dates valides", {
     masse       = "12.4",
     age         = "1",
     sexe        = "M",
+    valide      = "O",
+    hasard      = "O",
     maturite    = "O",
     annee       = "44927"  # équivalent à 2023-01-01
   )

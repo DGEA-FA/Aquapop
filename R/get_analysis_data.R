@@ -60,30 +60,34 @@ get_analysis_data <- function(path, typ_pech, no_lac, annee,
   
   # Préparation des spécimens ----
   ## Spécimens associés aux stations valides et au hasard ----
-  specimen <- left_join(
+  specimen <- inner_join(
     data_specimen, station_hasard_valide,
-    by = c("no_station", "annee", "no_lac", "typ_pech"),
+    by = c("no_station", "annee", "no_lac", "typ_pech", "st_valide", "st_hasard" ),
     relationship = "many-to-one"
   ) |>
     distinct() |>
     droplevels()
   
-  ## Spécimens associés à toutes les stations valides ----
-  specimen_valid <- left_join(
-    data_specimen, station_valides,
-    by = c("no_station", "annee", "no_lac", "typ_pech"),
-    relationship = "many-to-one"
-  ) |>
-    distinct() |>
-    droplevels()
+  # Spécimens associés à toutes les stations valides ----
+  # specimen_valid <- inner_join(
+  #   data_specimen, station_valides,
+  #   by = c("no_station", "annee", "no_lac", "typ_pech", "st_valide", "st_hasard"),
+  #   relationship = "many-to-one"
+  # ) |>
+  #   distinct() |>
+  #   droplevels()
   
-  # Préparation des captures ----
+  specimen_valid <- data_specimen |>
+    filter(st_valide == "O")
+  
+  # Préparation des captures (des stations valides et hasard) ----
   capture <- full_join(
     station_hasard_valide, data_recolte,
-    by = c("no_station", "annee", "no_lac", "typ_pech"),
-    relationship = "one-to-many"
+    by = c("no_station", "annee", "no_lac", "typ_pech", "st_valide", "st_hasard"),
+    relationship = "one-to-one" #possible puisqu'on a déjà fait filter(sp == code_sp) plus tôt
   ) |>
     mutate(
+      sp = if_else(is.na(sp), code_sp, sp),
       nb_capture = replace_na(nb_capture, 0),
       nb_pese    = replace_na(nb_pese, 0)
     ) |>

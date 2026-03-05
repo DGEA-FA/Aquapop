@@ -58,7 +58,7 @@ load_specimen <- function(path,
   assert_flag(col_rename)
   
   # --- Colonnes attendues ---
-  colonnes_obligatoires <- c("no_lac", "typ_pech", "no_station", "no_specimen", "sp", "ltm", "masse", "age", "sexe", "maturite", "annee")
+  colonnes_obligatoires <- c("no_lac", "typ_pech", "no_station", "no_specimen", "sp", "ltm", "masse", "age", "sexe", "maturite", "annee", "st_valide", "st_hasard")
   colonnes_optionnelles <- c(
     "lf", "marquage", "ind_insec", "ind_benth", "ind_planc", "ind_chyme", "ind_vide", "ind_poiss",
     "poiss1", "poiss2", "comments_specimen"
@@ -89,7 +89,9 @@ load_specimen <- function(path,
     ind_poiss         = c("ind_poiss", "indice_poisson", "ind_poisson"),
     poiss1            = c("poiss1", "poisson_1", "contenu_poisson_1"),
     poiss2            = c("poiss2", "poisson_2", "contenu_poisson_2"),
-    comments_specimen = c("comments_specimen", "commentaires", "remarques", "notes")
+    comments_specimen = c("comments_specimen", "commentaires", "remarques", "notes"),
+    st_valide  = c("lengin_na_pas_peche_normal", "valide"),     
+    st_hasard  = c("station_choisie_au_hasard", "hasard")
   )
   
   # --- Lecture brute du fichier Excel ---
@@ -147,6 +149,13 @@ load_specimen <- function(path,
     specimen <- specimen_raw
   }
   
+  # --- Nettoyage des statuts ---
+  specimen <- specimen |>
+    mutate(
+      st_valide = case_when(is.na(st_valide) | st_valide %in% c("IND", "-", "VALIDE") ~ "O", TRUE ~ st_valide),
+      st_hasard = case_when(is.na(st_hasard) | st_hasard %in% c("IND", "-") ~ "O", TRUE ~ st_hasard)
+    )
+  
   # --- Nettoyage et conversion des colonnes ---
   specimen <- specimen |>
     mutate(
@@ -164,7 +173,7 @@ load_specimen <- function(path,
       marquage = factor(marquage, levels = c("MA", "NMA")),
       
       across(
-        intersect(c("no_lac", "typ_pech", "no_station", "no_specimen", "sp",
+        intersect(c("no_lac", "typ_pech", "no_station", "st_hasard", "st_valide", "no_specimen", "sp", 
                     "ind_insec", "ind_benth", "ind_planc", "ind_chyme", "ind_vide", "ind_poiss",
                     "poiss1", "poiss2"), names(specimen)),
         as.factor
