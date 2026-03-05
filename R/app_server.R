@@ -16,7 +16,7 @@ app_server <- function(input, output, session) {
   station_valides       <- telech$station_valides
   station_hasard_valide <- telech$station_hasard_valide
   specimen              <- telech$specimen
-  specimen_valid        <- telech$specimen_valid
+  specimen_valide        <- telech$specimen_valide
   capture               <- telech$capture
   filename_suffix       <- telech$filename_suffix
   nom_lac               <- telech$nom_lac
@@ -45,22 +45,22 @@ app_server <- function(input, output, session) {
   
   mod_taille_masse_age_server(
     id = "taille_masse_age_1",
-    specimen_valid = specimen_valid,
+    specimen_valide = specimen_valide,
     filename_suffix = filename_suffix
   )
   
   # Structure de taille ----
   
-  mod_structure_taille_server("structure_taille_1", specimen = specimen_valid, filename_suffix = filename_suffix)
+  mod_structure_taille_server("structure_taille_1", specimen = specimen_valide, filename_suffix = filename_suffix)
   
   # Structure d'age ----
   
-  mod_structure_age_server("structure_age_1", specimen = specimen_valid, filename_suffix = filename_suffix)
+  mod_structure_age_server("structure_age_1", specimen = specimen_valide, filename_suffix = filename_suffix)
   
   # PSD ----
   mod_psd_server(
     id = "psd_1",
-    specimen = specimen_valid,             
+    specimen = specimen_valide,             
     filename_suffix = filename_suffix      
   )
   
@@ -73,26 +73,26 @@ app_server <- function(input, output, session) {
   )
   
   # Indice de condition ----
-  mod_wri_server("wri_1", specimen = specimen_valid, filename_suffix = filename_suffix)
+  mod_wri_server("wri_1", specimen = specimen_valide, filename_suffix = filename_suffix)
 
   # Croissance ----
 
-  mod_croissance_server("croissance_1", specimen = specimen_valid, filename_suffix = filename_suffix)
+  mod_croissance_server("croissance_1", specimen = specimen_valide, filename_suffix = filename_suffix)
   
   # # Mortalite ----
 
   mod_mortalite_server(
     id = "mortalite_1",
-    specimen = specimen_valid,
+    specimen = specimen_valide,
     filename_suffix = filename_suffix
   )
   # Maturite sexuelle ----
   ## Longueur a maturite ----
   
-  mod_maturite_l50_server("maturite_l50_1", specimen = specimen_valid, filename_suffix = filename_suffix)
+  mod_maturite_l50_server("maturite_l50_1", specimen = specimen_valide, filename_suffix = filename_suffix)
   
   ## Age a maturite ----
-  mod_maturite_a50_server("maturite_a50_1", specimen = specimen_valid, filename_suffix = filename_suffix)
+  mod_maturite_a50_server("maturite_a50_1", specimen = specimen_valide, filename_suffix = filename_suffix)
   
   
   

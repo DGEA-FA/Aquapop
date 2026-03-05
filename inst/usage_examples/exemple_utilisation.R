@@ -18,7 +18,7 @@ data_station         <- df$data_station
 station_valides      <- df$station_valides
 station_hasard_valide <- df$station_hasard_valide
 specimen             <- df$specimen
-specimen_valid       <- df$specimen_valid
+specimen_valide       <- df$specimen_valide
 capture              <- df$capture
 
 data_lac <- load_lac(path, namesheet = "Lac", verbose = TRUE) |>
@@ -60,7 +60,7 @@ table_biomasse$flextable
 
 # Taille, masse, âge ----
 
-taille_masse_age_res <- taille_masse_age(data = specimen_valid)
+taille_masse_age_res <- taille_masse_age(data = specimen_valide)
 taille_masse_age_res$data
 taille_masse_age_res$flextable
 
@@ -68,11 +68,11 @@ taille_masse_age_res$flextable
 ## Structure d'âge ----
 ## PSD ----
 ### Indice Q ----
-psd_q_res <- psd_q(specimen_valid)
+psd_q_res <- psd_q(specimen_valide)
 psd_q_res$data
 psd_q_res$flextable
 ### Répartition par classe de taille – Tableau ----
-psd_byclass_res <- psd_byclass(specimen_valid)
+psd_byclass_res <- psd_byclass(specimen_valide)
 psd_byclass_res$data
 psd_byclass_res$flextable
 ### Répartition par classe de taille – Graphique ----
@@ -97,7 +97,7 @@ masse_longueur_fit_res$flextable # Tableau formaté (flextable)
 
 # Indice de condition ----
 
-wri_res <- wri(data = specimen_valid)
+wri_res <- wri(data = specimen_valide)
 
 
 ## Tableau Wr ----

@@ -20,7 +20,7 @@
 #'   \item{station_valides}{Sous-ensemble des stations valides (`st_valide == "O"`)}
 #'   \item{station_hasard_valide}{Sous-ensemble des stations valides et au hasard (`st_valide == "O" & st_hasard == "O"`)}
 #'   \item{specimen}{Spécimens de l’espèce cible associés aux stations valides et au hasard}
-#'   \item{specimen_valid}{Spécimens de l’espèce cible associés à toutes les stations valides (hasard + dirigées)}
+#'   \item{specimen_valide}{Spécimens de l’espèce cible associés à toutes les stations valides (hasard + dirigées)}
 #'   \item{capture}{Table des captures par station (inclut les stations valides et au hasard, même sans capture)}
 #' }
 #'
@@ -69,7 +69,7 @@ get_analysis_data <- function(path, typ_pech, no_lac, annee,
     droplevels()
   
   # Spécimens associés à toutes les stations valides ----
-  # specimen_valid <- inner_join(
+  # specimen_valide <- inner_join(
   #   data_specimen, station_valides,
   #   by = c("no_station", "annee", "no_lac", "typ_pech", "st_valide", "st_hasard"),
   #   relationship = "many-to-one"
@@ -77,7 +77,7 @@ get_analysis_data <- function(path, typ_pech, no_lac, annee,
   #   distinct() |>
   #   droplevels()
   
-  specimen_valid <- data_specimen |>
+  specimen_valide <- data_specimen |>
     filter(st_valide == "O")
   
   # Préparation des captures (des stations valides et hasard) ----
@@ -100,7 +100,7 @@ get_analysis_data <- function(path, typ_pech, no_lac, annee,
     station_valides       = station_valides,
     station_hasard_valide = station_hasard_valide,
     specimen              = specimen,
-    specimen_valid        = specimen_valid,
+    specimen_valide        = specimen_valide,
     capture               = capture
   ))
 }

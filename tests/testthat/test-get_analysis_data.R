@@ -13,12 +13,12 @@ test_that("get_analysis_data retourne les objets attendus", {
   expect_type(res, "list")
   expect_named(res, c(
     "data_station", "station_valides", "station_hasard_valide",
-    "specimen", "specimen_valid", "capture"
+    "specimen", "specimen_valide", "capture"
   ))
   
   # Filtrage des spécimens par espèce cible
   expect_true(all(res$specimen$sp == "SAFO"))
-  expect_true(all(res$specimen_valid$sp == "SAFO"))
+  expect_true(all(res$specimen_valide$sp == "SAFO"))
   
   # Vérifie que les captures contiennent les colonnes obligatoires
   expect_true("nb_capture" %in% colnames(res$capture))
