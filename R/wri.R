@@ -27,7 +27,7 @@
 #' @importFrom dplyr filter mutate select group_by summarise left_join count n_distinct bind_cols bind_rows arrange recode rename slice
 #' @importFrom tidyr complete
 #' @importFrom ggplot2 ggplot aes geom_point geom_errorbar geom_hline annotate labs scale_color_manual scale_x_discrete xlab ylab scale_linetype_manual guide_legend guides
-#' @importFrom flextable flextable set_caption
+#' @importFrom flextable flextable set_caption set_header_labels
 #' @importFrom labelled set_variable_labels
 #' @importFrom tibble tibble
 #' @importFrom FSA lencat
@@ -193,6 +193,13 @@ wri <- function(data) {
   
   table_flextable <- flextable(table_sommaire) |>
     set_caption("Indice de condition (Wr)") |>
+    set_header_labels(values = list(
+                        groupe = "Groupe",
+                        wr = "Wr (%)",
+                        ic95 = "IC 95%",
+                        n = "N"
+                      )
+    ) |>
     style_flextable_aquapop()
   
   # ---- Retour de la liste finale ----

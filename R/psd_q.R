@@ -6,7 +6,7 @@
 #' La fonction utilise les seuils extraits par `get_info_pen()` et retourne l’estimation ponctuelle
 #' ainsi qu’un intervalle de confiance à 95 %, calculé selon une méthode binomiale.
 #'
-#' @importFrom flextable flextable
+#' @importFrom flextable flextable set_header_labels
 #' @importFrom dplyr select rename mutate filter
 #' @importFrom stats rnorm xtabs
 #' @importFrom glue glue
@@ -102,6 +102,10 @@ psd_q <- function(data) {
   # --- Construction du tableau flextable ---
   
   table_flextable <- flextable(table_resultats) |>
+    set_header_labels(values = list(
+      Q = "Q",
+      ic95 = "IC 95%"
+    )    ) |>
     style_flextable_aquapop()
     
   
