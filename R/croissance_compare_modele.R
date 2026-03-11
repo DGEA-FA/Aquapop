@@ -14,7 +14,7 @@
 #' }
 #'
 #' @export
-#' @importFrom dplyr if_else mutate left_join rename select filter arrange
+#' @importFrom dplyr if_else mutate left_join rename select filter arrange n_distinct
 #' @importFrom AICcmodavg aictab
 #' @importFrom stats confint coef
 #' @importFrom fishmethods growth
@@ -28,6 +28,28 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
     select(ltm, age, no_specimen)
   
   rownames(df) <- seq_len(nrow(df))
+  
+  # Validation minimale ----
+  if (nrow(df) < 3) {
+    stop(
+      "La modélisation de croissance requiert au moins 3 spécimens ayant une longueur et un âge valides.",
+      call. = FALSE
+    )
+  }
+  
+  nb_ages_distincts <- n_distinct(df$age)
+  
+  if (nb_ages_distincts < 3) {
+    stop(
+      paste0(
+        "La modélisation de croissance requiert au moins 3 âges distincts. ",
+        "Or, le jeu de données des spécimens de cette pêche n’en contient que ",
+        nb_ages_distincts,
+        ". Cette situation peut également être observée dans la figure de structure d’âge."
+      ),
+      call. = FALSE
+    )
+  }
   
   pi <- vbStarts(ltm ~ age, data = df)
   

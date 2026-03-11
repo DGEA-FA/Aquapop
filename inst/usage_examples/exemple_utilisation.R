@@ -7,9 +7,9 @@ devtools::load_all()
 # Téléchargement des données ----
 
 path     <- "inst/extdata/Extract_IFA_AquaPop_2026-02-27.xlsx"
-typ_pech <- "PENT"
-no_lac   <- "01589"
-annee    <- 2012
+typ_pech <- "PENOF"
+no_lac   <- "96873"
+annee    <- 2019
 
  # 01589, PENT 2012
 
