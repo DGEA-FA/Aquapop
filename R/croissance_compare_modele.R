@@ -14,13 +14,12 @@
 #' }
 #'
 #' @export
-#' @importFrom labelled set_variable_labels
 #' @importFrom dplyr if_else mutate left_join rename select filter arrange
 #' @importFrom AICcmodavg aictab
 #' @importFrom stats confint coef
 #' @importFrom fishmethods growth
 #' @importFrom FSA vbStarts
-#' @importFrom flextable flextable set_caption
+#' @importFrom flextable flextable set_caption set_header_labels
 croissance_compare_modele <- function(data, format = c("data.frame", "flextable")) {
   format <- match.arg(format)
   
@@ -112,16 +111,6 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
       delta_aicc = round(delta_aicc, 2),
       aiccwt = round(aiccwt, 2)
     ) |>
-    set_variable_labels(
-      methode = "Modèles",
-      l_inf = "L∞", l_inf_ic = "L∞ IC 95%",
-      k = "K", k_ic = "K IC 95%",
-      t0 = "t\u2080", t0_ic = "t\u2080 IC 95%",
-      aicc = "AICc",
-      delta_aicc = "Δ AICc",
-      aiccwt = "Poids d’Akaike",
-      converged = "Convergence"
-    ) |>
     select(
       methode, l_inf, l_inf_ic,
       k, k_ic, t0, t0_ic,
@@ -132,6 +121,17 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
   
   ft <- flextable(final) |>
     set_caption("Paramètres des modèles de croissance (VB, Gompertz, Logistique)") |>
+    set_header_labels(values = list(
+      methode = "Modèles",
+      l_inf = "L∞", l_inf_ic = "L∞ IC 95%",
+      k = "K", k_ic = "K IC 95%",
+      t0 = "t\u2080", t0_ic = "t\u2080 IC 95%",
+      aicc = "AICc",
+      delta_aicc = "Δ AICc",
+      aiccwt = "Poids d’Akaike",
+      converged = "Convergence"
+    )
+    ) |>
     style_flextable_aquapop()
   
   return(list(data = final, flextable = ft))

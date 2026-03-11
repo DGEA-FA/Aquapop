@@ -79,6 +79,19 @@ mod_croissance_server <- function(id, specimen, filename_suffix) {
         defaultColDef = colDef(
           align = "center",
           headerStyle = list(textAlign = "center")
+        ),
+        columns = list(
+          methode = colDef(name = "Modèles"),
+          l_inf = colDef(name = "L∞"),
+          l_inf_ic = colDef(name = "L∞ IC 95%"),
+          k = colDef(name = "K"),
+          k_ic = colDef(name = "K IC 95%"),
+          t0 = colDef(name = "t\u2080"),
+          t0_ic = colDef(name = "t\u2080 IC 95%"),
+          aicc = colDef(name = "AICc"),
+          delta_aicc = colDef(name = "Δ AICc"),
+          aiccwt = colDef(name = "Poids d’Akaike"),
+          converged = colDef(name = "Convergence")
         )
       )
     })
