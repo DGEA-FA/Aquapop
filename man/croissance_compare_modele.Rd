@@ -12,14 +12,20 @@ croissance_compare_modele(data, format = c("data.frame", "flextable"))
 \item{format}{Format de sortie souhaité : \code{"data.frame"} (par défaut) ou \code{"flextable"}}
 }
 \value{
-Une liste avec deux éléments :
+Une liste contenant :
 \describe{
-\item{data}{\code{data.frame} résumant les résultats des trois modèles}
+\item{success}{Indique si l'analyse a pu être réalisée}
+\item{data}{\code{data.frame} résumant les résultats des modèles}
 \item{flextable}{Tableau formaté prêt pour insertion dans un document}
+\item{message}{Message explicatif si l'analyse n'est pas disponible}
 }
 }
 \description{
-Cette fonction ajuste trois modèles de croissance non linéaire à un jeu de données de spécimens
-et retourne un tableau comparatif des paramètres estimés, des intervalles de confiance
-et du critère d'information corrigé (aicc).
+Cette fonction ajuste trois modèles de croissance non linéaire à un jeu de données
+de spécimens et retourne un tableau comparatif des paramètres estimés,
+des intervalles de confiance et du critère d'information corrigé (AICc).
+}
+\details{
+Si les données ne permettent pas la modélisation (ex. moins de 3 âges distincts),
+la fonction retourne un résultat avec \code{success = FALSE} et un message explicatif.
 }

@@ -27,4 +27,6 @@ df <- tibble::tibble(
 )
 croissance_select_best_modele(df)
 
+croissance_select_best_modele(NULL)
+
 }

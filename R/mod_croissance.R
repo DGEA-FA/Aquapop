@@ -6,6 +6,7 @@
 #'
 #' @noRd
 mod_croissance_ui <- function(id) {
+  
   ns <- NS(id)
   
   tabPanel(
@@ -15,7 +16,9 @@ mod_croissance_ui <- function(id) {
     uiOutput(ns("croissance_message")),
     uiOutput(ns("croissance_table_section")),
     uiOutput(ns("croissance_plot_section"))
+    
   )
+  
 }
 
 #' croissance Server Function
@@ -26,44 +29,48 @@ mod_croissance_ui <- function(id) {
 #'
 #' @noRd
 mod_croissance_server <- function(id, specimen, filename_suffix) {
+  
   moduleServer(id, function(input, output, session) {
+    
     ns <- session$ns
     
-    # Résultat sécurisé du module croissance ----
+    
+    # Résultat du module croissance ----
+    
     croissance_res <- reactive({
+      
       req(specimen())
       
-      tryCatch(
-        croissance_compare_modele(data = specimen()),
-        error = function(e) {
-          list(
-            data = NULL,
-            flextable = NULL,
-            error = conditionMessage(e)
-          )
-        }
-      )
-    })
-    
-    # Introduction du module (affichée seulement si pas d'erreur) ----
-    output$croissance_intro <- renderUI({
-      req(is.null(croissance_res()$error))
+      croissance_compare_modele(data = specimen())
       
-      tagList(
-        p(
-          "Si les trois modèles convergent, sélectionnez celui ayant le plus petit AICc. ",
-          "Prenez note également que le modèle de von Bertalanffy utilise la méthode pondérée ",
-          "avec t₀ variable. Attention : les IC95 % des prédictions ne peuvent pas être calculés ",
-          "à partir des IC95 % des estimations des paramètres L, K et t₀."
-        )
-      )
     })
     
-    # Message d'erreur du module ----
-    output$croissance_message <- renderUI({
+    
+    # Introduction ----
+    
+    output$croissance_intro <- renderUI({
+      
       res <- croissance_res()
       
-      if (is.null(res$error)) {
+      req(res$success)
+      
+      p(
+        "Si les trois modèles convergent, sélectionnez celui ayant le plus petit AICc. ",
+        "Prenez note également que le modèle de von Bertalanffy utilise la méthode pondérée ",
+        "avec t₀ variable. Attention : les IC95 % des prédictions ne peuvent pas être calculés ",
+        "à partir des IC95 % des estimations des paramètres L, K et t₀."
+      )
+      
+    })
+    
+    
+    # Message analyse non disponible ----
+    
+    output$croissance_message <- renderUI({
+      
+      res <- croissance_res()
+      
+      if (res$success) {
         return(NULL)
       }
       
@@ -75,74 +82,92 @@ mod_croissance_server <- function(id, specimen, filename_suffix) {
           "background-color: #fdf2f2;",
           "color: #333;"
         ),
+        
         tags$h4(
           style = "margin-top: 0; margin-bottom: 8px;",
           "Analyse non disponible"
         ),
+        
         tags$p(
           style = "margin: 0;",
-          res$error
+          res$message
         )
+        
       )
+      
     })
     
-    # Table des modèles de croissance ----
+    
+    # Table des modèles ----
+    
     table_modeles_croissance <- reactive({
+      
       res <- croissance_res()
       
-      if (!is.null(res$error)) {
-        return(NULL)
-      }
+      req(res$success)
       
       res$data
+      
     })
     
-    # Index du meilleur modèle (pour sélection par défaut) ----
+    
+    # Modèle par défaut ----
+    
     default_model_index <- reactive({
+      
       table <- table_modeles_croissance()
-      req(!is.null(table), nrow(table) > 0)
       
       best_model <- croissance_select_best_modele(table)
       idx <- match(best_model, table$methode)
       
-      validate(
-        need(!is.na(idx), "Le meilleur modèle n'a pas été trouvé dans les résultats.")
-      )
+      req(!is.na(idx))
       
       idx
+      
     })
     
+    
     # Section tableau ----
+    
     output$croissance_table_section <- renderUI({
-      req(is.null(croissance_res()$error))
+      
+      req(croissance_res()$success)
       
       tagList(
+        
         h3("Table de sélection du modèle de croissance"),
+        
         withSpinner(
           reactableOutput(ns("table_modeles_croissance_table")),
           type = myspinner
         ),
+        
         uiOutput(ns("download_table_modeles_croissance_ui")),
+        
         br()
+        
       )
+      
     })
     
+    
     # Tableau interactif ----
+    
     output$table_modeles_croissance_table <- renderReactable({
-      table <- table_modeles_croissance()
-      req(!is.null(table))
       
-      idx <- default_model_index()
+      table <- table_modeles_croissance()
       
       reactable(
         as.data.frame(table),
         selection = "single",
         onClick = "select",
-        defaultSelected = idx,
+        defaultSelected = default_model_index(),
+        
         defaultColDef = colDef(
           align = "center",
           headerStyle = list(textAlign = "center")
         ),
+        
         columns = list(
           methode = colDef(name = "Modèles"),
           l_inf = colDef(name = "L∞"),
@@ -156,93 +181,135 @@ mod_croissance_server <- function(id, specimen, filename_suffix) {
           aiccwt = colDef(name = "Poids d’Akaike"),
           converged = colDef(name = "Convergence")
         )
+        
       )
+      
     })
+    
     
     # Modèle sélectionné ----
+    
     selectedmodelcroissance <- reactive({
+      
       table <- table_modeles_croissance()
-      req(!is.null(table))
       
       selected <- getReactableState("table_modeles_croissance_table", "selected")
-      req(!is.null(selected))
+      
+      req(!is.null(selected), selected >= 1, selected <= nrow(table))
       
       table[selected, 1, drop = TRUE]
+      
     })
     
-    # UI bouton téléchargement table ----
+    
+    # Téléchargement table ----
+    
     output$download_table_modeles_croissance_ui <- renderUI({
-      req(is.null(croissance_res()$error))
+      
+      req(croissance_res()$success)
+      
       download_button_ui(ns("download_table_modeles_croissance"))
+      
     })
     
-    # Téléchargement de la table des modèles ----
+    
     render_download_table(
       id = "download_table_modeles_croissance",
-      data = reactive(table_modeles_croissance()),
+      data = table_modeles_croissance,
       filename = reactive(build_export_filename("croissance_modeles", filename_suffix()))
     )
     
-    # Graphique du modèle sélectionné ----
+    
+    # Graphique ----
+    
     plot_selectedmodelcroissance <- reactive({
-      res <- croissance_res()
       
-      if (!is.null(res$error)) {
-        return(NULL)
-      }
-      
-      req(selectedmodelcroissance(), specimen(), table_modeles_croissance())
+      req(croissance_res()$success)
       
       croissance_plot(
         dfspecimen = specimen(),
         tablemodele = table_modeles_croissance(),
         modele = selectedmodelcroissance()
       )
+      
     })
     
+    
+    # Disponibilité du graphique ----
+    
+    plot_croissance_disponible <- reactive({
+      
+      req(croissance_res()$success)
+      
+      !is.null(plot_selectedmodelcroissance())
+      
+    })
+    
+    
     # Section graphique ----
+    
     output$croissance_plot_section <- renderUI({
-      req(is.null(croissance_res()$error))
+      
+      req(croissance_res()$success)
+      req(plot_croissance_disponible())
       
       tagList(
+        
         p(
           "Le graphique suivant illustre la longueur observée des spécimens en fonction de leur âge, ",
-          "ainsi que la courbe de croissance modélisée selon le modèle sélectionné. Les points représentent ",
-          "les données observées, tandis que la ligne montre la prédiction du modèle."
+          "ainsi que la courbe de croissance modélisée selon le modèle sélectionné."
         ),
+        
         h3("Longueur à l’âge des spécimens capturés et modèle de croissance"),
+        
         div(
           style = "max-width: 900px; margin: auto;",
+          
           withSpinner(
             plotOutput(ns("selectedmodelcroissanceplot"), height = "500px"),
             type = myspinner
           ),
+          
           br(),
+          
           uiOutput(ns("download_selectedmodelcroissanceplot_ui"))
+          
         )
+        
       )
+      
     })
     
+    
     # Affichage du graphique ----
+    
     render_plot_ggplot(
       output_id = "selectedmodelcroissanceplot",
-      plot = reactive(plot_selectedmodelcroissance())
+      plot = plot_selectedmodelcroissance
     )
     
-    # UI bouton téléchargement graphique ----
+    
+    # Téléchargement graphique ----
+    
     output$download_selectedmodelcroissanceplot_ui <- renderUI({
-      req(is.null(croissance_res()$error))
+      
+      req(croissance_res()$success)
+      req(plot_croissance_disponible())
+      
       downloadButton(
         outputId = ns("download_selectedmodelcroissanceplot"),
         label = "Téléchargement du graphique"
       )
+      
     })
     
-    # Téléchargement du graphique ----
+    
     render_download_plot(
       id = "download_selectedmodelcroissanceplot",
       plot = plot_selectedmodelcroissance,
       filename = "courbe_croissance"
     )
+    
   })
+  
 }

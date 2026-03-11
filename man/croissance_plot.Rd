@@ -11,10 +11,11 @@ croissance_plot(dfspecimen, tablemodele, modele)
 
 \item{tablemodele}{Un \code{data.frame} contenant les paramètres du modèle ajusté, incluant \code{methode}, \code{l_inf}, \code{k} et \code{t0}.}
 
-\item{modele}{Une chaîne de caractères indiquant le modèle à utiliser : \code{"Von Bertalanffy"}, \code{"Gompertz"} ou \code{"Logistique"}.}
+\item{modele}{Une chaîne de caractères indiquant le modèle à utiliser : \code{"Von Bertalanffy"}, \code{"Gompertz"} ou \code{"Logistique"}.}
 }
 \value{
 Un objet \code{ggplot} représentant la courbe de croissance ajustée, avec les points observés et l’intervalle de confiance.
+Retourne \code{NULL} avec un avertissement si le graphique ne peut pas être produit.
 }
 \description{
 Cette fonction génère un graphique illustrant la courbe de croissance ajustée d’un groupe de spécimens,

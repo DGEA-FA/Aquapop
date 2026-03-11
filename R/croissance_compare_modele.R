@@ -1,19 +1,25 @@
 #' Comparer trois modèles de croissance (Von Bertalanffy, Gompertz, Logistique)
 #'
-#' Cette fonction ajuste trois modèles de croissance non linéaire à un jeu de données de spécimens
-#' et retourne un tableau comparatif des paramètres estimés, des intervalles de confiance
-#' et du critère d'information corrigé (aicc).
+#' Cette fonction ajuste trois modèles de croissance non linéaire à un jeu de données
+#' de spécimens et retourne un tableau comparatif des paramètres estimés,
+#' des intervalles de confiance et du critère d'information corrigé (AICc).
+#'
+#' Si les données ne permettent pas la modélisation (ex. moins de 3 âges distincts),
+#' la fonction retourne un résultat avec `success = FALSE` et un message explicatif.
 #'
 #' @param data Un `data.frame` contenant au minimum : `sp`, `ltm`, `age`, `no_specimen`
 #' @param format Format de sortie souhaité : `"data.frame"` (par défaut) ou `"flextable"`
 #'
-#' @return Une liste avec deux éléments :
+#' @return Une liste contenant :
 #' \describe{
-#'   \item{data}{`data.frame` résumant les résultats des trois modèles}
+#'   \item{success}{Indique si l'analyse a pu être réalisée}
+#'   \item{data}{`data.frame` résumant les résultats des modèles}
 #'   \item{flextable}{Tableau formaté prêt pour insertion dans un document}
+#'   \item{message}{Message explicatif si l'analyse n'est pas disponible}
 #' }
 #'
 #' @export
+#'
 #' @importFrom dplyr if_else mutate left_join rename select filter arrange n_distinct
 #' @importFrom AICcmodavg aictab
 #' @importFrom stats confint coef
@@ -21,6 +27,7 @@
 #' @importFrom FSA vbStarts
 #' @importFrom flextable flextable set_caption set_header_labels
 croissance_compare_modele <- function(data, format = c("data.frame", "flextable")) {
+  
   format <- match.arg(format)
   
   df <- data |>
@@ -30,86 +37,138 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
   rownames(df) <- seq_len(nrow(df))
   
   # Validation minimale ----
+  
   if (nrow(df) < 3) {
-    stop(
-      "La modélisation de croissance requiert au moins 3 spécimens ayant une longueur et un âge valides.",
-      call. = FALSE
-    )
+    
+    message <- "La modélisation de croissance requiert au moins 3 spécimens ayant une longueur et un âge valides."
+    
+    return(list(
+      success = FALSE,
+      data = NULL,
+      flextable = NULL,
+      message = message
+    ))
+    
   }
   
   nb_ages_distincts <- n_distinct(df$age)
   
   if (nb_ages_distincts < 3) {
-    stop(
-      paste0(
-        "La modélisation de croissance requiert au moins 3 âges distincts. ",
-        "Or, le jeu de données des spécimens de cette pêche n’en contient que ",
-        nb_ages_distincts,
-        ". Cette situation peut également être observée dans la figure de structure d’âge."
-      ),
-      call. = FALSE
+    
+    message <- paste0(
+      "La modélisation de croissance requiert au moins 3 âges distincts. ",
+      "Or, le jeu de données des spécimens de cette pêche n’en contient que ",
+      nb_ages_distincts,
+      ". Cette situation peut également être observée dans la figure de structure d’âge."
     )
+    
+    return(list(
+      success = FALSE,
+      data = NULL,
+      flextable = NULL,
+      message = message
+    ))
+    
   }
+  
+  # Valeurs initiales ----
   
   pi <- vbStarts(ltm ~ age, data = df)
   
+  # Ajustement des modèles ----
+  
   result <- growth(
-    intype = 1, unit = 1, size = df$ltm, age = df$age,
-    calctype = 1, wgtby = 1, error = 1,
-    Sinf = pi$Linf, K = pi$K, t0 = pi$t0,
+    intype = 1,
+    unit = 1,
+    size = df$ltm,
+    age = df$age,
+    calctype = 1,
+    wgtby = 1,
+    error = 1,
+    Sinf = pi$Linf,
+    K = pi$K,
+    t0 = pi$t0,
     graph = FALSE,
-    control = list(maxiter = 10000, minFactor = 1 / 1024, tol = 1e-5)
+    control = list(
+      maxiter = 10000,
+      minFactor = 1 / 1024,
+      tol = 1e-5
+    )
   )
   
-  modele_names <- c("Von Bertalanffy", "Gompertz", "Logistique")
+  modele_names <- c(
+    "Von Bertalanffy",
+    "Gompertz",
+    "Logistique"
+  )
+  
+  # Extraction des paramètres ----
   
   tableresult <- data.frame(
     methode = modele_names,
+    
     l_inf = c(
       extract_coef(result$vout, "Sinf"),
       extract_coef(result$gout, "Sinf"),
       extract_coef(result$lout, "Sinf")
     ),
+    
     k = c(
       extract_coef(result$vout, "K"),
       extract_coef(result$gout, "K"),
       extract_coef(result$lout, "K")
     ),
+    
     t0 = c(
       extract_coef(result$vout, "t0"),
       extract_coef(result$gout, "t0"),
       extract_coef(result$lout, "t0")
     ),
+    
     l_inf_ic = mapply(function(res) {
+      
       ic <- extract_param_ic(res, 1)
+      
       if (is.numeric(ic) && length(ic) == 2 && !any(is.na(ic))) {
         paste0("[", round(ic[1]), "-", round(ic[2]), "]")
       } else {
         "IC non calculable"
       }
+      
     }, list(result$vout, result$gout, result$lout)),
+    
     k_ic = mapply(function(res) {
+      
       ic <- extract_param_ic(res, 2)
+      
       if (is.numeric(ic) && length(ic) == 2 && !any(is.na(ic))) {
         paste0("[", round(ic[1], 3), "-", round(ic[2], 3), "]")
       } else {
         "IC non calculable"
       }
+      
     }, list(result$vout, result$gout, result$lout)),
+    
     t0_ic = mapply(function(res) {
+      
       ic <- extract_param_ic(res, 3)
+      
       if (is.numeric(ic) && length(ic) == 2 && !any(is.na(ic))) {
         paste0("[", round(ic[1], 3), "-", round(ic[2], 3), "]")
       } else {
         "IC non calculable"
       }
+      
     }, list(result$vout, result$gout, result$lout)),
+    
     converged = c(
       result$vout$convInfo$stopMessage,
       result$gout$convInfo$stopMessage,
       result$lout$convInfo$stopMessage
     )
   )
+  
+  # Calcul AICc ----
   
   aic_tab <- aictab(
     list(result$vout, result$gout, result$lout),
@@ -120,8 +179,10 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
       aicc = .data$AICc,
       delta_aicc = .data$Delta_AICc,
       aiccwt = .data$AICcWt
-      ) |>
-    select(methode, aicc, delta_aicc, aiccwt) 
+    ) |>
+    select(methode, aicc, delta_aicc, aiccwt)
+  
+  # Tableau final ----
   
   final <- left_join(tableresult, aic_tab, by = "methode") |>
     mutate(
@@ -134,31 +195,45 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
       aiccwt = round(aiccwt, 2)
     ) |>
     select(
-      methode, l_inf, l_inf_ic,
-      k, k_ic, t0, t0_ic,
-      aicc, delta_aicc, aiccwt,
+      methode,
+      l_inf, l_inf_ic,
+      k, k_ic,
+      t0, t0_ic,
+      aicc,
+      delta_aicc,
+      aiccwt,
       converged
     ) |>
     arrange(aicc)
+  
+  # Flextable ----
   
   ft <- flextable(final) |>
     set_caption("Paramètres des modèles de croissance (VB, Gompertz, Logistique)") |>
     set_header_labels(values = list(
       methode = "Modèles",
-      l_inf = "L∞", l_inf_ic = "L∞ IC 95%",
-      k = "K", k_ic = "K IC 95%",
-      t0 = "t\u2080", t0_ic = "t\u2080 IC 95%",
+      l_inf = "L∞",
+      l_inf_ic = "L∞ IC 95%",
+      k = "K",
+      k_ic = "K IC 95%",
+      t0 = "t\u2080",
+      t0_ic = "t\u2080 IC 95%",
       aicc = "AICc",
       delta_aicc = "Δ AICc",
       aiccwt = "Poids d’Akaike",
       converged = "Convergence"
-    )
-    ) |>
+    )) |>
     style_flextable_aquapop()
   
-  return(list(data = final, flextable = ft))
+  # Résultat ----
+  
+  return(list(
+    success = TRUE,
+    data = final,
+    flextable = ft,
+    message = NULL
+  ))
 }
-
 
 #' Extraire l’intervalle de confiance d’un paramètre d’un modèle de croissance
 #'

@@ -18,11 +18,31 @@
 #' )
 #' croissance_select_best_modele(df)
 #'
+#' croissance_select_best_modele(NULL)
+#'
 #' @export
 #' @importFrom dplyr filter pull
 croissance_select_best_modele <- function(tablemodele) {
+  
+  if (is.null(tablemodele)) {
+    warning(
+      "Aucun modèle ne peut être sélectionné, car les résultats de croissance ne sont pas disponibles."
+    )
+    return(NA_character_)
+  }
+  
+  if (!is.data.frame(tablemodele) || nrow(tablemodele) == 0) {
+    warning(
+      "Aucun modèle ne peut être sélectionné, car le tableau de modèles est vide ou invalide."
+    )
+    return(NA_character_)
+  }
+  
   if (!"methode" %in% names(tablemodele) || !"aicc" %in% names(tablemodele)) {
-    stop("Le tableau de modèle n’est pas valide. Assurez-vous qu’il provient bien de `croissance_compare_modele()`.")
+    warning(
+      "Aucun modèle ne peut être sélectionné, car le tableau de modèles ne contient pas les colonnes requises `methode` et `aicc`."
+    )
+    return(NA_character_)
   }
   
   best_row <- tablemodele |>
@@ -31,8 +51,8 @@ croissance_select_best_modele <- function(tablemodele) {
   
   if (length(best_row) == 0) {
     warning("Aucun modèle n’a pu être sélectionné.")
-    return(NA)
+    return(NA_character_)
   }
   
-  return(best_row[1])
+  best_row[1]
 }

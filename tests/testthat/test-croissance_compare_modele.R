@@ -13,42 +13,91 @@ df_valid <- tibble::tibble(
   )
 )
 
-test_that("croissance_compare_modele retourne un data.frame avec les bonnes colonnes", {
+test_that("croissance_compare_modele retourne une structure valide", {
+  
   res <- croissance_compare_modele(df_valid, format = "data.frame")
   
   expect_type(res, "list")
-  expect_named(res, c("data", "flextable"))
+  
+  expect_named(
+    res,
+    c("success", "data", "flextable", "message")
+  )
+  
+  expect_true(res$success)
   
   df_out <- res$data
+  
   expect_s3_class(df_out, "data.frame")
+  
   expect_true(all(c(
-    "methode", "l_inf", "l_inf_ic", "k", "k_ic",
-    "t0", "t0_ic", "aicc", "delta_aicc", "aiccwt", "converged"
+    "methode", "l_inf", "l_inf_ic",
+    "k", "k_ic",
+    "t0", "t0_ic",
+    "aicc", "delta_aicc", "aiccwt",
+    "converged"
   ) %in% names(df_out)))
+  
 })
+
 
 test_that("le résultat contient exactement trois modèles", {
-  df_out <- croissance_compare_modele(df_valid, format = "data.frame")$data
+  
+  res <- croissance_compare_modele(df_valid, format = "data.frame")
+  
+  expect_true(res$success)
+  
+  df_out <- res$data
   
   expect_equal(nrow(df_out), 3)
-  expect_setequal(df_out$methode, c("Von Bertalanffy", "Gompertz", "Logistique"))
+  
+  expect_setequal(
+    df_out$methode,
+    c("Von Bertalanffy", "Gompertz", "Logistique")
+  )
+  
 })
+
 
 test_that("format = 'flextable' retourne un objet flextable", {
+  
   res <- croissance_compare_modele(df_valid, format = "flextable")
   
+  expect_true(res$success)
+  
   expect_s3_class(res$flextable, "flextable")
+  
 })
 
-test_that("échoue proprement si données insuffisantes", {
+
+test_that("retourne success = FALSE si données insuffisantes", {
+  
   df_bad <- tibble::tibble(
     no_specimen = 1:6,
     sp = "TEST",
-    age = 1:6,
+    age = rep(1, 6),
     ltm = rep(150, 6)
   )
   
-  expect_error(
-    croissance_compare_modele(df_bad, format = "data.frame")
-  )
+  res <- croissance_compare_modele(df_bad, format = "data.frame")
+  
+  expect_false(res$success)
+  
+  expect_null(res$data)
+  
+  expect_null(res$flextable)
+  
+  expect_type(res$message, "character")
+  
+})
+
+test_that("fonction tolère IC non calculables", {
+  
+  df <- df_valid
+  df$ltm <- df$ltm + rnorm(nrow(df), 0, 20)
+  
+  res <- croissance_compare_modele(df)
+  
+  expect_true(res$success)
+  
 })

@@ -1,5 +1,4 @@
 test_that("croissance_plot() fonctionne pour les trois modèles", {
-  # --- Données simulées ---
   specimen_data <- tibble::tibble(
     no_specimen = 1:5,
     age = c(1, 2, 3, 4, 5),
@@ -13,22 +12,21 @@ test_that("croissance_plot() fonctionne pour les trois modèles", {
     t0 = c(-0.5, 0.0, 0.5)
   )
   
-  # --- Boucle sur les 3 modèles ---
   for (mod in model_table$methode) {
     g <- croissance_plot(specimen_data, model_table, mod)
     
-    # Vérifie que le retour est un ggplot
     expect_s3_class(g, "ggplot")
     
-    # Vérifie que le caption contient les bons paramètres
     caption_text <- g$labels$caption
     params <- dplyr::filter(model_table, methode == mod)
+    
     expect_true(grepl(mod, caption_text))
     expect_true(grepl(round(params$l_inf, 2), caption_text))
     expect_true(grepl(round(params$k, 3), caption_text))
     expect_true(grepl(round(params$t0, 3), caption_text))
   }
 })
+
 
 test_that("croissance_plot() filtre les NA correctement", {
   data_na <- tibble::tibble(
@@ -45,10 +43,12 @@ test_that("croissance_plot() filtre les NA correctement", {
   )
   
   g <- croissance_plot(data_na, model_table, "Von Bertalanffy")
+  
   expect_s3_class(g, "ggplot")
 })
 
-test_that("croissance_plot() déclenche une erreur pour un modèle inconnu", {
+
+test_that("croissance_plot() retourne NULL avec un warning pour un modèle inconnu", {
   specimen_data <- tibble::tibble(
     no_specimen = 1:5,
     age = c(1, 2, 3, 4, 5),
@@ -62,11 +62,14 @@ test_that("croissance_plot() déclenche une erreur pour un modèle inconnu", {
     t0 = -0.5
   )
   
-  expect_error(
-    croissance_plot(specimen_data, model_table, "Inconnu"),
-    "Le modèle doit être l’un de"
+  expect_warning(
+    g <- croissance_plot(specimen_data, model_table, "Inconnu"),
+    regexp = "modèle demandé est invalide"
   )
+  
+  expect_null(g)
 })
+
 
 test_that("croissance_plot() fonctionne avec peu d'individus", {
   small_data <- tibble::tibble(
@@ -83,5 +86,91 @@ test_that("croissance_plot() fonctionne avec peu d'individus", {
   )
   
   g <- croissance_plot(small_data, model_table, "Gompertz")
+  
   expect_s3_class(g, "ggplot")
+})
+
+
+test_that("croissance_plot() retourne NULL avec un warning si tablemodele est NULL", {
+  specimen_data <- tibble::tibble(
+    no_specimen = 1:5,
+    age = c(1, 2, 3, 4, 5),
+    ltm = c(100, 140, 160, 180, 190)
+  )
+  
+  expect_warning(
+    g <- croissance_plot(specimen_data, NULL, "Von Bertalanffy"),
+    regexp = "résultats de modèles ne sont pas disponibles"
+  )
+  
+  expect_null(g)
+})
+
+
+test_that("croissance_plot() retourne NULL avec un warning si modele est NA", {
+  specimen_data <- tibble::tibble(
+    no_specimen = 1:5,
+    age = c(1, 2, 3, 4, 5),
+    ltm = c(100, 140, 160, 180, 190)
+  )
+  
+  model_table <- tibble::tibble(
+    methode = "Von Bertalanffy",
+    l_inf = 200,
+    k = 0.2,
+    t0 = -0.5
+  )
+  
+  expect_warning(
+    g <- croissance_plot(specimen_data, model_table, NA_character_),
+    regexp = "aucun modèle valide n’a été sélectionné"
+  )
+  
+  expect_null(g)
+})
+
+
+test_that("croissance_plot() retourne NULL avec un warning si le modèle est absent du tableau", {
+  specimen_data <- tibble::tibble(
+    no_specimen = 1:5,
+    age = c(1, 2, 3, 4, 5),
+    ltm = c(100, 140, 160, 180, 190)
+  )
+  
+  model_table <- tibble::tibble(
+    methode = "Von Bertalanffy",
+    l_inf = 200,
+    k = 0.2,
+    t0 = -0.5
+  )
+  
+  expect_warning(
+    g <- croissance_plot(specimen_data, model_table, "Gompertz"),
+    regexp = "modèle sélectionné est absent"
+  )
+  
+  expect_null(g)
+})
+
+
+test_that("croissance_plot() retourne NULL avec un warning si les paramètres du modèle sont manquants", {
+  specimen_data <- tibble::tibble(
+    no_specimen = 1:5,
+    age = c(1, 2, 3, 4, 5),
+    ltm = c(100, 140, 160, 180, 190)
+  )
+  
+  model_table <- tibble::tibble(
+    methode = "Von Bertalanffy",
+    l_inf = NA_real_,
+    k = 0.2,
+    t0 = -0.5
+  )
+  
+  expect_warning(
+    g <- croissance_plot(specimen_data, model_table, "Von Bertalanffy"),
+    regexp = "paramètres du modèle sont manquants"
+  )
+  
+  expect_null(g)
 })
