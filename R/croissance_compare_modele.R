@@ -17,7 +17,7 @@
 #' @importFrom labelled set_variable_labels
 #' @importFrom dplyr if_else mutate left_join rename select filter arrange
 #' @importFrom AICcmodavg aictab
-#' @importFrom stats confint
+#' @importFrom stats confint coef
 #' @importFrom fishmethods growth
 #' @importFrom FSA vbStarts
 #' @importFrom flextable flextable set_caption
@@ -27,6 +27,7 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
   df <- data |>
     filter(!is.na(ltm), !is.na(age)) |>
     select(ltm, age, no_specimen)
+  
   rownames(df) <- seq_len(nrow(df))
   
   pi <- vbStarts(ltm ~ age, data = df)
@@ -44,31 +45,43 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
   tableresult <- data.frame(
     methode = modele_names,
     l_inf = c(
-      extract_from_env(result$vout),
-      extract_from_env(result$gout),
-      extract_from_env(result$lout)
+      extract_coef(result$vout, "Sinf"),
+      extract_coef(result$gout, "Sinf"),
+      extract_coef(result$lout, "Sinf")
     ),
     k = c(
-      extract_param(result$vout, 2)[1],
-      extract_param(result$gout, 2)[1],
-      extract_param(result$lout, 2)[1]
+      extract_coef(result$vout, "K"),
+      extract_coef(result$gout, "K"),
+      extract_coef(result$lout, "K")
     ),
     t0 = c(
-      extract_param(result$vout, 3)[1],
-      extract_param(result$gout, 3)[1],
-      extract_param(result$lout, 3)[1]
+      extract_coef(result$vout, "t0"),
+      extract_coef(result$gout, "t0"),
+      extract_coef(result$lout, "t0")
     ),
     l_inf_ic = mapply(function(res) {
-      ic <- extract_param(res, 1)
-      if (is.numeric(ic)) paste0("[", round(ic[1]), "-", round(ic[2]), "]") else ""
+      ic <- extract_param_ic(res, 1)
+      if (is.numeric(ic) && length(ic) == 2 && !any(is.na(ic))) {
+        paste0("[", round(ic[1]), "-", round(ic[2]), "]")
+      } else {
+        "IC non calculable"
+      }
     }, list(result$vout, result$gout, result$lout)),
     k_ic = mapply(function(res) {
-      ic <- extract_param(res, 2)
-      if (is.numeric(ic)) paste0("[", round(ic[1], 3), "-", round(ic[2], 3), "]") else ""
+      ic <- extract_param_ic(res, 2)
+      if (is.numeric(ic) && length(ic) == 2 && !any(is.na(ic))) {
+        paste0("[", round(ic[1], 3), "-", round(ic[2], 3), "]")
+      } else {
+        "IC non calculable"
+      }
     }, list(result$vout, result$gout, result$lout)),
     t0_ic = mapply(function(res) {
-      ic <- extract_param(res, 3)
-      if (is.numeric(ic)) paste0("[", round(ic[1], 3), "-", round(ic[2], 3), "]") else ""
+      ic <- extract_param_ic(res, 3)
+      if (is.numeric(ic) && length(ic) == 2 && !any(is.na(ic))) {
+        paste0("[", round(ic[1], 3), "-", round(ic[2], 3), "]")
+      } else {
+        "IC non calculable"
+      }
     }, list(result$vout, result$gout, result$lout)),
     converged = c(
       result$vout$convInfo$stopMessage,
@@ -125,29 +138,46 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
 }
 
 
-#' Extraire un paramètre et son intervalle de confiance à partir d’un modèle
+#' Extraire l’intervalle de confiance d’un paramètre d’un modèle de croissance
 #'
-#' Fonction interne utilisée par `croissance_compare_modele()` pour obtenir un
-#' intervalle de confiance pour un paramètre donné (1 = L∞, 2 = K, 3 = t0).
+#' Fonction interne utilisée par `croissance_compare_modele()` pour tenter
+#' d’extraire l’intervalle de confiance à 95 % d’un paramètre estimé par un
+#' modèle `nls` ajusté via `growth()`.
 #'
-#' @param res Un objet de modèle (`nls`) provenant de `growth()`
-#' @param index Position du paramètre (1 = L∞, 2 = K, 3 = t0)
+#' Le paramètre est identifié par sa position dans la matrice retournée par
+#' `confint()` (1 = L∞, 2 = K, 3 = t0). Si le calcul des intervalles de confiance
+#' échoue (ce qui peut survenir pour certains ajustements `nls`), la fonction
+#' retourne `NA`.
 #'
-#' @return Un vecteur numérique ou NA en cas d’erreur
+#' @param res Un objet de modèle (`nls`) provenant de `growth()`.
+#' @param index Position du paramètre (1 = L∞, 2 = K, 3 = t0).
+#'
+#' @return Un vecteur numérique de longueur 2 (borne inférieure et supérieure),
+#' ou `NA` si l’intervalle de confiance ne peut pas être calculé.
 #' @keywords internal
-extract_param <- function(res, index) {
+extract_param_ic <- function(res, index) {
   tryCatch(confint(res, level = 0.95)[index, , drop = TRUE], error = function(e) NA)
 }
 
-#' Extraire la valeur de L∞ à partir de l’environnement du modèle
+#' Extraire la valeur estimée d’un paramètre d’un modèle de croissance
 #'
-#' Fonction interne utilisée par `croissance_compare_modele()` pour lire `Sinf`
-#' depuis l’environnement du modèle.
+#' Fonction interne utilisée par `croissance_compare_modele()` pour récupérer
+#' la valeur estimée d’un paramètre (`Sinf`, `K` ou `t0`) à partir d’un modèle
+#' `nls` ajusté avec `growth()`.
 #'
-#' @param mod Un objet `nls` contenu dans `growth()`
+#' La valeur est extraite directement à partir des coefficients estimés du
+#' modèle (`coef()`), ce qui permet de récupérer les paramètres même lorsque
+#' le calcul des intervalles de confiance échoue.
 #'
-#' @return Un nombre correspondant à L∞
+#' @param mod Un objet `nls` contenu dans `growth()`.
+#' @param param_name Nom du paramètre à extraire (`"Sinf"`, `"K"` ou `"t0"`).
+#'
+#' @return Un nombre correspondant à la valeur estimée du paramètre, ou
+#' `NA_real_` en cas d’erreur.
 #' @keywords internal
-extract_from_env <- function(mod) {
-  environment(mod[["m"]][["deviance"]])[["env"]][["Sinf"]]
+extract_coef <- function(mod, param_name = "Sinf") {
+  tryCatch(
+    coef(mod)[[param_name]],
+    error = function(e) NA_real_
+  )
 }
