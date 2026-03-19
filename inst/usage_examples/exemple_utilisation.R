@@ -8,8 +8,8 @@ devtools::load_all()
 
 path     <- "inst/extdata/Extract_IFA_AquaPop_2026-02-27.xlsx"
 typ_pech <- "PENOF"
-no_lac   <- "96873"
-annee    <- 2019
+no_lac   <- "19640"
+annee    <- 2013
 
  # 01589, PENT 2012
 
@@ -38,6 +38,8 @@ info_pen <- get_info_pen(typ_pech)
 table_modele_res <- croissance_compare_modele(specimen_tous) # Résultat brut (data.frame)
 table_modele_res$data
 table_modele_res$flextable
+table_modele_res$success
+table_modele_res$message
 
 ## Graphique du modèle choisi ----
 
@@ -171,39 +173,6 @@ wri_res$plot_tous
 wri_res$plot_byclass
 
 
-# Mortalité ----
-## Tableau de sélection de modèles ----
-pp <- mortalite_get_peak_plus(specimen_valide)
-age_max <- mortalite_get_age_max(specimen_valide)
-df_age_corrigee <- mortalite_prepare_corr(specimen_valide, pp, age_max)
-df_age_etendue <- mortalite_prepare_extended(df_age_corrigee, age_max)
-
-res_disp <- mortalite_test_surdispersion_poisson(df_age_corrigee)
-res_disp$message
-res_disp$plot
-res_disp$dispersion
-
-mortalite_compare_modele_res <- mortalite_compare_modele(df_age_etendue)
-print(mortalite_compare_modele_res$data)
-print(mortalite_compare_modele_res$flextable)
-
-meilleur_modele_nom <- mortalite_select_best_modele(mortalite_compare_modele_res$data)
-meilleur_modele_nom
-
-modele <- mortalite_fit_best_modele(df_age_etendue, methode = meilleur_modele_nom)
-
-## Graphique du modèle choisi ----
-mortalite_plot_modele(specimen_valide, modele, mortalite_compare_modele_res$data)
-
-## Chapman-Robson ----
-mortalite_chaprob_res <- mortalite_chaprob(specimen_valide, pp, age_max)
-mortalite_chaprob_res$data        # Résultat brut (data.frame)
-mortalite_chaprob_res$flextable   # Tableau formaté (flextable)
-
-
-mortalite_phrase_resume(mortalite_compare_modele_res$data, meilleur_modele_nom)
-
-
 # Maturité sexuelle ----
 ## Longueur à maturité ----
 
@@ -258,5 +227,40 @@ a50_modele <- maturite_generate_modele(
 print(a50_modele$table_resultats)
 print(a50_modele$graphique)
 print(a50_modele$table_resultats_flextable)
+
+# Mortalité ----
+## Tableau de sélection de modèles ----
+pp <- mortalite_get_peak_plus(specimen_valide)
+age_max <- mortalite_get_age_max(specimen_valide)
+df_age_corrigee <- mortalite_prepare_corr(specimen_valide, pp, age_max)
+df_age_etendue <- mortalite_prepare_extended(df_age_corrigee, age_max)
+
+res_disp <- mortalite_test_surdispersion_poisson(df_age_corrigee)
+res_disp$message
+res_disp$plot
+res_disp$dispersion
+
+mortalite_compare_modele_res <- mortalite_compare_modele(df_age_etendue)
+print(mortalite_compare_modele_res$data)
+print(mortalite_compare_modele_res$flextable)
+
+meilleur_modele_nom <- mortalite_select_best_modele(mortalite_compare_modele_res$data)
+meilleur_modele_nom
+
+modele <- mortalite_fit_best_modele(df_age_etendue, methode = meilleur_modele_nom)
+
+## Graphique du modèle choisi ----
+mortalite_plot_modele(specimen_valide, modele, mortalite_compare_modele_res$data)
+
+## Chapman-Robson ----
+mortalite_chaprob_res <- mortalite_chaprob(specimen_valide, pp, age_max)
+mortalite_chaprob_res$data        # Résultat brut (data.frame)
+mortalite_chaprob_res$flextable   # Tableau formaté (flextable)
+
+
+mortalite_phrase_resume(mortalite_compare_modele_res$data, meilleur_modele_nom)
+
+
+
 
 

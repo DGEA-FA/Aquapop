@@ -51,13 +51,13 @@ filter_by_pen_lac_annee <- function(data, typ_pech = NULL, no_lac = NULL, annee 
   
   # --- Filtrage par numéro de lac ---
   if (!is.null(no_lac_selected)) {
-    assert_character(no_lac_selected, any.missing = FALSE, min.chars = 5, max.chars = 5)
+    assert_character(no_lac_selected, any.missing = FALSE)
     data <- data |> filter(no_lac %in% no_lac_selected)
     
   }
   
 
-  # --- Filtrage par année ---
+  # --- Filtrage par année --d-
  if (!is.null(annee_selected) &&
      length(annee_selected) > 0) {
    data <- data |> filter(annee %in% as.integer(annee_selected))
