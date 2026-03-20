@@ -8,25 +8,60 @@ croissance_select_best_modele(tablemodele)
 }
 \arguments{
 \item{tablemodele}{Un \code{data.frame} produit par \code{croissance_compare_modele()},
-contenant au minimum les colonnes \code{methode} et \code{aicc}.}
+contenant au minimum les colonnes suivantes :
+\describe{
+\item{methode}{Nom du modèle de croissance.}
+\item{aicc}{Valeur du critère d'information corrigé, sous forme numérique
+ou caractère.}
+\item{convergence}{Statut de convergence du modèle.}
+}}
 }
 \value{
-Une chaîne de caractères correspondant au nom du meilleur modèle sélectionné.
-Retourne \code{NA} avec un avertissement si aucun modèle ne peut être sélectionné.
+Une chaîne de caractères correspondant au nom du meilleur modèle
+sélectionné, ou \code{NA_character_} si aucun modèle ne peut être sélectionné.
 }
 \description{
-Cette fonction identifie automatiquement le meilleur modèle parmi
-Von Bertalanffy, Gompertz ou Logistique en se basant sur le plus faible
-critère d'information corrigé (AICc). En cas d'égalité, elle retourne
-le premier modèle ex aequo.
+Cette fonction identifie automatiquement le meilleur modèle parmi les modèles
+de croissance comparés par \code{croissance_compare_modele()}, en retenant celui
+ayant la plus faible valeur de critère d'information corrigé (AICc) parmi les
+modèles convergés.
+}
+\details{
+Seuls les modèles dont la colonne \code{convergence} vaut \code{"Convergé"} et dont la
+valeur \code{aicc} est numérique sont considérés. Les modèles non convergents ou
+ne possédant pas de valeur AICc exploitable sont ignorés.
+
+Si aucun modèle admissible n'est disponible, la fonction retourne
+\code{NA_character_} et émet un avertissement.
+
+En cas d'égalité sur l'AICc minimal, la fonction retourne le premier modèle
+rencontré dans le tableau filtré.
+
+Cette fonction est principalement utilisée dans le module Shiny de croissance
+afin de présélectionner automatiquement le modèle à afficher dans le tableau
+interactif et dans le graphique.
 }
 \examples{
-df <- tibble::tibble(
+# Exemple avec deux modèles convergés et un modèle non convergé
+tablemodele <- data.frame(
   methode = c("Von Bertalanffy", "Gompertz", "Logistique"),
-  aicc = c(120.3, 118.5, 121.0)
+  aicc = c("120.35", "118.42", "-"),
+  convergence = c("Convergé", "Convergé", "Le modèle n'a pas convergé")
 )
-croissance_select_best_modele(df)
 
-croissance_select_best_modele(NULL)
+croissance_select_best_modele(tablemodele)
+
+# Exemple où aucun modèle ne peut être sélectionné
+tablemodele_aucun <- data.frame(
+  methode = c("Von Bertalanffy", "Gompertz", "Logistique"),
+  aicc = c("-", "-", "-"),
+  convergence = c(
+    "Le modèle n'a pas convergé",
+    "Le modèle n'a pas convergé",
+    "Le modèle n'a pas convergé"
+  )
+)
+
+croissance_select_best_modele(tablemodele_aucun)
 
 }

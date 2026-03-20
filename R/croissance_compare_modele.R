@@ -1,26 +1,36 @@
 #' Comparer trois modèles de croissance (Von Bertalanffy, Gompertz, Logistique)
 #'
-#' Cette fonction ajuste trois modèles de croissance non linéaire à un jeu de données
-#' de spécimens et retourne un tableau comparatif des paramètres estimés,
+#' Cette fonction ajuste trois modèles de croissance non linéaire à un jeu de
+#' données de spécimens et retourne un tableau comparatif des paramètres estimés,
 #' des intervalles de confiance et du critère d'information corrigé (AICc).
 #'
-#' Si les données ne permettent pas la modélisation (ex. moins de 3 âges distincts),
-#' la fonction retourne un résultat avec `success = FALSE` et un message explicatif.
+#' Si les données ne permettent pas la modélisation (ex. moins de 3 âges
+#' distincts), la fonction retourne un résultat avec `success = FALSE` et un
+#' message explicatif.
 #'
-#' @param data Un `data.frame` contenant au minimum : `sp`, `ltm`, `age`, `no_specimen`
-#' @param format Format de sortie souhaité : `"data.frame"` (par défaut) ou `"flextable"`
+#' Si un ou plusieurs modèles ne convergent pas, la fonction retourne quand même
+#' un tableau comparatif. Les valeurs associées aux modèles non convergents sont
+#' alors remplacées par `"-"` et la colonne `convergence` indique explicitement
+#' que le modèle n'a pas convergé.
+#'
+#' @param data Un `data.frame` contenant au minimum : `sp`, `ltm`, `age`,
+#'   `no_specimen`
+#' @param format Format de sortie souhaité : `"data.frame"` (par défaut) ou
+#'   `"flextable"`
 #'
 #' @return Une liste contenant :
 #' \describe{
 #'   \item{success}{Indique si l'analyse a pu être réalisée}
 #'   \item{data}{`data.frame` résumant les résultats des modèles}
 #'   \item{flextable}{Tableau formaté prêt pour insertion dans un document}
-#'   \item{message}{Message explicatif si l'analyse n'est pas disponible}
+#'   \item{message}{Message explicatif si l'analyse n'est pas disponible ou si
+#'   aucun modèle n'a convergé}
 #' }
 #'
 #' @export
 #'
-#' @importFrom dplyr if_else mutate left_join rename select filter arrange n_distinct
+#' @importFrom dplyr arrange bind_rows filter if_else left_join mutate n_distinct
+#' @importFrom dplyr rename select
 #' @importFrom AICcmodavg aictab
 #' @importFrom stats confint coef
 #' @importFrom fishmethods growth
@@ -40,7 +50,10 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
   
   if (nrow(df) < 3) {
     
-    message <- "La modélisation de croissance requiert au moins 3 spécimens ayant une longueur et un âge valides."
+    message <- paste(
+      "La modélisation de croissance requiert au moins 3 spécimens ayant",
+      "une longueur et un âge valides."
+    )
     
     return(list(
       success = FALSE,
@@ -59,7 +72,8 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
       "La modélisation de croissance requiert au moins 3 âges distincts. ",
       "Or, le jeu de données des spécimens de cette pêche n’en contient que ",
       nb_ages_distincts,
-      ". Cette situation peut également être observée dans la figure de structure d’âge."
+      ". Cette situation peut également être observée dans la figure de ",
+      "structure d’âge."
     )
     
     return(list(
@@ -77,122 +91,152 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
   
   # Ajustement des modèles ----
   
-  result <- growth(
-    intype = 1,
-    unit = 1,
-    size = df$ltm,
-    age = df$age,
-    calctype = 1,
-    wgtby = 1,
-    error = 1,
-    Sinf = pi$Linf,
-    K = pi$K,
-    t0 = pi$t0,
-    graph = FALSE,
-    control = list(
-      maxiter = 10000,
-      minFactor = 1 / 1024,
-      tol = 1e-5
+  result <- tryCatch(
+    growth(
+      intype = 1,
+      unit = 1,
+      size = df$ltm,
+      age = df$age,
+      calctype = 1,
+      wgtby = 1,
+      error = 1,
+      Sinf = pi$Linf,
+      K = pi$K,
+      t0 = pi$t0,
+      graph = FALSE,
+      control = list(
+        maxiter = 10000,
+        minFactor = 1 / 1024,
+        tol = 1e-5
+      )
+    ),
+    error = function(e) NULL
+  )
+  
+  modele_info <- data.frame(
+    methode = c("Von Bertalanffy", "Gompertz", "Logistique"),
+    composante = c("vout", "gout", "lout"),
+    stringsAsFactors = FALSE
+  )
+  
+  # Extraction des résultats par modèle ----
+  
+  tableresult <- lapply(seq_len(nrow(modele_info)), function(index_modele) {
+    
+    methode_i <- modele_info$methode[[index_modele]]
+    composante_i <- modele_info$composante[[index_modele]]
+    
+    mod <- extract_growth_model(result, composante_i)
+    
+    if (!is_growth_model_available(mod)) {
+      return(build_growth_failure_row(methode_i))
+    }
+    
+    convergence_message <- extract_growth_convergence(mod)
+    is_converged <- identical(convergence_message, "converged")
+    
+    if (!is_converged) {
+      return(build_growth_failure_row(methode_i))
+    }
+    
+    data.frame(
+      methode = methode_i,
+      l_inf = extract_coef(mod, "Sinf"),
+      k = extract_coef(mod, "K"),
+      t0 = extract_coef(mod, "t0"),
+      l_inf_ic = format_growth_ic(mod, 1, digits = 0),
+      k_ic = format_growth_ic(mod, 2, digits = 3),
+      t0_ic = format_growth_ic(mod, 3, digits = 3),
+      convergence = "Convergé",
+      stringsAsFactors = FALSE
     )
-  )
+    
+  }) |>
+    bind_rows()
   
-  modele_names <- c(
-    "Von Bertalanffy",
-    "Gompertz",
-    "Logistique"
-  )
+  # Calcul AICc seulement pour les modèles convergés ----
   
-  # Extraction des paramètres ----
+  modeles_valides <- lapply(modele_info$composante, function(composante_i) {
+    mod <- extract_growth_model(result, composante_i)
+    
+    if (!is_growth_model_available(mod)) {
+      return(NULL)
+    }
+    
+    if (!identical(extract_growth_convergence(mod), "converged")) {
+      return(NULL)
+    }
+    
+    mod
+  })
   
-  tableresult <- data.frame(
-    methode = modele_names,
+  noms_modeles_valides <- modele_info$methode[!vapply(modeles_valides, is.null, logical(1))]
+  modeles_valides <- Filter(Negate(is.null), modeles_valides)
+  
+  if (length(modeles_valides) > 0) {
     
-    l_inf = c(
-      extract_coef(result$vout, "Sinf"),
-      extract_coef(result$gout, "Sinf"),
-      extract_coef(result$lout, "Sinf")
-    ),
-    
-    k = c(
-      extract_coef(result$vout, "K"),
-      extract_coef(result$gout, "K"),
-      extract_coef(result$lout, "K")
-    ),
-    
-    t0 = c(
-      extract_coef(result$vout, "t0"),
-      extract_coef(result$gout, "t0"),
-      extract_coef(result$lout, "t0")
-    ),
-    
-    l_inf_ic = mapply(function(res) {
-      
-      ic <- extract_param_ic(res, 1)
-      
-      if (is.numeric(ic) && length(ic) == 2 && !any(is.na(ic))) {
-        paste0("[", round(ic[1]), "-", round(ic[2]), "]")
-      } else {
-        "IC non calculable"
+    aic_tab <- tryCatch(
+      aictab(modeles_valides, modnames = noms_modeles_valides) |>
+        rename(
+          methode = Modnames,
+          aicc = AICc,
+          delta_aicc = Delta_AICc,
+          aiccwt = AICcWt
+        ) |>
+        select(methode, aicc, delta_aicc, aiccwt),
+      error = function(e) {
+        data.frame(
+          methode = noms_modeles_valides,
+          aicc = NA_real_,
+          delta_aicc = NA_real_,
+          aiccwt = NA_real_,
+          stringsAsFactors = FALSE
+        )
       }
-      
-    }, list(result$vout, result$gout, result$lout)),
-    
-    k_ic = mapply(function(res) {
-      
-      ic <- extract_param_ic(res, 2)
-      
-      if (is.numeric(ic) && length(ic) == 2 && !any(is.na(ic))) {
-        paste0("[", round(ic[1], 3), "-", round(ic[2], 3), "]")
-      } else {
-        "IC non calculable"
-      }
-      
-    }, list(result$vout, result$gout, result$lout)),
-    
-    t0_ic = mapply(function(res) {
-      
-      ic <- extract_param_ic(res, 3)
-      
-      if (is.numeric(ic) && length(ic) == 2 && !any(is.na(ic))) {
-        paste0("[", round(ic[1], 3), "-", round(ic[2], 3), "]")
-      } else {
-        "IC non calculable"
-      }
-      
-    }, list(result$vout, result$gout, result$lout)),
-    
-    converged = c(
-      result$vout$convInfo$stopMessage,
-      result$gout$convInfo$stopMessage,
-      result$lout$convInfo$stopMessage
     )
-  )
-  
-  # Calcul AICc ----
-  
-  aic_tab <- aictab(
-    list(result$vout, result$gout, result$lout),
-    modnames = modele_names
-  ) |>
-    rename(
-      methode = .data$Modnames,
-      aicc = .data$AICc,
-      delta_aicc = .data$Delta_AICc,
-      aiccwt = .data$AICcWt
-    ) |>
-    select(methode, aicc, delta_aicc, aiccwt)
+    
+  } else {
+    
+    aic_tab <- data.frame(
+      methode = modele_info$methode,
+      aicc = NA_real_,
+      delta_aicc = NA_real_,
+      aiccwt = NA_real_,
+      stringsAsFactors = FALSE
+    )
+    
+  }
   
   # Tableau final ----
   
-  final <- left_join(tableresult, aic_tab, by = "methode") |>
+  final <- tableresult |>
+    left_join(aic_tab, by = "methode") |>
     mutate(
-      converged = if_else(converged == "converged", "convergé", converged),
-      l_inf = round(l_inf, 0),
-      k = round(as.numeric(k), 3),
-      t0 = round(as.numeric(t0), 3),
-      aicc = round(aicc, 2),
-      delta_aicc = round(delta_aicc, 2),
-      aiccwt = round(aiccwt, 2)
+      aicc_sort = if_else(is.na(aicc), Inf, aicc)
+    ) |>
+    arrange(aicc_sort, methode) |>
+    mutate(
+      l_inf = if_else(
+        convergence == "Convergé",
+        as.character(round(as.numeric(l_inf), 0)),
+        "-"
+      ),
+      k = if_else(
+        convergence == "Convergé",
+        as.character(round(as.numeric(k), 3)),
+        "-"
+      ),
+      t0 = if_else(
+        convergence == "Convergé",
+        as.character(round(as.numeric(t0), 3)),
+        "-"
+      ),
+      l_inf_ic = if_else(convergence == "Convergé", l_inf_ic, "-"),
+      k_ic = if_else(convergence == "Convergé", k_ic, "-"),
+      t0_ic = if_else(convergence == "Convergé", t0_ic, "-"),
+      aicc = if_else(is.na(aicc), "-", as.character(round(aicc, 2))),
+      delta_aicc = if_else(is.na(delta_aicc), "-", as.character(round(delta_aicc, 2))),
+      aiccwt = if_else(is.na(aiccwt), "-", as.character(round(aiccwt, 2)))
     ) |>
     select(
       methode,
@@ -202,9 +246,18 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
       aicc,
       delta_aicc,
       aiccwt,
-      converged
-    ) |>
-    arrange(aicc)
+      convergence
+    )
+  
+  # Message global ----
+  
+  aucun_modele_converge <- all(final$convergence == "Le modèle n'a pas convergé")
+  
+  message <- if (aucun_modele_converge) {
+    "Aucun des modèles de croissance n'a convergé pour ce jeu de données."
+  } else {
+    NULL
+  }
   
   # Flextable ----
   
@@ -221,18 +274,124 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
       aicc = "AICc",
       delta_aicc = "Δ AICc",
       aiccwt = "Poids d’Akaike",
-      converged = "Convergence"
+      convergence = "Convergence"
     )) |>
     style_flextable_aquapop()
-  
-  # Résultat ----
   
   return(list(
     success = TRUE,
     data = final,
     flextable = ft,
-    message = NULL
+    message = message
   ))
+}
+
+#' Vérifier si un modèle de croissance retourné par `growth()` est disponible
+#'
+#' @param mod Objet supposé correspondre à un modèle individuel (`nls`).
+#'
+#' @return `TRUE` si le modèle semble disponible, `FALSE` sinon.
+#' @keywords internal
+is_growth_model_available <- function(mod) {
+  
+  if (is.null(mod)) {
+    return(FALSE)
+  }
+  
+  if (inherits(mod, "try-error")) {
+    return(FALSE)
+  }
+  
+  TRUE
+}
+
+#' Extraire un modèle individuel depuis l'objet retourné par `growth()`
+#'
+#' @param result Objet retourné par `growth()`.
+#' @param component Nom de la composante à extraire (`"vout"`, `"gout"`,
+#'   `"lout"`).
+#'
+#' @return Le modèle demandé, ou `NULL` si absent.
+#' @keywords internal
+extract_growth_model <- function(result, component) {
+  
+  if (is.null(result)) {
+    return(NULL)
+  }
+  
+  if (!component %in% names(result)) {
+    return(NULL)
+  }
+  
+  result[[component]]
+}
+
+#' Extraire l'état de convergence d'un modèle de croissance
+#'
+#' @param mod Un objet de modèle (`nls`) provenant de `growth()`.
+#'
+#' @return Une chaîne de caractères décrivant l'état de convergence.
+#' @keywords internal
+extract_growth_convergence <- function(mod) {
+  
+  tryCatch(
+    {
+      stop_message <- mod$convInfo$stopMessage
+      
+      if (is.null(stop_message) || is.na(stop_message) || stop_message == "") {
+        "Inconnu"
+      } else {
+        stop_message
+      }
+    },
+    error = function(e) "Inconnu"
+  )
+}
+
+#' Construire une ligne de résultat pour un modèle non convergent
+#'
+#' @param methode Nom du modèle.
+#'
+#' @return Un `data.frame` d'une ligne.
+#' @keywords internal
+build_growth_failure_row <- function(methode) {
+  
+  data.frame(
+    methode = methode,
+    l_inf = NA_real_,
+    k = NA_real_,
+    t0 = NA_real_,
+    l_inf_ic = "-",
+    k_ic = "-",
+    t0_ic = "-",
+    convergence = "Le modèle n'a pas convergé",
+    stringsAsFactors = FALSE
+  )
+}
+
+#' Formater l'intervalle de confiance d'un paramètre de croissance
+#'
+#' @param res Un objet de modèle (`nls`) provenant de `growth()`.
+#' @param index Position du paramètre (1 = L∞, 2 = K, 3 = t0).
+#' @param digits Nombre de décimales à conserver.
+#'
+#' @return Une chaîne de caractères formatée, ou `"IC non calculable"`.
+#' @keywords internal
+format_growth_ic <- function(res, index, digits = 3) {
+  
+  ic <- extract_param_ic(res, index)
+  
+  if (is.numeric(ic) && length(ic) == 2 && !any(is.na(ic))) {
+    return(paste0(
+      "[",
+      round(ic[1], digits),
+      "-",
+      round(ic[2], digits),
+      "]"
+    ))
+  }
+  
+  "IC non calculable"
 }
 
 #' Extraire l’intervalle de confiance d’un paramètre d’un modèle de croissance
@@ -250,7 +409,7 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
 #' @param index Position du paramètre (1 = L∞, 2 = K, 3 = t0).
 #'
 #' @return Un vecteur numérique de longueur 2 (borne inférieure et supérieure),
-#' ou `NA` si l’intervalle de confiance ne peut pas être calculé.
+#'   ou `NA` si l’intervalle de confiance ne peut pas être calculé.
 #' @keywords internal
 extract_param_ic <- function(res, index) {
   tryCatch(confint(res, level = 0.95)[index, , drop = TRUE], error = function(e) NA)
@@ -270,7 +429,7 @@ extract_param_ic <- function(res, index) {
 #' @param param_name Nom du paramètre à extraire (`"Sinf"`, `"K"` ou `"t0"`).
 #'
 #' @return Un nombre correspondant à la valeur estimée du paramètre, ou
-#' `NA_real_` en cas d’erreur.
+#'   `NA_real_` en cas d’erreur.
 #' @keywords internal
 extract_coef <- function(mod, param_name = "Sinf") {
   tryCatch(

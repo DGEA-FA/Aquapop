@@ -1,18 +1,21 @@
-test_that("croissance_plot() fonctionne pour les trois modèles", {
+test_that("croissance_plot() fonctionne pour les trois modèles convergés", {
+  
   specimen_data <- tibble::tibble(
-    no_specimen = 1:5,
-    age = c(1, 2, 3, 4, 5),
-    ltm = c(100, 140, 160, 180, 190)
+    no_specimen = 1:6,
+    age = c(1, 2, 3, 4, 5, 6),
+    ltm = c(100, 130, 155, 175, 190, 200)
   )
   
   model_table <- tibble::tibble(
     methode = c("Von Bertalanffy", "Gompertz", "Logistique"),
-    l_inf = c(200, 200, 200),
-    k = c(0.2, 0.3, 0.4),
-    t0 = c(-0.5, 0.0, 0.5)
+    l_inf = c("220", "215", "210"),
+    k = c("0.25", "0.30", "0.35"),
+    t0 = c("-0.5", "0.0", "0.3"),
+    convergence = c("Convergé", "Convergé", "Convergé")
   )
   
   for (mod in model_table$methode) {
+    
     g <- croissance_plot(specimen_data, model_table, mod)
     
     expect_s3_class(g, "ggplot")
@@ -21,14 +24,16 @@ test_that("croissance_plot() fonctionne pour les trois modèles", {
     params <- dplyr::filter(model_table, methode == mod)
     
     expect_true(grepl(mod, caption_text))
-    expect_true(grepl(round(params$l_inf, 2), caption_text))
-    expect_true(grepl(round(params$k, 3), caption_text))
-    expect_true(grepl(round(params$t0, 3), caption_text))
+    expect_true(grepl(round(as.numeric(params$l_inf), 2), caption_text))
+    expect_true(grepl(round(as.numeric(params$k), 3), caption_text))
+    expect_true(grepl(round(as.numeric(params$t0), 3), caption_text))
+    
   }
+  
 })
 
-
 test_that("croissance_plot() filtre les NA correctement", {
+  
   data_na <- tibble::tibble(
     no_specimen = 1:6,
     age = c(1, 2, 3, 4, NA, 6),
@@ -37,18 +42,20 @@ test_that("croissance_plot() filtre les NA correctement", {
   
   model_table <- tibble::tibble(
     methode = "Von Bertalanffy",
-    l_inf = 200,
-    k = 0.2,
-    t0 = -0.5
+    l_inf = "200",
+    k = "0.2",
+    t0 = "-0.5",
+    convergence = "Convergé"
   )
   
   g <- croissance_plot(data_na, model_table, "Von Bertalanffy")
   
   expect_s3_class(g, "ggplot")
+  
 })
 
-
 test_that("croissance_plot() retourne NULL avec un warning pour un modèle inconnu", {
+  
   specimen_data <- tibble::tibble(
     no_specimen = 1:5,
     age = c(1, 2, 3, 4, 5),
@@ -57,9 +64,10 @@ test_that("croissance_plot() retourne NULL avec un warning pour un modèle incon
   
   model_table <- tibble::tibble(
     methode = "Von Bertalanffy",
-    l_inf = 200,
-    k = 0.2,
-    t0 = -0.5
+    l_inf = "200",
+    k = "0.2",
+    t0 = "-0.5",
+    convergence = "Convergé"
   )
   
   expect_warning(
@@ -68,10 +76,11 @@ test_that("croissance_plot() retourne NULL avec un warning pour un modèle incon
   )
   
   expect_null(g)
+  
 })
 
-
 test_that("croissance_plot() fonctionne avec peu d'individus", {
+  
   small_data <- tibble::tibble(
     no_specimen = 1:6,
     age = 1:6,
@@ -80,18 +89,20 @@ test_that("croissance_plot() fonctionne avec peu d'individus", {
   
   model_table <- tibble::tibble(
     methode = "Gompertz",
-    l_inf = 180,
-    k = 0.25,
-    t0 = 0.1
+    l_inf = "180",
+    k = "0.25",
+    t0 = "0.1",
+    convergence = "Convergé"
   )
   
   g <- croissance_plot(small_data, model_table, "Gompertz")
   
   expect_s3_class(g, "ggplot")
+  
 })
 
-
 test_that("croissance_plot() retourne NULL avec un warning si tablemodele est NULL", {
+  
   specimen_data <- tibble::tibble(
     no_specimen = 1:5,
     age = c(1, 2, 3, 4, 5),
@@ -104,10 +115,11 @@ test_that("croissance_plot() retourne NULL avec un warning si tablemodele est NU
   )
   
   expect_null(g)
+  
 })
 
-
 test_that("croissance_plot() retourne NULL avec un warning si modele est NA", {
+  
   specimen_data <- tibble::tibble(
     no_specimen = 1:5,
     age = c(1, 2, 3, 4, 5),
@@ -116,9 +128,10 @@ test_that("croissance_plot() retourne NULL avec un warning si modele est NA", {
   
   model_table <- tibble::tibble(
     methode = "Von Bertalanffy",
-    l_inf = 200,
-    k = 0.2,
-    t0 = -0.5
+    l_inf = "200",
+    k = "0.2",
+    t0 = "-0.5",
+    convergence = "Convergé"
   )
   
   expect_warning(
@@ -127,10 +140,11 @@ test_that("croissance_plot() retourne NULL avec un warning si modele est NA", {
   )
   
   expect_null(g)
+  
 })
 
-
 test_that("croissance_plot() retourne NULL avec un warning si le modèle est absent du tableau", {
+  
   specimen_data <- tibble::tibble(
     no_specimen = 1:5,
     age = c(1, 2, 3, 4, 5),
@@ -139,9 +153,10 @@ test_that("croissance_plot() retourne NULL avec un warning si le modèle est abs
   
   model_table <- tibble::tibble(
     methode = "Von Bertalanffy",
-    l_inf = 200,
-    k = 0.2,
-    t0 = -0.5
+    l_inf = "200",
+    k = "0.2",
+    t0 = "-0.5",
+    convergence = "Convergé"
   )
   
   expect_warning(
@@ -150,10 +165,11 @@ test_that("croissance_plot() retourne NULL avec un warning si le modèle est abs
   )
   
   expect_null(g)
+  
 })
 
-
-test_that("croissance_plot() retourne NULL avec un warning si les paramètres du modèle sont manquants", {
+test_that("croissance_plot() retourne NULL avec un warning si le modèle n'a pas convergé", {
+  
   specimen_data <- tibble::tibble(
     no_specimen = 1:5,
     age = c(1, 2, 3, 4, 5),
@@ -162,9 +178,60 @@ test_that("croissance_plot() retourne NULL avec un warning si les paramètres du
   
   model_table <- tibble::tibble(
     methode = "Von Bertalanffy",
-    l_inf = NA_real_,
-    k = 0.2,
-    t0 = -0.5
+    l_inf = "-",
+    k = "-",
+    t0 = "-",
+    convergence = "Le modèle n'a pas convergé"
+  )
+  
+  expect_warning(
+    g <- croissance_plot(specimen_data, model_table, "Von Bertalanffy"),
+    regexp = "n’a pas convergé"
+  )
+  
+  expect_null(g)
+  
+})
+
+test_that("croissance_plot() retourne NULL avec un warning si les paramètres du modèle sont invalides", {
+  
+  specimen_data <- tibble::tibble(
+    no_specimen = 1:5,
+    age = c(1, 2, 3, 4, 5),
+    ltm = c(100, 140, 160, 180, 190)
+  )
+  
+  model_table <- tibble::tibble(
+    methode = "Von Bertalanffy",
+    l_inf = "-",
+    k = "0.2",
+    t0 = "-0.5",
+    convergence = "Convergé"
+  )
+  
+  expect_warning(
+    g <- croissance_plot(specimen_data, model_table, "Von Bertalanffy"),
+    regexp = "paramètres du modèle sont invalides"
+  )
+  
+  expect_null(g)
+  
+})
+
+test_that("croissance_plot() retourne NULL avec un warning si les paramètres du modèle sont manquants après conversion", {
+  
+  specimen_data <- tibble::tibble(
+    no_specimen = 1:5,
+    age = c(1, 2, 3, 4, 5),
+    ltm = c(100, 140, 160, 180, 190)
+  )
+  
+  model_table <- tibble::tibble(
+    methode = "Von Bertalanffy",
+    l_inf = "abc",
+    k = "0.2",
+    t0 = "-0.5",
+    convergence = "Convergé"
   )
   
   expect_warning(
@@ -173,4 +240,5 @@ test_that("croissance_plot() retourne NULL avec un warning si les paramètres du
   )
   
   expect_null(g)
+  
 })

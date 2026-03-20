@@ -6,7 +6,7 @@
 #' ainsi qu’une ligne horizontale représentant la valeur asymptotique de croissance (`L∞`).
 #'
 #' @param dfspecimen Un `data.frame` de spécimens, contenant au minimum les colonnes `ltm`, `age` et `no_specimen`.
-#' @param tablemodele Un `data.frame` contenant les paramètres du modèle ajusté, incluant `methode`, `l_inf`, `k` et `t0`.
+#' @param tablemodele Un `data.frame` contenant les paramètres du modèle ajusté, incluant `methode`, `l_inf`, `k`, `t0` et `convergence`.
 #' @param modele Une chaîne de caractères indiquant le modèle à utiliser : `"Von Bertalanffy"`, `"Gompertz"` ou `"Logistique"`.
 #'
 #' @return Un objet `ggplot` représentant la courbe de croissance ajustée, avec les points observés et l’intervalle de confiance.
@@ -16,22 +16,22 @@
 #' @importFrom investr predFit
 #' @importFrom stats nls
 #' @importFrom dplyr select filter
-#' @importFrom tibble tibble
 #' @importFrom FSA Summarize
 #'
 #' @export
 #'
 #' @examples
-#' dfspecimen <- tibble::tibble(
+#' dfspecimen <- data.frame(
 #'   ltm = c(100, 120, 140, 150),
 #'   age = c(1, 2, 3, 4),
 #'   no_specimen = 1:4
 #' )
-#' tablemodele <- tibble::tibble(
-#'   methode = "Von Bertalanffy",
-#'   l_inf = 160,
-#'   k = 0.3,
-#'   t0 = -0.5
+#' tablemodele <- data.frame(
+#'   methode = c("Von Bertalanffy", "Gompertz", "Logistique"),
+#'   l_inf = c("160", "170", "-"),
+#'   k = c("0.3", "0.2", "-"),
+#'   t0 = c("-0.5", "0.1", "-"),
+#'   convergence = c("Convergé", "Convergé", "Le modèle n'a pas convergé")
 #' )
 #' croissance_plot(dfspecimen, tablemodele, "Von Bertalanffy")
 croissance_plot <- function(dfspecimen, tablemodele, modele) {
@@ -72,7 +72,7 @@ croissance_plot <- function(dfspecimen, tablemodele, modele) {
     return(NULL)
   }
   
-  required_cols <- c("methode", "l_inf", "k", "t0")
+  required_cols <- c("methode", "l_inf", "k", "t0", "convergence")
   
   if (!all(required_cols %in% names(tablemodele))) {
     warning(
@@ -104,7 +104,28 @@ croissance_plot <- function(dfspecimen, tablemodele, modele) {
     return(NULL)
   }
   
-  if (any(is.na(model_params[, c("l_inf", "k", "t0")]))) {
+  if (!identical(model_params$convergence[[1]], "Convergé")) {
+    warning(
+      "Le graphique de croissance ne peut pas être produit, car le modèle sélectionné n’a pas convergé."
+    )
+    return(NULL)
+  }
+  
+  if (any(model_params[1, c("l_inf", "k", "t0")] == "-")) {
+    warning(
+      "Le graphique de croissance ne peut pas être produit, car un ou plusieurs paramètres du modèle sont invalides."
+    )
+    return(NULL)
+  }
+  
+  # --- Préparation des valeurs initiales ----
+  start_values <- list(
+    linf = as.numeric(model_params$l_inf[[1]]),
+    k = as.numeric(model_params$k[[1]]),
+    t0 = as.numeric(model_params$t0[[1]])
+  )
+  
+  if (any(is.na(unlist(start_values)))) {
     warning(
       "Le graphique de croissance ne peut pas être produit, car un ou plusieurs paramètres du modèle sont manquants."
     )
@@ -117,13 +138,6 @@ croissance_plot <- function(dfspecimen, tablemodele, modele) {
   age_max <- max(age_summary$age)
   age_range_plot <- c(0, ceiling(age_max / 5) * 5 + 1)
   age_ticks <- seq(age_range_plot[1], age_range_plot[2])
-  
-  # --- Préparation des valeurs initiales ----
-  start_values <- list(
-    linf = model_params$l_inf[[1]],
-    k = model_params$k[[1]],
-    t0 = model_params$t0[[1]]
-  )
   
   # --- Ajustement du modèle ----
   model_fit <- tryCatch(

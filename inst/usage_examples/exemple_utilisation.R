@@ -8,8 +8,8 @@ devtools::load_all()
 
 path     <- "inst/extdata/Extract_IFA_AquaPop_2026-02-27.xlsx"
 typ_pech <- "PENOF"
-no_lac   <- "19640"
-annee    <- 2013
+no_lac   <- "96870"
+annee    <- 2014
 
  # 01589, PENT 2012
 
@@ -44,6 +44,7 @@ table_modele_res$message
 ## Graphique du modèle choisi ----
 
 modele_best <- croissance_select_best_modele(table_modele_res$data)
+modele_best
 croissance_plot(specimen_tous, table_modele_res$data, modele_best)
 croissance_plot(specimen_tous, table_modele_res$data, modele = "Von Bertalanffy")
 croissance_plot(specimen_tous, table_modele_res$data, modele = "Gompertz")

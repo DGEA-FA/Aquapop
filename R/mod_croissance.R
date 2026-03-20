@@ -54,38 +54,59 @@ mod_croissance_server <- function(id, specimen, filename_suffix) {
       
       req(res$success)
       
+      if (!is.null(res$message) &&
+          identical(res$message, "Aucun des modèles de croissance n'a convergé pour ce jeu de données.")) {
+        return(NULL)
+      }
+      
       p(
         "Si les trois modèles convergent, sélectionnez celui ayant le plus petit AICc. ",
         "Prenez note également que le modèle de von Bertalanffy utilise la méthode pondérée ",
         "avec t₀ variable. Attention : les IC95 % des prédictions ne peuvent pas être calculés ",
         "à partir des IC95 % des estimations des paramètres L, K et t₀."
       )
-      
     })
     
-    
-    # Message analyse non disponible ----
+    # Message utilisateur ----
     
     output$croissance_message <- renderUI({
       
       res <- croissance_res()
       
-      if (res$success) {
+      if (is.null(res$message) || identical(res$message, "")) {
         return(NULL)
+      }
+      
+      titre_message <- if (isTRUE(res$success)) {
+        "Attention"
+      } else {
+        "Analyse non disponible"
+      }
+      
+      couleur_bordure <- if (isTRUE(res$success)) {
+        "#d97706"
+      } else {
+        "#c0392b"
+      }
+      
+      couleur_fond <- if (isTRUE(res$success)) {
+        "#fff7e6"
+      } else {
+        "#fdf2f2"
       }
       
       div(
         style = paste(
           "margin: 15px 0;",
           "padding: 12px 16px;",
-          "border-left: 4px solid #c0392b;",
-          "background-color: #fdf2f2;",
+          "border-left: 4px solid", couleur_bordure, ";",
+          "background-color:", couleur_fond, ";",
           "color: #333;"
         ),
         
         tags$h4(
           style = "margin-top: 0; margin-bottom: 8px;",
-          "Analyse non disponible"
+          titre_message
         ),
         
         tags$p(
@@ -95,8 +116,7 @@ mod_croissance_server <- function(id, specimen, filename_suffix) {
         
       )
       
-    })
-    
+    })      
     
     # Table des modèles ----
     
@@ -105,6 +125,8 @@ mod_croissance_server <- function(id, specimen, filename_suffix) {
       res <- croissance_res()
       
       req(res$success)
+      req(!is.null(res$data))
+      
       
       res$data
       
@@ -120,7 +142,9 @@ mod_croissance_server <- function(id, specimen, filename_suffix) {
       best_model <- croissance_select_best_modele(table)
       idx <- match(best_model, table$methode)
       
-      req(!is.na(idx))
+      if (is.na(idx)) {
+        return(NA_integer_)
+      }
       
       idx
       
@@ -131,7 +155,10 @@ mod_croissance_server <- function(id, specimen, filename_suffix) {
     
     output$croissance_table_section <- renderUI({
       
-      req(croissance_res()$success)
+      res <- croissance_res()
+      
+      req(res$success)
+      req(!is.null(res$data))
       
       tagList(
         
@@ -153,60 +180,79 @@ mod_croissance_server <- function(id, specimen, filename_suffix) {
     
     # Tableau interactif ----
     
-    output$table_modeles_croissance_table <- renderReactable({
-      
-      table <- table_modeles_croissance()
-      
-      reactable(
-        as.data.frame(table),
-        selection = "single",
-        onClick = "select",
-        defaultSelected = default_model_index(),
-        
-        defaultColDef = colDef(
-          align = "center",
-          headerStyle = list(textAlign = "center")
-        ),
-        
-        columns = list(
-          methode = colDef(name = "Modèles"),
-          l_inf = colDef(name = "L∞"),
-          l_inf_ic = colDef(name = "L∞ IC 95%"),
-          k = colDef(name = "K"),
-          k_ic = colDef(name = "K IC 95%"),
-          t0 = colDef(name = "t\u2080"),
-          t0_ic = colDef(name = "t\u2080 IC 95%"),
-          aicc = colDef(name = "AICc"),
-          delta_aicc = colDef(name = "Δ AICc"),
-          aiccwt = colDef(name = "Poids d’Akaike"),
-          converged = colDef(name = "Convergence")
-        )
-        
-      )
-      
-    })
+  output$table_modeles_croissance_table <- renderReactable({
+  
+  table <- table_modeles_croissance()
+  index_defaut <- default_model_index()
+  
+  reactable(
+    as.data.frame(table),
+    selection = "single",
+    onClick = "select",
+    defaultSelected = if (is.na(index_defaut)) NULL else index_defaut,
+    
+    defaultColDef = colDef(
+      align = "center",
+      headerStyle = list(textAlign = "center")
+    ),
+    
+    columns = list(
+      methode = colDef(name = "Modèles"),
+      l_inf = colDef(name = "L∞"),
+      l_inf_ic = colDef(name = "L∞ IC 95%"),
+      k = colDef(name = "K"),
+      k_ic = colDef(name = "K IC 95%"),
+      t0 = colDef(name = "t\u2080"),
+      t0_ic = colDef(name = "t\u2080 IC 95%"),
+      aicc = colDef(name = "AICc"),
+      delta_aicc = colDef(name = "Δ AICc"),
+      aiccwt = colDef(name = "Poids d’Akaike"),
+      convergence = colDef(name = "Convergence")
+    )
+    
+  )
+  
+})
     
     
     # Modèle sélectionné ----
     
-    selectedmodelcroissance <- reactive({
-      
-      table <- table_modeles_croissance()
-      
-      selected <- getReactableState("table_modeles_croissance_table", "selected")
-      
-      req(!is.null(selected), selected >= 1, selected <= nrow(table))
-      
-      table[selected, 1, drop = TRUE]
-      
-    })
+  selectedmodelcroissance <- reactive({
+    
+    table <- table_modeles_croissance()
+    
+    selected <- getReactableState(
+      outputId = "table_modeles_croissance_table",
+      name = "selected"
+    )
+    
+    if (is.null(selected)) {
+      selected <- default_model_index()
+    }
+    
+    if (is.null(selected) || is.na(selected) || selected < 1 || selected > nrow(table)) {
+      return(NULL)
+    }
+    
+    modele <- table$methode[[selected]]
+    convergence <- table$convergence[[selected]]
+    
+    if (!identical(convergence, "Convergé")) {
+      return(NULL)
+    }
+    
+    modele
+  })
     
     
     # Téléchargement table ----
     
     output$download_table_modeles_croissance_ui <- renderUI({
       
-      req(croissance_res()$success)
+      res <- croissance_res()
+      
+      req(res$success)
+      req(!is.null(res$data))
       
       download_button_ui(ns("download_table_modeles_croissance"))
       
@@ -226,10 +272,14 @@ mod_croissance_server <- function(id, specimen, filename_suffix) {
       
       req(croissance_res()$success)
       
+      modele_selectionne <- selectedmodelcroissance()
+      
+      req(!is.null(modele_selectionne))
+      
       croissance_plot(
         dfspecimen = specimen(),
         tablemodele = table_modeles_croissance(),
-        modele = selectedmodelcroissance()
+        modele = modele_selectionne
       )
       
     })
@@ -239,9 +289,7 @@ mod_croissance_server <- function(id, specimen, filename_suffix) {
     
     plot_croissance_disponible <- reactive({
       
-      req(croissance_res()$success)
-      
-      !is.null(plot_selectedmodelcroissance())
+      !is.null(selectedmodelcroissance()) && !is.null(plot_selectedmodelcroissance())
       
     })
     
@@ -251,7 +299,10 @@ mod_croissance_server <- function(id, specimen, filename_suffix) {
     output$croissance_plot_section <- renderUI({
       
       req(croissance_res()$success)
-      req(plot_croissance_disponible())
+      
+      if (!isTRUE(plot_croissance_disponible())) {
+        return(NULL)
+      }
       
       tagList(
         

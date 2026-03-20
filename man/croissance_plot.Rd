@@ -9,7 +9,7 @@ croissance_plot(dfspecimen, tablemodele, modele)
 \arguments{
 \item{dfspecimen}{Un \code{data.frame} de spécimens, contenant au minimum les colonnes \code{ltm}, \code{age} et \code{no_specimen}.}
 
-\item{tablemodele}{Un \code{data.frame} contenant les paramètres du modèle ajusté, incluant \code{methode}, \code{l_inf}, \code{k} et \code{t0}.}
+\item{tablemodele}{Un \code{data.frame} contenant les paramètres du modèle ajusté, incluant \code{methode}, \code{l_inf}, \code{k}, \code{t0} et \code{convergence}.}
 
 \item{modele}{Une chaîne de caractères indiquant le modèle à utiliser : \code{"Von Bertalanffy"}, \code{"Gompertz"} ou \code{"Logistique"}.}
 }
@@ -24,16 +24,17 @@ Le graphique comprend les points observés (\code{ltm} vs \code{age}), la courbe
 ainsi qu’une ligne horizontale représentant la valeur asymptotique de croissance (\verb{L∞}).
 }
 \examples{
-dfspecimen <- tibble::tibble(
+dfspecimen <- data.frame(
   ltm = c(100, 120, 140, 150),
   age = c(1, 2, 3, 4),
   no_specimen = 1:4
 )
-tablemodele <- tibble::tibble(
-  methode = "Von Bertalanffy",
-  l_inf = 160,
-  k = 0.3,
-  t0 = -0.5
+tablemodele <- data.frame(
+  methode = c("Von Bertalanffy", "Gompertz", "Logistique"),
+  l_inf = c("160", "170", "-"),
+  k = c("0.3", "0.2", "-"),
+  t0 = c("-0.5", "0.1", "-"),
+  convergence = c("Convergé", "Convergé", "Le modèle n'a pas convergé")
 )
 croissance_plot(dfspecimen, tablemodele, "Von Bertalanffy")
 }

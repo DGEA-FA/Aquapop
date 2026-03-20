@@ -7,9 +7,11 @@
 croissance_compare_modele(data, format = c("data.frame", "flextable"))
 }
 \arguments{
-\item{data}{Un \code{data.frame} contenant au minimum : \code{sp}, \code{ltm}, \code{age}, \code{no_specimen}}
+\item{data}{Un \code{data.frame} contenant au minimum : \code{sp}, \code{ltm}, \code{age},
+\code{no_specimen}}
 
-\item{format}{Format de sortie souhaité : \code{"data.frame"} (par défaut) ou \code{"flextable"}}
+\item{format}{Format de sortie souhaité : \code{"data.frame"} (par défaut) ou
+\code{"flextable"}}
 }
 \value{
 Une liste contenant :
@@ -17,15 +19,22 @@ Une liste contenant :
 \item{success}{Indique si l'analyse a pu être réalisée}
 \item{data}{\code{data.frame} résumant les résultats des modèles}
 \item{flextable}{Tableau formaté prêt pour insertion dans un document}
-\item{message}{Message explicatif si l'analyse n'est pas disponible}
+\item{message}{Message explicatif si l'analyse n'est pas disponible ou si
+aucun modèle n'a convergé}
 }
 }
 \description{
-Cette fonction ajuste trois modèles de croissance non linéaire à un jeu de données
-de spécimens et retourne un tableau comparatif des paramètres estimés,
+Cette fonction ajuste trois modèles de croissance non linéaire à un jeu de
+données de spécimens et retourne un tableau comparatif des paramètres estimés,
 des intervalles de confiance et du critère d'information corrigé (AICc).
 }
 \details{
-Si les données ne permettent pas la modélisation (ex. moins de 3 âges distincts),
-la fonction retourne un résultat avec \code{success = FALSE} et un message explicatif.
+Si les données ne permettent pas la modélisation (ex. moins de 3 âges
+distincts), la fonction retourne un résultat avec \code{success = FALSE} et un
+message explicatif.
+
+Si un ou plusieurs modèles ne convergent pas, la fonction retourne quand même
+un tableau comparatif. Les valeurs associées aux modèles non convergents sont
+alors remplacées par \code{"-"} et la colonne \code{convergence} indique explicitement
+que le modèle n'a pas convergé.
 }
