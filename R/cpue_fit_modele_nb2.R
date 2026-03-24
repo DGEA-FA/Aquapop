@@ -16,7 +16,7 @@
 #'   - `cpue_moyenne` : moyenne prédite sur l'échelle d'origine
 #'   - `ic_95` : intervalle de confiance (ex. : "(1.2-2.3)")
 #'   - `commentaire` : qualité de l'ajustement
-#'   - `convergence` : booléen toujours à `TRUE` (glm.nb converge ou échoue)
+#'   - `convergence` : booléen indiquant si le modèle a convergé
 #'   - `nb_iterations_hnp` : nombre total d'itérations HNP
 #'
 #' @examples
@@ -49,7 +49,25 @@ cpue_fit_modele_nb2 <- function(cpue_data) {
   }
   
   # --- Ajustement du modèle NB2 ---
-  model_nb2 <- glm.nb(cpue ~ 1, data = cpue_data)
+  model_nb2 <- try(MASS::glm.nb(cpue ~ 1, data = cpue_data), silent = TRUE)
+  
+  convergence_flag <- !inherits(model_nb2, "try-error")
+  
+  # --- Si le modèle n’a pas convergé : sortie neutralisée ---
+  if (!convergence_flag) {
+    return(
+      tibble(
+        methode = "nb2",
+        ajustement_hnp = NA_real_,
+        aicc = NA_real_,
+        cpue_moyenne = NA_real_,
+        ic_95 = NA_character_,
+        commentaire = "Le modèle n'a pas convergé.",
+        convergence = FALSE,
+        nb_iterations_hnp = NA_real_
+      )
+    )
+  }
   
   # --- Test HNP initial (2 itérations) ---
   message("Test HNP : Modèle NB2 (2 simulations initiales)...")
@@ -68,11 +86,16 @@ cpue_fit_modele_nb2 <- function(cpue_data) {
   }
   
   # --- Prédictions et intervalle de confiance ---
-  pred <- predict(model_nb2, type = "link", se.fit = TRUE)
-  pred_mean <- round(exp(pred$fit[1]), 2)
-  ic_low <- round(exp(pred$fit[1] - 1.96 * pred$se.fit[1]), 2)
-  ic_up  <- round(exp(pred$fit[1] + 1.96 * pred$se.fit[1]), 2)
-  pred_ic95 <- sprintf("(%s-%s)", ic_low, ic_up)
+  if (all(cpue_data$cpue == 0)) {
+    pred_mean <- 0
+    pred_ic95 <- "IC non calculable"
+  } else {
+    pred <- predict(model_nb2, type = "link", se.fit = TRUE)
+    pred_mean <- unname(round(exp(pred$fit[1]), 2))
+    ic_low <- round(exp(pred$fit[1] - 1.96 * pred$se.fit[1]), 2)
+    ic_up  <- round(exp(pred$fit[1] + 1.96 * pred$se.fit[1]), 2)
+    pred_ic95 <- sprintf("(%s-%s)", ic_low, ic_up)
+  }
   
   # --- Commentaire sur l'ajustement ---
   commentaire <- case_when(

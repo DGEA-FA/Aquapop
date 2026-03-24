@@ -22,7 +22,7 @@ Un \code{data.frame} d'une ligne contenant :
 \item \code{cpue_moyenne} : moyenne prédite sur l'échelle d'origine
 \item \code{ic_95} : intervalle de confiance (ex. : "(1.2-2.3)")
 \item \code{commentaire} : qualité de l'ajustement
-\item \code{convergence} : booléen toujours à \code{TRUE} (glm.nb converge ou échoue)
+\item \code{convergence} : booléen indiquant si le modèle a convergé
 \item \code{nb_iterations_hnp} : nombre total d'itérations HNP
 }
 }

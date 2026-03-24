@@ -34,7 +34,29 @@
 cpue_fit_modele_poisson <- function(cpue_data) {
   
   # --- Ajustement du modèle Poisson ---
-  model_poisson <- glm(cpue ~ 1, family = poisson, data = cpue_data)
+  model_poisson <- try(
+    glm(cpue ~ 1, family = poisson, data = cpue_data),
+    silent = TRUE
+  )
+  
+  convergence_flag <- !inherits(model_poisson, "try-error") &&
+    isTRUE(model_poisson$converged %||% TRUE)
+  
+  # --- Si le modèle n’a pas convergé : sortie neutralisée ---
+  if (!convergence_flag) {
+    return(
+      tibble(
+        methode = "poisson",
+        ajustement_hnp = NA_real_,
+        aicc = NA_real_,
+        cpue_moyenne = NA_real_,
+        ic_95 = NA_character_,
+        commentaire = "Le modèle n'a pas convergé.",
+        convergence = FALSE,
+        nb_iterations_hnp = NA_real_
+      )
+    )
+  }
   
   # --- Test HNP initial (2 itérations) ---
   message("Test HNP : Modèle Poisson (2 simulations initiales)...")
@@ -63,10 +85,15 @@ cpue_fit_modele_poisson <- function(cpue_data) {
   
   # --- Prédictions et intervalle de confiance ---
   pred <- predict(model_poisson, type = "link", se.fit = TRUE)
-  pred_mean <- round(exp(pred$fit[1]), 2)
-  ic_low <- round(exp(pred$fit[1] - 1.96 * pred$se.fit[1]), 2)
-  ic_up  <- round(exp(pred$fit[1] + 1.96 * pred$se.fit[1]), 2)
-  pred_ic95 <- sprintf("(%s-%s)", ic_low, ic_up)
+  pred_mean <- unname(round(exp(pred$fit[1]), 2))
+  
+  if (all(cpue_data$cpue == 0)) {
+    pred_ic95 <- "IC non calculable"
+  } else {
+    ic_low <- round(exp(pred$fit[1] - 1.96 * pred$se.fit[1]), 2)
+    ic_up  <- round(exp(pred$fit[1] + 1.96 * pred$se.fit[1]), 2)
+    pred_ic95 <- sprintf("(%s-%s)", ic_low, ic_up)
+  }
   
   # --- Commentaire sur l'ajustement ---
   commentaire <- case_when(
@@ -83,7 +110,7 @@ cpue_fit_modele_poisson <- function(cpue_data) {
     cpue_moyenne = pred_mean,
     ic_95 = pred_ic95,
     commentaire = commentaire,
-    convergence = model_poisson$converged %||% TRUE,
+    convergence = TRUE,
     nb_iterations_hnp = nb_iter
   )
 }

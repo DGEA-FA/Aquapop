@@ -71,15 +71,15 @@ cpue_abondance_table <- function(data,
     count(sexe, name = "abondance") |>
     mutate(
       groupe = recode(sexe,
-        "F" = "Repro. actifs femelles",
-        "M" = "Repro. actifs mâles"
+                      "F" = "Repro. actifs femelles",
+                      "M" = "Repro. actifs mâles"
       ),
       proportion = format(round(abondance / total_individus * 100, digits = 1), nsmall = 1),
       mf_ratio = NA_character_
     ) |>
     complete(
       groupe = c("Repro. actifs femelles", "Repro. actifs mâles"),
-      fill = list(abondance = 0, proportion = 0, mf_ratio = NA_character_)
+      fill = list(abondance = 0, proportion = "0.0", mf_ratio = NA_character_)
     )
 
   # Groupe : Immatures ou inactifs

@@ -98,7 +98,7 @@ geom_text_aquapop <- function(...) {
 #'
 #' @return Un objet `flextable` stylisé
 #' @export
-#' @importFrom flextable flextable set_table_properties fontsize font align border_remove border_outer
+#' @importFrom flextable flextable set_table_properties fontsize font align border_remove border_outer colformat_double colformat_int colformat_char colformat_lgl colformat_num
 #' @examples
 #' flextable::flextable(head(iris)) |> style_flextable_aquapop()
 style_flextable_aquapop <- function(ft) {
@@ -108,5 +108,10 @@ style_flextable_aquapop <- function(ft) {
     font(fontname = "Arial", part = "all") |>
     align(align = "center", part = "all") |>
     border_remove() |>
-    border_outer()
+    border_outer() |>
+    colformat_double(na_str = "-") |>
+    colformat_lgl(na_str = "-")|>
+    colformat_num(na_str = "-")|>
+    colformat_int(na_str = "-") |>
+    colformat_char(na_str = "-")
 }

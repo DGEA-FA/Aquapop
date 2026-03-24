@@ -32,20 +32,44 @@
 #' @importFrom MuMIn AICc
 #' @export
 cpue_fit_modele_nb1 <- function(cpue_data) {
+  
   # --- Ajustement du modèle NB1 ---
   model_nb1 <- glmmTMB(cpue ~ 1, family = nbinom1(), data = cpue_data)
+  
+  convergence_flag <- model_nb1$fit$convergence == 0
+  
+  # --- Si le modèle n’a pas convergé : sortie neutralisée ---
+  if (!convergence_flag) {
+    return(
+      tibble(
+        methode = "nb1",
+        ajustement_hnp = NA_real_,
+        aicc = NA_real_,
+        cpue_moyenne = NA_real_,
+        ic_95 = NA_character_,
+        commentaire = "Le modèle n'a pas convergé.",
+        convergence = FALSE,
+        nb_iterations_hnp = NA_real_
+      )
+    )
+  }
   
   # --- Test HNP initial (2 itérations) ---
   message("Test HNP : Modèle NB1 (2 simulations initiales)...")
   set.seed(2023)
-  hnp_list <- replicate(2, hnp(model_nb1,
-                               newclass = TRUE,
-                               diagfun = residuals,
-                               simfun = function(n, obj) simulate(obj)[[1]],
-                               fitfun = function(y) try(glmmTMB(y ~ 1, family = nbinom1(), data = cpue_data)),
-                               how.many.out = TRUE,
-                               plot.sim = FALSE),
-                        simplify = FALSE)
+  hnp_list <- replicate(
+    2,
+    hnp(
+      model_nb1,
+      newclass = TRUE,
+      diagfun = residuals,
+      simfun = function(n, obj) simulate(obj)[[1]],
+      fitfun = function(y) try(glmmTMB(y ~ 1, family = nbinom1(), data = cpue_data)),
+      how.many.out = TRUE,
+      plot.sim = FALSE
+    ),
+    simplify = FALSE
+  )
   hnp_perc <- sapply(hnp_list, function(x) x$out / x$total * 100)
   perc_out <- round(mean(hnp_perc), 2)
   nb_iter <- 2
@@ -53,24 +77,39 @@ cpue_fit_modele_nb1 <- function(cpue_data) {
   # --- Simulations supplémentaires si ajustement marginal ---
   if (perc_out >= 10 && perc_out < 15) {
     message("Ajustement marginal : Ajout de 3 simulations HNP...")
-    hnp_extra <- replicate(3, hnp(model_nb1,
-                                  newclass = TRUE,
-                                  diagfun = residuals,
-                                  simfun = function(n, obj) simulate(obj)[[1]],
-                                  fitfun = function(y) try(glmmTMB(y ~ 1, family = nbinom1(), data = cpue_data)),
-                                  how.many.out = TRUE,
-                                  plot.sim = FALSE),
-                           simplify = FALSE)
+    hnp_extra <- replicate(
+      3,
+      hnp(
+        model_nb1,
+        newclass = TRUE,
+        diagfun = residuals,
+        simfun = function(n, obj) simulate(obj)[[1]],
+        fitfun = function(y) try(glmmTMB(y ~ 1, family = nbinom1(), data = cpue_data)),
+        how.many.out = TRUE,
+        plot.sim = FALSE
+      ),
+      simplify = FALSE
+    )
     hnp_extra_perc <- sapply(hnp_extra, function(x) x$out / x$total * 100)
     perc_out <- round(mean(c(hnp_perc, hnp_extra_perc)), 2)
     nb_iter <- 5
   }
   
   # --- Prédictions et intervalle de confiance ---
-  pred <- predict(model_nb1, type = "link", se.fit = TRUE)
-  pred_mean <- exp(pred$fit[1])
-  pred_ic95 <- paste0("(", round(exp(pred$fit[1] - 1.96 * pred$se.fit[1]), 2),
-                      "-", round(exp(pred$fit[1] + 1.96 * pred$se.fit[1]), 2), ")")
+  if (all(cpue_data$cpue == 0)) {
+    pred_mean <- 0
+    pred_ic95 <- "IC non calculable"
+  } else {
+    pred <- predict(model_nb1, type = "link", se.fit = TRUE)
+    pred_mean <- unname(exp(pred$fit[1]))
+    pred_ic95 <- paste0(
+      "(",
+      round(exp(pred$fit[1] - 1.96 * pred$se.fit[1]), 2),
+      "-",
+      round(exp(pred$fit[1] + 1.96 * pred$se.fit[1]), 2),
+      ")"
+    )
+  }
   
   # --- Commentaire sur l'ajustement ---
   commentaire <- case_when(
@@ -87,7 +126,7 @@ cpue_fit_modele_nb1 <- function(cpue_data) {
     cpue_moyenne = pred_mean,
     ic_95 = pred_ic95,
     commentaire = commentaire,
-    convergence = model_nb1$fit$convergence == 0,
+    convergence = TRUE,
     nb_iterations_hnp = nb_iter
   )
 }

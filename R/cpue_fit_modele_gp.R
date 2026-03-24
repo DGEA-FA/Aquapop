@@ -31,6 +31,24 @@ cpue_fit_modele_gp <- function(cpue_data) {
   # --- Ajustement du modèle GP ---
   model_gp <- glmmTMB(cpue ~ 1, family = genpois(link = "log"), data = cpue_data)
   
+  convergence_flag <- model_gp$fit$convergence == 0
+  
+  # --- Si le modèle n’a pas convergé : sortie neutralisée ---
+  if (!convergence_flag) {
+    return(
+      tibble(
+        methode = "gp",
+        ajustement_hnp = NA_real_,
+        aicc = NA_real_,
+        cpue_moyenne = NA_real_,
+        ic_95 = NA_character_,
+        commentaire = "Le modèle n'a pas convergé.",
+        convergence = FALSE,
+        nb_iterations_hnp = NA_real_
+      )
+    )
+  }
+  
   # --- Fonction interne : réessaie glmmTMB en cas d'échec ---
   safe_fit_gp <- function(y) {
     fit <- try(glmmTMB(y ~ 1, family = genpois(link = "log"), data = cpue_data), silent = TRUE)
@@ -83,11 +101,16 @@ cpue_fit_modele_gp <- function(cpue_data) {
   }
   
   # --- Prédictions et intervalle de confiance ---
-  pred <- predict(model_gp, type = "link", se.fit = TRUE)
-  pred_mean <- round(exp(pred$fit[1]), 2)
-  ic_low <- round(exp(pred$fit[1] - 1.96 * pred$se.fit[1]), 2)
-  ic_up  <- round(exp(pred$fit[1] + 1.96 * pred$se.fit[1]), 2)
-  pred_ic95 <- sprintf("(%s-%s)", ic_low, ic_up)
+  if (all(cpue_data$cpue == 0)) {
+    pred_mean <- 0
+    pred_ic95 <- "IC non calculable"
+  } else {
+    pred <- predict(model_gp, type = "link", se.fit = TRUE)
+    pred_mean <- unname(round(exp(pred$fit[1]), 2))
+    ic_low <- round(exp(pred$fit[1] - 1.96 * pred$se.fit[1]), 2)
+    ic_up  <- round(exp(pred$fit[1] + 1.96 * pred$se.fit[1]), 2)
+    pred_ic95 <- sprintf("(%s-%s)", ic_low, ic_up)
+  }
   
   # --- Commentaire sur l'ajustement ---
   commentaire <- case_when(
@@ -104,7 +127,7 @@ cpue_fit_modele_gp <- function(cpue_data) {
     cpue_moyenne = pred_mean,
     ic_95 = pred_ic95,
     commentaire = commentaire,
-    convergence = model_gp$fit$convergence == 0,
+    convergence = TRUE,
     nb_iterations_hnp = nb_iter
   )
 }

@@ -101,8 +101,8 @@ cpue_compare_modele <- function(cpue_data) {
   # --- Formatage numérique conditionnel ---
   tableau_final <- tableau_final |>
     mutate(
-      ajustement_hnp = format(round(ajustement_hnp, 2), nsmall = 2),
-      cpue           = format(round(cpue, 2), nsmall = 2),
+      ajustement_hnp = ifelse(ajustement_hnp == 0, "0", format(round(ajustement_hnp, 2), nsmall = 2)),
+      cpue = ifelse(cpue == 0, "0", format(round(cpue, 2), nsmall = 2)),
       aicc           = ifelse(aicc == 0, "0", format(round(aicc, 2), nsmall = 2)),
       delta_aicc     = ifelse(delta_aicc == 0, "0", format(round(delta_aicc, 2), nsmall = 2))
     )
@@ -120,8 +120,7 @@ cpue_compare_modele <- function(cpue_data) {
     convergence = "Convergence"
   )
   
-  
-  
+
   # --- Création du titre dynamique ---
   titre_caption <- "Comparaison des modèles : tous les spécimens"
   if ("group" %in% names(cpue_data) && any(grepl("Femelles", cpue_data$group))) {
