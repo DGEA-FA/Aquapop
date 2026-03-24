@@ -8,8 +8,8 @@ devtools::load_all()
 
 path     <- "inst/extdata/Extract_IFA_AquaPop_2026-02-27.xlsx"
 typ_pech <- "PENOF"
-no_lac   <- "96870"
-annee    <- 2014
+no_lac   <- "05596"
+annee    <- 2024
 
  # 01589, PENT 2012
 
@@ -74,6 +74,7 @@ abondance <- cpue_abondance_table(
 )
 abondance$flextable
 abondance$data
+
 # BPUE - Biomasse ----
 
 table_biomasse <- bpue_generate_biomasse(specimen_hasard_valide, station_hasard_valide)
