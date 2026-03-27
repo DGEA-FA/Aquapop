@@ -2,19 +2,51 @@
 % Please edit documentation in R/structure_taille.R
 \name{structure_taille}
 \alias{structure_taille}
-\title{Génère la structure de taille : graphique, tableau brut et flextable}
+\title{Génère la structure de taille des spécimens}
 \usage{
 structure_taille(data, groupement = "tous")
 }
 \arguments{
-\item{data}{Un \code{data.frame} contenant les spécimens pour une seule espèce (colonnes \code{sp}, \code{ltm}, etc.)}
+\item{data}{Un \code{data.frame} contenant les spécimens pour une seule espèce.
+Doit contenir minimalement les colonnes \code{sp} et \code{ltm}.}
 
-\item{groupement}{Le groupement de couleur à utiliser : \code{"tous"} (par défaut), \code{"marquage"}, \code{"sexe"} ou \code{"maturite"}}
+\item{groupement}{Chaîne de caractères indiquant le groupement de couleur à utiliser
+dans le graphique. Valeurs possibles : \code{"tous"}, \code{"marquage"}, \code{"sexe"} ou \code{"maturite"}.}
 }
 \value{
-Une liste avec trois éléments : \code{plot} (ggplot), \code{data} (data.frame), \code{flextable} (tableau formaté)
+Une liste contenant :
+\describe{
+\item{success}{Booléen indiquant si le graphique a pu être produit}
+\item{plot}{Objet \code{ggplot} représentant l'histogramme, ou \code{NULL} si non disponible}
+\item{data}{Tableau brut (\code{data.frame}) correspondant aux données du graphique}
+\item{flextable}{Tableau formaté avec \code{flextable}, prêt à être affiché ou exporté}
+\item{message}{Message explicatif si l'analyse n'est pas disponible}
+}
 }
 \description{
 Produit un histogramme de la structure de taille d'une espèce donnée, ainsi que
-le tableau de données associé (brut et formaté). L'espèce doit être unique dans les données.
+le tableau de données associé (brut et formaté). Les classes de taille sont
+construites automatiquement selon les paramètres définis pour l'espèce.
+}
+\details{
+Si aucune donnée exploitable n'est disponible (ex. : aucun spécimen ou toutes
+les longueurs sont manquantes), la fonction retourne un objet structuré avec
+\code{success = FALSE}, sans générer d'erreur.
+}
+\examples{
+data_exemple <- data.frame(
+  sp = rep("SANA", 5),
+  ltm = c(300, 320, 340, 360, 380),
+  sexe = c("F", "M", "F", "M", "F"),
+  maturite = c("O", "N", "O", "N", "O"),
+  marquage = c("NMA", "NMA", "NMA", "NMA", "NMA")
+)
+
+res <- structure_taille(data_exemple, groupement = "sexe")
+
+if (res$success) {
+  res$data
+  res$flextable
+}
+
 }

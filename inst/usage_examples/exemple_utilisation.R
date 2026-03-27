@@ -92,18 +92,26 @@ taille_masse_age_res$message
 structure_taille_res <- structure_taille(specimen_valide, groupement = "tous")
 structure_taille_res$data
 structure_taille_res$plot
+structure_taille_res$success
+structure_taille_res$message
 structure_taille_res$flextable
 structure_taille_res <- structure_taille(specimen_valide, groupement = "marquage")
 structure_taille_res$data
 structure_taille_res$plot
+structure_taille_res$success
+structure_taille_res$message
 structure_taille_res$flextable
 structure_taille_res <- structure_taille(specimen_valide, groupement = "sexe")
 structure_taille_res$data
 structure_taille_res$plot
+structure_taille_res$success
+structure_taille_res$message
 structure_taille_res$flextable
 structure_taille_res <- structure_taille(specimen_valide, groupement = "maturite")
 structure_taille_res$data
 structure_taille_res$plot
+structure_taille_res$success
+structure_taille_res$message
 structure_taille_res$flextable
 
 

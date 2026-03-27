@@ -1,21 +1,64 @@
-#' Génère la structure de taille : graphique, tableau brut et flextable
+#' Génère la structure de taille des spécimens
 #'
 #' Produit un histogramme de la structure de taille d'une espèce donnée, ainsi que
-#' le tableau de données associé (brut et formaté). L'espèce doit être unique dans les données.
+#' le tableau de données associé (brut et formaté). Les classes de taille sont
+#' construites automatiquement selon les paramètres définis pour l'espèce.
 #'
-#' @importFrom flextable set_caption flextable
+#' Si aucune donnée exploitable n'est disponible (ex. : aucun spécimen ou toutes
+#' les longueurs sont manquantes), la fonction retourne un objet structuré avec
+#' `success = FALSE`, sans générer d'erreur.
+#'
+#' @param data Un `data.frame` contenant les spécimens pour une seule espèce.
+#'   Doit contenir minimalement les colonnes `sp` et `ltm`.
+#' @param groupement Chaîne de caractères indiquant le groupement de couleur à utiliser
+#'   dans le graphique. Valeurs possibles : `"tous"`, `"marquage"`, `"sexe"` ou `"maturite"`.
+#'
+#' @return Une liste contenant :
+#' \describe{
+#'   \item{success}{Booléen indiquant si le graphique a pu être produit}
+#'   \item{plot}{Objet `ggplot` représentant l'histogramme, ou `NULL` si non disponible}
+#'   \item{data}{Tableau brut (`data.frame`) correspondant aux données du graphique}
+#'   \item{flextable}{Tableau formaté avec `flextable`, prêt à être affiché ou exporté}
+#'   \item{message}{Message explicatif si l'analyse n'est pas disponible}
+#' }
+#'
+#' @importFrom flextable flextable set_caption
 #' @importFrom rlang sym
 #' @importFrom ggplot2 ggplot geom_bar labs aes scale_x_discrete scale_y_continuous position_stack scale_fill_manual ggplot_build
 #' @importFrom tibble tibble
 #' @importFrom utils head tail
 #' @importFrom dplyr filter mutate select
-#' @param data Un `data.frame` contenant les spécimens pour une seule espèce (colonnes `sp`, `ltm`, etc.)
-#' @param groupement Le groupement de couleur à utiliser : `"tous"` (par défaut), `"marquage"`, `"sexe"` ou `"maturite"`
 #'
-#' @return Une liste avec trois éléments : `plot` (ggplot), `data` (data.frame), `flextable` (tableau formaté)
+#' @examples
+#' data_exemple <- data.frame(
+#'   sp = rep("SANA", 5),
+#'   ltm = c(300, 320, 340, 360, 380),
+#'   sexe = c("F", "M", "F", "M", "F"),
+#'   maturite = c("O", "N", "O", "N", "O"),
+#'   marquage = c("NMA", "NMA", "NMA", "NMA", "NMA")
+#' )
+#'
+#' res <- structure_taille(data_exemple, groupement = "sexe")
+#'
+#' if (res$success) {
+#'   res$data
+#'   res$flextable
+#' }
+#'
 #' @export
 structure_taille <- function(data,
                              groupement = "tous") {
+  # Cas sans ligne ----
+  if (nrow(data) == 0) {
+    return(list(
+      success = FALSE,
+      plot = NULL,
+      data = NULL,
+      flextable = NULL,
+      message = "Aucun spécimen valide disponible pour produire la structure de taille."
+    ))
+  }
+  
   # Vérifications
   espece <- as.character(unique(data$sp))
   if (length(espece) != 1) stop("Les données doivent contenir une seule espèce.")
@@ -30,12 +73,14 @@ structure_taille <- function(data,
     mutate(ltm = as.numeric(ltm)) |>
     filter(!is.na(ltm))
   
+  # Cas sans donnée exploitable ----
   if (nrow(data) == 0) {
-    vide <- tibble()
     return(list(
-      plot = ggplot(),
-      data = vide,
-      flextable = flextable(vide)
+      success = FALSE,
+      plot = NULL,
+      data = NULL,
+      flextable = NULL,
+      message = "Aucun spécimen valide disponible pour produire la structure de taille."
     ))
   }
   
@@ -46,6 +91,18 @@ structure_taille <- function(data,
   data$ltm_interval <- cut(data$ltm, breaks = breaks, include.lowest = TRUE, right = FALSE, labels = labels)
   data$ltm_interval <- factor(data$ltm_interval, levels = labels, ordered = TRUE)
   data <- filter(data, !is.na(ltm_interval))
+  
+  # Cas sans classe de taille exploitable ----
+  if (nrow(data) == 0) {
+    return(list(
+      success = FALSE,
+      plot = NULL,
+      data = NULL,
+      flextable = NULL,
+      message = "Aucune classe de taille exploitable n'a pu être produite."
+    ))
+  }
+  
   max_y <- ceiling(max(table(data$ltm_interval), na.rm = TRUE) * 1.1)
   
   # Préparation du graphique
@@ -72,7 +129,7 @@ structure_taille <- function(data,
     plt <- ggplot(data, aes(x = ltm_interval, fill = !!sym(groupement))) +
       geom_bar(position = position_stack(reverse = TRUE), color = "white", na.rm = TRUE) +
       geom_bar(data = df_legende, aes(x = categorie, fill = categorie),
-                        alpha = 1, width = 0, show.legend = TRUE, na.rm = TRUE) +
+               alpha = 1, width = 0, show.legend = TRUE, na.rm = TRUE) +
       labs(x = "Longueur totale maximale (mm)", y = paste0("Nb. ", nomsp, " échantillonnés")) +
       theme_aquapop() +
       scale_x_discrete(drop = FALSE, limits = labels) +
@@ -92,9 +149,11 @@ structure_taille <- function(data,
     style_flextable_aquapop()
   
   return(list(
+    success = TRUE,
     plot = plt,
     data = df,
-    flextable = ft
+    flextable = ft,
+    message = NULL
   ))
 }
 
@@ -108,6 +167,8 @@ structure_taille <- function(data,
 #' @param groupement Le groupement utilisé dans le graphique : `"tous"`, `"marquage"`, `"sexe"` ou `"maturite"`
 #'
 #' @return Un `data.frame` avec les colonnes `categorie`, `count`, et `x` (classe de taille)
+#'
+#' @keywords internal
 structure_taille_extraire_donnees <- function(plot, groupement) {
   # Vérification
   if (!groupement %in% names(group_colors)) {
@@ -126,4 +187,3 @@ structure_taille_extraire_donnees <- function(plot, groupement) {
   # Résultat final
   temp |> select(categorie, count, x)
 }
-

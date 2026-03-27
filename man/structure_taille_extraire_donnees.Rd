@@ -19,3 +19,4 @@ Cette fonction permet de récupérer les données brutes utilisées dans un grap
 par la fonction \code{structure_taille()}. Elle est utile pour créer un tableau correspondant
 à l'histogramme, en associant les couleurs aux catégories (sexe, maturité, marquage, etc.).
 }
+\keyword{internal}
