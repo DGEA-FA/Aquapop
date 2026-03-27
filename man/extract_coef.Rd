@@ -20,9 +20,4 @@ Fonction interne utilisée par \code{croissance_compare_modele()} pour récupér
 la valeur estimée d’un paramètre (\code{Sinf}, \code{K} ou \code{t0}) à partir d’un modèle
 \code{nls} ajusté avec \code{growth()}.
 }
-\details{
-La valeur est extraite directement à partir des coefficients estimés du
-modèle (\code{coef()}), ce qui permet de récupérer les paramètres même lorsque
-le calcul des intervalles de confiance échoue.
-}
 \keyword{internal}

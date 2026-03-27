@@ -12,8 +12,8 @@ extract_param_ic(res, index)
 \item{index}{Position du paramètre (1 = L∞, 2 = K, 3 = t0).}
 }
 \value{
-Un vecteur numérique de longueur 2 (borne inférieure et supérieure),
-ou \code{NA} si l’intervalle de confiance ne peut pas être calculé.
+Un vecteur numérique de longueur 2, ou \code{NA} si l’intervalle de
+confiance ne peut pas être calculé.
 }
 \description{
 Fonction interne utilisée par \code{croissance_compare_modele()} pour tenter
@@ -23,7 +23,6 @@ modèle \code{nls} ajusté via \code{growth()}.
 \details{
 Le paramètre est identifié par sa position dans la matrice retournée par
 \code{confint()} (1 = L∞, 2 = K, 3 = t0). Si le calcul des intervalles de confiance
-échoue (ce qui peut survenir pour certains ajustements \code{nls}), la fonction
-retourne \code{NA}.
+échoue, la fonction retourne \code{NA}.
 }
 \keyword{internal}

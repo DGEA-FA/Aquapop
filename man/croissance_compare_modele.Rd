@@ -19,8 +19,9 @@ Une liste contenant :
 \item{success}{Indique si l'analyse a pu être réalisée}
 \item{data}{\code{data.frame} résumant les résultats des modèles}
 \item{flextable}{Tableau formaté prêt pour insertion dans un document}
-\item{message}{Message explicatif si l'analyse n'est pas disponible ou si
-aucun modèle n'a convergé}
+\item{message}{Message explicatif si l'analyse n'est pas disponible, si
+des valeurs initiales de secours ont été utilisées, ou si aucun modèle n'a
+convergé}
 }
 }
 \description{
@@ -32,6 +33,17 @@ des intervalles de confiance et du critère d'information corrigé (AICc).
 Si les données ne permettent pas la modélisation (ex. moins de 3 âges
 distincts), la fonction retourne un résultat avec \code{success = FALSE} et un
 message explicatif.
+
+Si \code{vbStarts()} échoue à produire des valeurs initiales, une stratégie de
+rechange est utilisée avec :
+\itemize{
+\item \code{Linf} = longueur du plus grand spécimen de l’échantillon
+\item \code{K = 0.3}
+\item \code{t0 = 0}
+}
+
+Un message d’avertissement est alors retourné dans l’output afin d’informer
+l’utilisateur que des valeurs initiales fixes ont été utilisées.
 
 Si un ou plusieurs modèles ne convergent pas, la fonction retourne quand même
 un tableau comparatif. Les valeurs associées aux modèles non convergents sont

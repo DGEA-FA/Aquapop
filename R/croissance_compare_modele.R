@@ -8,6 +8,15 @@
 #' distincts), la fonction retourne un résultat avec `success = FALSE` et un
 #' message explicatif.
 #'
+#' Si `vbStarts()` échoue à produire des valeurs initiales, une stratégie de
+#' rechange est utilisée avec :
+#' - `Linf` = longueur du plus grand spécimen de l’échantillon
+#' - `K = 0.3`
+#' - `t0 = 0`
+#'
+#' Un message d’avertissement est alors retourné dans l’output afin d’informer
+#' l’utilisateur que des valeurs initiales fixes ont été utilisées.
+#'
 #' Si un ou plusieurs modèles ne convergent pas, la fonction retourne quand même
 #' un tableau comparatif. Les valeurs associées aux modèles non convergents sont
 #' alors remplacées par `"-"` et la colonne `convergence` indique explicitement
@@ -23,8 +32,9 @@
 #'   \item{success}{Indique si l'analyse a pu être réalisée}
 #'   \item{data}{`data.frame` résumant les résultats des modèles}
 #'   \item{flextable}{Tableau formaté prêt pour insertion dans un document}
-#'   \item{message}{Message explicatif si l'analyse n'est pas disponible ou si
-#'   aucun modèle n'a convergé}
+#'   \item{message}{Message explicatif si l'analyse n'est pas disponible, si
+#'   des valeurs initiales de secours ont été utilisées, ou si aucun modèle n'a
+#'   convergé}
 #' }
 #'
 #' @export
@@ -87,7 +97,8 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
   
   # Valeurs initiales ----
   
-  pi <- vbStarts(ltm ~ age, data = df)
+  pi_res <- get_growth_start_values(df)
+  pi <- pi_res$pi
   
   # Ajustement des modèles ----
   
@@ -112,6 +123,24 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
     ),
     error = function(e) NULL
   )
+  
+  if (is.null(result)) {
+    
+    message_parts <- c(
+      pi_res$message,
+      "La modélisation de croissance a échoué malgré l’utilisation de ces valeurs initiales."
+    )
+    
+    message <- paste(message_parts[!is.null(message_parts)], collapse = "\n\n")
+    
+    return(list(
+      success = FALSE,
+      data = NULL,
+      flextable = NULL,
+      message = message
+    ))
+    
+  }
   
   modele_info <- data.frame(
     methode = c("Von Bertalanffy", "Gompertz", "Logistique"),
@@ -253,10 +282,23 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
   
   aucun_modele_converge <- all(final$convergence == "Le modèle n'a pas convergé")
   
-  message <- if (aucun_modele_converge) {
-    "Aucun des modèles de croissance n'a convergé pour ce jeu de données."
-  } else {
+  message_parts <- c()
+  
+  if (!is.null(pi_res$message)) {
+    message_parts <- c(message_parts, pi_res$message)
+  }
+  
+  if (aucun_modele_converge) {
+    message_parts <- c(
+      message_parts,
+      "Aucun des modèles de croissance n'a convergé pour ce jeu de données."
+    )
+  }
+  
+  message <- if (length(message_parts) == 0) {
     NULL
+  } else {
+    paste(message_parts, collapse = "\n\n")
   }
   
   # Flextable ----
@@ -284,6 +326,69 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
     flextable = ft,
     message = message
   ))
+}
+
+#' Déterminer les valeurs initiales à utiliser pour les modèles de croissance
+#'
+#' Cette fonction tente d’abord d’estimer automatiquement les valeurs initiales
+#' des paramètres de croissance (`Linf`, `K`, `t0`) à l’aide de `vbStarts()`.
+#'
+#' Dans certains cas (ex. structure d’âge déséquilibrée ou peu informative),
+#' cette estimation peut échouer. Une stratégie de rechange est alors utilisée
+#' afin de permettre la modélisation :
+#' \itemize{
+#'   \item `Linf` : longueur maximale observée dans l’échantillon
+#'   \item `K` : valeur fixée à 0.3
+#'   \item `t0` : valeur fixée à 0
+#' }
+#'
+#' Ces valeurs par défaut sont issues de recommandations générales (Ogle 2016)
+#' et permettent d’initialiser les modèles même lorsque les données ne permettent
+#' pas une estimation automatique robuste.
+#'
+#' @param df Un `data.frame` contenant au minimum les colonnes `ltm` et `age`.
+#'
+#' @return Une liste contenant :
+#' \describe{
+#'   \item{pi}{Une liste nommée avec `Linf`, `K` et `t0`}
+#'   \item{message}{Un message d’avertissement à afficher à l’utilisateur, ou
+#'   `NULL` si `vbStarts()` a réussi}
+#' }
+#' @keywords internal
+get_growth_start_values <- function(df) {
+  
+  pi_vbstarts <- tryCatch(
+    vbStarts(ltm ~ age, data = df),
+    error = function(e) NULL
+  )
+  
+  if (!is.null(pi_vbstarts)) {
+    return(list(
+      pi = list(
+        Linf = unname(pi_vbstarts$Linf),
+        K = unname(pi_vbstarts$K),
+        t0 = unname(pi_vbstarts$t0)
+      ),
+      message = NULL
+    ))
+  }
+  
+  pi_fallback <- list(
+    Linf = max(df$ltm, na.rm = TRUE),
+    K = 0.3,
+    t0 = 0
+  )
+  
+  message <- paste(
+    "Les valeurs des paramètres initiaux pi n’ont pas pu être estimées automatiquement à partir des données.",
+    "Elles ont été fixées à Linf = longueur du plus grand spécimen de l’échantillon, K = 0.3 et t0 = 0 (Ogle 2016).",
+    sep = "\n"
+  )
+  
+  list(
+    pi = pi_fallback,
+    message = message
+  )
 }
 
 #' Vérifier si un modèle de croissance retourné par `growth()` est disponible
@@ -402,14 +507,13 @@ format_growth_ic <- function(res, index, digits = 3) {
 #'
 #' Le paramètre est identifié par sa position dans la matrice retournée par
 #' `confint()` (1 = L∞, 2 = K, 3 = t0). Si le calcul des intervalles de confiance
-#' échoue (ce qui peut survenir pour certains ajustements `nls`), la fonction
-#' retourne `NA`.
+#' échoue, la fonction retourne `NA`.
 #'
 #' @param res Un objet de modèle (`nls`) provenant de `growth()`.
 #' @param index Position du paramètre (1 = L∞, 2 = K, 3 = t0).
 #'
-#' @return Un vecteur numérique de longueur 2 (borne inférieure et supérieure),
-#'   ou `NA` si l’intervalle de confiance ne peut pas être calculé.
+#' @return Un vecteur numérique de longueur 2, ou `NA` si l’intervalle de
+#'   confiance ne peut pas être calculé.
 #' @keywords internal
 extract_param_ic <- function(res, index) {
   tryCatch(confint(res, level = 0.95)[index, , drop = TRUE], error = function(e) NA)
@@ -420,10 +524,6 @@ extract_param_ic <- function(res, index) {
 #' Fonction interne utilisée par `croissance_compare_modele()` pour récupérer
 #' la valeur estimée d’un paramètre (`Sinf`, `K` ou `t0`) à partir d’un modèle
 #' `nls` ajusté avec `growth()`.
-#'
-#' La valeur est extraite directement à partir des coefficients estimés du
-#' modèle (`coef()`), ce qui permet de récupérer les paramètres même lorsque
-#' le calcul des intervalles de confiance échoue.
 #'
 #' @param mod Un objet `nls` contenu dans `growth()`.
 #' @param param_name Nom du paramètre à extraire (`"Sinf"`, `"K"` ou `"t0"`).

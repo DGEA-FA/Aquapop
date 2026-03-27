@@ -13,6 +13,26 @@ df_valid <- tibble::tibble(
   )
 )
 
+# Jeu de données problématique où aucun modèle ne converge ----
+df_fail <- tibble::tibble(
+  no_specimen = c(1, 10, 11, 12, 13, 14, 15, 16, 18, 19,
+                  2, 20, 21, 22, 23, 24, 25, 26, 27, 28,
+                  29, 3, 30, 31, 32, 33, 34, 35, 36, 37,
+                  38, 39, 4, 40, 41, 42, 43, 44, 46, 47,
+                  48, 49, 5, 50, 51, 6, 7, 8, 9),
+  sp = "TEST",
+  age = c(2, 2, 3, 3, 2, 1, 1, 3, 2, 1,
+          2, 2, 4, 1, 2, 2, 1, 4, 2, 2,
+          3, 1, 4, 4, 3, 4, 2, 4, 3, 2,
+          2, 2, 1, 2, 4, 2, 2, 3, 1, 1,
+          1, 1, 1, 1, 1, 1, 1, 4, 4),
+  ltm = c(185, 214, 305, 278, 273, 167, 144, 333, 164, 125,
+          195, 249, 352, 211, 191, 191, 159, 377, 200, 193,
+          253, 180, 145, 145, 150, 156, 144, 202, 263, 237,
+          260, 341, 142, 182, 250, 184, 187, 212, 227, 356,
+          285, 340, 165, 335, 124, 185, 150, 339, 316)
+)
+
 test_that("croissance_compare_modele retourne une structure valide", {
   
   res <- croissance_compare_modele(df_valid, format = "data.frame")
@@ -81,6 +101,7 @@ test_that("retourne success = FALSE si moins de 3 spécimens valides", {
   expect_null(res$data)
   expect_null(res$flextable)
   expect_type(res$message, "character")
+  expect_match(res$message, "au moins 3 spécimens", fixed = TRUE)
   
 })
 
@@ -99,6 +120,7 @@ test_that("retourne success = FALSE si moins de 3 âges distincts", {
   expect_null(res$data)
   expect_null(res$flextable)
   expect_type(res$message, "character")
+  expect_match(res$message, "au moins 3 âges distincts", fixed = TRUE)
   
 })
 
@@ -117,25 +139,6 @@ test_that("fonction tolère des IC non calculables", {
 
 test_that("si aucun modèle ne converge, la fonction retourne un tableau valide avec message global", {
   
-  df_fail <- tibble::tibble(
-    no_specimen = c(1, 10, 11, 12, 13, 14, 15, 16, 18, 19,
-                    2, 20, 21, 22, 23, 24, 25, 26, 27, 28,
-                    29, 3, 30, 31, 32, 33, 34, 35, 36, 37,
-                    38, 39, 4, 40, 41, 42, 43, 44, 46, 47,
-                    48, 49, 5, 50, 51, 6, 7, 8, 9),
-    sp = "TEST",
-    age = c(2, 2, 3, 3, 2, 1, 1, 3, 2, 1,
-            2, 2, 4, 1, 2, 2, 1, 4, 2, 2,
-            3, 1, 4, 4, 3, 4, 2, 4, 3, 2,
-            2, 2, 1, 2, 4, 2, 2, 3, 1, 1,
-            1, 1, 1, 1, 1, 1, 1, 4, 4),
-    ltm = c(185, 214, 305, 278, 273, 167, 144, 333, 164, 125,
-            195, 249, 352, 211, 191, 191, 159, 377, 200, 193,
-            253, 180, 145, 145, 150, 156, 144, 202, 263, 237,
-            260, 341, 142, 182, 250, 184, 187, 212, 227, 356,
-            285, 340, 165, 335, 124, 185, 150, 339, 316)
-  )
-  
   res <- croissance_compare_modele(df_fail, format = "data.frame")
   
   expect_true(res$success)
@@ -147,18 +150,103 @@ test_that("si aucun modèle ne converge, la fonction retourne un tableau valide 
   expect_true(all(res$data$k == "-"))
   expect_true(all(res$data$t0 == "-"))
   
-  expect_identical(
-    res$message,
-    "Aucun des modèles de croissance n'a convergé pour ce jeu de données."
-  )
+  expect_type(res$message, "character")
+  expect_match(res$message, "Aucun des modèles de croissance", fixed = TRUE)
+  expect_match(res$message, "n'a convergé", fixed = TRUE)
   
 })
 
-test_that("si au moins un modèle converge, le message global est NULL", {
+test_that("si au moins un modèle converge et vbStarts fonctionne, le message global est NULL", {
   
   res <- croissance_compare_modele(df_valid, format = "data.frame")
   
   expect_true(res$success)
   expect_null(res$message)
+  
+})
+
+test_that("si vbStarts échoue, la fonction utilise les valeurs initiales de secours", {
+  
+  local_mocked_bindings(
+    vbStarts = function(...) {
+      stop("échec simulé de vbStarts")
+    }
+  )
+  
+  res <- croissance_compare_modele(df_valid, format = "data.frame")
+  
+  expect_true(res$success)
+  expect_s3_class(res$data, "data.frame")
+  expect_equal(nrow(res$data), 3)
+  
+  expect_type(res$message, "character")
+  expect_match(res$message, "valeurs des paramètres initiaux", fixed = TRUE)
+  expect_match(res$message, "K = 0.3", fixed = TRUE)
+  expect_match(res$message, "t0 = 0", fixed = TRUE)
+  
+})
+
+test_that("si vbStarts échoue et qu'au moins un modèle converge, le message contient l'avertissement sur les valeurs initiales", {
+  
+  local_mocked_bindings(
+    vbStarts = function(...) {
+      stop("échec simulé de vbStarts")
+    }
+  )
+  
+  res <- croissance_compare_modele(df_valid, format = "data.frame")
+  
+  expect_true(res$success)
+  expect_type(res$message, "character")
+  expect_match(res$message, "valeurs des paramètres initiaux", fixed = TRUE)
+  expect_match(res$message, "longueur du plus grand spécimen", fixed = TRUE)
+  expect_false(grepl("Aucun des modèles de croissance", res$message, fixed = TRUE))
+  
+})
+
+test_that("si vbStarts échoue et qu'aucun modèle ne converge, le message combine l'avertissement et le message global", {
+  
+  local_mocked_bindings(
+    vbStarts = function(...) {
+      stop("échec simulé de vbStarts")
+    }
+  )
+  
+  res <- croissance_compare_modele(df_fail, format = "data.frame")
+  
+  expect_true(res$success)
+  expect_true(all(res$data$convergence == "Le modèle n'a pas convergé"))
+  
+  expect_type(res$message, "character")
+  expect_match(res$message, "valeurs des paramètres initiaux", fixed = TRUE)
+  expect_match(res$message, "K = 0.3", fixed = TRUE)
+  expect_match(res$message, "Aucun des modèles de croissance", fixed = TRUE)
+  
+})
+
+test_that("si growth échoue complètement après le fallback, la fonction retourne success = FALSE", {
+  
+  local_mocked_bindings(
+    vbStarts = function(...) {
+      stop("échec simulé de vbStarts")
+    },
+    growth = function(...) {
+      stop("échec simulé de growth")
+    }
+  )
+  
+  res <- croissance_compare_modele(df_valid, format = "data.frame")
+  
+  expect_false(res$success)
+  expect_null(res$data)
+  expect_null(res$flextable)
+  
+  expect_type(res$message, "character")
+  expect_match(res$message, "valeurs des paramètres initiaux", fixed = TRUE)
+  expect_match(
+    res$message,
+    "La modélisation de croissance a échoué",
+    fixed = TRUE
+  )
   
 })
