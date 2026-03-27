@@ -11,26 +11,45 @@ structure_age(data, groupement = "tous")
 \itemize{
 \item \code{sp} : code de l’espèce (doit être unique),
 \item \code{age} : âge numérique du spécimen,
-\item la variable de regroupement choisie (\code{sexe}, \code{marquage} ou \code{maturite}), si applicable.
+\item la variable de regroupement choisie (\code{sexe}, \code{marquage} ou \code{maturite}),
+si applicable.
 }}
 
-\item{groupement}{Type de regroupement à utiliser pour la coloration du graphique :
-\code{"tous"} (par défaut), \code{"sexe"}, \code{"maturite"} ou \code{"marquage"}.}
+\item{groupement}{Type de regroupement à utiliser pour la coloration du
+graphique : \code{"tous"} (par défaut), \code{"sexe"}, \code{"maturite"} ou \code{"marquage"}.}
 }
 \value{
-Une liste nommée contenant trois éléments :
+Une liste nommée contenant :
 \describe{
-\item{plot}{Objet \code{ggplot} représentant l’histogramme de la structure d’âge.}
-\item{data}{\code{data.frame} avec les âges comptés (\code{age}, \code{n}).}
-\item{flextable}{Tableau formaté avec \code{flextable}.}
+\item{success}{Booléen indiquant si le graphique a pu être produit}
+\item{plot}{Objet \code{ggplot} représentant l’histogramme, ou \code{NULL} si non disponible}
+\item{data}{\code{data.frame} avec les âges comptés}
+\item{flextable}{Tableau formaté avec \code{flextable}, prêt à être affiché ou exporté}
+\item{message}{Message explicatif si l’analyse n’est pas disponible}
 }
 }
 \description{
-Cette fonction produit la distribution d’âge d’une espèce sous forme de graphique (histogramme),
-d’un tableau brut (\code{data.frame}) et d’un tableau formaté (\code{flextable}). Elle prend en charge un regroupement
-facultatif par sexe, marquage ou maturité.
+Cette fonction produit la distribution d’âge d’une espèce sous forme de graphique
+(histogramme), d’un tableau brut (\code{data.frame}) et d’un tableau formaté
+(\code{flextable}). Elle prend en charge un regroupement facultatif par sexe,
+marquage ou maturité.
+}
+\details{
+Si aucune donnée exploitable n'est disponible (ex. : aucun spécimen ou tous
+les âges sont manquants), la fonction retourne un objet structuré avec
+\code{success = FALSE}, sans générer d’erreur.
 }
 \examples{
-df <- data.frame(sp = "SANA", age = c(1, 2, 2, 3, 3, 3))
-structure_age(df, groupement = "tous")
+df <- data.frame(
+  sp = "SANA",
+  age = c(1, 2, 2, 3, 3, 3)
+)
+
+res <- structure_age(df, groupement = "tous")
+
+if (res$success) {
+  res$data
+  res$flextable
+}
+
 }
