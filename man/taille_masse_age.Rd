@@ -7,20 +7,27 @@
 taille_masse_age(data)
 }
 \arguments{
-\item{data}{Un \code{data.frame} contenant au minimum les colonnes \code{ltm}, \code{masse}, \code{age}, \code{sexe} et \code{maturite}.}
+\item{data}{Un \code{data.frame} contenant au minimum les colonnes \code{ltm}, \code{masse},
+\code{age}, \code{sexe} et \code{maturite}.}
 }
 \value{
-Une liste avec deux éléments :
+Une liste contenant :
 \describe{
+\item{success}{Indique si le tableau a pu être produit}
 \item{data}{Tableau brut (\code{data.frame}) des statistiques morphologiques par groupe}
 \item{flextable}{Tableau mis en forme avec \code{flextable} pour affichage ou export}
+\item{message}{Message explicatif si l'analyse n'est pas disponible}
 }
 }
 \description{
-Calcule des statistiques descriptives (effectif, moyenne, écart-type, minimum, maximum)
-pour la longueur totale (ltm), la masse et l'âge des spécimens, selon différents groupes
-biologiques (sexe et statut reproducteur). Retourne à la fois un tableau brut (\code{data.frame})
-et une version formatée avec \code{flextable}.
+Calcule des statistiques descriptives (effectif, moyenne, écart-type, minimum,
+maximum) pour la longueur totale (\code{ltm}), la masse et l'âge des spécimens,
+selon différents groupes biologiques (sexe et statut reproducteur).
+}
+\details{
+Retourne à la fois un tableau brut (\code{data.frame}) et une version formatée
+avec \code{flextable}. Si aucune donnée exploitable n'est disponible, la fonction
+retourne un objet structuré avec \code{success = FALSE}, sans générer d'erreur.
 }
 \examples{
 data_exemple <- data.frame(
@@ -30,7 +37,9 @@ data_exemple <- data.frame(
   sexe = c("M", "F", "F", "M", "IND"),
   maturite = c("O", "O", "N", "N", "IND")
 )
+
 res <- taille_masse_age(data_exemple)
 res$data
 if (requireNamespace("flextable", quietly = TRUE)) res$flextable
+
 }

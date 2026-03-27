@@ -1,22 +1,28 @@
 #' Tableau des statistiques morphologiques (taille, masse, âge)
 #'
-#' Calcule des statistiques descriptives (effectif, moyenne, écart-type, minimum, maximum)
-#' pour la longueur totale (ltm), la masse et l'âge des spécimens, selon différents groupes
-#' biologiques (sexe et statut reproducteur). Retourne à la fois un tableau brut (`data.frame`)
-#' et une version formatée avec `flextable`.
+#' Calcule des statistiques descriptives (effectif, moyenne, écart-type, minimum,
+#' maximum) pour la longueur totale (`ltm`), la masse et l'âge des spécimens,
+#' selon différents groupes biologiques (sexe et statut reproducteur).
 #'
-#' @param data Un `data.frame` contenant au minimum les colonnes `ltm`, `masse`, `age`, `sexe` et `maturite`.
+#' Retourne à la fois un tableau brut (`data.frame`) et une version formatée
+#' avec `flextable`. Si aucune donnée exploitable n'est disponible, la fonction
+#' retourne un objet structuré avec `success = FALSE`, sans générer d'erreur.
 #'
-#' @return Une liste avec deux éléments :
+#' @param data Un `data.frame` contenant au minimum les colonnes `ltm`, `masse`,
+#'   `age`, `sexe` et `maturite`.
+#'
+#' @return Une liste contenant :
 #' \describe{
+#'   \item{success}{Indique si le tableau a pu être produit}
 #'   \item{data}{Tableau brut (`data.frame`) des statistiques morphologiques par groupe}
 #'   \item{flextable}{Tableau mis en forme avec `flextable` pour affichage ou export}
+#'   \item{message}{Message explicatif si l'analyse n'est pas disponible}
 #' }
 #'
-#' @importFrom tidyselect starts_with ends_with
-#' @importFrom dplyr arrange recode filter bind_rows mutate inner_join rename_with group_by summarise sym
+#' @importFrom tidyselect ends_with
+#' @importFrom dplyr inner_join mutate rename rename_with across
 #' @importFrom tibble tibble
-#' @importFrom flextable flextable merge_h set_header_df border
+#' @importFrom flextable flextable merge_h set_header_df border set_caption
 #' @importFrom officer fp_border
 #' @importFrom checkmate assert_data_frame assert_numeric assert_subset
 #'
@@ -28,41 +34,76 @@
 #'   sexe = c("M", "F", "F", "M", "IND"),
 #'   maturite = c("O", "O", "N", "N", "IND")
 #' )
+#'
 #' res <- taille_masse_age(data_exemple)
 #' res$data
 #' if (requireNamespace("flextable", quietly = TRUE)) res$flextable
+#'
 #' @export
 taille_masse_age <- function(data) {
   
   # Validation des données ----
-  assert_data_frame(data, min.rows = 1)
+  assert_data_frame(data)
   
   colonnes_requises <- c("ltm", "masse", "age", "sexe", "maturite")
   assert_subset(colonnes_requises, colnames(data))
   
-  assert_numeric(data$ltm, null.ok = FALSE)
-  assert_numeric(data$masse, null.ok = FALSE)
-  assert_numeric(data$age, null.ok = FALSE)
+  assert_numeric(data$ltm, null.ok = TRUE)
+  assert_numeric(data$masse, null.ok = TRUE)
+  assert_numeric(data$age, null.ok = TRUE)
   
+  # Cas sans ligne ----
+  if (nrow(data) == 0) {
+    return(list(
+      success = FALSE,
+      message = "Aucun spécimen valide disponible pour produire le tableau de taille, masse et âge.",
+      data = NULL,
+      flextable = NULL
+    ))
+  }
+  
+  # Cas sans donnée exploitable ----
   if (all(is.na(data$ltm)) && all(is.na(data$masse)) && all(is.na(data$age))) {
-    stop("Aucune donnée disponible pour les variables ltm, masse ou age.")
+    return(list(
+      success = FALSE,
+      data = NULL,
+      flextable = NULL,
+      message = paste(
+        "Aucune donnée exploitable n'est disponible pour les variables",
+        "ltm, masse et age."
+      )
+    ))
   }
   
   # Calcul des statistiques morphologiques ----
-  table_ltm   <- regrouper_stats_morpho(data, "ltm")   |> rename_with(~ paste0("ltm_", .), -sexe)
-  table_masse <- regrouper_stats_morpho(data, "masse") |> rename_with(~ paste0("masse_", .), -sexe)
-  table_age   <- regrouper_stats_morpho(data, "age")  |> rename_with(~ paste0("age_", .), -sexe)
+  table_ltm <- regrouper_stats_morpho(data, "ltm") |>
+    rename_with(~ paste0("ltm_", .), -sexe)
+  
+  table_masse <- regrouper_stats_morpho(data, "masse") |>
+    rename_with(~ paste0("masse_", .), -sexe)
+  
+  table_age <- regrouper_stats_morpho(data, "age") |>
+    rename_with(~ paste0("age_", .), -sexe)
   
   # Fusion des tableaux ----
   table_resultats <- table_ltm |>
     inner_join(table_masse, by = "sexe") |>
     inner_join(table_age, by = "sexe") |>
     rename(Sexe = sexe) |>
-    mutate(across(ends_with(c("min", "max", "moy", "e_t")),
-                  ~ ifelse(. %in% c("Inf", "-Inf") | is.na(.), "-", .)))
+    mutate(
+      across(
+        ends_with(c("min", "max", "moy", "e_t")),
+        ~ ifelse(is.na(.), "-", as.character(.))
+      ),
+      across(
+        c(ltm_nb, masse_nb, age_nb),
+        ~ ifelse(is.na(.), "-", as.character(.))
+      )
+    )
   
   # Création du tableau flextable ----
   bordure_normale <- fp_border(width = 1)
+  
   en_tete <- tibble(
     col_keys = names(table_resultats),
     Niveau1 = c("Groupe", rep("LTMax (mm)", 5), rep("Masse (g)", 5), rep("Âge", 5)),
@@ -70,13 +111,12 @@ taille_masse_age <- function(data) {
   )
   
   table_flextable <- table_resultats |>
-    flextable()|>
+    flextable() |>
     set_header_df(mapping = en_tete, key = "col_keys") |>
     merge_h(part = "header") |>
     border(i = 2, border.bottom = bordure_normale, part = "header") |>
     set_caption("Aperçu des données morphologiques") |>
     style_flextable_aquapop()
-  
   
   for (col in c("ltm_max", "masse_max")) {
     table_flextable <- table_flextable |>
@@ -85,16 +125,22 @@ taille_masse_age <- function(data) {
   }
   
   ligne_bloc_repro <- which(table_resultats$Sexe == "Reprod. actifs femelles")
+  
   if (length(ligne_bloc_repro) == 1) {
     table_flextable <- table_flextable |>
-      border(i = ligne_bloc_repro - 1, border.bottom = bordure_normale, part = "body")
+      border(
+        i = ligne_bloc_repro - 1,
+        border.bottom = bordure_normale,
+        part = "body"
+      )
   }
   
-  
-  # Retour de la liste des objets ----
+  # Retour ----
   return(list(
+    success = TRUE,
     data = table_resultats,
-    flextable = table_flextable
+    flextable = table_flextable,
+    message = NULL
   ))
 }
 
@@ -127,10 +173,10 @@ regrouper_stats_morpho <- function(data, var) {
       sexe = as.character(sexe),
       sexe = ifelse(is.na(sexe), "Tous", sexe),
       sexe = recode(sexe,
-                           "M"   = "Mâle",
-                           "F"   = "Femelle",
-                           "IND" = "Sexe inconnu",
-                           .default = sexe),
+                    "M"   = "Mâle",
+                    "F"   = "Femelle",
+                    "IND" = "Sexe inconnu",
+                    .default = sexe),
       sexe = factor(sexe, levels = c(
         "Tous", "Femelle", "Mâle", "Sexe inconnu",
         "Reprod. actifs femelles", "Reprod. actifs mâles",

@@ -86,6 +86,7 @@ table_biomasse$flextable
 taille_masse_age_res <- taille_masse_age(data = specimen_valide)
 taille_masse_age_res$data
 taille_masse_age_res$flextable
+taille_masse_age_res$message
 
 # Structure de taille ----
 structure_taille_res <- structure_taille(specimen_valide, groupement = "tous")
