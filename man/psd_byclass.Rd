@@ -7,16 +7,16 @@
 psd_byclass(data)
 }
 \arguments{
-\item{data}{Un \code{data.frame} filtré pour une seule espèce, contenant les colonnes \code{ltm} (longueur en mm)
-et \code{sp} (code espèce). La variable \code{ltm} est utilisée pour attribuer chaque poisson à une classe PSD.}
+\item{data}{Un \code{data.frame} filtré pour une seule espèce, contenant les colonnes \code{ltm} et \code{sp}.}
 }
 \value{
-Une liste contenant :
+Une liste contenant :
 \describe{
-\item{\code{data}}{Un \code{data.frame} résumant les fréquences par classe PSD, avec colonnes \code{classe},
-\code{intervalle}, \code{n} et \code{freq}.}
-\item{\code{flextable}}{Une version formatée du tableau (pour Word, Shiny, etc.).}
-\item{\code{plot}}{Un graphique en barres montrant la fréquence relative par classe.}
+\item{success}{Indique si l'analyse a pu être produite}
+\item{data}{Un \code{data.frame} résumant les fréquences par classe PSD}
+\item{flextable}{Une version formatée du tableau}
+\item{plot}{Un graphique en barres montrant la fréquence relative par classe}
+\item{message}{Message explicatif si l'analyse n'est pas disponible}
 }
 }
 \description{
@@ -29,7 +29,6 @@ La fonction retourne un tableau de synthèse prêt à l'usage, un graphique et u
 formaté pour des rapports Word ou des interfaces Shiny.
 }
 \examples{
-# Exemple avec données simulées
 data_ex <- tibble::tibble(
   sp = rep("SANA", 100),
   ltm = sample(100:1000, 100, replace = TRUE)

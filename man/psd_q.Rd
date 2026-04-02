@@ -7,35 +7,29 @@
 psd_q(data)
 }
 \arguments{
-\item{data}{Un \code{data.frame} contenant les données pour une seule espèce.
-Doit inclure les colonnes :
-- \code{ltm} : Longueur totale (en mm)
-- \code{sp}  : Code de l'espèce (ex : \code{"SAFO"})}
+\item{data}{Un \code{data.frame} contenant les données pour une seule espèce.}
 }
 \value{
 Une liste nommée contenant :
 \describe{
-\item{\code{data}}{Un \code{data.frame} avec la valeur de l'indice PSD-Q et son intervalle de confiance à 95 \%.}
-\item{\code{flextable}}{Une version formatée (\code{flextable}) du tableau pour affichage ou export.}
+\item{success}{Indique si l'analyse a pu être produite}
+\item{data}{Un \code{data.frame} avec la valeur de l'indice PSD-Q et son intervalle de confiance à 95 \%}
+\item{flextable}{Une version formatée du tableau}
+\item{message}{Message explicatif si l'analyse n'est pas disponible}
 }
 }
 \description{
 Cette fonction calcule l'indice PSD-Q pour une espèce cible, à partir des longueurs des spécimens capturés.
 L'indice PSD-Q correspond à la proportion d'individus situés dans les classes de qualité (Q), définies
 par des seuils spécifiques à chaque espèce.
-La fonction utilise les seuils extraits par \code{get_info_pen()} et retourne l'estimation ponctuelle
-ainsi qu'un intervalle de confiance à 95 \%, calculé selon une méthode binomiale.
 }
 \examples{
-# Exemple avec données simulées
 set.seed(123)
 data_ex <- data.frame(
   ltm = stats::rnorm(100, mean = 250, sd = 50),
   sp = "SAFO"
 )
 data_ex <- dplyr::filter(data_ex, ltm > 0)
-psd_q_res <- psd_q(data_ex)
-psd_q_res$data
-psd_q_res$flextable
+psd_q(data_ex)
 
 }

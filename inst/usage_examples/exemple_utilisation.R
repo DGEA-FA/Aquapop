@@ -8,8 +8,8 @@ devtools::load_all()
 
 path     <- "inst/extdata/Extract_IFA_AquaPop_2026-02-27.xlsx"
 typ_pech <- "PENOF"
-no_lac   <- "19640"
-annee    <- 2004
+no_lac   <- "39413"
+annee    <- 1994
 
  # 01589, PENT 2012
 
