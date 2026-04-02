@@ -28,7 +28,7 @@ test_that("mortalite_prepare_corr gère les doublons correctement", {
   expect_equal(res$number[res$age == 6], 1)
 })
 
-test_that("mortalite_prepare_corr retourne les âges dans l’intervalle [peak_plus, max]", {
+test_that("mortalite_prepare_corr retourne les âges dans l'intervalle [peak_plus, max]", {
   data <- data.frame(age = c(2, 3, 4, 5, 6, 7, 8))
   res <- mortalite_prepare_corr(data, age_peak_plus = 5, age_max = 8)
   
@@ -45,7 +45,7 @@ test_that("mortalite_prepare_corr échoue si la colonne age ne contient que des 
   data <- data.frame(age = c(NA, NA, NA))
   expect_error(
     mortalite_prepare_corr(data, age_peak_plus = 2, age_max = 5),
-    regexp = "Aucune valeur d’âge valide"
+    regexp = "Aucune valeur d'âge valide"
   )
 })
 

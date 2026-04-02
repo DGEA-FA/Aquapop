@@ -12,7 +12,7 @@
 #'     \item{ajustement_hnp}{Pourcentage d'ajustement HNP (numérique).}
 #'   }
 #'
-#' @return Une chaîne de caractères correspondant au nom du meilleur modèle, ou `NA` si aucun modèle n’est sélectionnable.
+#' @return Une chaîne de caractères correspondant au nom du meilleur modèle, ou `NA` si aucun modèle n'est sélectionnable.
 #' @export
 #'
 #' @importFrom dplyr filter pull
@@ -28,7 +28,7 @@
 mortalite_select_best_modele <- function(tablemodele) {
   # Validation ----
   if (!all(c("methode", "aicc","ajustement_hnp") %in% names(tablemodele))) {
-    stop("Le tableau fourni n’est pas valide. Il doit contenir les colonnes : 'methode', 'aicc' et 'ajustement_hnp'.")
+    stop("Le tableau fourni n'est pas valide. Il doit contenir les colonnes : 'methode', 'aicc' et 'ajustement_hnp'.")
   }
   
   # Filtrage des modèles bien ajustés (HNP < 10) ----
@@ -48,7 +48,7 @@ mortalite_select_best_modele <- function(tablemodele) {
   
   # Retourner la sélection (ou NA) ----
   if (length(selection) == 0 || is.na(selection[1])) {
-    warning("Aucun modèle n’a pu être sélectionné.")
+    warning("Aucun modèle n'a pu être sélectionné.")
     return(NA)
   }
   

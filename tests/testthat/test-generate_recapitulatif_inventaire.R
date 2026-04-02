@@ -29,9 +29,9 @@ test_that("generate_recapitulatif_inventaire() retourne un tableau conforme", {
   # --- Vérification 3 : lignes attendues ---
   lignes_attendues <- c(
     "Nom du lac", "No de lac", "Superficie du lac (ha)",
-    "Année(s) de l’inventaire (aaaa)",
-    "Date de début de l’inventaire (aaaa-mm-jj)",
-    "Date de fin de l’inventaire (aaaa-mm-jj)",
+    "Année(s) de l'inventaire (aaaa)",
+    "Date de début de l'inventaire (aaaa-mm-jj)",
+    "Date de fin de l'inventaire (aaaa-mm-jj)",
     "N stations aléatoires", "N stations dirigées",
     "N stations valides", "N stations invalides",
     "N stations total"
@@ -50,11 +50,11 @@ test_that("generate_recapitulatif_inventaire() retourne un tableau conforme", {
   station_na_dates$date_leve <- NA
   recap_na <- generate_recapitulatif_inventaire(data_lac, station_na_dates)
   expect_equal(
-    recap_na[recap_na$`Type de pêche` == "Date de début de l’inventaire (aaaa-mm-jj)", "Filet", drop = TRUE],
+    recap_na[recap_na$`Type de pêche` == "Date de début de l'inventaire (aaaa-mm-jj)", "Filet", drop = TRUE],
     "Aucune donnée disponible"
   )
   expect_equal(
-    recap_na[recap_na$`Type de pêche` == "Date de fin de l’inventaire (aaaa-mm-jj)", "Filet", drop = TRUE],
+    recap_na[recap_na$`Type de pêche` == "Date de fin de l'inventaire (aaaa-mm-jj)", "Filet", drop = TRUE],
     "Aucune donnée disponible"
   )
 })

@@ -1,12 +1,12 @@
-#' Trouver l’âge maximal dans les données de mortalité
+#' Trouver l'âge maximal dans les données de mortalité
 #'
-#' Cette fonction retourne l’âge maximal observé dans les données de mortalité, en ignorant les valeurs manquantes.
+#' Cette fonction retourne l'âge maximal observé dans les données de mortalité, en ignorant les valeurs manquantes.
 #' Elle vérifie également la présence de la colonne `age` et la présence de données valides.
 #'
 #' @importFrom checkmate assert_subset assert_data_frame
 #' @param data Un `data.frame` contenant les données de spécimens. Doit inclure une colonne nommée `age` de type numérique ou entier.
 #'
-#' @return Un entier (`integer`) correspondant à l’âge maximal observé. Retourne `NA_integer_` si aucun âge valide n’est présent.
+#' @return Un entier (`integer`) correspondant à l'âge maximal observé. Retourne `NA_integer_` si aucun âge valide n'est présent.
 #'
 #' @examples
 #' # Exemple avec des âges valides
@@ -29,11 +29,11 @@ mortalite_get_age_max <- function(data) {
   # Extraire les âges sans NA
   ages_cleaned <- na.omit(data$age)
   
-  # Vérifier qu’il reste des valeurs valides
+  # Vérifier qu'il reste des valeurs valides
   if (length(ages_cleaned) == 0) {
     return(NA_integer_)
   }
   
-  # Retourner l’âge maximal
+  # Retourner l'âge maximal
   return(max(ages_cleaned))
 }

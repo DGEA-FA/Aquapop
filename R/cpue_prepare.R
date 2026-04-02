@@ -1,6 +1,6 @@
 #' Préparer les données agrégées de CPUE par station
 #'
-#' Cette fonction prépare un tableau de CPUE (captures par unité d'effort) à l’échelle de la station, 
+#' Cette fonction prépare un tableau de CPUE (captures par unité d'effort) à l'échelle de la station, 
 #' à partir des données de captures et des spécimens observés. Elle permet de calculer soit la CPUE totale,
 #' soit la CPUE restreinte aux femelles matures, selon l’argument `group`.
 #'

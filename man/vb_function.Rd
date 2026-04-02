@@ -19,5 +19,5 @@ vb_function(age, linf, k, t0)
 Longueur théorique à cet âge
 }
 \description{
-Calcule la longueur en fonction de l’âge selon le modèle de Von Bertalanffy.
+Calcule la longueur en fonction de l'âge selon le modèle de Von Bertalanffy.
 }

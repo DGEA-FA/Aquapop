@@ -1,16 +1,16 @@
 #' Structure d'âge des spécimens : graphique, tableau brut et tableau formaté
 #'
-#' Cette fonction produit la distribution d’âge d’une espèce sous forme de graphique
-#' (histogramme), d’un tableau brut (`data.frame`) et d’un tableau formaté
+#' Cette fonction produit la distribution d'âge d'une espèce sous forme de graphique
+#' (histogramme), d'un tableau brut (`data.frame`) et d'un tableau formaté
 #' (`flextable`). Elle prend en charge un regroupement facultatif par sexe,
 #' marquage ou maturité.
 #'
 #' Si aucune donnée exploitable n'est disponible (ex. : aucun spécimen ou tous
 #' les âges sont manquants), la fonction retourne un objet structuré avec
-#' `success = FALSE`, sans générer d’erreur.
+#' `success = FALSE`, sans générer d'erreur.
 #'
 #' @param data Un `data.frame` contenant les colonnes suivantes :
-#'   - `sp` : code de l’espèce (doit être unique),
+#'   - `sp` : code de l'espèce (doit être unique),
 #'   - `age` : âge numérique du spécimen,
 #'   - la variable de regroupement choisie (`sexe`, `marquage` ou `maturite`),
 #'     si applicable.
@@ -20,10 +20,10 @@
 #' @return Une liste nommée contenant :
 #' \describe{
 #'   \item{success}{Booléen indiquant si le graphique a pu être produit}
-#'   \item{plot}{Objet `ggplot` représentant l’histogramme, ou `NULL` si non disponible}
+#'   \item{plot}{Objet `ggplot` représentant l'histogramme, ou `NULL` si non disponible}
 #'   \item{data}{`data.frame` avec les âges comptés}
 #'   \item{flextable}{Tableau formaté avec `flextable`, prêt à être affiché ou exporté}
-#'   \item{message}{Message explicatif si l’analyse n’est pas disponible}
+#'   \item{message}{Message explicatif si l'analyse n'est pas disponible}
 #' }
 #'
 #' @importFrom dplyr bind_rows count filter mutate

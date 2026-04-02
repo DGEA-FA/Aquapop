@@ -1,15 +1,15 @@
 #' Tester la sur-dispersion dans un modèle de Poisson (mortalité)
 #'
 #' Cette fonction applique un test de sur-dispersion (`dispersiontest()`)
-#' à un modèle de Poisson ajusté sur les fréquences d’âge (`number ~ age`).
+#' à un modèle de Poisson ajusté sur les fréquences d'âge (`number ~ age`).
 #' Elle retourne :
 #' - la valeur numérique de dispersion,
-#' - un message d’interprétation textuel,
+#' - un message d'interprétation textuel,
 #' - un graphique des résidus de Pearson vs les valeurs ajustées.
 #'
 #' @param data Un `data.frame` contenant au minimum deux colonnes :
-#'   - `age` : l’âge des poissons (entier ou numérique),
-#'   - `number` : la fréquence d’individus observés pour chaque âge.
+#'   - `age` : l'âge des poissons (entier ou numérique),
+#'   - `number` : la fréquence d'individus observés pour chaque âge.
 #'
 #' @return Une liste nommée avec trois éléments :
 #'   - `dispersion` : (numérique) valeur estimée de dispersion ;

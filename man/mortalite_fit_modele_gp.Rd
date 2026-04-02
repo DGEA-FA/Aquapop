@@ -10,28 +10,28 @@ mortalite_fit_modele_gp(df_age_etendue)
 \item{df_age_etendue}{Un \code{data.frame} produit par \code{mortalite_prepare_extended()} contenant au minimum :
 \describe{
 \item{age}{Âge des individus}
-\item{number}{Nombre d’individus observés à cet âge}
+\item{number}{Nombre d'individus observés à cet âge}
 }}
 }
 \value{
-Un \code{data.frame} d’une ligne contenant :
+Un \code{data.frame} d'une ligne contenant :
 \describe{
 \item{methode}{Modèle utilisé (\code{"gp"})}
-\item{ajustement_hnp}{Pourcentage moyen d’observations hors bande (HNP)}
-\item{aicc}{Critère d’information corrigé aicc}
+\item{ajustement_hnp}{Pourcentage moyen d'observations hors bande (HNP)}
+\item{aicc}{Critère d'information corrigé aicc}
 \item{Z}{Coefficient d'âge (valeur absolue)}
 \item{SE}{Erreur standard de Z}
 \item{A}{Taux de mortalité annuel estimé (\%)}
 \item{IC 95\%}{Intervalle de confiance de A (bornes min–max)}
-\item{commentaire}{Appréciation qualitative de l’ajustement}
+\item{commentaire}{Appréciation qualitative de l'ajustement}
 \item{convergence}{Convergence du modèle (booléen)}
-\item{nb_iterations_hnp}{Nombre d’itérations HNP effectuées}
+\item{nb_iterations_hnp}{Nombre d'itérations HNP effectuées}
 }
 }
 \description{
 Cette fonction ajuste un modèle de régression \code{glmmTMB} avec distribution GP (Generalized Poisson)
 sur des données de fréquence d'âge. Elle applique un test HNP (Half-Normal Plot) en 2 à 5 simulations,
-puis retourne les estimations du modèle et un commentaire sur la qualité de l’ajustement.
+puis retourne les estimations du modèle et un commentaire sur la qualité de l'ajustement.
 }
 \examples{
 df_fake <- tibble::tibble(age = 1:6, number = c(180, 120, 70, 40, 25, 10))

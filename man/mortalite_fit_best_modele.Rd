@@ -19,5 +19,5 @@ Un objet de classe \code{glm}, \code{glm.nb} ou \code{glmmTMB}, selon la méthod
 \description{
 Cette fonction ajuste les cinq modèles de mortalité (Poisson, NB1, NB2, CMP, GP),
 sélectionne automatiquement le meilleur via \code{mortalite_select_best_modele()},
-et retourne l’objet \code{modele} correspondant. Si \code{methode} est précisé, il est utilisé directement.
+et retourne l'objet \code{modele} correspondant. Si \code{methode} est précisé, il est utilisé directement.
 }

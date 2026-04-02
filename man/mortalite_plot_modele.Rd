@@ -2,14 +2,14 @@
 % Please edit documentation in R/mortalite_plot_modele.R
 \name{mortalite_plot_modele}
 \alias{mortalite_plot_modele}
-\title{Tracer la structure d’âge observée et la courbe du modèle de mortalité sélectionné}
+\title{Tracer la structure d'âge observée et la courbe du modèle de mortalité sélectionné}
 \usage{
 mortalite_plot_modele(specimen, modele, info_modele)
 }
 \arguments{
-\item{specimen}{Un \code{data.frame} contenant au moins les colonnes \code{sp} (code de l’espèce) et \code{age}.}
+\item{specimen}{Un \code{data.frame} contenant au moins les colonnes \code{sp} (code de l'espèce) et \code{age}.}
 
-\item{modele}{Un objet de modèle ajusté (\code{glm}, \code{glm.nb}, \code{glmmTMB}, etc.) pour prédire la fréquence selon l’âge.}
+\item{modele}{Un objet de modèle ajusté (\code{glm}, \code{glm.nb}, \code{glmmTMB}, etc.) pour prédire la fréquence selon l'âge.}
 
 \item{info_modele}{Un \code{data.frame} issu de \code{mortalite_compare_modele()$data} contenant les estimations de A et IC 95\%.}
 }
@@ -17,9 +17,9 @@ mortalite_plot_modele(specimen, modele, info_modele)
 Un objet \code{ggplot2} combinant histogramme observé et courbe prédite.
 }
 \description{
-Cette fonction affiche l’histogramme des âges issus du tableau \code{specimen} et y superpose
-la courbe prédite à partir d’un modèle de mortalité ajusté (\code{modele}). Le style graphique
-est cohérent avec les autres figures de structure d’âge (voir \code{structure_age()}).
+Cette fonction affiche l'histogramme des âges issus du tableau \code{specimen} et y superpose
+la courbe prédite à partir d'un modèle de mortalité ajusté (\code{modele}). Le style graphique
+est cohérent avec les autres figures de structure d'âge (voir \code{structure_age()}).
 }
 \examples{
 # Exemple fictif avec données simulées

@@ -1,6 +1,6 @@
 #' psd UI Function
 #'
-#' @description Un module Shiny pour afficher l’indice PSD et les répartitions par classe.
+#' @description Un module Shiny pour afficher l'indice PSD et les répartitions par classe.
 #'
 #' @param id Identifiant du module.
 #'
@@ -14,9 +14,9 @@ mod_psd_ui <- function(id) {
     title = "PSD",
     
     # Texte explicatif
-    p("Autrefois appelé *Proportional stock density*, l’indice *Proportional size distribution* est un descripteur 
+    p("Autrefois appelé *Proportional stock density*, l'indice *Proportional size distribution* est un descripteur 
       numérique de la distribution de fréquence des longueurs. Il permet de comparer de manière objective la 
-      structure de taille de deux populations d’une même espèce (ou d’une même population lors de deux inventaires 
+      structure de taille de deux populations d'une même espèce (ou d'une même population lors de deux inventaires 
       distincts). Les classes de taille sont établies en fonction de la taille record enregistrée pour une espèce 
       et les autres classes sont dérivées à partir de celle-ci (Gabelhouse 1984)."),
     
@@ -51,7 +51,7 @@ mod_psd_server <- function(id, specimen, filename_suffix) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
-    # Résultat de l’indice Q
+    # Résultat de l'indice Q
     psd_q_res <- reactive({
       req(specimen())
       psd_q(data = specimen())

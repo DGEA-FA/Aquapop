@@ -9,7 +9,7 @@ structure_age(data, groupement = "tous")
 \arguments{
 \item{data}{Un \code{data.frame} contenant les colonnes suivantes :
 \itemize{
-\item \code{sp} : code de l’espèce (doit être unique),
+\item \code{sp} : code de l'espèce (doit être unique),
 \item \code{age} : âge numérique du spécimen,
 \item la variable de regroupement choisie (\code{sexe}, \code{marquage} ou \code{maturite}),
 si applicable.
@@ -22,22 +22,22 @@ graphique : \code{"tous"} (par défaut), \code{"sexe"}, \code{"maturite"} ou \co
 Une liste nommée contenant :
 \describe{
 \item{success}{Booléen indiquant si le graphique a pu être produit}
-\item{plot}{Objet \code{ggplot} représentant l’histogramme, ou \code{NULL} si non disponible}
+\item{plot}{Objet \code{ggplot} représentant l'histogramme, ou \code{NULL} si non disponible}
 \item{data}{\code{data.frame} avec les âges comptés}
 \item{flextable}{Tableau formaté avec \code{flextable}, prêt à être affiché ou exporté}
-\item{message}{Message explicatif si l’analyse n’est pas disponible}
+\item{message}{Message explicatif si l'analyse n'est pas disponible}
 }
 }
 \description{
-Cette fonction produit la distribution d’âge d’une espèce sous forme de graphique
-(histogramme), d’un tableau brut (\code{data.frame}) et d’un tableau formaté
+Cette fonction produit la distribution d'âge d'une espèce sous forme de graphique
+(histogramme), d'un tableau brut (\code{data.frame}) et d'un tableau formaté
 (\code{flextable}). Elle prend en charge un regroupement facultatif par sexe,
 marquage ou maturité.
 }
 \details{
 Si aucune donnée exploitable n'est disponible (ex. : aucun spécimen ou tous
 les âges sont manquants), la fonction retourne un objet structuré avec
-\code{success = FALSE}, sans générer d’erreur.
+\code{success = FALSE}, sans générer d'erreur.
 }
 \examples{
 df <- data.frame(

@@ -3,7 +3,7 @@ test_that("mortalite_phrase_resume fonctionne dans les cas standards", {
   
   expect_equal(
     mortalite_phrase_resume(df, "NB1"),
-    "Le modèle NB1 décrit le mieux la mortalité de la population. La mortalité annuelle s’élève à 37 %."
+    "Le modèle NB1 décrit le mieux la mortalité de la population. La mortalité annuelle s'élève à 37 %."
   )
 })
 
@@ -21,7 +21,7 @@ test_that("mortalite_phrase_resume retourne une phrase partielle si A est manqua
   
   expect_match(
     mortalite_phrase_resume(df, "NB1"),
-    "la mortalité annuelle n’est pas disponible"
+    "la mortalité annuelle n'est pas disponible"
   )
 })
 

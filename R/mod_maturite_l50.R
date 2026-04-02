@@ -1,6 +1,6 @@
 #' maturite_l50 UI Function
 #'
-#' @description Module Shiny pour la sélection et l’affichage des modèles L50.
+#' @description Module Shiny pour la sélection et l'affichage des modèles L50.
 #'
 #' @param id Identifiant du module.
 #'

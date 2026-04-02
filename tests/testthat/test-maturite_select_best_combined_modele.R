@@ -47,7 +47,7 @@ test_that("Retourne le premier modèle si égalité de aicc", {
   
   res <- maturite_select_best_combined_modele(df)
   expect_true(all(res$best_model %in% c("C_TLO", "C_ADD")))
-  expect_length(res$best_model, 1)  # optionnel si vous forcez la sélection d’un seul
+  expect_length(res$best_model, 1)  # optionnel si vous forcez la sélection d'un seul
   expect_true(any(stringr::str_detect(res$message, paste0("Modèle combiné sélectionné : ", res$best_model))))
   
 })

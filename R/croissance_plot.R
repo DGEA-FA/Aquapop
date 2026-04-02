@@ -1,15 +1,15 @@
 #' Tracer la courbe de croissance ajustée pour un modèle sélectionné
 #'
-#' Cette fonction génère un graphique illustrant la courbe de croissance ajustée d’un groupe de spécimens,
+#' Cette fonction génère un graphique illustrant la courbe de croissance ajustée d'un groupe de spécimens,
 #' selon le modèle choisi parmi : Von Bertalanffy, Gompertz ou Logistique.
-#' Le graphique comprend les points observés (`ltm` vs `age`), la courbe ajustée, l’intervalle de confiance,
-#' ainsi qu’une ligne horizontale représentant la valeur asymptotique de croissance (`L∞`).
+#' Le graphique comprend les points observés (`ltm` vs `age`), la courbe ajustée, l'intervalle de confiance,
+#' ainsi qu'une ligne horizontale représentant la valeur asymptotique de croissance (`L∞`).
 #'
 #' @param dfspecimen Un `data.frame` de spécimens, contenant au minimum les colonnes `ltm`, `age` et `no_specimen`.
 #' @param tablemodele Un `data.frame` contenant les paramètres du modèle ajusté, incluant `methode`, `l_inf`, `k`, `t0` et `convergence`.
 #' @param modele Une chaîne de caractères indiquant le modèle à utiliser : `"Von Bertalanffy"`, `"Gompertz"` ou `"Logistique"`.
 #'
-#' @return Un objet `ggplot` représentant la courbe de croissance ajustée, avec les points observés et l’intervalle de confiance.
+#' @return Un objet `ggplot` représentant la courbe de croissance ajustée, avec les points observés et l'intervalle de confiance.
 #' Retourne `NULL` avec un avertissement si le graphique ne peut pas être produit.
 #'
 #' @importFrom ggplot2 ggplot aes geom_point geom_line geom_ribbon labs scale_y_continuous scale_x_continuous annotate
@@ -58,7 +58,7 @@ croissance_plot <- function(dfspecimen, tablemodele, modele) {
   
   if (is.null(modele) || length(modele) == 0 || is.na(modele)) {
     warning(
-      "Le graphique de croissance ne peut pas être produit, car aucun modèle valide n’a été sélectionné."
+      "Le graphique de croissance ne peut pas être produit, car aucun modèle valide n'a été sélectionné."
     )
     return(NULL)
   }
@@ -88,7 +88,7 @@ croissance_plot <- function(dfspecimen, tablemodele, modele) {
   
   if (nrow(data_clean) == 0) {
     warning(
-      "Le graphique de croissance ne peut pas être produit, car aucune donnée valide de longueur et d’âge n’est disponible."
+      "Le graphique de croissance ne peut pas être produit, car aucune donnée valide de longueur et d'âge n'est disponible."
     )
     return(NULL)
   }
@@ -106,7 +106,7 @@ croissance_plot <- function(dfspecimen, tablemodele, modele) {
   
   if (!identical(model_params$convergence[[1]], "Convergé")) {
     warning(
-      "Le graphique de croissance ne peut pas être produit, car le modèle sélectionné n’a pas convergé."
+      "Le graphique de croissance ne peut pas être produit, car le modèle sélectionné n'a pas convergé."
     )
     return(NULL)
   }
@@ -164,7 +164,7 @@ croissance_plot <- function(dfspecimen, tablemodele, modele) {
   
   if (is.null(model_fit)) {
     warning(
-      "Le graphique de croissance ne peut pas être produit, car l’ajustement du modèle a échoué."
+      "Le graphique de croissance ne peut pas être produit, car l'ajustement du modèle a échoué."
     )
     return(NULL)
   }
@@ -180,7 +180,7 @@ croissance_plot <- function(dfspecimen, tablemodele, modele) {
   
   if (is.null(predictions)) {
     warning(
-      "Le graphique de croissance ne peut pas être produit, car les prédictions du modèle n’ont pas pu être calculées."
+      "Le graphique de croissance ne peut pas être produit, car les prédictions du modèle n'ont pas pu être calculées."
     )
     return(NULL)
   }

@@ -10,7 +10,7 @@
 #'
 #' Si `vbStarts()` échoue à produire des valeurs initiales, une stratégie de
 #' rechange est utilisée avec :
-#' - `Linf` = longueur du plus grand spécimen de l’échantillon
+#' - `Linf` = longueur du plus grand spécimen de l'échantillon
 #' - `K = 0.3`
 #' - `t0 = 0`
 #'

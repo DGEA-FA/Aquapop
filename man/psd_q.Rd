@@ -2,7 +2,7 @@
 % Please edit documentation in R/psd_q.R
 \name{psd_q}
 \alias{psd_q}
-\title{Calculer l’indice PSD-Q global (Proportional Size Distribution – Quality)}
+\title{Calculer l'indice PSD-Q global (Proportional Size Distribution – Quality)}
 \usage{
 psd_q(data)
 }
@@ -10,21 +10,21 @@ psd_q(data)
 \item{data}{Un \code{data.frame} contenant les données pour une seule espèce.
 Doit inclure les colonnes :
 - \code{ltm} : Longueur totale (en mm)
-- \code{sp}  : Code de l’espèce (ex : \code{"SAFO"})}
+- \code{sp}  : Code de l'espèce (ex : \code{"SAFO"})}
 }
 \value{
 Une liste nommée contenant :
 \describe{
-\item{\code{data}}{Un \code{data.frame} avec la valeur de l’indice PSD-Q et son intervalle de confiance à 95 \%.}
+\item{\code{data}}{Un \code{data.frame} avec la valeur de l'indice PSD-Q et son intervalle de confiance à 95 \%.}
 \item{\code{flextable}}{Une version formatée (\code{flextable}) du tableau pour affichage ou export.}
 }
 }
 \description{
-Cette fonction calcule l’indice PSD-Q pour une espèce cible, à partir des longueurs des spécimens capturés.
-L’indice PSD-Q correspond à la proportion d’individus situés dans les classes de qualité (Q), définies
+Cette fonction calcule l'indice PSD-Q pour une espèce cible, à partir des longueurs des spécimens capturés.
+L'indice PSD-Q correspond à la proportion d'individus situés dans les classes de qualité (Q), définies
 par des seuils spécifiques à chaque espèce.
-La fonction utilise les seuils extraits par \code{get_info_pen()} et retourne l’estimation ponctuelle
-ainsi qu’un intervalle de confiance à 95 \%, calculé selon une méthode binomiale.
+La fonction utilise les seuils extraits par \code{get_info_pen()} et retourne l'estimation ponctuelle
+ainsi qu'un intervalle de confiance à 95 \%, calculé selon une méthode binomiale.
 }
 \examples{
 # Exemple avec données simulées

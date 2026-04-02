@@ -1,8 +1,8 @@
-#' Calculer l’indice de condition relatif (Wr) pour une espèce
+#' Calculer l'indice de condition relatif (Wr) pour une espèce
 #'
-#' Cette fonction calcule l’indice de condition relatif (Wr) à partir des longueurs et masses des spécimens d’une espèce donnée.
+#' Cette fonction calcule l'indice de condition relatif (Wr) à partir des longueurs et masses des spécimens d'une espèce donnée.
 #' Elle retourne un tableau de synthèse, une version formatée (`flextable`), ainsi que deux graphiques illustrant les résultats
-#' : l’un selon la longueur individuelle, l’autre par classe de taille.
+#' : l'un selon la longueur individuelle, l'autre par classe de taille.
 #'
 #' @param data Un `data.frame` contenant au minimum les colonnes suivantes :
 #' `sp`, `ltm` (longueur totale en mm), `masse` (masse en g) et `sexe`.
@@ -54,7 +54,7 @@ wri <- function(data) {
   constantes_wr <- get_wr_constants(espece)
   if (is.null(info_pen) || is.null(constantes_wr)) stop("Espèce non supportée.")
   
-  # ---- Calcul de l’indice Wr ----
+  # ---- Calcul de l'indice Wr ----
   
   data <- data |>
     filter(!is.na(ltm), !is.na(masse), ltm >= constantes_wr$min_TL) |>
@@ -214,7 +214,7 @@ wri <- function(data) {
 
 
 
-#' Résumer les résultats d’un modèle Wr par groupe (sexe ou classe)
+#' Résumer les résultats d'un modèle Wr par groupe (sexe ou classe)
 #'
 #' Cette fonction applique un modèle linéaire et génère un tableau de prédictions
 #' avec intervalles de confiance et effectifs pour chaque modalité du groupe spécifié.
@@ -246,10 +246,10 @@ resumer_wr_par_groupe <- function(mod, var) {
 
 #' Récupérer les constantes Wr pour une espèce donnée
 #'
-#' Cette fonction retourne les coefficients de référence pour le calcul de l’indice
+#' Cette fonction retourne les coefficients de référence pour le calcul de l'indice
 #' de condition (Wr) pour une espèce supportée, à partir de la table `wr_constants`.
 #'
-#' @param espece Code d’espèce (ex: "SANA", "SAFO", "SAVI")
+#' @param espece Code d'espèce (ex: "SANA", "SAFO", "SAVI")
 #'
 #' @return Un `data.frame` avec les colonnes `min_TL`, `int`, `slope`, etc.
 #' @keywords internal

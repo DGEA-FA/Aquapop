@@ -136,7 +136,7 @@ test_that("croissance_plot() retourne NULL avec un warning si modele est NA", {
   
   expect_warning(
     g <- croissance_plot(specimen_data, model_table, NA_character_),
-    regexp = "aucun modèle valide n’a été sélectionné"
+    regexp = "aucun modèle valide n'a été sélectionné"
   )
   
   expect_null(g)
@@ -186,7 +186,7 @@ test_that("croissance_plot() retourne NULL avec un warning si le modèle n'a pas
   
   expect_warning(
     g <- croissance_plot(specimen_data, model_table, "Von Bertalanffy"),
-    regexp = "n’a pas convergé"
+    regexp = "n'a pas convergé"
   )
   
   expect_null(g)

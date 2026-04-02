@@ -1,6 +1,6 @@
 #' UI - Module CPUE / Abondance
 #'
-#' @description Panneau affichant les résultats de CPUE et du tableau d’abondance.
+#' @description Panneau affichant les résultats de CPUE et du tableau d'abondance.
 #'
 #' @param id Identifiant du module
 #'
@@ -13,13 +13,13 @@ mod_abondance_cpue_ui <- function(id) {
     title = "CPUE",
     
     p("Le tableau ci-dessous présente le nombre de captures de 
-      l’espèce visée selon la table *Récolte* et le nombre d’individus
+      l'espèce visée selon la table *Récolte* et le nombre d'individus
       dans la table *Spécimens*.  
       Si la récolte est plus élevée que le nombre de spécimens,
-      il peut s’agir d’un poisson échappé ou trop abîmé pour
+      il peut s'agir d'un poisson échappé ou trop abîmé pour
       prendre des mesures, etc. Si le nombre de spécimens est plus 
       élevé que la récolte, il y a erreur à corriger dans la base
-      de données. Les modèles d’abondance globale (cpue_tous)
+      de données. Les modèles d'abondance globale (cpue_tous)
       sont calculés à partir du nombre de captures indiqués 
       dans la *Récolte* alors que le tableau récapitulatif 
       est calculé à partir des données de la table *Spécimens*."),

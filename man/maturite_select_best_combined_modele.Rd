@@ -14,8 +14,8 @@ appliqué aux modèles combinés. Il doit inclure au minimum les colonnes :
 \value{
 Une liste contenant :
 \describe{
-\item{best_model}{Identifiant du meilleur modèle combiné (\code{modele_id}), ou \code{NULL} si aucun modèle n’est valide}
-\item{message}{Message interprétatif indiquant la sélection ou l’absence de modèles valides}
+\item{best_model}{Identifiant du meilleur modèle combiné (\code{modele_id}), ou \code{NULL} si aucun modèle n'est valide}
+\item{message}{Message interprétatif indiquant la sélection ou l'absence de modèles valides}
 }
 }
 \description{

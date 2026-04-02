@@ -43,5 +43,5 @@ test_that("déclenche une erreur si < 10 individus après nettoyage", {
     sexe = c("M", "F"),
     maturite = factor(c("O", "N"), levels = c("N", "O"), ordered = TRUE)
   )
-  expect_error(maturite_generate_modele(df_few), "Trop peu d’individus")
+  expect_error(maturite_generate_modele(df_few), "Trop peu d'individus")
 })

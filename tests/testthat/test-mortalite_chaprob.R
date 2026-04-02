@@ -39,6 +39,6 @@ test_that("mortalite_chaprob retourne une erreur avec un seul âge distinct", {
   specimen <- data.frame(age = c(5))
   expect_error(
     mortalite_chaprob(specimen, pp = 5, age_max = 5),
-    regexp = "au moins deux classes d’âge"
+    regexp = "au moins deux classes d'âge"
   )
 })

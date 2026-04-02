@@ -33,7 +33,7 @@ cpue_fit_modele_gp <- function(cpue_data) {
   
   convergence_flag <- model_gp$fit$convergence == 0
   
-  # --- Si le modèle n’a pas convergé : sortie neutralisée ---
+  # --- Si le modèle n'a pas convergé : sortie neutralisée ---
   if (!convergence_flag) {
     return(
       tibble(

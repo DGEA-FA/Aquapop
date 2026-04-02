@@ -1,4 +1,4 @@
-#' Créer un tableau d’abondance structuré par groupe biologique
+#' Créer un tableau d'abondance structuré par groupe biologique
 #'
 #' Cette fonction calcule les effectifs et proportions de différents groupes biologiques
 #' à partir d’un jeu de spécimens filtré (une espèce cible, un lac, une année, etc.).

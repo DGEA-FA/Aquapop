@@ -1,6 +1,6 @@
 #' wri UI Function
 #'
-#' @description Un module Shiny pour afficher l’indice de condition (Wr).
+#' @description Un module Shiny pour afficher l'indice de condition (Wr).
 #'
 #' @param id Identifiant du module.
 #'
@@ -14,7 +14,7 @@ mod_wri_ui <- function(id) {
     title = "Indice de condition",
     
     # Tableau Wr
-    p("Le tableau ci-dessous présente l’indice de masse relative (Wr) et son intervalle de confiance 
+    p("Le tableau ci-dessous présente l'indice de masse relative (Wr) et son intervalle de confiance 
        à 95 % pour les individus à partir d'une taille minimale déterminée selon l'espèce, par sexe et par classe de PSD (classe selon 
        Gabelhouse 1984)."),
     uiOutput(ns("wri_table")),
@@ -24,10 +24,10 @@ mod_wri_ui <- function(id) {
     
     # Graphique Wr par sexe
     h3("Indice de condition (Wr) selon la longueur et le sexe"),
-    p("Le graphique suivant illustre, pour chaque spécimen capturé, l’indice de condition en 
+    p("Le graphique suivant illustre, pour chaque spécimen capturé, l'indice de condition en 
        fonction de la longueur totale maximale et du sexe. La valeur moyenne est indiquée par une 
        ligne pointillée en rouge (tous), en bleu foncé (femelles) et en bleu pâle (mâles). La ligne en gris 
-       représente la référence standard pour l’espèce selon Hyatt & Hubert 2011 (SAFO), 
+       représente la référence standard pour l'espèce selon Hyatt & Hubert 2011 (SAFO), 
        Murphy et al. 1990 (SAVI) et Piccolo et al. 1993 (SANA)."),
     div(
       style = "max-width: 900px; margin: auto;",
@@ -40,7 +40,7 @@ mod_wri_ui <- function(id) {
     
     # Graphique Wr par classe de taille
     h3("Indice de condition (Wr) moyen par classe de taille"),
-    p("Ce graphique présente la variation de l’indice de condition selon les classes de PSD. 
+    p("Ce graphique présente la variation de l'indice de condition selon les classes de PSD. 
        Les valeurs moyenne et les intervalles de confiance sont illustrés."),
     div(
       style = "max-width: 900px; margin: auto;",
@@ -62,7 +62,7 @@ mod_wri_server <- function(id, specimen, filename_suffix) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
-    # Résultat de l’indice de condition
+    # Résultat de l'indice de condition
     wri_res <- reactive({
       req(specimen(), nrow(specimen()) > 0)
       wri(data = specimen())

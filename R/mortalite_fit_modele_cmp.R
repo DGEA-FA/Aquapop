@@ -1,8 +1,8 @@
 #' Ajuster un modèle de mortalité de type CMP (Conway-Maxwell-Poisson)
 #'
 #' Cette fonction ajuste un modèle CMP (`glmmTMB`) sur des données de fréquence d'âge étendues.
-#' Elle applique un test HNP (Half-Normal Plot) avec 2 à 5 simulations pour évaluer la qualité de l’ajustement,
-#' et retourne les paramètres estimés, le taux de mortalité annuel, et un commentaire sur l’ajustement.
+#' Elle applique un test HNP (Half-Normal Plot) avec 2 à 5 simulations pour évaluer la qualité de l'ajustement,
+#' et retourne les paramètres estimés, le taux de mortalité annuel, et un commentaire sur l'ajustement.
 #'
 #' @importFrom dplyr case_when
 #' @importFrom MuMIn AICc
@@ -17,19 +17,19 @@
 #' @param df_age_etendue Un `data.frame` produit par `mortalite_prepare_extended()` contenant au minimum :
 #' \describe{
 #'   \item{age}{Âge des individus (entier)}
-#'   \item{number}{Nombre d’individus observés à cet âge}
+#'   \item{number}{Nombre d'individus observés à cet âge}
 #' }
 #'
-#' @return Un `data.frame` d’une ligne contenant :
+#' @return Un `data.frame` d'une ligne contenant :
 #' \describe{
 #'   \item{methode}{Type de modèle (`"cmp"`)}
-#'   \item{ajustement_hnp}{Pourcentage moyen d’observations hors bande (test HNP)}
+#'   \item{ajustement_hnp}{Pourcentage moyen d'observations hors bande (test HNP)}
 #'   \item{aicc}{Critère d'information corrigé (aicc)}
-#'   \item{Z}{Coefficient de régression sur l’âge}
+#'   \item{Z}{Coefficient de régression sur l'âge}
 #'   \item{SE}{Erreur standard associée à Z}
 #'   \item{A}{Taux de mortalité annuel estimé (%)}
 #'   \item{IC 95%}{Intervalle de confiance de A}
-#'   \item{commentaire}{Appréciation qualitative de l’ajustement}
+#'   \item{commentaire}{Appréciation qualitative de l'ajustement}
 #'   \item{convergence}{Convergence du modèle (booléen)}
 #'   \item{nb_iterations_hnp}{Nombre de simulations HNP effectuées (2 ou 5)}
 #' }

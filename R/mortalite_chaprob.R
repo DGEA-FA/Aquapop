@@ -5,7 +5,7 @@
 #' Elle retourne à la fois un tableau brut (`data.frame`) et une version formatée (`flextable`).
 #'
 #' @param specimen Un `data.frame` produit par `mortalite_prepare_corr()`, contenant une colonne `age`.
-#' @param pp Valeur de "peak-plus", soit la classe d’âge au-delà de laquelle les âges sont regroupés.
+#' @param pp Valeur de "peak-plus", soit la classe d'âge au-delà de laquelle les âges sont regroupés.
 #' @param age_max Âge maximum à considérer dans le calcul.
 #'
 #' @return Une liste avec deux éléments :
@@ -42,10 +42,10 @@ mortalite_chaprob <- function(specimen, pp, age_max) {
   data_age <- subset(specimen, !is.na(age))
   
   if (nrow(data_age) == 0) {
-    stop("Aucune donnée d’âge valide pour Chapman-Robson.")
+    stop("Aucune donnée d'âge valide pour Chapman-Robson.")
   }
   if (length(unique(data_age$age)) < 2) {
-    stop("La méthode Chapman-Robson nécessite au moins deux classes d’âge différentes.")
+    stop("La méthode Chapman-Robson nécessite au moins deux classes d'âge différentes.")
   }
   
   # Application de la méthode Chapman-Robson ----

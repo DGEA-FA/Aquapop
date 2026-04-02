@@ -2,7 +2,7 @@
 % Please edit documentation in R/cpue_abondance_table.R
 \name{cpue_abondance_table}
 \alias{cpue_abondance_table}
-\title{Créer un tableau d’abondance structuré par groupe biologique}
+\title{Créer un tableau d'abondance structuré par groupe biologique}
 \usage{
 cpue_abondance_table(
   data,

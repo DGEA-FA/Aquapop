@@ -21,7 +21,7 @@ Retourne \code{NULL} si un seul sexe est présent dans les données.
 \description{
 Cette fonction ajuste six modèles logistiques binaires (logit, probit, cloglog)
 pour les sexes mâle et femelle séparément, en fonction de la taille (\code{ltm}) ou
-de l’âge (\code{age}). Elle retourne une liste contenant les six modèles si les deux
+de l'âge (\code{age}). Elle retourne une liste contenant les six modèles si les deux
 sexes sont présents. Si un seul sexe est observé, elle retourne \code{NULL} avec un avertissement.
 }
 \examples{

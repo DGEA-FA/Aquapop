@@ -2,7 +2,7 @@
 % Please edit documentation in R/generate_recapitulatif_inventaire.R
 \name{generate_recapitulatif_compter_valeurs}
 \alias{generate_recapitulatif_compter_valeurs}
-\title{Compter les occurrences d’une valeur dans une colonne}
+\title{Compter les occurrences d'une valeur dans une colonne}
 \usage{
 generate_recapitulatif_compter_valeurs(df, col, val)
 }

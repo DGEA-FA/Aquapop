@@ -2,7 +2,7 @@
 % Please edit documentation in R/maturite_prepare.R
 \name{maturite_prepare}
 \alias{maturite_prepare}
-\title{Préparer les données pour l’ajustement d’un modèle de maturité (L50 ou A50)}
+\title{Préparer les données pour l'ajustement d'un modèle de maturité (L50 ou A50)}
 \usage{
 maturite_prepare(specimen_data, variable = c("ltm", "age"), drop_levels = TRUE)
 }
@@ -14,11 +14,11 @@ maturite_prepare(specimen_data, variable = c("ltm", "age"), drop_levels = TRUE)
 \item{drop_levels}{Logique. Si TRUE (défaut), supprime les niveaux inutilisés après filtrage.}
 }
 \value{
-Un data.frame filtré et prêt pour l’ajustement du modèle, contenant les colonnes d'origine avec
+Un data.frame filtré et prêt pour l'ajustement du modèle, contenant les colonnes d'origine avec
 \code{maturite} en facteur ordonné (\code{N} < \code{O}) et \code{sexe} centré sur les femelles (\code{F}, \code{M}).
 }
 \description{
-Cette fonction filtre et structure les données en vue de l’ajustement d’un modèle de maturité.
+Cette fonction filtre et structure les données en vue de l'ajustement d'un modèle de maturité.
 Elle supprime les individus indéterminés (\code{maturite == "IND"} ou \code{sexe == "IND"}) et les valeurs manquantes
 dans la variable quantitative (\code{ltm} ou \code{age}), puis définit les niveaux de facteurs attendus.
 }

@@ -16,9 +16,9 @@ knitr::opts_chunk$set(
 
 # Guide de style du projet AquaPop
 
-Ce guide définit les conventions de style, de structuration et de documentation du code utilisé dans le développement du package et de l’application Shiny **AquaPop**.
+Ce guide définit les conventions de style, de structuration et de documentation du code utilisé dans le développement du package et de l'application Shiny **AquaPop**.
 
-Il s’applique à toutes les fonctions métier, modules Shiny, scripts d’utilisation et fichiers d’exportation.
+Il s'applique à toutes les fonctions métier, modules Shiny, scripts d'utilisation et fichiers d'exportation.
 
 ## Objectifs
 
@@ -34,7 +34,7 @@ Le projet utilise un style hybride, avec :
 
 | Élément                       | Langue utilisée               |
 |-------------------------------|-------------------------------|
-| Noms de fonctions             | Français pour le concept, anglais pour l’action (ex: `mortalite_compare_modele`) |
+| Noms de fonctions             | Français pour le concept, anglais pour l'action (ex: `mortalite_compare_modele`) |
 | Arguments de fonction         | Anglais, simples et compatibles tidyverse (`data`, `group`, `method`) |
 | Objets internes               | Français, toujours en `snake_case` (`table_resultats`, `espece`, `plot_byclass`) |
 | Documentation `roxygen2`      | En français uniquement        |
@@ -44,7 +44,7 @@ Le projet utilise un style hybride, avec :
 
 | Élément                     | Règle                                                                 |
 |-----------------------------|-----------------------------------------------------------------------|
-| Nom des fonctions           | Concept métier en premier (`mortalite_`, `croissance_`), suivi d’un verbe en anglais |
+| Nom des fonctions           | Concept métier en premier (`mortalite_`, `croissance_`), suivi d'un verbe en anglais |
 | Arguments                   | En anglais, simples et compatibles tidyverse (`data`, `method`, `group`) |
 | Nom du concept "modèle"     | Toujours écrit `modele`, au singulier                                |
 | Documentation               | Entièrement en français                                               |
@@ -52,7 +52,7 @@ Le projet utilise un style hybride, avec :
 
 ### Convention pour les objets retournés
 
-Le nom de l’objet retourné correspond au nom de la fonction suivi de `_res`.
+Le nom de l'objet retourné correspond au nom de la fonction suivi de `_res`.
 
 ```r
 mortalite_compare_modele_res <- mortalite_compare_modele(data)
@@ -84,7 +84,7 @@ Chaque bloc est introduit par un commentaire structurant, rédigé en français 
 
 - Objets explicites, toujours en `snake_case`
 - Éviter `df`, `a`, `t`, `final`
-- Utiliser `data` comme nom d’argument principal
+- Utiliser `data` comme nom d'argument principal
 - Pas de majuscules dans les noms (`IC95` → `ic95`)
 - Objets retournés : `table_resultats`, `table_flextable`, `plot_tous`, etc.
 - Préférer des noms longs explicites

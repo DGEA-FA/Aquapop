@@ -94,7 +94,7 @@ mod_telechargement_server <- function(id) {
       tagList(
         checkboxGroupInput(ns("annee"), "Sélectionner les années à considérer",
                            choices = sort(unique(df_filtered2()$annee))),
-        p("Si plus d’une année d’inventaire est sélectionnée...",
+        p("Si plus d'une année d'inventaire est sélectionnée...",
           style = "font-size: 85%; color: #555;")
       )
     })

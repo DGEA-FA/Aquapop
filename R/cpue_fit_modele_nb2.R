@@ -53,7 +53,7 @@ cpue_fit_modele_nb2 <- function(cpue_data) {
   
   convergence_flag <- !inherits(model_nb2, "try-error")
   
-  # --- Si le modèle n’a pas convergé : sortie neutralisée ---
+  # --- Si le modèle n'a pas convergé : sortie neutralisée ---
   if (!convergence_flag) {
     return(
       tibble(

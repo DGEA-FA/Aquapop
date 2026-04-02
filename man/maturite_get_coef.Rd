@@ -2,7 +2,7 @@
 % Please edit documentation in R/maturite_generate_modele.R
 \name{maturite_get_coef}
 \alias{maturite_get_coef}
-\title{Extraire un coefficient d’un modèle de maturité selon le sexe}
+\title{Extraire un coefficient d'un modèle de maturité selon le sexe}
 \usage{
 maturite_get_coef(modele_glm, sexe = c("sexeF", "sexeM"), interaction = FALSE)
 }
@@ -18,6 +18,6 @@ La valeur du coefficient ciblé
 }
 \description{
 Fonction interne utilisée par \code{maturite_generate_modele()} pour extraire
-un coefficient ciblé (par sexe ou interaction) à partir d’un modèle glm.
+un coefficient ciblé (par sexe ou interaction) à partir d'un modèle glm.
 }
 \keyword{internal}

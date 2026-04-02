@@ -10,9 +10,9 @@ maturite_eval_modele(models)
 \item{models}{Liste des modèles retournée par \code{maturite_generate_modele()}}
 }
 \value{
-Un \code{data.frame} trié par AICc avec les indicateurs : convergence, tests d’ajustement, commentaire
+Un \code{data.frame} trié par AICc avec les indicateurs : convergence, tests d'ajustement, commentaire
 }
 \description{
-Cette fonction compile les critères d’évaluation de plusieurs modèles de maturité
-(logistique, probit, etc.) pour les comparer selon leur qualité d’ajustement.
+Cette fonction compile les critères d'évaluation de plusieurs modèles de maturité
+(logistique, probit, etc.) pour les comparer selon leur qualité d'ajustement.
 }

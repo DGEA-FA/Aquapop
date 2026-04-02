@@ -18,6 +18,6 @@ test_that("mortalite_get_age_max échoue si colonne age absente", {
   expect_error(mortalite_get_age_max(df), "age")
 })
 
-test_that("mortalite_get_age_max échoue si data n’est pas un data.frame", {
+test_that("mortalite_get_age_max échoue si data n'est pas un data.frame", {
   expect_error(mortalite_get_age_max(c(1, 2, 3)), "data.frame")
 })

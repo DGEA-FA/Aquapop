@@ -26,5 +26,5 @@ Un \code{data.frame} structuré avec au minimum :
 \description{
 Cette fonction importe les données brutes du feuillet "Stations" d’un fichier Excel,
 applique des transformations pour nettoyer et standardiser les colonnes essentielles,
-et calcule des variables supplémentaires utiles pour l’analyse (ex. date/heure de pose/levée, durée).
+et calcule des variables supplémentaires utiles pour l'analyse (ex. date/heure de pose/levée, durée).
 }

@@ -1,6 +1,6 @@
 #' Sélectionner le meilleur modèle CPUE selon le plus bas AICc
 #'
-#' Cette fonction identifie automatiquement le meilleur modèle d’abondance
+#' Cette fonction identifie automatiquement le meilleur modèle d'abondance
 #' (CPUE) parmi les modèles Poisson, NB1, NB2, CMP et GP, en se basant sur le
 #' critère d'information corrigé (AICc). La priorité est donnée aux modèles
 #' bien ajustés (ajustement HNP < 10). Si aucun modèle ne satisfait ce critère,
@@ -25,7 +25,7 @@
 #' @importFrom dplyr filter pull
 cpue_select_best_modele <- function(tablemodele) {
   if (!"methode" %in% names(tablemodele) || !"aicc" %in% names(tablemodele)) {
-    stop("Le tableau fourni n’est pas valide. Assurez-vous qu’il provient de `cpue_compare_modele()`.")
+    stop("Le tableau fourni n'est pas valide. Assurez-vous qu’il provient de `cpue_compare_modele()`.")
   }
   
   bien_ajuste <- tablemodele |>

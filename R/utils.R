@@ -7,8 +7,8 @@
 #' @importFrom labelled var_label
 #' @importFrom stringi stri_trans_general
 #' @importFrom writexl write_xlsx
-#' @param male_count Nombre d’individus de sexe masculin (entier)
-#' @param female_count Nombre d’individus de sexe féminin (entier)
+#' @param male_count Nombre d'individus de sexe masculin (entier)
+#' @param female_count Nombre d'individus de sexe féminin (entier)
 #'
 #' @return Une chaîne de caractères représentant le ratio simplifié (ex: `"3:2"`), ou `NA_character_` si les deux valeurs sont nulles.
 #'
@@ -110,10 +110,10 @@ labelled_data <- function(data) {
 
 #' Gérer les erreurs silencieusement
 #'
-#' Fonction utilitaire pour extraire le message d’erreur dans un `tryCatch`.
+#' Fonction utilitaire pour extraire le message d'erreur dans un `tryCatch`.
 #'
-#' @param e Objet d’erreur (`condition`) attrapé par `tryCatch`.
-#' @return Message de l’erreur (chaîne de caractères).
+#' @param e Objet d'erreur (`condition`) attrapé par `tryCatch`.
+#' @return Message de l'erreur (chaîne de caractères).
 #'
 #' @export
 handle_error <- function(e) {

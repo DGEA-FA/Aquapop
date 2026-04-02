@@ -19,8 +19,8 @@ Une liste contenant :
 }
 \description{
 Cette fonction ajuste cinq modèles statistiques (Poisson, NB1, NB2, CMP, GP)
-sur les fréquences d’âge, puis retourne un tableau comparatif incluant :
-le critère d'information corrigé (AICc), le pourcentage d’ajustement HNP,
-l’estimation de Z, l’intervalle de confiance de A (\%), et les commentaires
+sur les fréquences d'âge, puis retourne un tableau comparatif incluant :
+le critère d'information corrigé (AICc), le pourcentage d'ajustement HNP,
+l'estimation de Z, l'intervalle de confiance de A (\%), et les commentaires
 interprétatifs pour guider la sélection du meilleur modèle.
 }

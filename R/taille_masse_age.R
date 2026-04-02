@@ -192,7 +192,7 @@ regrouper_stats_morpho <- function(data, var) {
 #'
 #' Fonction utilitaire interne. Résume une variable numérique (`ltm`, `masse`, `age`)
 #' globalement ou par groupe, en calculant le nombre de valeurs non manquantes, la moyenne,
-#' l’écart-type, le minimum et le maximum.
+#' l'écart-type, le minimum et le maximum.
 #'
 #' @param data Un `data.frame` contenant la variable à résumer.
 #' @param var Chaîne de caractères : nom de la variable numérique à résumer.

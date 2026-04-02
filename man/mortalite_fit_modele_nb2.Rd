@@ -10,27 +10,27 @@ mortalite_fit_modele_nb2(df_age_etendue)
 \item{df_age_etendue}{Un \code{data.frame} produit par \code{mortalite_prepare_extended()} contenant au minimum :
 \describe{
 \item{age}{Âge des individus (entier)}
-\item{number}{Nombre d’individus observés à cet âge}
+\item{number}{Nombre d'individus observés à cet âge}
 }}
 }
 \value{
-Un \code{data.frame} d’une ligne contenant :
+Un \code{data.frame} d'une ligne contenant :
 \describe{
 \item{methode}{Nom du modèle (\code{"nb2"})}
-\item{ajustement_hnp}{Pourcentage moyen d’observations hors bande (test HNP)}
+\item{ajustement_hnp}{Pourcentage moyen d'observations hors bande (test HNP)}
 \item{aicc}{Critère d'information corrigé (aicc)}
 \item{Z}{Coefficient de l'âge estimé dans le modèle}
 \item{SE}{Erreur standard de Z}
 \item{A}{Taux de mortalité annuel estimé (\%)}
 \item{IC 95\%}{Intervalle de confiance de A}
-\item{commentaire}{Appréciation qualitative de l’ajustement}
+\item{commentaire}{Appréciation qualitative de l'ajustement}
 \item{convergence}{Toujours TRUE (glm.nb échoue sinon)}
 \item{nb_iterations_hnp}{Nombre total de simulations HNP (2 ou 5)}
 }
 }
 \description{
-Cette fonction ajuste un modèle NB2 (\code{glm.nb}) sur les données de fréquence d’âge étendues.
-Elle applique un test HNP (Half-Normal Plot) avec 2 à 5 simulations pour évaluer l’ajustement,
+Cette fonction ajuste un modèle NB2 (\code{glm.nb}) sur les données de fréquence d'âge étendues.
+Elle applique un test HNP (Half-Normal Plot) avec 2 à 5 simulations pour évaluer l'ajustement,
 puis retourne les estimations de mortalité et leur intervalle de confiance.
 }
 \examples{

@@ -37,7 +37,7 @@ message explicatif.
 Si \code{vbStarts()} échoue à produire des valeurs initiales, une stratégie de
 rechange est utilisée avec :
 \itemize{
-\item \code{Linf} = longueur du plus grand spécimen de l’échantillon
+\item \code{Linf} = longueur du plus grand spécimen de l'échantillon
 \item \code{K = 0.3}
 \item \code{t0 = 0}
 }

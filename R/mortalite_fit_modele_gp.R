@@ -2,7 +2,7 @@
 #'
 #' Cette fonction ajuste un modèle de régression `glmmTMB` avec distribution GP (Generalized Poisson)
 #' sur des données de fréquence d'âge. Elle applique un test HNP (Half-Normal Plot) en 2 à 5 simulations,
-#' puis retourne les estimations du modèle et un commentaire sur la qualité de l’ajustement.
+#' puis retourne les estimations du modèle et un commentaire sur la qualité de l'ajustement.
 #'
 #' @importFrom dplyr case_when
 #' @importFrom MuMIn AICc
@@ -16,21 +16,21 @@
 #' @param df_age_etendue Un `data.frame` produit par `mortalite_prepare_extended()` contenant au minimum :
 #' \describe{
 #'   \item{age}{Âge des individus}
-#'   \item{number}{Nombre d’individus observés à cet âge}
+#'   \item{number}{Nombre d'individus observés à cet âge}
 #' }
 #'
-#' @return Un `data.frame` d’une ligne contenant :
+#' @return Un `data.frame` d'une ligne contenant :
 #' \describe{
 #'   \item{methode}{Modèle utilisé (`"gp"`)}
-#'   \item{ajustement_hnp}{Pourcentage moyen d’observations hors bande (HNP)}
-#'   \item{aicc}{Critère d’information corrigé aicc}
+#'   \item{ajustement_hnp}{Pourcentage moyen d'observations hors bande (HNP)}
+#'   \item{aicc}{Critère d'information corrigé aicc}
 #'   \item{Z}{Coefficient d'âge (valeur absolue)}
 #'   \item{SE}{Erreur standard de Z}
 #'   \item{A}{Taux de mortalité annuel estimé (%)}
 #'   \item{IC 95%}{Intervalle de confiance de A (bornes min–max)}
-#'   \item{commentaire}{Appréciation qualitative de l’ajustement}
+#'   \item{commentaire}{Appréciation qualitative de l'ajustement}
 #'   \item{convergence}{Convergence du modèle (booléen)}
-#'   \item{nb_iterations_hnp}{Nombre d’itérations HNP effectuées}
+#'   \item{nb_iterations_hnp}{Nombre d'itérations HNP effectuées}
 #' }
 #'
 #' @examples

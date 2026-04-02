@@ -1,7 +1,7 @@
 #' Ajuster un modèle de CPUE de type CMP (Conway-Maxwell-Poisson)
 #'
 #' Cette fonction ajuste un modèle CMP via `glmmTMB` sur les données de CPUE par station.
-#' Elle effectue également un test HNP pour évaluer la qualité de l’ajustement.
+#' Elle effectue également un test HNP pour évaluer la qualité de l'ajustement.
 #'
 #' @param cpue_data Un `data.frame` produit par `cpue_prepare()` contenant au minimum
 #'   les colonnes `no_station` et `cpue`.

@@ -1,6 +1,6 @@
 #' Charger et structurer les données du feuillet "Récolte" (version robuste)
 #'
-#' Cette fonction importe les données brutes du feuillet "Récolte" d’un fichier Excel
+#' Cette fonction importe les données brutes du feuillet "Récolte" d'un fichier Excel
 #' formaté selon les standards AquaPop. Elle applique des transformations pour nettoyer
 #' les colonnes, corriger les années (Excel ou texte), et produire un tableau structuré.
 #'
@@ -91,7 +91,7 @@ load_recolte <- function(path,
     col_source <- mapping[[col]]
     if (!is.na(col_source)) {
       recolte[[col]] <- recolte_raw[[col_source]]
-      if (verbose) message("[load_recolte] Colonne ‘", col_source, "’ reconnue comme ‘", col, "’.")
+      if (verbose) message("[load_recolte] Colonne ‘", col_source, "' reconnue comme ‘", col, "'.")
     }
   }
   
@@ -102,7 +102,7 @@ load_recolte <- function(path,
   # --- Suppression optionnelle de nom_lac ---
   if ("nom_lac" %in% names(recolte)) {
     recolte <- select(recolte, -nom_lac)
-    if (verbose) message("[load_recolte] Colonne ‘nom_lac’ supprimée.")
+    if (verbose) message("[load_recolte] Colonne ‘nom_lac' supprimée.")
   }
   
   # --- Conversion de l'année Excel ou texte ---

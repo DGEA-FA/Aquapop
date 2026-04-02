@@ -7,9 +7,9 @@
 calculate_mf_ratio(male_count, female_count)
 }
 \arguments{
-\item{male_count}{Nombre d’individus de sexe masculin (entier)}
+\item{male_count}{Nombre d'individus de sexe masculin (entier)}
 
-\item{female_count}{Nombre d’individus de sexe féminin (entier)}
+\item{female_count}{Nombre d'individus de sexe féminin (entier)}
 }
 \value{
 Une chaîne de caractères représentant le ratio simplifié (ex: \code{"3:2"}), ou \code{NA_character_} si les deux valeurs sont nulles.

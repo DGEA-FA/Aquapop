@@ -2,7 +2,7 @@
 #'
 #' Cette fonction ajuste six modèles logistiques binaires (logit, probit, cloglog)
 #' pour les sexes mâle et femelle séparément, en fonction de la taille (`ltm`) ou
-#' de l’âge (`age`). Elle retourne une liste contenant les six modèles si les deux
+#' de l'âge (`age`). Elle retourne une liste contenant les six modèles si les deux
 #' sexes sont présents. Si un seul sexe est observé, elle retourne `NULL` avec un avertissement.
 #'
 #' @param df Un `data.frame` contenant les colonnes `maturite`, `sexe`, et la variable
@@ -48,7 +48,7 @@ maturite_fit_separated_modele <- function(df, variable = c("ltm", "age")) {
   
   # --- Étape 2 : Vérification de la présence des deux sexes ---
   if (!all(c("M", "F") %in% df$sexe)) {
-    warning("Un seul sexe observé. L’ajustement des modèles séparés est impossible.")
+    warning("Un seul sexe observé. L'ajustement des modèles séparés est impossible.")
     return(NULL)
   }
   

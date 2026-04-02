@@ -1,9 +1,9 @@
 
 # REPREX — paramètres estimés mais IC non calculables
 #
-# Dans certains cas, les paramètres d’un modèle de croissance peuvent être estimés
+# Dans certains cas, les paramètres d'un modèle de croissance peuvent être estimés
 # correctement, mais les intervalles de confiance ne peuvent pas être calculés en
-# raison de limitations numériques de l’ajustement non linéaire (`nls`).
+# raison de limitations numériques de l'ajustement non linéaire (`nls`).
 #
 # Le REPREX ci-dessous illustre cette situation avec la fonction `growth()` du
 # package fishmethods.
@@ -14,7 +14,7 @@ library(fishmethods)
 
 # Fonctions utilitaires -----------------------------------------------------
 
-# Extraire l’intervalle de confiance d’un paramètre
+# Extraire l'intervalle de confiance d’un paramètre
 extract_param_ic <- function(res, index) {
   tryCatch(
     confint(res, level = 0.95)[index, , drop = TRUE],

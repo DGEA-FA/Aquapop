@@ -28,7 +28,7 @@ Une liste avec :
 \itemize{
 \item \code{table_resultats}: tableau brut des coefficients et points 50 \%
 \item \code{table_resultats_flextable}: version formatée
-\item \code{commentaire}: interprétation de l’ajustement
+\item \code{commentaire}: interprétation de l'ajustement
 \item \code{graphique}: ogive de maturité
 \item \code{donnees_ogive}: données prédictives
 }
@@ -36,5 +36,5 @@ Une liste avec :
 \description{
 Cette fonction ajuste un modèle de maturité en fonction du type de modèle (\code{TLO}, \code{ADD}, \code{COM}, \code{INT})
 et du lien (\code{logit}, \code{probit}, \code{cloglog}) spécifiés. Elle retourne un tableau de résultats,
-un graphique de l’ogive de maturité, un commentaire sur l’ajustement, et les prédictions associées.
+un graphique de l'ogive de maturité, un commentaire sur l'ajustement, et les prédictions associées.
 }

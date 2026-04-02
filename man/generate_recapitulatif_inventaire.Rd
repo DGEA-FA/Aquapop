@@ -2,7 +2,7 @@
 % Please edit documentation in R/generate_recapitulatif_inventaire.R
 \name{generate_recapitulatif_inventaire}
 \alias{generate_recapitulatif_inventaire}
-\title{Générer un tableau récapitulatif d’un inventaire ichtyologique}
+\title{Générer un tableau récapitulatif d'un inventaire ichtyologique}
 \usage{
 generate_recapitulatif_inventaire(data_lac, data_station)
 }
@@ -18,6 +18,6 @@ Un \code{data.frame} structuré avec une ligne par type d'information
 et une colonne par type de pêche. La première colonne est \code{"Type de pêche"}.
 }
 \description{
-Cette fonction produit un tableau synthèse des métadonnées d’un inventaire ichtyologique
+Cette fonction produit un tableau synthèse des métadonnées d'un inventaire ichtyologique
 réalisé sur un lac donné, pour un type de pêche et une ou plusieurs années.
 }

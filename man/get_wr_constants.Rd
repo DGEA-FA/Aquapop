@@ -7,13 +7,13 @@
 get_wr_constants(espece)
 }
 \arguments{
-\item{espece}{Code d’espèce (ex: "SANA", "SAFO", "SAVI")}
+\item{espece}{Code d'espèce (ex: "SANA", "SAFO", "SAVI")}
 }
 \value{
 Un \code{data.frame} avec les colonnes \code{min_TL}, \code{int}, \code{slope}, etc.
 }
 \description{
-Cette fonction retourne les coefficients de référence pour le calcul de l’indice
+Cette fonction retourne les coefficients de référence pour le calcul de l'indice
 de condition (Wr) pour une espèce supportée, à partir de la table \code{wr_constants}.
 }
 \keyword{internal}

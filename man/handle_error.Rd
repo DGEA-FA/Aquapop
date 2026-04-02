@@ -7,11 +7,11 @@
 handle_error(e)
 }
 \arguments{
-\item{e}{Objet d’erreur (\code{condition}) attrapé par \code{tryCatch}.}
+\item{e}{Objet d'erreur (\code{condition}) attrapé par \code{tryCatch}.}
 }
 \value{
-Message de l’erreur (chaîne de caractères).
+Message de l'erreur (chaîne de caractères).
 }
 \description{
-Fonction utilitaire pour extraire le message d’erreur dans un \code{tryCatch}.
+Fonction utilitaire pour extraire le message d'erreur dans un \code{tryCatch}.
 }

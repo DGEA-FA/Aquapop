@@ -28,7 +28,7 @@ test_that("get_analysis_data retourne les objets attendus", {
   expect_false(any(is.na(res$capture$nb_capture)))
   expect_false(any(is.na(res$capture$nb_pese)))
   
-  # Vérifie qu’il n’y a pas de doublons
+  # Vérifie qu'il n'y a pas de doublons
   expect_equal(nrow(res$specimen_tous), nrow(dplyr::distinct(res$specimen_tous)))
   expect_equal(nrow(res$capture), nrow(dplyr::distinct(res$capture)))
   

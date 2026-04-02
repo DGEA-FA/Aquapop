@@ -1,6 +1,6 @@
 #' Fonction de croissance de Von Bertalanffy
 #'
-#' Calcule la longueur en fonction de l’âge selon le modèle de Von Bertalanffy.
+#' Calcule la longueur en fonction de l'âge selon le modèle de Von Bertalanffy.
 #'
 #' @param age Âge du spécimen
 #' @param linf Longueur asymptotique (mm)
@@ -15,7 +15,7 @@ vb_function <- function(age, linf, k, t0) {
 
 #' Fonction de croissance de Gompertz
 #'
-#' Calcule la longueur en fonction de l’âge selon le modèle de Gompertz.
+#' Calcule la longueur en fonction de l'âge selon le modèle de Gompertz.
 #'
 #' @param age Âge du spécimen
 #' @param linf Longueur asymptotique (mm)
@@ -30,7 +30,7 @@ gompertz_function <- function(age, linf, k, t0) {
 
 #' Fonction de croissance logistique
 #'
-#' Calcule la longueur en fonction de l’âge selon le modèle logistique.
+#' Calcule la longueur en fonction de l'âge selon le modèle logistique.
 #'
 #' @param age Âge du spécimen
 #' @param linf Longueur asymptotique (mm)

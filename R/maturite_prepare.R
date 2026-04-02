@@ -1,6 +1,6 @@
-#' Préparer les données pour l’ajustement d’un modèle de maturité (L50 ou A50)
+#' Préparer les données pour l'ajustement d'un modèle de maturité (L50 ou A50)
 #'
-#' Cette fonction filtre et structure les données en vue de l’ajustement d’un modèle de maturité.
+#' Cette fonction filtre et structure les données en vue de l'ajustement d'un modèle de maturité.
 #' Elle supprime les individus indéterminés (`maturite == "IND"` ou `sexe == "IND"`) et les valeurs manquantes
 #' dans la variable quantitative (`ltm` ou `age`), puis définit les niveaux de facteurs attendus.
 #'
@@ -8,7 +8,7 @@
 #' @param variable Variable quantitative à utiliser : "ltm" (par défaut) ou "age"
 #' @param drop_levels Logique. Si TRUE (défaut), supprime les niveaux inutilisés après filtrage.
 #'
-#' @return Un data.frame filtré et prêt pour l’ajustement du modèle, contenant les colonnes d'origine avec
+#' @return Un data.frame filtré et prêt pour l'ajustement du modèle, contenant les colonnes d'origine avec
 #'   `maturite` en facteur ordonné (`N` < `O`) et `sexe` centré sur les femelles (`F`, `M`).
 #' @export
 #' @importFrom dplyr filter mutate

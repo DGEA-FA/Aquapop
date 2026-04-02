@@ -1,5 +1,5 @@
 # exemple_utilisation.R
-# Rôle : Démonstration simple de l’utilisation des fonctions métier AquaPop
+# Rôle : Démonstration simple de l'utilisation des fonctions métier AquaPop
 
 # Charger toutes les fonctions du package en développement
 devtools::load_all()
@@ -8,8 +8,8 @@ devtools::load_all()
 
 path     <- "inst/extdata/Extract_IFA_AquaPop_2026-02-27.xlsx"
 typ_pech <- "PENOF"
-no_lac   <- "19495"
-annee    <- 2023
+no_lac   <- "19640"
+annee    <- 2004
 
  # 01589, PENT 2012
 
@@ -64,7 +64,7 @@ df_cpue_femelles <- cpue_prepare(capture, specimen_hasard_valide, group = "femel
 cpue_compare_modele_fem_res <- cpue_compare_modele(df_cpue_femelles)
 meilleur_modele_cpue_femelles <- cpue_select_best_modele(cpue_compare_modele_fem_res$data)
 meilleur_modele_cpue_femelles
-## Tableau d’abondance ----
+## Tableau d'abondance ----
 abondance <- cpue_abondance_table(
   specimen_hasard_valide,
   cpue_compare_modele_tous_res$data,

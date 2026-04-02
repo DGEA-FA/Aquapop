@@ -6,13 +6,13 @@
 #
 # Remarques :
 # - Les fonctions contenues ici ne sont pas maintenues par l'équipe de développement aquapop
-# - Toute modification doit être discutée avec les auteurs d’origine ou documentée soigneusement.
+# - Toute modification doit être discutée avec les auteurs d'origine ou documentée soigneusement.
 # ---
 
 #' Test d'ajustement de Osius & Rojek
 #' @param obj Un objet de modèle de type `glm` ajusté avec une famille binomiale.
 #'
-#' @return Une valeur p (`p.value`) du test d’overdispersion.
+#' @return Une valeur p (`p.value`) du test d'overdispersion.
 o.r.test <- function(obj) {
   mf <- obj$model
   trials <- rep(1, times = nrow(mf))

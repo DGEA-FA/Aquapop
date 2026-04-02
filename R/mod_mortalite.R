@@ -5,7 +5,7 @@ mod_mortalite_ui <- function(id) {
     title = "Mortalité",
     
     h3("Test de sur-dispersion du modèle Poisson"),
-    p("Ce test évalue si les données de mortalité par âge violent l’hypothèse d’équidispersion du modèle de Poisson."),
+    p("Ce test évalue si les données de mortalité par âge violent l'hypothèse d'équidispersion du modèle de Poisson."),
     strong("Interprétation :"),
     verbatimTextOutput(ns("dispersion_msg")),
     br(),
@@ -25,7 +25,7 @@ mod_mortalite_ui <- function(id) {
     br(), br(),
     
     h3("Table de sélection du modèle de mortalité"),
-    p("Le tableau suivant présente les résultats pour l’ensemble des modèles testés."),
+    p("Le tableau suivant présente les résultats pour l'ensemble des modèles testés."),
     withSpinner(reactableOutput(ns("comparaison_mortalite_table")), type = myspinner),
     download_button_ui(ns("download_comparaison_mortalite_table")),
     textOutput(ns("phrase_mortalite")),
@@ -81,7 +81,7 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
       age_max <- mortalite_get_age_max_res()
       validate(
         need(!is.null(custom_pp), "Aucun âge sélectionné."),
-        need(as.numeric(custom_pp) < age_max, "L'âge de départ doit être inférieur à l’âge maximal.")
+        need(as.numeric(custom_pp) < age_max, "L'âge de départ doit être inférieur à l'âge maximal.")
       )
       as.numeric(custom_pp)
     }, ignoreNULL = FALSE, ignoreInit = TRUE)

@@ -2,7 +2,7 @@
 #'
 #' Cette fonction importe les données brutes du feuillet "Stations" d’un fichier Excel,
 #' applique des transformations pour nettoyer et standardiser les colonnes essentielles,
-#' et calcule des variables supplémentaires utiles pour l’analyse (ex. date/heure de pose/levée, durée).
+#' et calcule des variables supplémentaires utiles pour l'analyse (ex. date/heure de pose/levée, durée).
 #'
 #' @param path Chemin complet vers le fichier Excel (.xlsx) à importer.
 #' @param namesheet Nom du feuillet contenant les données de stations (par défaut `"Stations"`).
@@ -93,10 +93,10 @@ load_station <- function(path,
     source_col <- mapping[[col]]
     if (!is.na(source_col)) {
       station[[col]] <- station_raw[[source_col]]
-      if (verbose) message("[load_station] Colonne ‘", source_col, "’ reconnue comme ‘", col, "’.")
+      if (verbose) message("[load_station] Colonne ‘", source_col, "' reconnue comme ‘", col, "'.")
     } else {
       station[[col]] <- rep(NA_character_, n)
-      if (verbose) message("[load_station] Colonne ‘", col, "’ absente, ajoutée comme NA.")
+      if (verbose) message("[load_station] Colonne ‘", col, "' absente, ajoutée comme NA.")
     }
   }
   
@@ -104,7 +104,7 @@ load_station <- function(path,
   colonnes_manquantes <- setdiff(colonnes_optionnelles, names(station))
   for (col in colonnes_manquantes) {
     station[[col]] <- NA
-    if (verbose) message("[load_station] Colonne ‘", col, "’ absente, ajoutée comme NA.")
+    if (verbose) message("[load_station] Colonne ‘", col, "' absente, ajoutée comme NA.")
   }
   
   # --- Nettoyage des statuts ---

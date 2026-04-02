@@ -3,7 +3,7 @@
 # Projet AquaPop – Fonctions modulaires compatibles avec ou sans Shiny
 # =============================================================================
 
-#' Convertit un objet en reactive() si ce n’est pas déjà le cas
+#' Convertit un objet en reactive() si ce n'est pas déjà le cas
 #' @importFrom rmarkdown render
 #' @importFrom shiny downloadButton showNotification downloadHandler
 #' @importFrom writexl write_xlsx
@@ -16,8 +16,8 @@ as_reactive <- function(x) {
 
 #' Affiche un tableau flextable dans une application Shiny
 #'
-#' Cette fonction permet d’insérer dynamiquement un tableau `flextable` dans une interface Shiny,
-#' à l’intérieur d’un `uiOutput()` identifié par `output_id`. Elle prend en charge les objets réactifs
+#' Cette fonction permet d'insérer dynamiquement un tableau `flextable` dans une interface Shiny,
+#' à l'intérieur d'un `uiOutput()` identifié par `output_id`. Elle prend en charge les objets réactifs
 #' ou non, en convertissant toute entrée en fonction réactive.
 #'
 #' @param output_id Identifiant utilisé dans `uiOutput()` pour insérer le tableau.
@@ -96,15 +96,15 @@ render_plot_ggplot <- function(output_id, plot,
 
 #' Crée un bouton de téléchargement pour un tableau (.xlsx)
 #'
-#' Cette fonction crée dynamiquement un bouton de téléchargement (Shiny) qui permet d’exporter un `data.frame`
-#' en format `.xlsx`, à partir d’un objet réactif ou non. Le bouton doit être déclaré côté `ui` avec l’`id` fourni.
+#' Cette fonction crée dynamiquement un bouton de téléchargement (Shiny) qui permet d'exporter un `data.frame`
+#' en format `.xlsx`, à partir d'un objet réactif ou non. Le bouton doit être déclaré côté `ui` avec l'`id` fourni.
 #'
 #' @param id Identifiant du bouton (ex: "masselongueur_dl")
 #' @param data Un objet `data.frame` ou un `reactive()` le retournant
 #' @param filename Nom du fichier à enregistrer (.xlsx). Peut être une chaîne ou un `reactive()`
 #' @param label (non utilisé ici – texte défini dans le `ui`)
 #'
-#' @return Un `downloadHandler` affecté à l’objet `output[[id]]`
+#' @return Un `downloadHandler` affecté à l'objet `output[[id]]`
 #'
 #' @importFrom shiny reactive downloadHandler
 #' @importFrom writexl write_xlsx

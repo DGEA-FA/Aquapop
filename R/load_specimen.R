@@ -1,4 +1,4 @@
-#' Charger les données du feuillet "Specimens" d’un fichier Excel (version robuste)
+#' Charger les données du feuillet "Specimens" d'un fichier Excel (version robuste)
 #'
 #' Cette fonction importe, nettoie et structure les données de spécimens de poissons
 #' contenues dans un fichier Excel, avec validations robustes. Les colonnes essentielles
@@ -115,7 +115,7 @@ load_specimen <- function(path,
       idx <- idx[!is.na(idx)]
       if (length(idx) > 0) {
         col <- noms_originaux[idx[1]]
-        if (verbose) message("[load_specimen] Colonne ‘", col, "’ reconnue comme ‘", canonique, "’.")
+        if (verbose) message("[load_specimen] Colonne ‘", col, "' reconnue comme ‘", canonique, "'.")
         return(col)
       } else {
         return(NA)
@@ -137,7 +137,7 @@ load_specimen <- function(path,
       } else {
         valeur_na <- if (col %in% colonnes_num) NA_real_ else NA_character_
         specimen[[col]] <- rep(valeur_na, n)
-        if (verbose) message("[load_specimen] Colonne ‘", col, "’ absente, ajoutée comme NA.")
+        if (verbose) message("[load_specimen] Colonne ‘", col, "' absente, ajoutée comme NA.")
       }
     }
     

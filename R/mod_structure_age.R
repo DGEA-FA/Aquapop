@@ -121,7 +121,7 @@ mod_structure_age_server <- function(id, specimen, filename_suffix) {
       
       tagList(
         p(
-          "L’histogramme de fréquence d'âge permettant de caractériser la structure ",
+          "L'histogramme de fréquence d'âge permettant de caractériser la structure ",
           "d'âge de la population est réalisé avec la fonction geom_histogram de la ",
           "librairie ggplot2 (Chang et al. 2021)."
         ),
@@ -129,7 +129,7 @@ mod_structure_age_server <- function(id, specimen, filename_suffix) {
         h3("Histogramme de fréquence des âges"),
         
         p(
-          "La figure ci-dessous représente l’histogramme de fréquences des âges ",
+          "La figure ci-dessous représente l'histogramme de fréquences des âges ",
           "selon le groupement sélectionné à gauche."
         ),
         

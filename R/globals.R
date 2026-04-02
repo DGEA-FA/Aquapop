@@ -13,6 +13,7 @@ utils::globalVariables(c(
   "min_leve", "heure_leve", "date_pose", "leve", "pose", "count","aiccwt", "delta_aic", 
   
   "poisson", "hdi", "jags", "pred", "leve", "pose", "count",
+  "Modnames", "Delta_AICc", "AICcWt", "aicc_sort", "aicc_num", "Q", "ltm_nb","masse_nb","age_nb",#"ltm_nb","ltm_nb",
   
   
   "st_valide", "superficie_ha", "t0", "st_hasard", "l_inf_ic", "l_inf", "ltm_interval", "ajustement_hnp", "no_specimen",

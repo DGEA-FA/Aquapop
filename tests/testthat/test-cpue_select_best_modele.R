@@ -28,7 +28,7 @@ test_that("retourne une erreur si colonnes absentes", {
   
   expect_error(
     cpue_select_best_modele(df_invalide),
-    regexp = "Le tableau fourni n’est pas valide"
+    regexp = "Le tableau fourni n'est pas valide"
   )
 })
 
@@ -45,7 +45,7 @@ test_that("retourne NA et un warning si aucune ligne exploitable", {
   })
 })
 
-test_that("retourne le premier modèle en cas d’ex-aequo", {
+test_that("retourne le premier modèle en cas d'ex-aequo", {
   df <- tibble::tibble(
     methode = c("nb1", "nb2"),
     ajustement_hnp = c(5, 5),

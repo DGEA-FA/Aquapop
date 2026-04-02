@@ -1,10 +1,10 @@
 #' Sélectionner les meilleurs modèles L50 pour chaque sexe (approche séparée)
 #'
 #' Cette fonction identifie les meilleurs modèles L50 pour les mâles et les femelles
-#' à partir d’un tableau d’évaluation. Elle retient uniquement les modèles ayant
+#' à partir d'un tableau d'évaluation. Elle retient uniquement les modèles ayant
 #' convergé et un commentaire favorable (pas de rejet), puis sélectionne celui
 #' avec le plus bas AICc pour chaque sexe. Si un des deux sexes ne dispose
-#' d’aucun modèle valide, elle recommande de passer à une approche combinée.
+#' d'aucun modèle valide, elle recommande de passer à une approche combinée.
 #'
 #' @param evaluation_df Un `data.frame` retourné par `maturite_eval_modele()`, contenant
 #'   au minimum les colonnes suivantes : `modele_id`, `convergence`, `commentaire`, `aicc`.

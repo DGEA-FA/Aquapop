@@ -1,11 +1,11 @@
 #' Évaluer l'ajustement des modèles de maturité (L50 ou A50)
 #'
-#' Cette fonction compile les critères d’évaluation de plusieurs modèles de maturité
-#' (logistique, probit, etc.) pour les comparer selon leur qualité d’ajustement.
+#' Cette fonction compile les critères d'évaluation de plusieurs modèles de maturité
+#' (logistique, probit, etc.) pour les comparer selon leur qualité d'ajustement.
 #'
 #' @param models Liste des modèles retournée par `maturite_generate_modele()`
 #'
-#' @return Un `data.frame` trié par AICc avec les indicateurs : convergence, tests d’ajustement, commentaire
+#' @return Un `data.frame` trié par AICc avec les indicateurs : convergence, tests d'ajustement, commentaire
 #' @export
 #'
 #' @importFrom dplyr bind_rows arrange desc
@@ -47,15 +47,15 @@ maturite_eval_modele <- function(models) {
   return(results)
 }
 
-#' Évaluer les critères d’un modèle individuel de maturité
+#' Évaluer les critères d'un modèle individuel de maturité
 #'
 #' Fonction interne utilisée par `maturite_eval_modele()` pour extraire les indicateurs
-#' d’ajustement d’un modèle de type `glm` : convergence, p-valeurs, aicc, etc.
+#' d'ajustement d'un modèle de type `glm` : convergence, p-valeurs, aicc, etc.
 #'
-#' @param mod Un objet `glm`, ou `NULL` si l’ajustement a échoué
+#' @param mod Un objet `glm`, ou `NULL` si l'ajustement a échoué
 #' @param id  Identifiant du modèle (ex. : "ltm_logit", "age_cloglog")
 #'
-#' @return Un `data.frame` avec les critères d’ajustement du modèle
+#' @return Un `data.frame` avec les critères d'ajustement du modèle
 #' @keywords internal
 #'
 #' @importFrom stats predict update anova formula
@@ -79,7 +79,7 @@ build_individual_model_row <- function(mod, id) {
   formule_str <- as.character(formula(mod))[3]
   conv <- mod$converged
   
-  # Test d’ajustement basé sur les résidus de Pearson
+  # Test d'ajustement basé sur les résidus de Pearson
   p_fit <- tryCatch(o.r.test(mod), error = function(e) NA)
   
   # Test du lien (ajout du terme eta²)

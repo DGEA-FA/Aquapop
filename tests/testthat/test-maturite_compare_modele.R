@@ -73,7 +73,7 @@ test_that("Déclenche un warning si aucun modèle n'est sélectionnable", {
 })
 
 
-test_that("Gère le cas réel où aucun mâle n’est observé (modèles séparés impossibles)", {
+test_that("Gère le cas réel où aucun mâle n'est observé (modèles séparés impossibles)", {
   df <- tibble::tibble(
     maturite = factor(rep(c("O", "N"), each = 10), levels = c("N", "O")),
     sexe = factor(rep("F", 20), levels = c("F")),

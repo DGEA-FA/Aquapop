@@ -19,7 +19,7 @@ Retourne une liste vide avec un avertissement si un seul sexe est présent.
 }
 \description{
 Cette fonction ajuste automatiquement douze modèles logistiques binaires pour
-estimer la maturité sexuelle en fonction de la taille (\code{ltm}) ou de l’âge (\code{age}),
+estimer la maturité sexuelle en fonction de la taille (\code{ltm}) ou de l'âge (\code{age}),
 en tenant compte du sexe. Elle retourne un ensemble de modèles combinés incluant :
 \itemize{
 \item TLO : modèle sans sexe (\code{~ variable})

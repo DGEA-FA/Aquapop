@@ -1,12 +1,12 @@
 #' Étendre artificiellement les données de fréquence d'âge avec des zéros
 #'
-#' Cette fonction ajoute des classes d’âge fictives avec un nombre de captures nul (`number = 0`)
-#' au-delà de l’âge maximal observé, jusqu’à trois fois cet âge. Cette étape permet d'améliorer
-#' l’ajustement de certains modèles de mortalité (voir Mainguy & Moral, 2021).
+#' Cette fonction ajoute des classes d'âge fictives avec un nombre de captures nul (`number = 0`)
+#' au-delà de l'âge maximal observé, jusqu'à trois fois cet âge. Cette étape permet d'améliorer
+#' l'ajustement de certains modèles de mortalité (voir Mainguy & Moral, 2021).
 #'
 #' @param df_corrigee Un `data.frame` contenant les colonnes `age` (âge) et `number` (fréquence),
 #' généralement produit par la fonction `mortalite_prepare_corr()`.
-#' @param age_max Un entier indiquant l’âge maximal observé (souvent issu de `mortalite_get_age_max()`).
+#' @param age_max Un entier indiquant l'âge maximal observé (souvent issu de `mortalite_get_age_max()`).
 #'
 #' @return Un `data.frame` combinant les âges observés avec les âges fictifs ajoutés, avec `number = 0`.
 #' Les lignes sont triées par âge croissant.
@@ -28,7 +28,7 @@ mortalite_prepare_extended <- function(df_corrigee, age_max) {
     stop("`age_max` doit être un nombre numérique positif.")
   }
   
-  # --- Génération des âges fictifs jusqu’à 3 × âge max ---
+  # --- Génération des âges fictifs jusqu'à 3 × âge max ---
   ages_fictifs <- tibble(
     age    = (age_max + 1):(age_max * 3),
     number = 0

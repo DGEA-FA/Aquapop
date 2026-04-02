@@ -15,7 +15,7 @@ mod_masse_longueur_ui <- function(id) {
     
     # Texte explicatif
     p("La figure suivante représente la relation allométrique entre la longueur totale
-      maximale (mm) et la masse (g). L’équation et la valeur des paramètres sont indiqués sur 
+      maximale (mm) et la masse (g). L'équation et la valeur des paramètres sont indiqués sur 
       le graphique."),
     
     # Graphique

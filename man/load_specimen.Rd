@@ -2,7 +2,7 @@
 % Please edit documentation in R/load_specimen.R
 \name{load_specimen}
 \alias{load_specimen}
-\title{Charger les données du feuillet "Specimens" d’un fichier Excel (version robuste)}
+\title{Charger les données du feuillet "Specimens" d'un fichier Excel (version robuste)}
 \usage{
 load_specimen(path, namesheet = "Specimens", verbose = TRUE, col_rename = TRUE)
 }

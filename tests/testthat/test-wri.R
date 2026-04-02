@@ -51,7 +51,7 @@ test_that("Toutes les classes de taille ne sont pas représentées", {
   expect_s3_class(res$data, "data.frame")
 })
 
-test_that("Tous les spécimens sont IND : pas d’erreur", {
+test_that("Tous les spécimens sont IND : pas d'erreur", {
   specimen <- data.frame(
     sp = rep("SAVI", 6),
     ltm = c(160, 165, 170, 175, 180, 185),
@@ -63,7 +63,7 @@ test_that("Tous les spécimens sont IND : pas d’erreur", {
   expect_s3_class(res$data, "data.frame")
 })
 
-test_that("Seulement des femelles ou seulement des mâles : pas d’erreur", {
+test_that("Seulement des femelles ou seulement des mâles : pas d'erreur", {
   femelles <- data.frame(
     sp = rep("SANA", 4),
     ltm = c(300, 310, 320, 330),

@@ -33,8 +33,8 @@ mortalite_phrase_resume <- function(data_comparaison, modele_nom) {
   modele_upper <- toupper(modele_nom)
   
   if (!"A" %in% names(ligne) || is.na(ligne$A)) {
-    return(glue("Le modèle {modele_upper} a été sélectionné, mais la mortalité annuelle n’est pas disponible."))
+    return(glue("Le modèle {modele_upper} a été sélectionné, mais la mortalité annuelle n'est pas disponible."))
   }
   
-  glue("Le modèle {modele_upper} décrit le mieux la mortalité de la population. La mortalité annuelle s’élève à {ligne$A} %.") |> as.character()
+  glue("Le modèle {modele_upper} décrit le mieux la mortalité de la population. La mortalité annuelle s'élève à {ligne$A} %.") |> as.character()
 }

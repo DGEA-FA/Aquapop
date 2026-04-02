@@ -213,7 +213,7 @@ mod_croissance_server <- function(id, specimen, filename_suffix) {
           t0_ic = colDef(name = "t\u2080 IC 95%"),
           aicc = colDef(name = "AICc"),
           delta_aicc = colDef(name = "Δ AICc"),
-          aiccwt = colDef(name = "Poids d’Akaike"),
+          aiccwt = colDef(name = "Poids d'Akaike"),
           convergence = colDef(name = "Convergence")
         )
         
@@ -317,7 +317,7 @@ mod_croissance_server <- function(id, specimen, filename_suffix) {
           "ainsi que la courbe de croissance modélisée selon le modèle sélectionné."
         ),
         
-        h3("Longueur à l’âge des spécimens capturés et modèle de croissance"),
+        h3("Longueur à l'âge des spécimens capturés et modèle de croissance"),
         
         div(
           style = "max-width: 900px; margin: auto;",

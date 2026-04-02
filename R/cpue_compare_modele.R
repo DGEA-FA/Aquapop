@@ -78,7 +78,7 @@ cpue_compare_modele <- function(cpue_data) {
       mutate(
         commentaire = if_else(
           methode %in% best_methodes,
-          paste0(commentaire, " Il s’agit toutefois du meilleur modèle parmi les options disponibles."),
+          paste0(commentaire, " Il s'agit toutefois du meilleur modèle parmi les options disponibles."),
           commentaire
         )
       )

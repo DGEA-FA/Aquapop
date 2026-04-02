@@ -1,6 +1,6 @@
-#' Déterminer l’âge Peak Plus (âge de départ) à partir de la structure d’âge
+#' Déterminer l'âge Peak Plus (âge de départ) à partir de la structure d'âge
 #'
-#' Cette fonction retourne l’âge le plus fréquent (le mode) dans la colonne `age`,
+#' Cette fonction retourne l'âge le plus fréquent (le mode) dans la colonne `age`,
 #' augmenté de 1, conformément à la définition du Peak Plus (âge de départ) utilisée en analyse de mortalité.
 #' Elle suppose que les données ont été filtrées au préalable pour une seule espèce.
 #'

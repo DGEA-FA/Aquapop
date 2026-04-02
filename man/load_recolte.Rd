@@ -23,7 +23,7 @@ Un \code{data.frame} structuré contenant :
 }
 }
 \description{
-Cette fonction importe les données brutes du feuillet "Récolte" d’un fichier Excel
+Cette fonction importe les données brutes du feuillet "Récolte" d'un fichier Excel
 formaté selon les standards AquaPop. Elle applique des transformations pour nettoyer
 les colonnes, corriger les années (Excel ou texte), et produire un tableau structuré.
 }

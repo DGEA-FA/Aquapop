@@ -1,10 +1,10 @@
-#' Calculer l’indice PSD-Q global (Proportional Size Distribution – Quality)
+#' Calculer l'indice PSD-Q global (Proportional Size Distribution – Quality)
 #'
-#' Cette fonction calcule l’indice PSD-Q pour une espèce cible, à partir des longueurs des spécimens capturés.
-#' L’indice PSD-Q correspond à la proportion d’individus situés dans les classes de qualité (Q), définies
+#' Cette fonction calcule l'indice PSD-Q pour une espèce cible, à partir des longueurs des spécimens capturés.
+#' L'indice PSD-Q correspond à la proportion d'individus situés dans les classes de qualité (Q), définies
 #' par des seuils spécifiques à chaque espèce.
-#' La fonction utilise les seuils extraits par `get_info_pen()` et retourne l’estimation ponctuelle
-#' ainsi qu’un intervalle de confiance à 95 %, calculé selon une méthode binomiale.
+#' La fonction utilise les seuils extraits par `get_info_pen()` et retourne l'estimation ponctuelle
+#' ainsi qu'un intervalle de confiance à 95 %, calculé selon une méthode binomiale.
 #'
 #' @importFrom flextable flextable set_header_labels
 #' @importFrom dplyr select rename mutate filter
@@ -14,11 +14,11 @@
 #' @param data Un `data.frame` contenant les données pour une seule espèce.
 #'             Doit inclure les colonnes :
 #'             - `ltm` : Longueur totale (en mm)
-#'             - `sp`  : Code de l’espèce (ex : `"SAFO"`)
+#'             - `sp`  : Code de l'espèce (ex : `"SAFO"`)
 #'
 #' @return Une liste nommée contenant :
 #' \describe{
-#'   \item{`data`}{Un `data.frame` avec la valeur de l’indice PSD-Q et son intervalle de confiance à 95 %.}
+#'   \item{`data`}{Un `data.frame` avec la valeur de l'indice PSD-Q et son intervalle de confiance à 95 %.}
 #'   \item{`flextable`}{Une version formatée (`flextable`) du tableau pour affichage ou export.}
 #' }
 #'
@@ -78,10 +78,10 @@ psd_q <- function(data) {
   # --- Validation des fréquences pondérées ---
   
   if (all((freq_vecteur / 100)[poids_classes == 1] == 0)) {
-    stop("Aucune donnée dans les classes pondérées. Impossible de calculer l’indice PSD-Q.")
+    stop("Aucune donnée dans les classes pondérées. Impossible de calculer l'indice PSD-Q.")
   }
   
-  # --- Calcul de l’indice PSD-Q avec IC 95 % ---
+  # --- Calcul de l'indice PSD-Q avec IC 95 % ---
   
   table_resultats <- psdCI(
     poids_classes,

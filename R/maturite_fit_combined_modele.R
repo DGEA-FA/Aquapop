@@ -1,7 +1,7 @@
 #' Ajuster les modèles de maturité combinés (L50 ou A50)
 #'
 #' Cette fonction ajuste automatiquement douze modèles logistiques binaires pour
-#' estimer la maturité sexuelle en fonction de la taille (`ltm`) ou de l’âge (`age`),
+#' estimer la maturité sexuelle en fonction de la taille (`ltm`) ou de l'âge (`age`),
 #' en tenant compte du sexe. Elle retourne un ensemble de modèles combinés incluant :
 #' \itemize{
 #'   \item TLO : modèle sans sexe (`~ variable`)
@@ -33,7 +33,7 @@ maturite_fit_combined_modele <- function(df, variable = c("ltm", "age")) {
   
   # --- Étape 2 : Vérification de la présence des deux sexes ---
   if (!all(c("M", "F") %in% df$sexe)) {
-    warning("Les données ne contiennent qu’un seul sexe. Modèles combinés non ajustés.")
+    warning("Les données ne contiennent qu'un seul sexe. Modèles combinés non ajustés.")
     return(list())
   }
   

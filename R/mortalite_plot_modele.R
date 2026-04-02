@@ -1,11 +1,11 @@
-#' Tracer la structure d’âge observée et la courbe du modèle de mortalité sélectionné
+#' Tracer la structure d'âge observée et la courbe du modèle de mortalité sélectionné
 #'
-#' Cette fonction affiche l’histogramme des âges issus du tableau `specimen` et y superpose
-#' la courbe prédite à partir d’un modèle de mortalité ajusté (`modele`). Le style graphique
-#' est cohérent avec les autres figures de structure d’âge (voir `structure_age()`).
+#' Cette fonction affiche l'histogramme des âges issus du tableau `specimen` et y superpose
+#' la courbe prédite à partir d'un modèle de mortalité ajusté (`modele`). Le style graphique
+#' est cohérent avec les autres figures de structure d'âge (voir `structure_age()`).
 #'
-#' @param specimen Un `data.frame` contenant au moins les colonnes `sp` (code de l’espèce) et `age`.
-#' @param modele Un objet de modèle ajusté (`glm`, `glm.nb`, `glmmTMB`, etc.) pour prédire la fréquence selon l’âge.
+#' @param specimen Un `data.frame` contenant au moins les colonnes `sp` (code de l'espèce) et `age`.
+#' @param modele Un objet de modèle ajusté (`glm`, `glm.nb`, `glmmTMB`, etc.) pour prédire la fréquence selon l'âge.
 #' @param info_modele Un `data.frame` issu de `mortalite_compare_modele()$data` contenant les estimations de A et IC 95%.
 #'
 #' @return Un objet `ggplot2` combinant histogramme observé et courbe prédite.
@@ -91,7 +91,7 @@ mortalite_plot_modele <- function(specimen, modele, info_modele) {
       inherit.aes = FALSE
     ) +
     labs(
-      title = "Distribution d’âge et modèle de mortalité",
+      title = "Distribution d'âge et modèle de mortalité",
       subtitle = sous_titre,
       x = "Âge",
       y = paste0("Nb. ", nom_espece, " échantillonnés")

@@ -2,7 +2,7 @@
 % Please edit documentation in R/wri.R
 \name{resumer_wr_par_groupe}
 \alias{resumer_wr_par_groupe}
-\title{Résumer les résultats d’un modèle Wr par groupe (sexe ou classe)}
+\title{Résumer les résultats d'un modèle Wr par groupe (sexe ou classe)}
 \usage{
 resumer_wr_par_groupe(mod, var)
 }

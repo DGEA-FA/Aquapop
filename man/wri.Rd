@@ -2,7 +2,7 @@
 % Please edit documentation in R/wri.R
 \name{wri}
 \alias{wri}
-\title{Calculer l’indice de condition relatif (Wr) pour une espèce}
+\title{Calculer l'indice de condition relatif (Wr) pour une espèce}
 \usage{
 wri(data)
 }
@@ -20,9 +20,9 @@ Une liste contenant :
 }
 }
 \description{
-Cette fonction calcule l’indice de condition relatif (Wr) à partir des longueurs et masses des spécimens d’une espèce donnée.
+Cette fonction calcule l'indice de condition relatif (Wr) à partir des longueurs et masses des spécimens d'une espèce donnée.
 Elle retourne un tableau de synthèse, une version formatée (\code{flextable}), ainsi que deux graphiques illustrant les résultats
-: l’un selon la longueur individuelle, l’autre par classe de taille.
+: l'un selon la longueur individuelle, l'autre par classe de taille.
 }
 \examples{
 df <- data.frame(

@@ -1,8 +1,8 @@
 #' Ajuster un modèle de mortalité de type Poisson
 #'
 #' Cette fonction ajuste un modèle de mortalité sur les données étendues de fréquence d'âge
-#' à l’aide d’un GLM Poisson. Elle applique aussi un test HNP (Half-Normal Plot) avec 2 à 5 simulations
-#' selon la qualité de l’ajustement. Elle retourne un résumé des statistiques du modèle.
+#' à l'aide d'un GLM Poisson. Elle applique aussi un test HNP (Half-Normal Plot) avec 2 à 5 simulations
+#' selon la qualité de l'ajustement. Elle retourne un résumé des statistiques du modèle.
 #'
 #' @importFrom dplyr case_when
 #' @importFrom MuMIn AICc
@@ -13,19 +13,19 @@
 #' @param df_age_etendue Un `data.frame` produit par `mortalite_prepare_extended()` contenant au minimum :
 #' \describe{
 #'   \item{age}{Âge des individus}
-#'   \item{number}{Nombre d’individus observés}
+#'   \item{number}{Nombre d'individus observés}
 #' }
 #'
-#' @return Un `data.frame` d’une ligne contenant :
+#' @return Un `data.frame` d'une ligne contenant :
 #' \describe{
 #'   \item{methode}{Nom du modèle (`"poisson"`)}
-#'   \item{ajustement_hnp}{Pourcentage moyen d’observations hors bande (test HNP)}
+#'   \item{ajustement_hnp}{Pourcentage moyen d'observations hors bande (test HNP)}
 #'   \item{aicc}{Critère d'information corrigé (aicc)}
-#'   \item{Z}{Coefficient d’âge estimé}
+#'   \item{Z}{Coefficient d'âge estimé}
 #'   \item{SE}{Erreur standard associée à Z}
 #'   \item{A}{Taux de mortalité annuel estimé en %}
 #'   \item{IC 95%}{Intervalle de confiance du taux A}
-#'   \item{commentaire}{Appréciation qualitative de l’ajustement}
+#'   \item{commentaire}{Appréciation qualitative de l'ajustement}
 #'   \item{convergence}{Convergence du modèle (toujours TRUE pour GLM Poisson)}
 #'   \item{nb_iterations_hnp}{Nombre de simulations HNP (2 ou 5)}
 #' }

@@ -2,7 +2,7 @@
 #'
 #' Cette fonction ajuste les cinq modèles de mortalité (Poisson, NB1, NB2, CMP, GP),
 #' sélectionne automatiquement le meilleur via `mortalite_select_best_modele()`,
-#' et retourne l’objet `modele` correspondant. Si `methode` est précisé, il est utilisé directement.
+#' et retourne l'objet `modele` correspondant. Si `methode` est précisé, il est utilisé directement.
 #'
 #' @param data Un `data.frame` contenant au minimum les colonnes `age` et `number`
 #'   (habituellement produit par `mortalite_prepare()`)

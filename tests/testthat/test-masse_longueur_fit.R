@@ -22,7 +22,7 @@ test_that("masse_longueur_fit() retourne une liste bien structurée", {
   expect_true(all(c("coefficient", "estimation", "erreur_standard", "ic95") %in% names(resultat$data)))
 })
 
-test_that("masse_longueur_fit() échoue si plus d’une espèce est présente", {
+test_that("masse_longueur_fit() échoue si plus d'une espèce est présente", {
   data_multi_especes <- tibble::tibble(
     ltm = c(100, 120, 140),
     masse = c(10, 12, 14),

@@ -2,7 +2,7 @@
 % Please edit documentation in R/mortalite_get_age_max.R
 \name{mortalite_get_age_max}
 \alias{mortalite_get_age_max}
-\title{Trouver l’âge maximal dans les données de mortalité}
+\title{Trouver l'âge maximal dans les données de mortalité}
 \usage{
 mortalite_get_age_max(data)
 }
@@ -10,10 +10,10 @@ mortalite_get_age_max(data)
 \item{data}{Un \code{data.frame} contenant les données de spécimens. Doit inclure une colonne nommée \code{age} de type numérique ou entier.}
 }
 \value{
-Un entier (\code{integer}) correspondant à l’âge maximal observé. Retourne \code{NA_integer_} si aucun âge valide n’est présent.
+Un entier (\code{integer}) correspondant à l'âge maximal observé. Retourne \code{NA_integer_} si aucun âge valide n'est présent.
 }
 \description{
-Cette fonction retourne l’âge maximal observé dans les données de mortalité, en ignorant les valeurs manquantes.
+Cette fonction retourne l'âge maximal observé dans les données de mortalité, en ignorant les valeurs manquantes.
 Elle vérifie également la présence de la colonne \code{age} et la présence de données valides.
 }
 \examples{

@@ -9,8 +9,8 @@ mortalite_test_surdispersion_poisson(data)
 \arguments{
 \item{data}{Un \code{data.frame} contenant au minimum deux colonnes :
 \itemize{
-\item \code{age} : l’âge des poissons (entier ou numérique),
-\item \code{number} : la fréquence d’individus observés pour chaque âge.
+\item \code{age} : l'âge des poissons (entier ou numérique),
+\item \code{number} : la fréquence d'individus observés pour chaque âge.
 }}
 }
 \value{
@@ -23,11 +23,11 @@ Une liste nommée avec trois éléments :
 }
 \description{
 Cette fonction applique un test de sur-dispersion (\code{dispersiontest()})
-à un modèle de Poisson ajusté sur les fréquences d’âge (\code{number ~ age}).
+à un modèle de Poisson ajusté sur les fréquences d'âge (\code{number ~ age}).
 Elle retourne :
 \itemize{
 \item la valeur numérique de dispersion,
-\item un message d’interprétation textuel,
+\item un message d'interprétation textuel,
 \item un graphique des résidus de Pearson vs les valeurs ajustées.
 }
 }

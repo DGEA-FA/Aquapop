@@ -99,7 +99,7 @@ load_lac <- function(path,
       idx <- idx[!is.na(idx)]
       if (length(idx) > 0) {
         col <- noms_originaux[idx[1]]
-        if (verbose) message("[load_lac] Colonne ‘", col, "’ reconnue comme ‘", canonique, "’.")
+        if (verbose) message("[load_lac] Colonne ‘", col, "' reconnue comme ‘", canonique, "'.")
         return(col)
       } else {
         return(NA)
@@ -122,7 +122,7 @@ load_lac <- function(path,
         lac[[col]] <- lac_raw[[col_source]]
       } else {
         lac[[col]] <- rep(NA_character_, n)
-        if (verbose) message("[load_lac] Colonne ‘", col, "’ absente, ajoutée comme NA.")
+        if (verbose) message("[load_lac] Colonne ‘", col, "' absente, ajoutée comme NA.")
       }
     }
     

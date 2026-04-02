@@ -16,7 +16,7 @@ Une chaîne de caractères correspondant à la méthode du meilleur modèle sél
 Retourne \code{NA} avec un avertissement si aucun modèle ne peut être sélectionné.
 }
 \description{
-Cette fonction identifie automatiquement le meilleur modèle d’abondance
+Cette fonction identifie automatiquement le meilleur modèle d'abondance
 (CPUE) parmi les modèles Poisson, NB1, NB2, CMP et GP, en se basant sur le
 critère d'information corrigé (AICc). La priorité est donnée aux modèles
 bien ajustés (ajustement HNP < 10). Si aucun modèle ne satisfait ce critère,

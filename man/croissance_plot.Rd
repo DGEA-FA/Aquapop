@@ -14,14 +14,14 @@ croissance_plot(dfspecimen, tablemodele, modele)
 \item{modele}{Une chaîne de caractères indiquant le modèle à utiliser : \code{"Von Bertalanffy"}, \code{"Gompertz"} ou \code{"Logistique"}.}
 }
 \value{
-Un objet \code{ggplot} représentant la courbe de croissance ajustée, avec les points observés et l’intervalle de confiance.
+Un objet \code{ggplot} représentant la courbe de croissance ajustée, avec les points observés et l'intervalle de confiance.
 Retourne \code{NULL} avec un avertissement si le graphique ne peut pas être produit.
 }
 \description{
-Cette fonction génère un graphique illustrant la courbe de croissance ajustée d’un groupe de spécimens,
+Cette fonction génère un graphique illustrant la courbe de croissance ajustée d'un groupe de spécimens,
 selon le modèle choisi parmi : Von Bertalanffy, Gompertz ou Logistique.
-Le graphique comprend les points observés (\code{ltm} vs \code{age}), la courbe ajustée, l’intervalle de confiance,
-ainsi qu’une ligne horizontale représentant la valeur asymptotique de croissance (\verb{L∞}).
+Le graphique comprend les points observés (\code{ltm} vs \code{age}), la courbe ajustée, l'intervalle de confiance,
+ainsi qu'une ligne horizontale représentant la valeur asymptotique de croissance (\verb{L∞}).
 }
 \examples{
 dfspecimen <- data.frame(

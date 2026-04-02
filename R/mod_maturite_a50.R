@@ -1,6 +1,6 @@
 #' maturite_a50 UI Function
 #'
-#' @description Module Shiny pour la sélection et l’affichage des modèles A50.
+#' @description Module Shiny pour la sélection et l'affichage des modèles A50.
 #'
 #' @param id Identifiant du module.
 #'

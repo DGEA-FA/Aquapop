@@ -1,6 +1,6 @@
-#' Générer un tableau récapitulatif d’un inventaire ichtyologique
+#' Générer un tableau récapitulatif d'un inventaire ichtyologique
 #'
-#' Cette fonction produit un tableau synthèse des métadonnées d’un inventaire ichtyologique
+#' Cette fonction produit un tableau synthèse des métadonnées d'un inventaire ichtyologique
 #' réalisé sur un lac donné, pour un type de pêche et une ou plusieurs années.
 #'
 #' @param data_lac Un `data.frame` contenant les métadonnées du lac (feuillet "Lac"),
@@ -23,15 +23,15 @@ generate_recapitulatif_inventaire <- function(data_lac, data_station) {
     `No de lac` = unique(no_lac),
     `Nom du lac` = unique(nom_lac),
     `Superficie du lac (ha)` = unique(superficie_ha),
-    `Année(s) de l’inventaire (aaaa)` = toString(sort(unique(annee)))
+    `Année(s) de l'inventaire (aaaa)` = toString(sort(unique(annee)))
   )
   
-  # --- Dates de l’inventaire ---
+  # --- Dates de l'inventaire ---
   date_info <- data_station |> reframe(
-    `Date de début de l’inventaire (aaaa-mm-jj)` = {
+    `Date de début de l'inventaire (aaaa-mm-jj)` = {
       if (all(is.na(date_pose))) "Aucune donnée disponible" else min(date_pose, na.rm = TRUE)
     },
-    `Date de fin de l’inventaire (aaaa-mm-jj)` = {
+    `Date de fin de l'inventaire (aaaa-mm-jj)` = {
       if (all(is.na(date_leve))) "Aucune donnée disponible" else max(date_leve, na.rm = TRUE)
     }
   )
@@ -54,7 +54,7 @@ generate_recapitulatif_inventaire <- function(data_lac, data_station) {
     rownames_to_column("Type de pêche")
 }
 
-#' Compter les occurrences d’une valeur dans une colonne
+#' Compter les occurrences d'une valeur dans une colonne
 #'
 #' Fonction utilitaire interne utilisée dans le tableau récapitulatif.
 #'

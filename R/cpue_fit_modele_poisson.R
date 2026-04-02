@@ -42,7 +42,7 @@ cpue_fit_modele_poisson <- function(cpue_data) {
   convergence_flag <- !inherits(model_poisson, "try-error") &&
     isTRUE(model_poisson$converged %||% TRUE)
   
-  # --- Si le modèle n’a pas convergé : sortie neutralisée ---
+  # --- Si le modèle n'a pas convergé : sortie neutralisée ---
   if (!convergence_flag) {
     return(
       tibble(

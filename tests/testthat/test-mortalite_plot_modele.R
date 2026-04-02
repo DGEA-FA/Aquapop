@@ -4,7 +4,7 @@ test_that("Retourne un ggplot valide avec données simulées (Poisson)", {
     age = sample(0:10, size = 200, replace = TRUE)
   )
   
-  # définir la couleur manquante si pas déjà dans l’environnement
+  # définir la couleur manquante si pas déjà dans l'environnement
   couleur_default <- "grey30"
   
   modele <- glm(age ~ 1, data = specimen, family = poisson())

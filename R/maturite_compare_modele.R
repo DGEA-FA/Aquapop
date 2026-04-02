@@ -1,21 +1,21 @@
 #' Évaluer et comparer les modèles L50 (ou A50) de maturité
 #'
 #' Cette fonction ajuste, évalue et sélectionne les modèles de maturité sexuelle
-#' selon l’approche séparée (par sexe) et combinée (sexes confondus), à partir
-#' des données de spécimens. Elle retourne les tableaux d’évaluation au format brut
-#' et flextable, un message d’interprétation, et le meilleur modèle recommandé
-#' selon l’approche choisie ou forcée (`prefer_combined`).
+#' selon l'approche séparée (par sexe) et combinée (sexes confondus), à partir
+#' des données de spécimens. Elle retourne les tableaux d'évaluation au format brut
+#' et flextable, un message d'interprétation, et le meilleur modèle recommandé
+#' selon l'approche choisie ou forcée (`prefer_combined`).
 #'
 #' @param specimen_data Un `data.frame` contenant les données brutes de spécimens,
 #'   incluant les colonnes `maturite`, `sexe`, et la variable quantitative choisie (`ltm` ou `age`).
-#' @param prefer_combined Logique indiquant si l’approche combinée doit être forcée (défaut : `FALSE`)
+#' @param prefer_combined Logique indiquant si l'approche combinée doit être forcée (défaut : `FALSE`)
 #' @param variable Variable quantitative utilisée dans les modèles : `"ltm"` (par défaut) ou `"age"`
 #'
 #' @return Une liste contenant :
 #' \describe{
-#'   \item{table}{Liste avec `df` et `flextable` pour le tableau principal (selon l’approche retenue)}
+#'   \item{table}{Liste avec `df` et `flextable` pour le tableau principal (selon l'approche retenue)}
 #'   \item{best_model}{Liste contenant les 3 éléments : `best_model_M`, `best_model_F`, `best_model_combined`}
-#'   \item{message}{Texte interprétatif décrivant la sélection et les cas d’échec éventuels}
+#'   \item{message}{Texte interprétatif décrivant la sélection et les cas d'échec éventuels}
 #'   \item{table_sep}{Liste avec `df` et `flextable` pour les modèles séparés}
 #'   \item{table_comb}{Liste avec `df` et `flextable` pour les modèles combinés}
 #' }
@@ -83,7 +83,7 @@ maturite_compare_modele <- function(specimen_data, prefer_combined = FALSE, vari
   message <- paste0(best_sep$message, "\n", best_comb$message)
   if (is.null(best_comb$best_model) &&
       (is.null(best_sep$best_model_M) || is.null(best_sep$best_model_F))) {
-    message <- paste0(message, "\n⚠️ Aucun modèle utilisable n’a pu être sélectionné.")
+    message <- paste0(message, "\n⚠️ Aucun modèle utilisable n'a pu être sélectionné.")
     warning("Aucun modèle utilisable trouvé.")
   }
   
@@ -91,7 +91,7 @@ maturite_compare_modele <- function(specimen_data, prefer_combined = FALSE, vari
   eval_sep <- add_labels_maturite(eval_sep)
   eval_comb <- add_labels_maturite(eval_comb)
   
-  # --- Sélection de l’approche à retenir ---
+  # --- Sélection de l'approche à retenir ---
   if (prefer_combined || best_sep$use_combined) {
     table_main <- to_dual_format(eval_comb)
     best_model <- list(

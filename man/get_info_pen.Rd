@@ -7,22 +7,22 @@
 get_info_pen(input)
 }
 \arguments{
-\item{input}{Un code d’espèce (ex: \code{"SANA"}) ou un type de pêche (ex: \code{"PENT"}), au format \code{character(1)}.}
+\item{input}{Un code d'espèce (ex: \code{"SANA"}) ou un type de pêche (ex: \code{"PENT"}), au format \code{character(1)}.}
 }
 \value{
 Une liste nommée contenant :
 \describe{
-\item{code_sp}{Code de l’espèce (ex: \code{"SAFO"})}
-\item{nom_sp}{Nom complet de l’espèce (ex: \code{"Omble de fontaine"})}
+\item{code_sp}{Code de l'espèce (ex: \code{"SAFO"})}
+\item{nom_sp}{Nom complet de l'espèce (ex: \code{"Omble de fontaine"})}
 \item{binwidth}{Largeur des classes pour les histogrammes}
 \item{breaks}{Vecteur des bornes de classes numériques}
 \item{break_labels}{Étiquettes textuelles associées aux bornes}
 }
-Retourne \code{NULL} si l’entrée est invalide ou inconnue dans \code{pen_constants}.
+Retourne \code{NULL} si l'entrée est invalide ou inconnue dans \code{pen_constants}.
 }
 \description{
 Cette fonction retourne les métadonnées associées à une espèce cible, à partir
-du tableau \code{pen_constants}. Elle accepte soit un code d’espèce (\code{"SANA"}, \code{"SAFO"}, \code{"SAVI"}),
+du tableau \code{pen_constants}. Elle accepte soit un code d'espèce (\code{"SANA"}, \code{"SAFO"}, \code{"SAVI"}),
 soit un type de pêche (\code{"PENT"}, \code{"PENOF"}, \code{"PENDJ"}), auquel cas le code espèce est automatiquement déduit.
 }
 \details{

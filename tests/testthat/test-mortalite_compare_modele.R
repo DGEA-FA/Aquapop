@@ -44,7 +44,7 @@ test_that("Retourne une liste avec data et flextable valides", {
   for (c in lignes_min$commentaires) {
     expect_true(
       grepl("AICc est le plus faible", c) ||
-        grepl("Il s’agit toutefois du meilleur modèle", c)
+        grepl("Il s'agit toutefois du meilleur modèle", c)
     )
   }
 })

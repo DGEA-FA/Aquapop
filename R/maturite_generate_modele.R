@@ -2,7 +2,7 @@
 #'
 #' Cette fonction ajuste un modèle de maturité en fonction du type de modèle (`TLO`, `ADD`, `COM`, `INT`) 
 #' et du lien (`logit`, `probit`, `cloglog`) spécifiés. Elle retourne un tableau de résultats, 
-#' un graphique de l’ogive de maturité, un commentaire sur l’ajustement, et les prédictions associées.
+#' un graphique de l'ogive de maturité, un commentaire sur l'ajustement, et les prédictions associées.
 #'
 #' @param data Jeu de données contenant les colonnes `maturite`, `sexe`, et `ltm` ou `age`
 #' @param variable Variable quantitative à utiliser : `"ltm"` (par défaut) ou `"age"`
@@ -13,7 +13,7 @@
 #' @return Une liste avec :
 #' - `table_resultats`: tableau brut des coefficients et points 50 %
 #' - `table_resultats_flextable`: version formatée
-#' - `commentaire`: interprétation de l’ajustement
+#' - `commentaire`: interprétation de l'ajustement
 #' - `graphique`: ogive de maturité
 #' - `donnees_ogive`: données prédictives
 #'
@@ -36,7 +36,7 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
   donnees_modeles <- maturite_prepare(data, variable = variable)
   
   if (nrow(donnees_modeles) < 10) {
-    stop(glue("❌ Trop peu d’individus après nettoyage (n = {nrow(donnees_modeles)})."))
+    stop(glue("❌ Trop peu d'individus après nettoyage (n = {nrow(donnees_modeles)})."))
   }
   
   
@@ -98,7 +98,7 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
   if (!isTRUE(modele_glm$converged)) {
     commentaire <- "Ce modèle ne converge pas et devrait être rejeté."
   } else if (isTRUE(pval_ajustement < 0.05) || isTRUE(pval_lien < 0.05)) {
-    commentaire <- "Ce modèle ne s’ajuste pas bien aux données. Il est préférable de choisir un autre modèle."
+    commentaire <- "Ce modèle ne s'ajuste pas bien aux données. Il est préférable de choisir un autre modèle."
   }
   
   
@@ -223,7 +223,7 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
     table_resultats[[col_point50_f]] <- point50$fem
     table_resultats[[col_point50_m]] <- point50$male
     
-    # Réorganisation des colonnes dans l’ordre voulu
+    # Réorganisation des colonnes dans l'ordre voulu
     ordre_cols <- switch(modele,
                          "ADD" = c(col_point50_m, col_point50_f, "b0", "b1", "sexe"),
                          "COM" = c(col_point50_m, col_point50_f, "b0", "b1", "sexe"),
@@ -373,10 +373,10 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
   ))
 }
 
-#' Extraire un coefficient d’un modèle de maturité selon le sexe
+#' Extraire un coefficient d'un modèle de maturité selon le sexe
 #'
 #' Fonction interne utilisée par `maturite_generate_modele()` pour extraire
-#' un coefficient ciblé (par sexe ou interaction) à partir d’un modèle glm.
+#' un coefficient ciblé (par sexe ou interaction) à partir d'un modèle glm.
 #'
 #' @param modele_glm Un objet `glm`
 #' @param sexe `"sexeF"` ou `"sexeM"` selon le coefficient à extraire

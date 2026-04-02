@@ -38,7 +38,7 @@ cpue_fit_modele_nb1 <- function(cpue_data) {
   
   convergence_flag <- model_nb1$fit$convergence == 0
   
-  # --- Si le modèle n’a pas convergé : sortie neutralisée ---
+  # --- Si le modèle n'a pas convergé : sortie neutralisée ---
   if (!convergence_flag) {
     return(
       tibble(

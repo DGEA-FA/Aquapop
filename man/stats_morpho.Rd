@@ -19,6 +19,6 @@ Un \code{data.frame} avec les statistiques résumées.
 \description{
 Fonction utilitaire interne. Résume une variable numérique (\code{ltm}, \code{masse}, \code{age})
 globalement ou par groupe, en calculant le nombre de valeurs non manquantes, la moyenne,
-l’écart-type, le minimum et le maximum.
+l'écart-type, le minimum et le maximum.
 }
 \keyword{internal}

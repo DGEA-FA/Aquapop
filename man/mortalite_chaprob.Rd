@@ -9,7 +9,7 @@ mortalite_chaprob(specimen, pp, age_max)
 \arguments{
 \item{specimen}{Un \code{data.frame} produit par \code{mortalite_prepare_corr()}, contenant une colonne \code{age}.}
 
-\item{pp}{Valeur de "peak-plus", soit la classe d’âge au-delà de laquelle les âges sont regroupés.}
+\item{pp}{Valeur de "peak-plus", soit la classe d'âge au-delà de laquelle les âges sont regroupés.}
 
 \item{age_max}{Âge maximum à considérer dans le calcul.}
 }

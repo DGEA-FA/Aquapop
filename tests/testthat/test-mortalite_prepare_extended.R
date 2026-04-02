@@ -12,7 +12,7 @@ test_that("mortalite_prepare_extended fonctionne dans le cas nominal", {
   fictifs <- res[res$age > age_max, ]
   expect_true(all(fictifs$number == 0))
   
-  # Vérifie que les valeurs d’origine ont été conservées
+  # Vérifie que les valeurs d'origine ont été conservées
   originaux <- res[res$age <= age_max, ]
   expect_equal(originaux$number, c(4, 3, 2, 1))
 })

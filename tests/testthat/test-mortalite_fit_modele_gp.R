@@ -33,7 +33,7 @@ test_that("Cas nominal : modèle GP retourne un tableau structuré", {
   expect_gte(res$ajustement_hnp, 0)
   expect_lte(res$ajustement_hnp, 100)
   
-  # Nb d’itérations HNP cohérent
+  # Nb d'itérations HNP cohérent
   if (res$ajustement_hnp < 10 || res$ajustement_hnp > 15) {
     expect_equal(res$nb_iterations_hnp, 2)
   } else {

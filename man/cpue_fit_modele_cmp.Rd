@@ -25,5 +25,5 @@ Un \code{data.frame} d’une seule ligne résumant le modèle ajusté, avec les 
 }
 \description{
 Cette fonction ajuste un modèle CMP via \code{glmmTMB} sur les données de CPUE par station.
-Elle effectue également un test HNP pour évaluer la qualité de l’ajustement.
+Elle effectue également un test HNP pour évaluer la qualité de l'ajustement.
 }
