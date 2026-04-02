@@ -2,20 +2,20 @@
 % Please edit documentation in R/wri.R
 \name{resumer_wr_par_groupe}
 \alias{resumer_wr_par_groupe}
-\title{Résumer les résultats d'un modèle Wr par groupe (sexe ou classe)}
+\title{Résumer les résultats d'un modèle Wr par groupe}
 \usage{
 resumer_wr_par_groupe(mod, var)
 }
 \arguments{
-\item{mod}{Un objet \code{lm} ajusté sur \code{Wri} en fonction du groupe (\code{sexe} ou \code{Classe})}
+\item{mod}{Un objet \code{lm} ajusté sur \code{wr} en fonction du groupe.}
 
-\item{var}{Nom du groupe à utiliser (\code{"sexe"} ou \code{"Classe"})}
+\item{var}{Nom de la variable de groupe à utiliser (\code{"sexe"} ou \code{"classe"}).}
 }
 \value{
-Un data.frame contenant les colonnes \code{groupe}, \code{wr}, \code{ic95}, \code{n}
+Un \code{data.frame} contenant les colonnes \code{groupe}, \code{wr}, \code{ic95} et \code{n}.
 }
 \description{
-Cette fonction applique un modèle linéaire et génère un tableau de prédictions
-avec intervalles de confiance et effectifs pour chaque modalité du groupe spécifié.
+Fonction interne. Génère un tableau de prédictions avec intervalles de
+confiance et effectifs pour chaque modalité du groupe spécifié.
 }
 \keyword{internal}

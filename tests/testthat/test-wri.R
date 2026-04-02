@@ -9,11 +9,16 @@ test_that("Cas normal : wri() retourne une liste structurée", {
   res <- wri(specimen)
   
   expect_type(res, "list")
-  expect_named(res, c("data", "flextable", "plot_tous", "plot_byclass"))
+  expect_named(
+    res,
+    c("success", "data", "flextable", "plot_tous", "plot_byclass", "message")
+  )
+  expect_true(res$success)
+  expect_null(res$message)
+  expect_s3_class(res$data, "data.frame")
   expect_s3_class(res$flextable, "flextable")
   expect_s3_class(res$plot_tous, "gg")
   expect_s3_class(res$plot_byclass, "gg")
-  expect_s3_class(res$data, "data.frame")
 })
 
 test_that("Filtrage : ltm manquant est ignoré sans planter", {
@@ -36,18 +41,22 @@ test_that("Filtrage : masse partiellement manquante", {
   )
   
   res <- wri(specimen)
+  
+  expect_true(res$success)
   expect_s3_class(res$data, "data.frame")
 })
 
 test_that("Toutes les classes de taille ne sont pas représentées", {
   specimen <- data.frame(
     sp = rep("SAFO", 4),
-    ltm = c(130, 135, 140, 145),  # classes basses uniquement
+    ltm = c(130, 135, 140, 145),
     masse = c(30, 35, 40, 45),
     sexe = rep("F", 4)
   )
   
   res <- wri(specimen)
+  
+  expect_true(res$success)
   expect_s3_class(res$data, "data.frame")
 })
 
@@ -60,6 +69,8 @@ test_that("Tous les spécimens sont IND : pas d'erreur", {
   )
   
   res <- wri(specimen)
+  
+  expect_true(res$success)
   expect_s3_class(res$data, "data.frame")
 })
 
@@ -70,6 +81,7 @@ test_that("Seulement des femelles ou seulement des mâles : pas d'erreur", {
     masse = c(200, 210, 220, 230),
     sexe = rep("F", 4)
   )
+  
   males <- data.frame(
     sp = rep("SANA", 4),
     ltm = c(350, 360, 370, 380),
@@ -79,6 +91,8 @@ test_that("Seulement des femelles ou seulement des mâles : pas d'erreur", {
   
   expect_no_error(wri(femelles))
   expect_no_error(wri(males))
+  expect_true(wri(femelles)$success)
+  expect_true(wri(males)$success)
 })
 
 test_that("Plus d'une espèce dans les données : erreur explicite", {
@@ -93,56 +107,71 @@ test_that("Plus d'une espèce dans les données : erreur explicite", {
 })
 
 test_that("Colonnes essentielles manquantes : erreur explicite", {
-  # Manque sp
-  df1 <- data.frame(ltm = 300:304, masse = 200:204, sexe = "F")
-  expect_error(wri(df1), "Colonnes manquantes : sp")
+  df1 <- data.frame(
+    ltm = 300:304,
+    masse = 200:204,
+    sexe = rep("F", 5)
+  )
   
-  # Manque ltm
-  df2 <- data.frame(sp = "SANA", masse = 200:204, sexe = "F")
-  expect_error(wri(df2), "Colonnes manquantes : ltm")
+  df2 <- data.frame(
+    sp = rep("SANA", 5),
+    masse = 200:204,
+    sexe = rep("F", 5)
+  )
   
-  # Manque masse
-  df3 <- data.frame(sp = "SANA", ltm = 300:304, sexe = "F")
-  expect_error(wri(df3), "Colonnes manquantes : masse")
+  df3 <- data.frame(
+    sp = rep("SANA", 5),
+    ltm = 300:304,
+    sexe = rep("F", 5)
+  )
+  
+  expect_error(wri(df1))
+  expect_error(wri(df2))
+  expect_error(wri(df3))
 })
 
-test_that("ltm trop faible → retourne une structure vide", {
+test_that("Aucune ligne : retourne success = FALSE avec message explicite", {
+  specimen_vide <- data.frame(
+    sp = character(),
+    ltm = numeric(),
+    masse = numeric(),
+    sexe = character()
+  )
+  
+  res <- wri(specimen_vide)
+  
+  expect_type(res, "list")
+  expect_false(res$success)
+  expect_null(res$data)
+  expect_null(res$flextable)
+  expect_null(res$plot_tous)
+  expect_null(res$plot_byclass)
+  expect_match(res$message, "Aucun spécimen valide", fixed = FALSE)
+})
+
+test_that("ltm trop faible : retourne success = FALSE", {
   specimen <- data.frame(
     sp = rep("SANA", 3),
-    ltm = c(100, 110, 120),  # en dessous du seuil min_TL
+    ltm = c(100, 110, 120),
     masse = c(80, 85, 90),
     sexe = c("F", "M", "F")
   )
   
   res <- wri(specimen)
   
-  expect_s3_class(res$data, "data.frame")
-  expect_equal(nrow(res$data), 0)
-  expect_s3_class(res$flextable, "flextable")
+  expect_type(res, "list")
+  expect_false(res$success)
+  expect_null(res$data)
+  expect_null(res$flextable)
+  expect_null(res$plot_tous)
+  expect_null(res$plot_byclass)
+  expect_false(is.null(res$message))
 })
 
-test_that("ltm trop faible → retourne une structure vide valide", {
-  specimen <- data.frame(
-    sp = rep("SANA", 3),
-    ltm = c(100, 110, 120),  # en dessous du seuil min_TL
-    masse = c(80, 85, 90),
-    sexe = c("F", "M", "F")
-  )
-  
-  res <- wri(specimen)
-  
-  expect_s3_class(res$data, "data.frame")
-  expect_equal(nrow(res$data), 0)
-  expect_named(res$data, c("groupe", "wr", "ic95", "n"))
-  expect_s3_class(res$flextable, "flextable")
-  expect_s3_class(res$plot_tous, "gg")
-  expect_s3_class(res$plot_byclass, "gg")
-})
-
-test_that("wri() retourne une structure vide proprement si aucune donnée ne passe les filtres", {
+test_that("Aucune donnée ne passe les filtres : retourne success = FALSE proprement", {
   specimen <- data.frame(
     sp = rep("SAFO", 5),
-    ltm = c(50, 60, 70, 80, 90),  # sous le seuil min_TL
+    ltm = c(50, 60, 70, 80, 90),
     masse = c(10, 12, 14, 16, 18),
     sexe = rep("IND", 5)
   )
@@ -150,8 +179,28 @@ test_that("wri() retourne une structure vide proprement si aucune donnée ne pas
   res <- wri(specimen)
   
   expect_type(res, "list")
-  expect_s3_class(res$data, "data.frame")
-  expect_equal(nrow(res$data), 0)
-  expect_named(res$data, c("groupe", "wr", "ic95", "n"))
-  expect_s3_class(res$flextable, "flextable")
+  expect_false(res$success)
+  expect_null(res$data)
+  expect_null(res$flextable)
+  expect_null(res$plot_tous)
+  expect_null(res$plot_byclass)
+  expect_false(is.null(res$message))
+})
+
+test_that("Toutes les masses sont manquantes : retourne success = FALSE", {
+  specimen <- data.frame(
+    sp = rep("SANA", 4),
+    ltm = c(300, 320, 340, 360),
+    masse = c(NA, NA, NA, NA),
+    sexe = c("F", "M", "F", "M")
+  )
+  
+  res <- wri(specimen)
+  
+  expect_false(res$success)
+  expect_null(res$data)
+  expect_null(res$flextable)
+  expect_null(res$plot_tous)
+  expect_null(res$plot_byclass)
+  expect_false(is.null(res$message))
 })

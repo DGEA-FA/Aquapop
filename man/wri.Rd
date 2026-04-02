@@ -8,29 +8,40 @@ wri(data)
 }
 \arguments{
 \item{data}{Un \code{data.frame} contenant au minimum les colonnes suivantes :
-\code{sp}, \code{ltm} (longueur totale en mm), \code{masse} (masse en g) et \code{sexe}.}
+\code{sp}, \code{ltm}, \code{masse} et \code{sexe}.}
 }
 \value{
 Une liste contenant :
 \describe{
+\item{success}{Indique si l'analyse a pu être produite}
 \item{data}{Un \code{data.frame} avec les Wr moyens et effectifs par groupe}
 \item{flextable}{Une version formatée (\code{flextable}) prête pour exportation}
-\item{plot_tous}{Un graphique \code{ggplot2} du Wr en fonction de la longueur, coloré par sexe}
+\item{plot_tous}{Un graphique \code{ggplot2} du Wr en fonction de la longueur}
 \item{plot_byclass}{Un graphique \code{ggplot2} du Wr moyen par classe de taille}
+\item{message}{Message explicatif si l'analyse n'est pas disponible}
 }
 }
 \description{
-Cette fonction calcule l'indice de condition relatif (Wr) à partir des longueurs et masses des spécimens d'une espèce donnée.
-Elle retourne un tableau de synthèse, une version formatée (\code{flextable}), ainsi que deux graphiques illustrant les résultats
-: l'un selon la longueur individuelle, l'autre par classe de taille.
+Cette fonction calcule l'indice de condition relatif (Wr) à partir des
+longueurs et masses des spécimens d'une espèce donnée. Elle retourne un
+tableau de synthèse, une version formatée avec \code{flextable}, ainsi que deux
+graphiques illustrant les résultats : l'un selon la longueur individuelle,
+l'autre par classe de taille.
+}
+\details{
+Si aucune donnée exploitable n'est disponible, la fonction retourne un objet
+structuré avec \code{success = FALSE}, sans générer d'erreur.
 }
 \examples{
 df <- data.frame(
-  sp    = rep("SANA", 10),
-  ltm   = seq(300, 480, by = 20),
+  sp = rep("SANA", 10),
+  ltm = seq(300, 480, by = 20),
   masse = seq(200, 380, by = 20),
-  sexe  = rep(c("F", "M"), 5)
+  sexe = rep(c("F", "M"), 5)
 )
-wri(df)
+
+res <- wri(df)
+res$data
+if (requireNamespace("flextable", quietly = TRUE)) res$flextable
 
 }
