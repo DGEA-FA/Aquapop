@@ -16,16 +16,17 @@ as_reactive <- function(x) {
 
 #' Affiche un tableau flextable dans une application Shiny
 #'
-#' Cette fonction permet d'insérer dynamiquement un tableau `flextable` dans une interface Shiny,
-#' à l'intérieur d'un `uiOutput()` identifié par `output_id`. Elle prend en charge les objets réactifs
-#' ou non, en convertissant toute entrée en fonction réactive.
+#' Cette fonction permet d’insérer dynamiquement un tableau `flextable`
+#' dans une interface Shiny, à l’intérieur d’un `uiOutput()`
+#' identifié par `output_id`.
 #'
 #' @param output_id Identifiant utilisé dans `uiOutput()` pour insérer le tableau.
 #' @param flextable Une expression, un objet `flextable`, ou une fonction `reactive()`.
 #'
-#' @importFrom shiny renderUI HTML req
-#' @importFrom flextable save_as_html
+#' @importFrom shiny renderUI req
+#' @importFrom flextable htmltools_value
 #' @importFrom rlang as_function
+#'
 #' @export
 render_table_flextable <- function(output_id, flextable) {
   output <- get("output", envir = parent.frame())
@@ -33,15 +34,11 @@ render_table_flextable <- function(output_id, flextable) {
   
   output[[output_id]] <- renderUI({
     ft <- get_ft()
-    req(ft)
     
-    tmpfile <- tempfile(fileext = ".html")
-    on.exit(unlink(tmpfile), add = TRUE)
+    req(!is.null(ft))
+    req(inherits(ft, "flextable"))
     
-    flextable::save_as_html(ft, path = tmpfile)
-    
-    contenu <- paste(readLines(tmpfile, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
-    HTML(contenu)
+    flextable::htmltools_value(ft)
   })
 }
 

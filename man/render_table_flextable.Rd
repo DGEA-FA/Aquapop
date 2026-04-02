@@ -12,7 +12,7 @@ render_table_flextable(output_id, flextable)
 \item{flextable}{Une expression, un objet \code{flextable}, ou une fonction \code{reactive()}.}
 }
 \description{
-Cette fonction permet d'insérer dynamiquement un tableau \code{flextable} dans une interface Shiny,
-à l'intérieur d'un \code{uiOutput()} identifié par \code{output_id}. Elle prend en charge les objets réactifs
-ou non, en convertissant toute entrée en fonction réactive.
+Cette fonction permet d’insérer dynamiquement un tableau \code{flextable}
+dans une interface Shiny, à l’intérieur d’un \code{uiOutput()}
+identifié par \code{output_id}.
 }

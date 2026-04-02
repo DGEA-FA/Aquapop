@@ -31,26 +31,6 @@ info_pen <- get_info_pen(typ_pech)
 
 
 
-# Croissance ----
-
-## Tableau de sélection de modèles ----
-
-table_modele_res <- croissance_compare_modele(specimen_tous) # Résultat brut (data.frame)
-table_modele_res$data
-table_modele_res$flextable
-table_modele_res$success
-table_modele_res$message
-
-## Graphique du modèle choisi ----
-
-modele_best <- croissance_select_best_modele(table_modele_res$data)
-modele_best
-croissance_plot(specimen_tous, table_modele_res$data, modele_best)
-croissance_plot(specimen_tous, table_modele_res$data, modele = "Von Bertalanffy")
-croissance_plot(specimen_tous, table_modele_res$data, modele = "Gompertz")
-croissance_plot(specimen_tous, table_modele_res$data, modele = "Logistique")
-
-
 # CPUE - Abondance ----
 ## Tableau CPUE - Tous ----
 df_cpue_tous <- cpue_prepare(capture, specimen_hasard_valide, group = "tous")
@@ -80,6 +60,29 @@ abondance$data
 table_biomasse <- bpue_generate_biomasse(specimen_hasard_valide, station_hasard_valide)
 table_biomasse$data
 table_biomasse$flextable
+
+
+
+# Croissance ----
+
+## Tableau de sélection de modèles ----
+
+table_modele_res <- croissance_compare_modele(specimen_tous) # Résultat brut (data.frame)
+table_modele_res$data
+table_modele_res$flextable
+table_modele_res$success
+table_modele_res$message
+
+## Graphique du modèle choisi ----
+
+modele_best <- croissance_select_best_modele(table_modele_res$data)
+modele_best
+croissance_plot(specimen_tous, table_modele_res$data, modele_best)
+croissance_plot(specimen_tous, table_modele_res$data, modele = "Von Bertalanffy")
+croissance_plot(specimen_tous, table_modele_res$data, modele = "Gompertz")
+croissance_plot(specimen_tous, table_modele_res$data, modele = "Logistique")
+
+
 
 # Taille, masse, âge ----
 
