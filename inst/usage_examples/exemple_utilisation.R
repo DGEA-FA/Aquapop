@@ -7,11 +7,12 @@ devtools::load_all()
 # Téléchargement des données ----
 
 path     <- "inst/extdata/Extract_IFA_AquaPop_2026-02-27.xlsx"
-typ_pech <- "PENOF"
-no_lac   <- "39413"
-annee    <- 1994
+typ_pech <- "PENT"
+no_lac   <- "01589"
+annee    <- 2012
 
  # 01589, PENT 2012
+# 39413, PENOF 1994 #rendu a maturite qui bug pcq specimen = 0
 
 df <- get_analysis_data(path, typ_pech, no_lac, annee)
 data_station         <- df$data_station
@@ -152,47 +153,35 @@ structure_age_res$flextable
 psd_q_res <- psd_q(specimen_valide)
 psd_q_res$data
 psd_q_res$flextable
+psd_q_res$success
+psd_q_res$message
 ## Répartition par classe de taille – Tableau ----
 psd_byclass_res <- psd_byclass(specimen_valide)
 psd_byclass_res$data
 psd_byclass_res$flextable
+psd_byclass_res$success
+psd_byclass_res$message
 ## Répartition par classe de taille – Graphique ----
 psd_byclass_res$plot
 
 # Relation masse-longueur ----
 
 masse_longueur_fit_res <- masse_longueur_fit(data = specimen_tous)
-
-print(masse_longueur_fit_res$plot)
-
-print(masse_longueur_fit_res$data)
-masse_longueur_fit_res$flextable
-## Graphique ----
-
 masse_longueur_fit_res$plot
-
-## Tableau des coefficients ----
-
-masse_longueur_fit_res$data # Résultat brut (data.frame)
-masse_longueur_fit_res$flextable # Tableau formaté (flextable)
+masse_longueur_fit_res$success
+masse_longueur_fit_res$data
+masse_longueur_fit_res$flextable
+masse_longueur_fit_res$message
 
 # Indice de condition ----
 
 wri_res <- wri(data = specimen_tous)
-
-
-## Tableau Wr ----
-
 wri_res$data # Résultat brut (data.frame)
 wri_res$flextable # Tableau formaté (flextable)
-
-## Graphique Wr par sexe ----
-
-wri_res$plot_tous
-
-## Graphique Wr par classe de taille ----
-
-wri_res$plot_byclass
+wri_res$success
+wri_res$message
+wri_res$plot_tous #Graphique Wr par sexe
+wri_res$plot_byclass #Graphique Wr par classe de taille
 
 
 # Maturité sexuelle ----

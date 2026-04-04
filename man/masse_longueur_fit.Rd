@@ -7,18 +7,38 @@
 masse_longueur_fit(data)
 }
 \arguments{
-\item{data}{Un \code{data.frame} contenant les colonnes \code{ltm}, \code{masse}, \code{sp} et \code{no_specimen}.}
+\item{data}{Un \code{data.frame} contenant les colonnes \code{ltm}, \code{masse}, \code{sp} et
+\code{no_specimen}.}
 }
 \value{
 Une liste nommée contenant :
 \describe{
+\item{success}{Indique si l'analyse a pu être produite}
 \item{data}{Tableau des coefficients estimés (\code{data.frame})}
 \item{flextable}{Tableau formaté (\code{flextable})}
 \item{plot}{Graphique ggplot de la relation masse-longueur}
+\item{message}{Message explicatif si l'analyse n'est pas disponible}
 }
 }
 \description{
 Cette fonction ajuste une régression linéaire sur les données log-transformées
 de masse et de longueur. Elle retourne les coefficients estimés (avec IC 95 \%),
 un graphique de la courbe ajustée, et une version formatée du tableau.
+}
+\details{
+Si aucune donnée exploitable n'est disponible, la fonction retourne un objet
+structuré avec \code{success = FALSE}, sans générer d'erreur.
+}
+\examples{
+data_exemple <- data.frame(
+  no_specimen = 1:5,
+  sp = rep("SANA", 5),
+  ltm = c(120, 140, 160, 180, 200),
+  masse = c(20, 30, 45, 60, 80)
+)
+
+res <- masse_longueur_fit(data_exemple)
+res$data
+if (requireNamespace("flextable", quietly = TRUE)) res$flextable
+
 }
