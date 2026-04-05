@@ -3,7 +3,7 @@ options(shiny.maxRequestSize = 10 * 1024^2)  # Limite de la taille des fichiers 
 
 utils::globalVariables(c(
   "ltm", "masse", "sexe", "wr", "moyenne", "classe_brute",
-  "classe", "intervalle", "fit", "lwr", "upr", "groupe", "ic95",
+  "classe", "intervalle", "fit", "lwr", "upr", "groupe", "ic95", "type",
   "age", "methode", "t0_ic", "k_ic", "categorie", "sp", "number",
   "no_station", "gcat", "aicc", "modele_id", "convergence", "commentaire",
   "biomasse", "mf_ratio", "delta_aicc", "fill", "maturite", "lim_inf", "lim_sup",
@@ -13,7 +13,7 @@ utils::globalVariables(c(
   "min_leve", "heure_leve", "date_pose", "leve", "pose", "count","aiccwt", "delta_aic", 
   
   "poisson", "hdi", "jags", "pred", "leve", "pose", "count",
-  "Modnames", "Delta_AICc", "AICcWt", "aicc_sort", "aicc_num", "Q", "ltm_nb","masse_nb","age_nb",#"ltm_nb","ltm_nb",
+  "Modnames", "Delta_AICc", "AICcWt", "aicc_sort", "aicc_num", "Q", "ltm_nb","masse_nb","age_nb",
   
   
   "st_valide", "superficie_ha", "t0", "st_hasard", "l_inf_ic", "l_inf", "ltm_interval", "ajustement_hnp", "no_specimen",

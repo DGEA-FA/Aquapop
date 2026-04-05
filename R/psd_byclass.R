@@ -16,7 +16,8 @@
 #' @importFrom janitor clean_names
 #' @importFrom FSA lencat
 #' @importFrom labelled set_variable_labels
-#'
+#' @importFrom stats xtabs
+#' 
 #' @param data Un `data.frame` filtré pour une seule espèce, contenant les colonnes `ltm` et `sp`.
 #'
 #' @return Une liste contenant :

@@ -18,7 +18,8 @@ Une liste nommée contenant les 12 modèles combinés (objets \code{glm}).
 Retourne une liste vide avec un avertissement si un seul sexe est présent.
 }
 \description{
-Cette fonction ajuste automatiquement douze modèles logistiques binaires pour
+Cette fonction ajuste automatiquement douze modèles binaires de maturité
+à l’aide de fonctions de lien logit, probit et cloglog.
 estimer la maturité sexuelle en fonction de la taille (\code{ltm}) ou de l'âge (\code{age}),
 en tenant compte du sexe. Elle retourne un ensemble de modèles combinés incluant :
 \itemize{

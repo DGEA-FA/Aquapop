@@ -1,6 +1,7 @@
 #' Ajuster les modèles de maturité combinés (L50 ou A50)
 #'
-#' Cette fonction ajuste automatiquement douze modèles logistiques binaires pour
+#' Cette fonction ajuste automatiquement douze modèles binaires de maturité
+#' à l’aide de fonctions de lien logit, probit et cloglog.
 #' estimer la maturité sexuelle en fonction de la taille (`ltm`) ou de l'âge (`age`),
 #' en tenant compte du sexe. Elle retourne un ensemble de modèles combinés incluant :
 #' \itemize{

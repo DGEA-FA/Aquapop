@@ -1,6 +1,6 @@
 #' maturite_a50 UI Function
 #'
-#' @description Module Shiny pour la sélection et l'affichage des modèles A50.
+#' @description Module Shiny pour l'affichage des modèles A50.
 #'
 #' @param id Identifiant du module.
 #'
@@ -13,8 +13,9 @@ mod_maturite_a50_ui <- function(id) {
   tabPanel(
     title = "Âge à maturité",
     uiOutput(ns("message_a50")),
-    uiOutput(ns("table_modeles_a50_section")),
-    uiOutput(ns("resultats_modele_a50_section"))
+    uiOutput(ns("section_a50_femelles")),
+    uiOutput(ns("section_a50_males")),
+    uiOutput(ns("section_a50_combine"))
   )
 }
 
@@ -29,7 +30,7 @@ mod_maturite_a50_server <- function(id, specimen, filename_suffix) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
-    # Résultat des modèles évalués ----
+    # Résultat global ----
     table_modeles_a50_resultats <- reactive({
       req(specimen())
       
@@ -40,255 +41,203 @@ mod_maturite_a50_server <- function(id, specimen, filename_suffix) {
       )
     })
     
-    # Message utilisateur ----
+    # Message complémentaire ----
+    message_complementaire_a50 <- reactive({
+      res <- table_modeles_a50_resultats()
+      req(!is.null(res))
+      
+      best_model <- res$best_model
+      
+      has_F <- !is.null(best_model$best_model_F)
+      has_M <- !is.null(best_model$best_model_M)
+      has_comb <- !is.null(best_model$best_model_combined)
+      
+      if (!has_F && !has_M && !has_comb) {
+        return(HTML("Les données disponibles ne permettent pas d'ajuster des modèles de maturité."))
+      }
+      
+      if (!has_F && !has_M && has_comb) {
+        return(HTML("Les modèles séparés ne peuvent être ajustés. Un modèle combiné est proposé."))
+      }
+      
+      if ((has_F && !has_M) || (!has_F && has_M)) {
+        return(HTML("Un seul sexe permet un ajustement valide. Un modèle combiné est aussi proposé."))
+      }
+      
+      HTML("Les modèles séparés sont à privilégier. Les modèles combinés sont présentés en complément.")
+    })
+    
+    # Message UI ----
     output$message_a50 <- renderUI({
       res <- table_modeles_a50_resultats()
-      
       req(!is.null(res))
       
       if (is.null(res$message) || identical(res$message, "")) {
         return(NULL)
       }
       
-      titre_message <- if (isTRUE(res$success)) {
-        HTML("Sélection des modèles A<sub>50</sub>")
-      } else {
-        "Analyse non disponible"
-      }
-      
-      couleur_bordure <- if (isTRUE(res$success)) {
-        "#d97706"
-      } else {
-        "#c0392b"
-      }
-      
-      couleur_fond <- if (isTRUE(res$success)) {
-        "#fff7e6"
-      } else {
-        "#fdf2f2"
-      }
+      couleur_bordure <- if (isTRUE(res$success)) "#4c6ef5" else "#c0392b"
+      couleur_fond <- if (isTRUE(res$success)) "#f5f7ff" else "#fdf2f2"
       
       div(
         style = paste(
           "margin: 15px 0;",
           "padding: 12px 16px;",
           "border-left: 4px solid", couleur_bordure, ";",
-          "background-color:", couleur_fond, ";",
-          "color: #333;"
+          "background-color:", couleur_fond
         ),
-        tags$h4(
-          style = "margin-top: 0; margin-bottom: 8px;",
-          titre_message
-        ),
-        tags$p(
-          style = "margin: 0; white-space: pre-line;",
-          res$message
-        )
+        tags$h4("Sélection des modèles A50"),
+        tags$p(res$message),
+        tags$p(message_complementaire_a50())
       )
     })
     
-    # Index par défaut pour sélection ----
-    default_model_index_a50 <- reactive({
-      res <- table_modeles_a50_resultats()
-      
-      req(isTRUE(res$success))
-      req(!is.null(res$table$df))
-      req(nrow(res$table$df) > 0)
-      
-      table <- res$table$df
-      idx <- which(table$recommande)
-      
-      if (length(idx) == 0) {
-        idx <- 1
-      }
-      
-      idx[1]
+    # Tables ----
+    table_a50_f <- reactive({
+      table_modeles_a50_resultats()$table_sep$df |>
+        dplyr::filter(type == "séparé_F")
     })
     
-    # Section tableau des modèles ----
-    output$table_modeles_a50_section <- renderUI({
-      res <- table_modeles_a50_resultats()
-      
-      req(!is.null(res))
-      
-      if (!isTRUE(res$success) || is.null(res$table$df) || nrow(res$table$df) == 0) {
-        return(NULL)
-      }
-      
-      tagList(
-        h3(HTML("Tableau interactif des modèles évalués pour A<sub>50</sub>")),
-        withSpinner(
-          reactableOutput(ns("table_modeles_a50_table")),
-          type = myspinner
-        ),
-        download_button_ui(ns("table_modeles_a50_dl")),
-        br()
-      )
+    table_a50_m <- reactive({
+      table_modeles_a50_resultats()$table_sep$df |>
+        dplyr::filter(type == "séparé_M")
     })
     
-    # Affichage du tableau interactif ----
-    output$table_modeles_a50_table <- renderReactable({
-      res <- table_modeles_a50_resultats()
-      
-      req(isTRUE(res$success))
-      req(!is.null(res$table$df))
-      req(nrow(res$table$df) > 0)
-      
-      table <- res$table$df
-      idx <- default_model_index_a50()
-      
-      reactable(
-        labelled_data(table),
-        selection = "single",
-        sortable = FALSE,
-        onClick = "select",
-        highlight = TRUE,
-        defaultPageSize = 20,
-        defaultSelected = idx,
-        defaultColDef = colDef(
-          align = "center",
-          headerStyle = list(textAlign = "center")
-        )
-      )
+    table_a50_comb <- reactive({
+      table_modeles_a50_resultats()$table_comb$df
     })
     
-    # Téléchargement du tableau des modèles ----
-    render_download_table(
-      id = "table_modeles_a50_dl",
-      data = reactive({
-        res <- table_modeles_a50_resultats()
+    # === SECTION FEMELLES ===
+    output$section_a50_femelles <- renderUI({
+      table <- table_a50_f()
+      if (nrow(table) == 0) return(NULL)
+      
+      model_section_card_ui(
+        "Femelles",
+        "Modèles ajustés sur les femelles",
         
-        req(isTRUE(res$success))
-        req(!is.null(res$table$df))
+        reactableOutput(ns("table_a50_f")),
+        download_button_ui(ns("dl_a50_f")),
         
-        res$table$df
-      }),
-      filename = reactive(
-        build_export_filename("modeles_maturite_a50", filename_suffix())
-      )
-    )
-    
-    # Modèle sélectionné ----
-    selected_model_info_a50 <- reactive({
-      res <- table_modeles_a50_resultats()
-      
-      req(isTRUE(res$success))
-      req(!is.null(res$table$df))
-      req(nrow(res$table$df) > 0)
-      
-      selected <- getReactableState("table_modeles_a50_table", "selected")
-      
-      if (is.null(selected) || length(selected) == 0) {
-        selected <- default_model_index_a50()
-      }
-      
-      model_id <- res$table$df[selected, "modele_id", drop = TRUE]
-      
-      req(!is.na(model_id))
-      
-      list(
-        modele = stringr::str_extract(model_id, "TLO|ADD|INT|COM"),
-        lien = stringr::str_extract(model_id, "logit|probit|cloglog"),
-        variable = "age"
+        tags$hr(),
+        uiOutput(ns("res_a50_f")),
+        download_button_ui(ns("dl_res_a50_f")),
+        
+        tags$hr(),
+        plotOutput(ns("plot_a50_f")),
+        downloadButton(ns("dl_plot_a50_f"), "Télécharger")
       )
     })
     
-    # Résultat du modèle sélectionné ----
-    a50_generate_modele_res <- reactive({
-      req(specimen())
-      req(selected_model_info_a50())
-      
+    output$table_a50_f <- renderReactable({
+      reactable(as.data.frame(table_a50_f()), selection = "single")
+    })
+    
+    selected_f <- reactive({
+      sel <- getReactableState("table_a50_f", "selected")
+      if (is.null(sel)) sel <- 1
+      table_a50_f()[sel, "modele_id"]
+    })
+    
+    res_f <- reactive({
       maturite_generate_modele(
-        data = specimen(),
-        variable = selected_model_info_a50()$variable,
-        modele = selected_model_info_a50()$modele,
-        lien = selected_model_info_a50()$lien
+        specimen(),
+        variable = "age",
+        modele = "TLO",
+        lien = stringr::str_extract(selected_f(), "logit|probit|cloglog")
       )
     })
     
-    # Section résultats du modèle ----
-    output$resultats_modele_a50_section <- renderUI({
-      res <- a50_generate_modele_res()
+    render_table_flextable("res_a50_f", reactive(res_f()$table_resultats_flextable))
+    render_plot_ggplot("plot_a50_f", reactive(res_f()$graphique))
+    
+    # === SECTION MALES ===
+    output$section_a50_males <- renderUI({
+      table <- table_a50_m()
+      if (nrow(table) == 0) return(NULL)
       
-      req(!is.null(res))
-      
-      if (!isTRUE(res$success)) {
-        return(NULL)
-      }
-      
-      tagList(
-        h3("Résultats du modèle sélectionné"),
-        uiOutput(ns("ogive_a50_table")),
-        download_button_ui(ns("ogive_a50_table_dl")),
-        br(),
-        div(
-          style = "max-width: 900px; margin: auto;",
-          withSpinner(
-            plotOutput(ns("plot_ogive_a50"), height = "500px"),
-            type = myspinner
-          ),
-          br(),
-          downloadButton(
-            ns("download_ogive_a50_plot"),
-            "Téléchargement du graphique"
-          )
-        ),
-        br()
+      model_section_card_ui(
+        "Mâles",
+        "Modèles ajustés sur les mâles",
+        
+        reactableOutput(ns("table_a50_m")),
+        download_button_ui(ns("dl_a50_m")),
+        
+        tags$hr(),
+        uiOutput(ns("res_a50_m")),
+        download_button_ui(ns("dl_res_a50_m")),
+        
+        tags$hr(),
+        plotOutput(ns("plot_a50_m")),
+        downloadButton(ns("dl_plot_a50_m"), "Télécharger")
       )
     })
     
-    # Tableau de résultats ----
-    render_table_flextable(
-      "ogive_a50_table",
-      reactive({
-        res <- a50_generate_modele_res()
-        
-        req(isTRUE(res$success))
-        req(!is.null(res$table_resultats_flextable))
-        
-        res$table_resultats_flextable
-      })
-    )
+    output$table_a50_m <- renderReactable({
+      reactable(as.data.frame(table_a50_m()), selection = "single")
+    })
     
-    render_download_table(
-      id = "ogive_a50_table_dl",
-      data = reactive({
-        res <- a50_generate_modele_res()
-        
-        req(isTRUE(res$success))
-        req(!is.null(res$table_resultats))
-        
-        res$table_resultats
-      }),
-      filename = reactive(
-        build_export_filename("ogive_maturite_a50", filename_suffix())
+    selected_m <- reactive({
+      sel <- getReactableState("table_a50_m", "selected")
+      if (is.null(sel)) sel <- 1
+      table_a50_m()[sel, "modele_id"]
+    })
+    
+    res_m <- reactive({
+      maturite_generate_modele(
+        specimen(),
+        variable = "age",
+        modele = "TLO",
+        lien = stringr::str_extract(selected_m(), "logit|probit|cloglog")
       )
-    )
+    })
     
-    # Graphique ----
-    render_plot_ggplot(
-      "plot_ogive_a50",
-      reactive({
-        res <- a50_generate_modele_res()
-        
-        req(isTRUE(res$success))
-        req(!is.null(res$graphique))
-        
-        res$graphique
-      })
-    )
+    render_table_flextable("res_a50_m", reactive(res_m()$table_resultats_flextable))
+    render_plot_ggplot("plot_a50_m", reactive(res_m()$graphique))
     
-    render_download_plot(
-      id = "download_ogive_a50_plot",
-      plot = reactive({
-        res <- a50_generate_modele_res()
+    # === SECTION COMBINE ===
+    output$section_a50_combine <- renderUI({
+      table <- table_a50_comb()
+      if (nrow(table) == 0) return(NULL)
+      
+      model_section_card_ui(
+        "Modèles combinés",
+        "Modèles ajustés sur l'ensemble des données",
         
-        req(isTRUE(res$success))
-        req(!is.null(res$graphique))
+        reactableOutput(ns("table_a50_comb")),
+        download_button_ui(ns("dl_a50_comb")),
         
-        res$graphique
-      }),
-      filename_suffix = filename_suffix()
-    )
+        tags$hr(),
+        uiOutput(ns("res_a50_comb")),
+        download_button_ui(ns("dl_res_a50_comb")),
+        
+        tags$hr(),
+        plotOutput(ns("plot_a50_comb")),
+        downloadButton(ns("dl_plot_a50_comb"), "Télécharger")
+      )
+    })
+    
+    output$table_a50_comb <- renderReactable({
+      reactable(as.data.frame(table_a50_comb()), selection = "single")
+    })
+    
+    selected_comb <- reactive({
+      sel <- getReactableState("table_a50_comb", "selected")
+      if (is.null(sel)) sel <- 1
+      table_a50_comb()[sel, "modele_id"]
+    })
+    
+    res_comb <- reactive({
+      maturite_generate_modele(
+        specimen(),
+        variable = "age",
+        modele = stringr::str_extract(selected_comb(), "TLO|ADD|INT|COM"),
+        lien = stringr::str_extract(selected_comb(), "logit|probit|cloglog")
+      )
+    })
+    
+    render_table_flextable("res_a50_comb", reactive(res_comb()$table_resultats_flextable))
+    render_plot_ggplot("plot_a50_comb", reactive(res_comb()$graphique))
+    
   })
 }

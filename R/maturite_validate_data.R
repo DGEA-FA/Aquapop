@@ -27,6 +27,7 @@
 #' @keywords internal
 #'
 #' @examples
+#' \dontrun{
 #' data_exemple <- data.frame(
 #'   maturite = c("N", "O", "IND", "O"),
 #'   sexe = c("F", "M", "F", "IND"),
@@ -35,7 +36,7 @@
 #' )
 #'
 #' maturite_validate_data(data_exemple, variable = "ltm", min_n = 2)
-#'
+#' }
 #' @importFrom checkmate assert_choice assert_data_frame
 #' @importFrom dplyr filter mutate
 #' @importFrom glue glue

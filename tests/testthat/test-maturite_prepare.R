@@ -14,16 +14,34 @@ test_that("maturite_prepare retourne un data.frame filtré proprement", {
   expect_s3_class(res$maturite, "ordered")
 })
 
-test_that("déclenche une erreur si colonne manquante", {
-  df <- data.frame(sexe = c("F", "M"), maturite = c("N", "O"))
-  expect_error(maturite_prepare(df, variable = "ltm"), "doit contenir les colonnes")
+test_that("maturite_prepare déclenche une erreur si colonne manquante", {
+  df <- data.frame(
+    sexe = c("F", "M"),
+    maturite = c("N", "O")
+  )
+  
+  expect_error(
+    maturite_prepare(df, variable = "ltm"),
+    "doit contenir les colonnes"
+  )
 })
 
-test_that("déclenche une erreur si specimen_data n'est pas un data.frame", {
-  expect_error(maturite_prepare("pas un df"), "Must be of type 'data.frame'")
+test_that("maturite_prepare déclenche une erreur si specimen_data n'est pas un data.frame", {
+  expect_error(
+    maturite_prepare("pas un df"),
+    "Must be of type 'data.frame'"
+  )
 })
 
-test_that("déclenche une erreur si variable invalide", {
-  df <- data.frame(ltm = 1:10, sexe = "F", maturite = "O")
-  expect_error(maturite_prepare(df, variable = "poids"), regexp = "ltm|age")
+test_that("maturite_prepare déclenche une erreur si variable invalide", {
+  df <- data.frame(
+    ltm = 1:10,
+    sexe = "F",
+    maturite = "O"
+  )
+  
+  expect_error(
+    maturite_prepare(df, variable = "poids"),
+    regexp = "ltm|age"
+  )
 })

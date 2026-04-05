@@ -1,12 +1,19 @@
 test_that("maturite_generate_modele fonctionne pour tous les modèles et liens", {
   set.seed(123)
+  
   df <- data.frame(
-    ltm = c(sample(100:300, 100, replace = TRUE), sample(100:300, 100, replace = TRUE)),
+    ltm = c(
+      sample(100:300, 100, replace = TRUE),
+      sample(100:300, 100, replace = TRUE)
+    ),
     sexe = rep(c("M", "F"), each = 100),
     maturite = rbinom(200, 1, 0.5)
   ) |>
     dplyr::mutate(
-      maturite = factor(ifelse(maturite == 1, "O", "N"), levels = c("N", "O"), ordered = TRUE),
+      maturite = factor(ifelse(maturite == 1, "O", "N"),
+                        levels = c("N", "O"),
+                        ordered = TRUE
+      ),
       sexe = factor(sexe, levels = c("F", "M"))
     )
   
@@ -15,33 +22,98 @@ test_that("maturite_generate_modele fonctionne pour tous les modèles et liens",
   
   for (mod in modeles) {
     for (li in liens) {
-      res <- maturite_generate_modele(df, variable = "ltm", modele = mod, lien = li)
+      res <- maturite_generate_modele(
+        data = df,
+        variable = "ltm",
+        modele = mod,
+        lien = li
+      )
+      
       expect_type(res, "list")
-      expect_named(res, c("table_resultats", "table_resultats_flextable", "commentaire", "graphique", "donnees_ogive"))
+      expect_named(
+        res,
+        c(
+          "success",
+          "table_resultats",
+          "table_resultats_flextable",
+          "commentaire",
+          "message",
+          "graphique",
+          "donnees_ogive"
+        )
+      )
+      
+      expect_true(isTRUE(res$success))
+      expect_null(res$message)
+      
       expect_s3_class(res$graphique, "ggplot")
       expect_s3_class(res$table_resultats_flextable, "flextable")
       expect_true(is.character(res$commentaire) || is.na(res$commentaire))
+      expect_s3_class(res$table_resultats, "data.frame")
+      expect_s3_class(res$donnees_ogive, "data.frame")
       
       if (mod == "TLO") {
-        expect_true(all(c("l50", "intervalle", "b0", "b1") %in% names(res$table_resultats)))
+        expect_true(all(c("intervalle", "b0", "b1") %in% names(res$table_resultats)))
+        
+        cols_50 <- grep("50", names(res$table_resultats), value = TRUE)
+        expect_equal(length(cols_50), 1)
       } else {
         cols_50 <- grep("50", names(res$table_resultats), value = TRUE)
-        expect_true(length(cols_50) >= 1, info = glue::glue("Aucune colonne contenant '50' trouvée dans le modèle {mod} avec le lien {li}."))
+        expect_true(
+          length(cols_50) >= 2,
+          info = glue::glue(
+            "Aucune paire de colonnes contenant '50' trouvée dans le modèle {mod} avec le lien {li}."
+          )
+        )
       }
     }
   }
 })
 
-test_that("déclenche une erreur informative si colonnes manquantes", {
-  df_bad <- data.frame(age = 1:10, sexe = rep("F", 10))
-  expect_error(maturite_generate_modele(df_bad, variable = "age"), "doit contenir les colonnes")
+test_that("maturite_generate_modele déclenche une erreur informative si colonnes manquantes", {
+  df_bad <- data.frame(
+    age = 1:10,
+    sexe = rep("F", 10)
+  )
+  
+  expect_error(
+    maturite_generate_modele(df_bad, variable = "age"),
+    "doit contenir les colonnes"
+  )
 })
 
-test_that("déclenche une erreur si < 10 individus après nettoyage", {
+test_that("maturite_generate_modele retourne success = FALSE si moins de 10 individus après nettoyage", {
   df_few <- data.frame(
     ltm = c(120, 130),
     sexe = c("M", "F"),
-    maturite = factor(c("O", "N"), levels = c("N", "O"), ordered = TRUE)
+    maturite = factor(c("O", "N"),
+                      levels = c("N", "O"),
+                      ordered = TRUE
+    )
   )
-  expect_error(maturite_generate_modele(df_few), "Trop peu d'individus")
+  
+  res <- maturite_generate_modele(df_few)
+  
+  expect_type(res, "list")
+  expect_named(
+    res,
+    c(
+      "success",
+      "table_resultats",
+      "table_resultats_flextable",
+      "commentaire",
+      "message",
+      "graphique",
+      "donnees_ogive"
+    )
+  )
+  
+  expect_false(res$success)
+  expect_null(res$table_resultats)
+  expect_null(res$table_resultats_flextable)
+  expect_null(res$commentaire)
+  expect_null(res$graphique)
+  expect_null(res$donnees_ogive)
+  expect_true(is.character(res$message))
+  expect_match(res$message, "Trop peu d'individus")
 })

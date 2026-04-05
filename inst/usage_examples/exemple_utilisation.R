@@ -7,9 +7,9 @@ devtools::load_all()
 # Téléchargement des données ----
 
 path     <- "inst/extdata/Extract_IFA_AquaPop_2026-02-27.xlsx"
-typ_pech <- "PENT"
-no_lac   <- "01589"
-annee    <- 2012
+typ_pech <- "PENOF"
+no_lac   <- "39834"
+annee    <- 2020
 
  # 01589, PENT 2012
 # 39413, PENOF 1994 #rendu a maturite qui bug pcq specimen = 0
@@ -186,8 +186,6 @@ wri_res$plot_byclass #Graphique Wr par classe de taille
 
 # Maturité sexuelle ----
 ## Longueur à maturité ----
-# Maturité sexuelle ----
-## Longueur à maturité ----
 
 # Tableau de sélection de modèles ----
 res_l50 <- maturite_compare_modele(specimen_tous, variable = "ltm")
@@ -260,41 +258,78 @@ l50_modele_comb$table_resultats_flextable
 l50_modele_comb$graphique
 l50_modele_comb$donnees_ogive
 
-### Tableau du modèle choisi ----
-
-l50_modele <- maturite_generate_modele(
-  data = specimen_tous,
-  variable = "ltm",
-  modele = res$best_model$modele,
-  lien = res$best_model$lien
-)
-
-
 ## Âge à maturité ----
 
+# Tableau de sélection de modèles ----
+res_a50 <- maturite_compare_modele(specimen_tous, variable = "age")
 
-res <- maturite_compare_modele(specimen_tous, variable = "age")
-res$table$df
-res$table$flextable
+# Vérification globale de la sortie
+res_a50$success
+res_a50$message
+str(res_a50$best_model)
 
-res$best_model
-res$message
-res$table_sep$flextable
-res$table_comb$flextable
+# Tableaux de comparaison
+res_a50$table$df
+res_a50$table_sep$df
+res_a50$table_comb$df
 
-### Tableau du modèle choisi ----
+# Versions flextable
+res_a50$table$flextable
+res_a50$table_sep$flextable
+res_a50$table_comb$flextable
 
-a50_modele <- maturite_generate_modele(
+# Détail des meilleurs modèles retenus
+res_a50$best_model$best_model_F
+res_a50$best_model$best_model_M
+res_a50$best_model$best_model_combined
+
+# Modèle femelles ----
+a50_modele_f <- maturite_generate_modele(
   data = specimen_tous,
-  variable = "age",
-  modele = res$best_model$modele,
-  lien = res$best_model$lien
+  variable = res_a50$best_model$best_model_F$variable,
+  modele = res_a50$best_model$best_model_F$modele,
+  lien = res_a50$best_model$best_model_F$lien
 )
 
-#Afficher les résultats
-print(a50_modele$table_resultats)
-print(a50_modele$graphique)
-print(a50_modele$table_resultats_flextable)
+a50_modele_f$success
+a50_modele_f$message
+a50_modele_f$commentaire
+a50_modele_f$table_resultats
+a50_modele_f$table_resultats_flextable
+a50_modele_f$graphique
+a50_modele_f$donnees_ogive
+
+# Modèle mâles ----
+a50_modele_m <- maturite_generate_modele(
+  data = specimen_tous,
+  variable = res_a50$best_model$best_model_M$variable,
+  modele = res_a50$best_model$best_model_M$modele,
+  lien = res_a50$best_model$best_model_M$lien
+)
+
+a50_modele_m$success
+a50_modele_m$message
+a50_modele_m$commentaire
+a50_modele_m$table_resultats
+a50_modele_m$table_resultats_flextable
+a50_modele_m$graphique
+a50_modele_m$donnees_ogive
+
+# Modèle combiné ----
+a50_modele_comb <- maturite_generate_modele(
+  data = specimen_tous,
+  variable = res_a50$best_model$best_model_combined$variable,
+  modele = res_a50$best_model$best_model_combined$modele,
+  lien = res_a50$best_model$best_model_combined$lien
+)
+
+a50_modele_comb$success
+a50_modele_comb$message
+a50_modele_comb$commentaire
+a50_modele_comb$table_resultats
+a50_modele_comb$table_resultats_flextable
+a50_modele_comb$graphique
+a50_modele_comb$donnees_ogive
 
 # Mortalité ----
 ## Tableau de sélection de modèles ----

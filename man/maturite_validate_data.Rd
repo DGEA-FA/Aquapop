@@ -37,6 +37,7 @@ Elle vérifie :
 }
 }
 \examples{
+\dontrun{
 data_exemple <- data.frame(
   maturite = c("N", "O", "IND", "O"),
   sexe = c("F", "M", "F", "IND"),
@@ -45,6 +46,6 @@ data_exemple <- data.frame(
 )
 
 maturite_validate_data(data_exemple, variable = "ltm", min_n = 2)
-
+}
 }
 \keyword{internal}

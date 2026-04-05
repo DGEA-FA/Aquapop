@@ -8,6 +8,7 @@
 #' @importFrom dplyr select rename mutate filter
 #' @importFrom glue glue
 #' @importFrom FSA psdCI lencat
+#' @importFrom stats xtabs 
 #'
 #' @param data Un `data.frame` contenant les données pour une seule espèce.
 #'

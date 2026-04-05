@@ -7,12 +7,46 @@
 maturite_eval_modele(models)
 }
 \arguments{
-\item{models}{Liste des modèles retournée par \code{maturite_generate_modele()}}
+\item{models}{Une liste nommée de modèles \code{glm}. Chaque élément peut être :
+\describe{
+\item{glm}{Un modèle ajusté}
+\item{NULL}{Si le modèle n’a pas pu être ajusté (ex. : données insuffisantes)}
+}
+Les noms de la liste servent d’identifiants (\code{modele_id}) dans le tableau final.}
 }
 \value{
-Un \code{data.frame} trié par AICc avec les indicateurs : convergence, tests d'ajustement, commentaire
+Un tableau de résultats contenant, pour chaque modèle :
+\describe{
+\item{modele_id}{Identifiant du modèle (nom de la liste)}
+\item{modele}{Formule du modèle}
+\item{lien}{Fonction de lien utilisée}
+\item{convergence}{Indique si le modèle a convergé}
+\item{pearson_x2_pval}{p-valeur du test d’ajustement (résidus de Pearson)}
+\item{goodness_of_link_pval}{p-valeur du test du lien}
+\item{aicc}{Critère d'information d'Akaike corrigé}
+\item{commentaire}{Interprétation qualitative de l’ajustement}
+}
+
+Les colonnes sont enrichies avec des labels via le package \code{{labelled}} pour
+faciliter leur affichage dans l'application Shiny.
 }
 \description{
 Cette fonction compile les critères d'évaluation de plusieurs modèles de maturité
-(logistique, probit, etc.) pour les comparer selon leur qualité d'ajustement.
+afin de les comparer selon leur qualité d'ajustement.
+}
+\details{
+Les modèles doivent être fournis sous forme d'une liste nommée d'objets \code{glm}
+(ou \code{NULL} si l'ajustement a échoué), typiquement issus d'un processus de
+génération et de sélection de modèles.
+
+Chaque modèle est évalué selon :
+\itemize{
+\item la convergence du modèle
+\item un test d'ajustement basé sur les résidus de Pearson
+\item un test du lien (ajout d’un terme quadratique)
+\item le critère AICc
+}
+
+Les résultats sont retournés dans un tableau trié en priorisant les modèles
+convergents, puis par ordre croissant de AICc.
 }
