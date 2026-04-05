@@ -12,18 +12,23 @@ maturite_compare_modele(
 }
 \arguments{
 \item{specimen_data}{Un \code{data.frame} contenant les données brutes de spécimens,
-incluant les colonnes \code{maturite}, \code{sexe}, et la variable quantitative choisie (\code{ltm} ou \code{age}).}
+incluant les colonnes \code{maturite}, \code{sexe}, et la variable quantitative choisie
+(\code{ltm} ou \code{age}).}
 
-\item{prefer_combined}{Logique indiquant si l'approche combinée doit être forcée (défaut : \code{FALSE})}
+\item{prefer_combined}{Logique indiquant si l'approche combinée doit être forcée
+pour le tableau principal (défaut : \code{FALSE}).}
 
-\item{variable}{Variable quantitative utilisée dans les modèles : \code{"ltm"} (par défaut) ou \code{"age"}}
+\item{variable}{Variable quantitative utilisée dans les modèles : \code{"ltm"}
+(par défaut) ou \code{"age"}.}
 }
 \value{
-Une liste contenant :
+Une liste contenant :
 \describe{
-\item{table}{Liste avec \code{df} et \code{flextable} pour le tableau principal (selon l'approche retenue)}
-\item{best_model}{Liste contenant les 3 éléments : \code{best_model_M}, \code{best_model_F}, \code{best_model_combined}}
-\item{message}{Texte interprétatif décrivant la sélection et les cas d'échec éventuels}
+\item{success}{Indique si la comparaison des modèles a pu être effectuée}
+\item{table}{Liste avec \code{df} et \code{flextable} pour le tableau principal}
+\item{best_model}{Liste contenant \code{best_model_M}, \code{best_model_F} et
+\code{best_model_combined}}
+\item{message}{Texte interprétatif décrivant la sélection ou les cas d'échec}
 \item{table_sep}{Liste avec \code{df} et \code{flextable} pour les modèles séparés}
 \item{table_comb}{Liste avec \code{df} et \code{flextable} pour les modèles combinés}
 }
@@ -32,6 +37,10 @@ Une liste contenant :
 Cette fonction ajuste, évalue et sélectionne les modèles de maturité sexuelle
 selon l'approche séparée (par sexe) et combinée (sexes confondus), à partir
 des données de spécimens. Elle retourne les tableaux d'évaluation au format brut
-et flextable, un message d'interprétation, et le meilleur modèle recommandé
-selon l'approche choisie ou forcée (\code{prefer_combined}).
+et flextable, un message d'interprétation, ainsi que les meilleurs modèles
+disponibles pour les mâles, les femelles et l'approche combinée.
+}
+\details{
+En cas de jeu de données vide ou insuffisant, la fonction retourne un objet
+structuré avec \code{success = FALSE}, sans générer d'erreur.
 }

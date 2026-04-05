@@ -7,30 +7,38 @@
 maturite_prepare(specimen_data, variable = c("ltm", "age"), drop_levels = TRUE)
 }
 \arguments{
-\item{specimen_data}{Un data.frame contenant les colonnes \code{maturite}, \code{sexe} et la variable quantitative (\code{ltm} ou \code{age})}
+\item{specimen_data}{Un \code{data.frame} contenant les colonnes \code{maturite},
+\code{sexe} et la variable quantitative (\code{ltm} ou \code{age}).}
 
-\item{variable}{Variable quantitative à utiliser : "ltm" (par défaut) ou "age"}
+\item{variable}{Variable quantitative à utiliser : \code{"ltm"} (par défaut) ou
+\code{"age"}.}
 
-\item{drop_levels}{Logique. Si TRUE (défaut), supprime les niveaux inutilisés après filtrage.}
+\item{drop_levels}{Logique. Si \code{TRUE} (défaut), supprime les niveaux
+inutilisés après filtrage.}
 }
 \value{
-Un data.frame filtré et prêt pour l'ajustement du modèle, contenant les colonnes d'origine avec
-\code{maturite} en facteur ordonné (\code{N} < \code{O}) et \code{sexe} centré sur les femelles (\code{F}, \code{M}).
+Un \code{data.frame} filtré et prêt pour l'ajustement du modèle, contenant
+les colonnes d'origine avec \code{maturite} en facteur ordonné (\code{N} < \code{O}) et
+\code{sexe} en facteur (\code{F}, \code{M}).
 }
 \description{
-Cette fonction filtre et structure les données en vue de l'ajustement d'un modèle de maturité.
-Elle supprime les individus indéterminés (\code{maturite == "IND"} ou \code{sexe == "IND"}) et les valeurs manquantes
-dans la variable quantitative (\code{ltm} ou \code{age}), puis définit les niveaux de facteurs attendus.
+Cette fonction filtre et structure les données en vue de l'ajustement d'un
+modèle de maturité. Elle retire les individus indéterminés
+(\code{maturite == "IND"} ou \code{sexe == "IND"}) ainsi que les valeurs manquantes
+dans la variable quantitative choisie (\code{ltm} ou \code{age}), puis définit les
+niveaux de facteurs attendus.
+}
+\details{
+Cette fonction ne valide pas si les données sont suffisantes pour ajuster
+un modèle. Cette responsabilité revient à \code{maturite_validate_data()}.
 }
 \examples{
-library(dplyr)
-data <- tribble(
-  ~maturite, ~sexe, ~ltm,
-  "O", "F", 350,
-  "N", "F", 280,
-  "IND", "M", 300,
-  "O", "IND", 400,
-  "O", "M", NA
+data_exemple <- data.frame(
+  maturite = c("O", "N", "IND", "O", "O"),
+  sexe = c("F", "F", "M", "IND", "M"),
+  ltm = c(350, 280, 300, 400, NA),
+  age = c(4, 3, 2, 5, 6)
 )
-maturite_prepare(data, variable = "ltm")
+
+maturite_prepare(data_exemple, variable = "ltm")
 }

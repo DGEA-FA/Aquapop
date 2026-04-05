@@ -186,17 +186,79 @@ wri_res$plot_byclass #Graphique Wr par classe de taille
 
 # Maturité sexuelle ----
 ## Longueur à maturité ----
+# Maturité sexuelle ----
+## Longueur à maturité ----
 
-### Tableau de sélection de modèles ----
+# Tableau de sélection de modèles ----
+res_l50 <- maturite_compare_modele(specimen_tous, variable = "ltm")
 
-res <- maturite_compare_modele(specimen_tous, variable = "ltm")
-res$table$df
-res$table$flextable
+# Vérification globale de la sortie
+res_l50$success
+res_l50$message
+str(res_l50$best_model)
 
-res$best_model
-res$message
-res$table_sep$flextable
-res$table_comb$flextable
+# Tableaux de comparaison
+res_l50$table$df
+res_l50$table_sep$df
+res_l50$table_comb$df
+
+# Versions flextable
+res_l50$table$flextable
+res_l50$table_sep$flextable
+res_l50$table_comb$flextable
+
+# Détail des meilleurs modèles retenus
+res_l50$best_model$best_model_F
+res_l50$best_model$best_model_M
+res_l50$best_model$best_model_combined
+
+# Modèle femelles ----
+l50_modele_f <- maturite_generate_modele(
+  data = specimen_tous,
+  variable = res_l50$best_model$best_model_F$variable,
+  modele = res_l50$best_model$best_model_F$modele,
+  lien = res_l50$best_model$best_model_F$lien
+)
+
+l50_modele_f$success
+l50_modele_f$message
+l50_modele_f$commentaire
+l50_modele_f$table_resultats
+l50_modele_f$table_resultats_flextable
+l50_modele_f$graphique
+l50_modele_f$donnees_ogive
+
+# Modèle mâles ----
+l50_modele_m <- maturite_generate_modele(
+  data = specimen_tous,
+  variable = res_l50$best_model$best_model_M$variable,
+  modele = res_l50$best_model$best_model_M$modele,
+  lien = res_l50$best_model$best_model_M$lien
+)
+
+l50_modele_m$success
+l50_modele_m$message
+l50_modele_m$commentaire
+l50_modele_m$table_resultats
+l50_modele_m$table_resultats_flextable
+l50_modele_m$graphique
+l50_modele_m$donnees_ogive
+
+# Modèle combiné ----
+l50_modele_comb <- maturite_generate_modele(
+  data = specimen_tous,
+  variable = res_l50$best_model$best_model_combined$variable,
+  modele = res_l50$best_model$best_model_combined$modele,
+  lien = res_l50$best_model$best_model_combined$lien
+)
+
+l50_modele_comb$success
+l50_modele_comb$message
+l50_modele_comb$commentaire
+l50_modele_comb$table_resultats
+l50_modele_comb$table_resultats_flextable
+l50_modele_comb$graphique
+l50_modele_comb$donnees_ogive
 
 ### Tableau du modèle choisi ----
 
@@ -206,11 +268,6 @@ l50_modele <- maturite_generate_modele(
   modele = res$best_model$modele,
   lien = res$best_model$lien
 )
-
-# 5. Afficher les résultats
-print(l50_modele$table_resultats)
-print(l50_modele$graphique)
-print(l50_modele$table_resultats_flextable)
 
 
 ## Âge à maturité ----
@@ -234,7 +291,7 @@ a50_modele <- maturite_generate_modele(
   lien = res$best_model$lien
 )
 
-# 5. Afficher les résultats
+#Afficher les résultats
 print(a50_modele$table_resultats)
 print(a50_modele$graphique)
 print(a50_modele$table_resultats_flextable)

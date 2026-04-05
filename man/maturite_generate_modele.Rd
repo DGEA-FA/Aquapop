@@ -25,12 +25,14 @@ maturite_generate_modele(
 }
 \value{
 Une liste avec :
-\itemize{
-\item \code{table_resultats}: tableau brut des coefficients et points 50 \%
-\item \code{table_resultats_flextable}: version formatée
-\item \code{commentaire}: interprétation de l'ajustement
-\item \code{graphique}: ogive de maturité
-\item \code{donnees_ogive}: données prédictives
+\describe{
+\item{success}{Indique si le modèle a pu être ajusté}
+\item{table_resultats}{Tableau brut des coefficients et points 50 \%}
+\item{table_resultats_flextable}{Version formatée}
+\item{commentaire}{Commentaire sur l'ajustement}
+\item{message}{Message explicatif si l'analyse n'est pas disponible}
+\item{graphique}{Ogive de maturité}
+\item{donnees_ogive}{Données prédictives}
 }
 }
 \description{

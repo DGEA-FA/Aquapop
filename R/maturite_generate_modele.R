@@ -11,11 +11,15 @@
 #' @param nboot Nombre de tirages Monte Carlo pour les intervalles (défaut : 10000)
 #'
 #' @return Une liste avec :
-#' - `table_resultats`: tableau brut des coefficients et points 50 %
-#' - `table_resultats_flextable`: version formatée
-#' - `commentaire`: interprétation de l'ajustement
-#' - `graphique`: ogive de maturité
-#' - `donnees_ogive`: données prédictives
+#' \describe{
+#'   \item{success}{Indique si le modèle a pu être ajusté}
+#'   \item{table_resultats}{Tableau brut des coefficients et points 50 %}
+#'   \item{table_resultats_flextable}{Version formatée}
+#'   \item{commentaire}{Commentaire sur l'ajustement}
+#'   \item{message}{Message explicatif si l'analyse n'est pas disponible}
+#'   \item{graphique}{Ogive de maturité}
+#'   \item{donnees_ogive}{Données prédictives}
+#' }
 #'
 #' @export
 #' @importFrom stats glm binomial predict anova coef update plogis pnorm
@@ -24,7 +28,25 @@
 #' @importFrom ggplot2 ggplot aes geom_line geom_ribbon geom_point labs annotate theme
 #' @importFrom FSA Summarize
 #' @importFrom flextable flextable compose as_paragraph as_sub set_header_labels add_footer_lines
-maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = c("TLO", "ADD", "COM", "INT"), lien = c("probit", "logit", "cloglog"), nboot = 10000) {
+maturite_generate_modele <- function(data,
+                                     variable = c("ltm", "age"),
+                                     modele = c("TLO", "ADD", "COM", "INT"),
+                                     lien = c("probit", "logit", "cloglog"),
+                                     nboot = 10000) {
+  
+  # Validation des arguments optionnels ----
+  if (is.null(modele) || is.null(lien) || is.null(variable)) {
+    return(list(
+      success = FALSE,
+      message = "Modèle non disponible pour ce groupe.",
+      commentaire = NULL,
+      table_resultats = NULL,
+      table_resultats_flextable = NULL,
+      graphique = NULL,
+      donnees_ogive = NULL
+    ))
+  }
+  
   variable <- match.arg(variable)
   modele <- match.arg(modele)
   lien <- match.arg(lien)
@@ -33,12 +55,26 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
     stop(glue("❌ Le jeu de données doit contenir les colonnes `{variable}`, `maturite` et `sexe`."))
   }
   
-  donnees_modeles <- maturite_prepare(data, variable = variable)
+  # Validation minimale des cas limites ----
+  validation_res <- maturite_validate_data(
+    specimen_data = data,
+    variable = variable,
+    min_n = 10
+  )
   
-  if (nrow(donnees_modeles) < 10) {
-    stop(glue("❌ Trop peu d'individus après nettoyage (n = {nrow(donnees_modeles)})."))
+  if (!isTRUE(validation_res$success)) {
+    return(list(
+      success = FALSE,
+      table_resultats = NULL,
+      table_resultats_flextable = NULL,
+      commentaire = NULL,
+      message = validation_res$message,
+      graphique = NULL,
+      donnees_ogive = NULL
+    ))
   }
   
+  donnees_modeles <- maturite_prepare(data, variable = variable)
   
   # Ajustement du modèle ----------------------------------------------------
   modele_glm <- switch(modele,
@@ -121,7 +157,7 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
     b0 <- coef(modele_glm)[["(Intercept)"]]
     b1 <- coef(modele_glm)[[variable]]
     b2 <- coef(modele_glm)[["sexeM"]]
-    b3 <- maturite_get_coef(modele_glm, sexe = "sexeM", interaction = TRUE)  # ✅ clé mise à jour
+    b3 <- maturite_get_coef(modele_glm, sexe = "sexeM", interaction = TRUE)
     
   } else {
     stop("❌ Modèle non reconnu.")
@@ -131,10 +167,8 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
   
   # Estimation du point de 50 % (L50 ou A50) -----------------------------------
   if (modele == "TLO") {
-    # Calcul de l'intervalle de confiance via confint_L
     ic <- confint_L(modele_glm, method = "montecarlo", interval_type = "bca", nboot = nboot)
     
-    # Extraction des valeurs centrales et bornes
     point50 <- round(ic[2])
     point50_inf <- round(ic[1])
     point50_sup <- round(ic[3])
@@ -223,7 +257,6 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
     table_resultats[[col_point50_f]] <- point50$fem
     table_resultats[[col_point50_m]] <- point50$male
     
-    # Réorganisation des colonnes dans l'ordre voulu
     ordre_cols <- switch(modele,
                          "ADD" = c(col_point50_m, col_point50_f, "b0", "b1", "sexe"),
                          "COM" = c(col_point50_m, col_point50_f, "b0", "b1", "sexe"),
@@ -232,17 +265,13 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
   }
   
   # Table flextable --------------------------------------------------------
-  
-  # Création du flextable
   ft <- flextable(table_resultats)
   
-  # Définir les labels temporaires
   labels <- list(
     b0 = "b0",
     b1 = "b1"
   )
   
-  # Ajout conditionnel des colonnes selon leur présence
   if ("sexe" %in% names(table_resultats)) labels$sexe <- "sexe"
   if ("interaction" %in% names(table_resultats)) labels$interaction <- "interaction"
   if ("intervalle" %in% names(table_resultats)) labels$intervalle <- "IC 95%"
@@ -253,15 +282,12 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
   if ("a50_f" %in% names(table_resultats)) labels$a50_f <- "tmp_f"
   if ("a50_m" %in% names(table_resultats)) labels$a50_m <- "tmp_m"
   
-  # Appliquer les étiquettes temporaires
   ft <- do.call(set_header_labels, c(list(ft), labels))
   
-  # Appliquer les indices (b0, b1)
   ft <- ft |>
     compose(j = "b0", part = "header", value = as_paragraph("b", as_sub("0"))) |>
     compose(j = "b1", part = "header", value = as_paragraph("b", as_sub("1")))
   
-  # Appliquer les étiquettes dynamiques pour point50
   if ("l50" %in% names(table_resultats)) {
     ft <- ft |> compose(j = "l50", part = "header", value = as_paragraph("L", as_sub("50")))
   }
@@ -290,16 +316,12 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
     ft <- ft |> compose(j = "interaction", part = "header", value = as_paragraph("interaction"))
   }
   
-  # Mise en forme finale
   ft <- ft |>
-    style_flextable_aquapop() 
+    style_flextable_aquapop()
   
   ft <- add_footer_lines(ft, values = glue("Modèle: {modele}, lien: {lien}"))
   
-  
-  # Résultat
   table_resultats_flextable <- ft
-
   
   # Graphique -------------------------------------------------------------------
   color_by_sex <- "sexe" %in% names(donnees_ogive)
@@ -321,7 +343,6 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
     ) +
     theme_aquapop()
   
-  # Ajout des lignes horizontales/verticales de point50
   if (modele == "TLO") {
     graphique <- graphique +
       annotate("segment", x = point50, xend = point50, y = 0, yend = 0.5, color = couleur_default, lty = 2) +
@@ -347,7 +368,6 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
     
   }
   
-  # Points bruts
   graphique <- graphique +
     geom_point(
       data = donnees_modeles,
@@ -362,39 +382,51 @@ maturite_generate_modele <- function(data, variable = c("ltm", "age"), modele = 
   graphique <- graphique +
     labs(caption = glue("Modèle : {modele}, lien : {lien}"))
   
-  
-  
   return(list(
+    success = TRUE,
     table_resultats = table_resultats,
     table_resultats_flextable = table_resultats_flextable,
     commentaire = commentaire,
+    message = NULL,
     graphique = graphique,
     donnees_ogive = donnees_ogive
   ))
 }
 
+
 #' Extraire un coefficient d'un modèle de maturité selon le sexe
 #'
 #' Fonction interne utilisée par `maturite_generate_modele()` pour extraire
-#' un coefficient ciblé (par sexe ou interaction) à partir d'un modèle glm.
+#' un coefficient ciblé (par sexe ou interaction) à partir d'un modèle `glm`.
 #'
 #' @param modele_glm Un objet `glm`
 #' @param sexe `"sexeF"` ou `"sexeM"` selon le coefficient à extraire
 #' @param interaction Logique. Si `TRUE`, cible une interaction
 #'
-#' @return La valeur du coefficient ciblé
+#' @return La valeur du coefficient ciblé, ou `NA` si absent
+#'
 #' @keywords internal
-maturite_get_coef <- function(modele_glm, sexe = c("sexeF", "sexeM"), interaction = FALSE) {
-  sexe <- match.arg(sexe)
-  pattern <- if (interaction) paste0(":", sexe) else sexe
-  coef_nom <- names(coef(modele_glm))
-  nom_cible <- coef_nom[grepl(pattern, coef_nom)]
+#'
+#' @importFrom stats coef
+maturite_get_coef <- function(modele_glm,
+                              sexe = c("sexeF", "sexeM"),
+                              interaction = FALSE) {
   
-  if (length(nom_cible) == 0) {
-    stop(glue::glue("❌ Aucun coefficient ne correspond au motif '{pattern}' dans le modèle."))
+  sexe <- match.arg(sexe)
+  
+  pattern <- if (interaction) {
+    paste0(":", sexe)
+  } else {
+    sexe
   }
   
-  coef(modele_glm)[[nom_cible]]
+  coef_nom <- names(coef(modele_glm))
+  nom_cible <- coef_nom[grep(pattern, coef_nom)]
+  
+  # Si aucun coef trouvé → retourner NA au lieu de planter
+  if (length(nom_cible) == 0) {
+    return(NA_real_)
+  }
+  
+  coef(modele_glm)[nom_cible]
 }
-
-

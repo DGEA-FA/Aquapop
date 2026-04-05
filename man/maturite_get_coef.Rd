@@ -14,10 +14,10 @@ maturite_get_coef(modele_glm, sexe = c("sexeF", "sexeM"), interaction = FALSE)
 \item{interaction}{Logique. Si \code{TRUE}, cible une interaction}
 }
 \value{
-La valeur du coefficient ciblé
+La valeur du coefficient ciblé, ou \code{NA} si absent
 }
 \description{
 Fonction interne utilisée par \code{maturite_generate_modele()} pour extraire
-un coefficient ciblé (par sexe ou interaction) à partir d'un modèle glm.
+un coefficient ciblé (par sexe ou interaction) à partir d'un modèle \code{glm}.
 }
 \keyword{internal}
