@@ -1,4 +1,4 @@
-test_that("Retourne un modèle glm/glm.nb/glmmTMB explicite selon methode fournie", {
+test_that("mortalite_fit_best_modele retourne un modèle explicite selon la methode fournie", {
   skip_if_not_installed("glmmTMB")
   skip_if_not_installed("MASS")
   
@@ -23,23 +23,69 @@ test_that("Retourne un modèle glm/glm.nb/glmmTMB explicite selon methode fourni
   expect_s3_class(mod_cmp, "glmmTMB")
 })
 
-test_that("Retourne le modèle automatiquement sélectionné si methode = NULL", {
+test_that("mortalite_fit_best_modele retourne automatiquement le meilleur modèle si methode = NULL", {
   skip_if_not_installed("glmmTMB")
   skip_if_not_installed("MASS")
+  skip_if_not_installed("hnp")
+  skip_if_not_installed("flextable")
   
   df <- tibble::tibble(
     age = 1:8,
     number = c(200, 140, 90, 60, 40, 25, 12, 5)
   )
   
-  model <- suppressWarnings(suppressMessages(mortalite_fit_best_modele(df)))
-  expect_true(inherits(model, "glm") || inherits(model, "glm.nb") || inherits(model, "glmmTMB"))
+  model <- suppressWarnings(
+    suppressMessages(
+      mortalite_fit_best_modele(df)
+    )
+  )
+  
+  expect_false(is.null(model))
+  expect_true(
+    inherits(model, "glm") ||
+      inherits(model, "negbin") ||
+      inherits(model, "glmmTMB")
+  )
 })
 
-test_that("Déclenche une erreur pour une méthode invalide", {
+test_that("mortalite_fit_best_modele retourne NULL pour une methode invalide", {
   df <- tibble::tibble(
     age = 1:6,
     number = c(100, 80, 60, 40, 20, 10)
   )
-  expect_error(mortalite_fit_best_modele(df, methode = "toto"))
+  
+  res <- mortalite_fit_best_modele(df, methode = "toto")
+  
+  expect_null(res)
+})
+
+test_that("mortalite_fit_best_modele retourne NULL si les donnees sont vides", {
+  df <- tibble::tibble(
+    age = numeric(),
+    number = numeric()
+  )
+  
+  res <- mortalite_fit_best_modele(df)
+  
+  expect_null(res)
+})
+
+test_that("mortalite_fit_best_modele retourne NULL si la colonne age est absente", {
+  df <- tibble::tibble(
+    number = c(100, 80, 60)
+  )
+  
+  res <- mortalite_fit_best_modele(df)
+  
+  expect_null(res)
+})
+
+test_that("mortalite_fit_best_modele retourne NULL si la colonne number est absente", {
+  df <- tibble::tibble(
+    age = 1:3
+  )
+  
+  res <- mortalite_fit_best_modele(df)
+  
+  expect_null(res)
 })

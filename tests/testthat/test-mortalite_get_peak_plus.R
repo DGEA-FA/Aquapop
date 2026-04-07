@@ -1,31 +1,93 @@
-# test-mortalite_get_peak_plus.R
-
-test_that("retourne le peak plus correctement sur un jeu simple", {
+test_that("mortalite_get_peak_plus retourne correctement le peak plus sur un jeu simple", {
   df <- data.frame(age = c(1, 2, 2, 3, 3, 3, 4))
-  expect_equal(mortalite_get_peak_plus(df), 4) # mode = 3, donc 3 + 1 = 4
+  
+  res <- mortalite_get_peak_plus(df)
+  
+  expect_type(res, "list")
+  expect_named(res, c("success", "message", "value"))
+  expect_true(res$success)
+  expect_null(res$message)
+  expect_equal(res$value, 4L)
 })
 
-test_that("retourne le plus petit âge en cas d'ex aequo", {
-  df <- data.frame(age = c(2, 2, 3, 3)) # mode partagé entre 2 et 3
-  expect_equal(mortalite_get_peak_plus(df), 3) # plus petit mode = 2 → 2 + 1 = 3
+test_that("mortalite_get_peak_plus retient le plus petit âge en cas d'ex aequo", {
+  df <- data.frame(age = c(2, 2, 3, 3))
+  
+  res <- mortalite_get_peak_plus(df)
+  
+  expect_type(res, "list")
+  expect_named(res, c("success", "message", "value"))
+  expect_true(res$success)
+  expect_null(res$message)
+  expect_equal(res$value, 3L)
 })
 
-test_that("ignore les valeurs NA dans la colonne age", {
+test_that("mortalite_get_peak_plus ignore les valeurs NA dans la colonne age", {
   df <- data.frame(age = c(1, 2, 2, NA, NA))
-  expect_equal(mortalite_get_peak_plus(df), 3) # mode = 2 → 3
+  
+  res <- mortalite_get_peak_plus(df)
+  
+  expect_type(res, "list")
+  expect_named(res, c("success", "message", "value"))
+  expect_true(res$success)
+  expect_null(res$message)
+  expect_equal(res$value, 3L)
 })
 
-test_that("retourne NA si tous les âges sont NA", {
+test_that("mortalite_get_peak_plus retourne success = FALSE si tous les âges sont NA", {
   df <- data.frame(age = c(NA, NA, NA))
-  expect_true(is.na(mortalite_get_peak_plus(df)))
+  
+  res <- mortalite_get_peak_plus(df)
+  
+  expect_type(res, "list")
+  expect_named(res, c("success", "message", "value"))
+  expect_false(res$success)
+  expect_equal(
+    res$message,
+    "Aucun âge valide n'est disponible pour déterminer l'âge Peak Plus."
+  )
+  expect_null(res$value)
 })
 
-test_that("retourne NA si aucune ligne", {
+test_that("mortalite_get_peak_plus retourne success = FALSE si aucune ligne n'est disponible", {
   df <- data.frame(age = numeric(0))
-  expect_true(is.na(mortalite_get_peak_plus(df)))
+  
+  res <- mortalite_get_peak_plus(df)
+  
+  expect_type(res, "list")
+  expect_named(res, c("success", "message", "value"))
+  expect_false(res$success)
+  expect_equal(
+    res$message,
+    "Aucun spécimen n'est disponible pour déterminer l'âge Peak Plus."
+  )
+  expect_null(res$value)
 })
 
-test_that("génère une erreur si la colonne age est absente", {
+test_that("mortalite_get_peak_plus retourne success = FALSE si la colonne age est absente", {
   df <- data.frame(taille = c(1, 2, 3))
-  expect_error(mortalite_get_peak_plus(df), "colonne `age` est manquante")
+  
+  res <- mortalite_get_peak_plus(df)
+  
+  expect_type(res, "list")
+  expect_named(res, c("success", "message", "value"))
+  expect_false(res$success)
+  expect_equal(
+    res$message,
+    "La colonne `age` est absente des données."
+  )
+  expect_null(res$value)
+})
+
+test_that("mortalite_get_peak_plus retourne success = FALSE si les données sont invalides", {
+  res <- mortalite_get_peak_plus(c(1, 2, 3))
+  
+  expect_type(res, "list")
+  expect_named(res, c("success", "message", "value"))
+  expect_false(res$success)
+  expect_equal(
+    res$message,
+    "Les données fournies sont invalides."
+  )
+  expect_null(res$value)
 })

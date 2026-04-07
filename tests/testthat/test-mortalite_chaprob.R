@@ -5,7 +5,14 @@ test_that("mortalite_chaprob fonctionne dans le cas nominal", {
   
   # Vérifie la structure retournée
   expect_type(res, "list")
-  expect_named(res, c("data", "flextable"))
+  expect_named(res, c("success", "message", "data", "flextable"))
+  
+  # Vérifie le statut de succès
+  expect_true(res$success)
+  expect_null(res$message)
+  
+  # Vérifie les objets retournés
+  expect_s3_class(res$data, "data.frame")
   expect_s3_class(res$flextable, "flextable")
   
   # Vérifie les colonnes du tableau
@@ -17,28 +24,47 @@ test_that("mortalite_chaprob fonctionne dans le cas nominal", {
   expect_type(res$data$a, "double")
   expect_type(res$data$ic_95, "character")
   
-  # Vérifie le calcul de a
+  # Vérifie le calcul de A
   z <- res$data$z
   a_calcule <- round((1 - exp(-z)) * 100, 1)
   expect_equal(res$data$a, a_calcule)
   
-  # Vérifie le calcul de l'IC 95%
+  # Vérifie le calcul de l'IC 95 %
   se <- res$data$se
   borne_inf <- round((1 - exp(-(z - se))) * 100, 1)
   borne_sup <- round((1 - exp(-(z + se))) * 100, 1)
-  ic_attendu <- glue::glue("[{borne_inf}-{borne_sup}]")
-  expect_equal(res$data$ic_95, as.character(ic_attendu))
+  ic_attendu <- glue("[{borne_inf}-{borne_sup}]")
+  expect_equal(res$data$ic_95, ic_attendu)
 })
 
-test_that("mortalite_chaprob retourne une erreur si tous les âges sont NA", {
+test_that("mortalite_chaprob retourne success = FALSE si tous les âges sont NA", {
   specimen <- data.frame(age = c(NA, NA, NA))
-  expect_error(mortalite_chaprob(specimen, pp = 2, age_max = 8))
+  
+  res <- mortalite_chaprob(specimen, pp = 2, age_max = 8)
+  
+  expect_type(res, "list")
+  expect_named(res, c("success", "message", "data", "flextable"))
+  expect_false(res$success)
+  expect_equal(
+    res$message,
+    "Aucune donnée d'âge valide n'est disponible pour Chapman-Robson."
+  )
+  expect_null(res$data)
+  expect_null(res$flextable)
 })
 
-test_that("mortalite_chaprob retourne une erreur avec un seul âge distinct", {
+test_that("mortalite_chaprob retourne success = FALSE avec un seul âge distinct", {
   specimen <- data.frame(age = c(5))
-  expect_error(
-    mortalite_chaprob(specimen, pp = 5, age_max = 5),
-    regexp = "au moins deux classes d'âge"
+  
+  res <- mortalite_chaprob(specimen, pp = 2, age_max = 8)
+  
+  expect_type(res, "list")
+  expect_named(res, c("success", "message", "data", "flextable"))
+  expect_false(res$success)
+  expect_match(
+    res$message,
+    "au moins deux classes d'âge différentes"
   )
+  expect_null(res$data)
+  expect_null(res$flextable)
 })

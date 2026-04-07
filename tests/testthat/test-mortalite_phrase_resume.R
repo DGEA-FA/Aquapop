@@ -1,5 +1,8 @@
 test_that("mortalite_phrase_resume fonctionne dans les cas standards", {
-  df <- data.frame(methode = c("Poisson", "NB1", "NB2"), A = c(45, 37, 52))
+  df <- data.frame(
+    methode = c("Poisson", "NB1", "NB2"),
+    A = c(45, 37, 52)
+  )
   
   expect_equal(
     mortalite_phrase_resume(df, "NB1"),
@@ -7,38 +10,62 @@ test_that("mortalite_phrase_resume fonctionne dans les cas standards", {
   )
 })
 
-test_that("mortalite_phrase_resume retourne une erreur si le modèle est absent", {
-  df <- data.frame(methode = c("Poisson", "NB2"), A = c(45, 52))
-  
-  expect_error(
-    mortalite_phrase_resume(df, "NB1"),
-    "Modèle NB1 non trouvé"
+test_that("mortalite_phrase_resume retourne NULL si le modèle est absent", {
+  df <- data.frame(
+    methode = c("Poisson", "NB2"),
+    A = c(45, 52)
   )
+  
+  expect_null(mortalite_phrase_resume(df, "NB1"))
 })
 
 test_that("mortalite_phrase_resume retourne une phrase partielle si A est manquant", {
-  df <- data.frame(methode = c("NB1"), A = NA)
+  df <- data.frame(
+    methode = c("NB1"),
+    A = NA
+  )
   
-  expect_match(
+  expect_equal(
     mortalite_phrase_resume(df, "NB1"),
-    "la mortalité annuelle n'est pas disponible"
+    "Le modèle NB1 a été sélectionné, mais la mortalité annuelle n'est pas disponible."
   )
 })
 
-test_that("mortalite_phrase_resume gère un modèle vide", {
-  df <- data.frame(methode = c("NB1"), A = 37)
-  
-  expect_error(
-    mortalite_phrase_resume(df, ""),
-    "modèle est invalide"
+test_that("mortalite_phrase_resume retourne NULL si le nom du modèle est vide", {
+  df <- data.frame(
+    methode = c("NB1"),
+    A = 37
   )
+  
+  expect_null(mortalite_phrase_resume(df, ""))
 })
 
-test_that("mortalite_phrase_resume gère une table vide", {
-  df <- data.frame(methode = character(0), A = numeric(0))
-  
-  expect_error(
-    mortalite_phrase_resume(df, "NB1"),
-    "Aucune donnée de comparaison disponible"
+test_that("mortalite_phrase_resume retourne NULL si la table est vide", {
+  df <- data.frame(
+    methode = character(0),
+    A = numeric(0)
   )
+  
+  expect_null(mortalite_phrase_resume(df, "NB1"))
+})
+
+test_that("mortalite_phrase_resume retourne NULL si data_comparaison n'est pas un data.frame", {
+  expect_null(mortalite_phrase_resume(c("NB1", "NB2"), "NB1"))
+})
+
+test_that("mortalite_phrase_resume retourne NULL si la colonne methode est absente", {
+  df <- data.frame(
+    A = c(37, 45)
+  )
+  
+  expect_null(mortalite_phrase_resume(df, "NB1"))
+})
+
+test_that("mortalite_phrase_resume retourne NULL si modele_nom est NA", {
+  df <- data.frame(
+    methode = c("NB1"),
+    A = 37
+  )
+  
+  expect_null(mortalite_phrase_resume(df, NA_character_))
 })

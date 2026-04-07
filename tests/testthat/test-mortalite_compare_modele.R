@@ -1,4 +1,4 @@
-test_that("Retourne une liste avec data et flextable valides", {
+test_that("mortalite_compare_modele retourne une liste structurée avec data et flextable valides", {
   skip_if_not_installed("glmmTMB")
   skip_if_not_installed("hnp")
   skip_if_not_installed("flextable")
@@ -12,7 +12,10 @@ test_that("Retourne une liste avec data et flextable valides", {
   
   # Structure de retour
   expect_type(res, "list")
-  expect_named(res, c("data", "flextable"))
+  expect_named(res, c("success", "message", "data", "flextable"))
+  
+  # Statut global
+  expect_true(res$success)
   expect_s3_class(res$data, "data.frame")
   expect_s3_class(res$flextable, "flextable")
   
@@ -26,33 +29,62 @@ test_that("Retourne une liste avec data et flextable valides", {
   # Lignes : 5 modèles testés
   expect_equal(nrow(res$data), 5)
   
-  # Types numériques cohérents
+  # Types cohérents
   expect_type(res$data$aicc, "double")
   expect_type(res$data$delta_aic, "double")
   expect_type(res$data$Z, "double")
   expect_type(res$data$ajustement_hnp, "double")
-  
-  # Convergence doit être booléenne
   expect_type(res$data$convergence, "logical")
+  expect_type(res$data$commentaire, "character")
   
-  # delta_aic doit avoir au moins un 0
-  expect_true(any(res$data$delta_aic == 0))
+  # Si au moins un AICc est calculé, il doit exister au moins un delta_aic = 0
+  if (!all(is.na(res$data$aicc))) {
+    expect_true(any(res$data$delta_aic == 0, na.rm = TRUE))
+  }
   
-  # Le commentaire du modèle à ΔAICc == 0 doit être adapté
+  # Le commentaire du ou des modèles avec ΔAICc == 0 doit être cohérent
   lignes_min <- res$data |>
     dplyr::filter(delta_aic == 0)
-  for (c in lignes_min$commentaires) {
-    expect_true(
-      grepl("AICc est le plus faible", c) ||
-        grepl("Il s'agit toutefois du meilleur modèle", c)
-    )
+  
+  if (nrow(lignes_min) > 0) {
+    for (commentaire_courant in lignes_min$commentaire) {
+      expect_true(
+        grepl("AICc est le plus faible", commentaire_courant) ||
+          grepl("meilleur modèle parmi les options disponibles", commentaire_courant) ||
+          grepl("n'a pas convergé", commentaire_courant)
+      )
+    }
   }
 })
 
-test_that("Erreur si colonnes age ou number absentes", {
-  df1 <- tibble::tibble(number = c(10, 20, 30))
-  df2 <- tibble::tibble(age = 1:3)
+test_that("mortalite_compare_modele retourne success = FALSE si la colonne age est absente", {
+  df <- tibble::tibble(number = c(10, 20, 30))
   
-  expect_error(mortalite_compare_modele(df1), "age")
-  expect_error(mortalite_compare_modele(df2), "number")
+  res <- mortalite_compare_modele(df)
+  
+  expect_type(res, "list")
+  expect_named(res, c("success", "message", "data", "flextable"))
+  expect_false(res$success)
+  expect_equal(
+    res$message,
+    "Le tableau doit contenir les colonnes `age` et `number`."
+  )
+  expect_null(res$data)
+  expect_null(res$flextable)
+})
+
+test_that("mortalite_compare_modele retourne success = FALSE si la colonne number est absente", {
+  df <- tibble::tibble(age = 1:3)
+  
+  res <- mortalite_compare_modele(df)
+  
+  expect_type(res, "list")
+  expect_named(res, c("success", "message", "data", "flextable"))
+  expect_false(res$success)
+  expect_equal(
+    res$message,
+    "Le tableau doit contenir les colonnes `age` et `number`."
+  )
+  expect_null(res$data)
+  expect_null(res$flextable)
 })
