@@ -7,32 +7,35 @@
 mortalite_fit_modele_nb1(df_age_etendue)
 }
 \arguments{
-\item{df_age_etendue}{Un \code{data.frame} produit par \code{mortalite_prepare_extended()},
-contenant au minimum les colonnes :
-\describe{
-\item{age}{Âge des individus (entier)}
-\item{number}{Nombre d'individus observés à cet âge}
-}}
+\item{df_age_etendue}{Un \code{data.frame} produit par
+\code{mortalite_prepare_extended()}, contenant au minimum les colonnes \code{age} et
+\code{number}.}
 }
 \value{
 Un \code{data.frame} d'une ligne contenant :
 \describe{
-\item{methode}{Type de modèle utilisé (\code{"nb1"})}
-\item{ajustement_hnp}{Pourcentage moyen d'observations hors bande (test HNP)}
-\item{aicc}{Critère d'information corrigé (aicc)}
-\item{Z}{Coefficient estimé de l'âge dans le modèle}
-\item{SE}{Erreur standard associée à Z}
-\item{A}{Taux de mortalité annuel (\%)}
-\item{IC 95\%}{Intervalle de confiance du taux A}
-\item{commentaire}{Interprétation qualitative de l'ajustement}
-\item{convergence}{Booléen indiquant la convergence du modèle}
-\item{nb_iterations_hnp}{Nombre total de simulations HNP effectuées (2 ou 5)}
+\item{methode}{Type de modèle utilisé (\code{"nb1"}).}
+\item{ajustement_hnp}{Pourcentage moyen d'observations hors bande (test HNP).}
+\item{aicc}{Critère d'information corrigé (AICc).}
+\item{Z}{Coefficient estimé de l'âge dans le modèle.}
+\item{SE}{Erreur standard associée à \code{Z}.}
+\item{A}{Taux de mortalité annuel estimé en pourcentage.}
+\item{ic95}{Intervalle de confiance approximatif du taux \code{A}.}
+\item{commentaire}{Interprétation qualitative de l'ajustement ou message d'échec.}
+\item{convergence}{Booléen indiquant si le modèle a convergé.}
+\item{nb_iterations_hnp}{Nombre total de simulations HNP effectuées.}
 }
 }
 \description{
-Cette fonction ajuste un modèle NB1 (\code{glmmTMB}) sur des données de fréquence d'âge étendues.
-Elle applique un test HNP (Half-Normal Plot) avec jusqu'à 5 simulations pour évaluer la qualité de l'ajustement.
-Elle retourne une ligne résumant le modèle, l'ajustement, et le taux de mortalité annuel estimé.
+Cette fonction ajuste un modèle NB1 sur des données de fréquence d'âge
+étendues à l'aide de \code{glmmTMB}. Elle applique un test HNP avec jusqu'à
+5 simulations pour évaluer la qualité de l'ajustement.
+}
+\details{
+La fonction retourne toujours un \code{data.frame} d'une ligne. Si le modèle ne
+peut pas être ajusté ou si certaines statistiques ne peuvent pas être
+calculées, les valeurs correspondantes sont retournées à \code{NA} et
+\code{convergence = FALSE}.
 }
 \examples{
 df_fake <- tibble::tibble(age = 1:6, number = c(180, 120, 70, 40, 25, 10))

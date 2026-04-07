@@ -1,40 +1,59 @@
 #' Générer une phrase descriptive pour le modèle de mortalité sélectionné
 #'
-#' @importFrom glue glue
-#' @param data_comparaison data.frame contenant les colonnes `methode` et `A`
-#' @param modele_nom Nom du modèle à décrire (ex: "NB1")
+#' Cette fonction génère une phrase interprétative à partir du modèle de
+#' mortalité sélectionné et de la table de comparaison des modèles.
 #'
-#' @return Une chaîne de caractères résumant le modèle et la mortalité annuelle
+#' Elle retourne `NULL` si les informations nécessaires ne sont pas disponibles.
+#'
+#' @param data_comparaison Un `data.frame` contenant au minimum les colonnes
+#'   `methode` et `A`, généralement issu de `mortalite_compare_modele()$data`.
+#' @param modele_nom Nom du modèle à décrire (ex: `"nb1"`).
+#'
+#' @return Une chaîne de caractères résumant le modèle et la mortalité annuelle,
+#'   ou `NULL` si la phrase ne peut pas être générée.
+#'
+#' @importFrom glue glue
+#'
 #' @export
 #'
 #' @examples
-#' df <- data.frame(methode = c("NB1", "Poisson"), A = c(37, 51))
-#' mortalite_phrase_resume(df, "NB1")
-#'
+#' df <- data.frame(methode = c("nb1", "poisson"), A = c(37, 51))
+#' mortalite_phrase_resume(df, "nb1")
 mortalite_phrase_resume <- function(data_comparaison, modele_nom) {
-  if (missing(modele_nom) || is.null(modele_nom) || modele_nom == "") {
-    stop("Le nom du modèle est invalide ou manquant.")
+  # Validation de base ====
+  if (is.null(modele_nom) || length(modele_nom) != 1 || is.na(modele_nom) || modele_nom == "") {
+    return(NULL)
   }
   
-  if (is.null(data_comparaison) || nrow(data_comparaison) == 0) {
-    stop("Aucune donnée de comparaison disponible.")
+  if (is.null(data_comparaison) || !is.data.frame(data_comparaison) || nrow(data_comparaison) == 0) {
+    return(NULL)
   }
   
   if (!"methode" %in% names(data_comparaison)) {
-    stop("La colonne 'methode' est manquante dans les données.")
+    return(NULL)
   }
   
+  # Trouver la ligne du modèle ====
   ligne <- data_comparaison[data_comparaison$methode == modele_nom, , drop = FALSE]
   
   if (nrow(ligne) == 0) {
-    stop(glue("Modèle {modele_nom} non trouvé dans les résultats."))
+    return(NULL)
   }
   
   modele_upper <- toupper(modele_nom)
   
-  if (!"A" %in% names(ligne) || is.na(ligne$A)) {
-    return(glue("Le modèle {modele_upper} a été sélectionné, mais la mortalité annuelle n'est pas disponible."))
+  # Cas sans estimation de A ====
+  if (!"A" %in% names(ligne) || is.na(ligne$A[1])) {
+    return(
+      glue("Le modèle {modele_upper} a été sélectionné, mais la mortalité annuelle n'est pas disponible.") |>
+        as.character()
+    )
   }
   
-  glue("Le modèle {modele_upper} décrit le mieux la mortalité de la population. La mortalité annuelle s'élève à {ligne$A} %.") |> as.character()
+  # Phrase complète ====
+  glue(
+    "Le modèle {modele_upper} décrit le mieux la mortalité de la population. ",
+    "La mortalité annuelle s'élève à {ligne$A[1]} %."
+  ) |>
+    as.character()
 }

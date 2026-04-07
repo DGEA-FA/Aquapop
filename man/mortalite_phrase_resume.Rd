@@ -7,18 +7,23 @@
 mortalite_phrase_resume(data_comparaison, modele_nom)
 }
 \arguments{
-\item{data_comparaison}{data.frame contenant les colonnes \code{methode} et \code{A}}
+\item{data_comparaison}{Un \code{data.frame} contenant au minimum les colonnes
+\code{methode} et \code{A}, généralement issu de \code{mortalite_compare_modele()$data}.}
 
-\item{modele_nom}{Nom du modèle à décrire (ex: "NB1")}
+\item{modele_nom}{Nom du modèle à décrire (ex: \code{"nb1"}).}
 }
 \value{
-Une chaîne de caractères résumant le modèle et la mortalité annuelle
+Une chaîne de caractères résumant le modèle et la mortalité annuelle,
+ou \code{NULL} si la phrase ne peut pas être générée.
 }
 \description{
-Générer une phrase descriptive pour le modèle de mortalité sélectionné
+Cette fonction génère une phrase interprétative à partir du modèle de
+mortalité sélectionné et de la table de comparaison des modèles.
+}
+\details{
+Elle retourne \code{NULL} si les informations nécessaires ne sont pas disponibles.
 }
 \examples{
-df <- data.frame(methode = c("NB1", "Poisson"), A = c(37, 51))
-mortalite_phrase_resume(df, "NB1")
-
+df <- data.frame(methode = c("nb1", "poisson"), A = c(37, 51))
+mortalite_phrase_resume(df, "nb1")
 }

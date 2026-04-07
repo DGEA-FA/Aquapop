@@ -10,36 +10,50 @@ mortalite_get_peak_plus(data)
 \item{data}{Un \code{data.frame} contenant une colonne \code{age}, de type numérique ou entier.}
 }
 \value{
-Un entier (\code{integer}) correspondant au Peak Plus (âge de départ), ou \code{NA_integer_} si le calcul est impossible.
+Une liste avec les éléments suivants :
+\describe{
+\item{success}{Un booléen indiquant si le calcul a réussi.}
+\item{message}{Un message informatif si le calcul est impossible, sinon \code{NULL}.}
+\item{value}{Un entier correspondant au Peak Plus, ou \code{NULL} si le calcul est impossible.}
+}
 }
 \description{
-Cette fonction retourne l'âge le plus fréquent (le mode) dans la colonne \code{age},
-augmenté de 1, conformément à la définition du Peak Plus (âge de départ) utilisée en analyse de mortalité.
-Elle suppose que les données ont été filtrées au préalable pour une seule espèce.
+Cette fonction détermine l'âge de départ (\verb{peak plus}) utilisé dans l'analyse
+de mortalité à partir de la structure d'âge observée. Elle identifie l'âge le
+plus fréquent (le mode) dans la colonne \code{age}, puis ajoute 1 à cette valeur.
 }
 \details{
-La fonction gère les cas particuliers suivants :
+La fonction retourne toujours une liste structurée contenant :
 \itemize{
-\item Si plusieurs âges partagent la fréquence maximale, le plus petit âge est retenu.
-\item Les valeurs manquantes (\code{NA}) sont ignorées.
-\item Si toutes les valeurs sont manquantes ou si aucune ligne n'est présente, la fonction retourne \code{NA_integer_}.
-\item Une erreur est générée si la colonne \code{age} est absente.
+\item \code{success} : indicateur logique de réussite
+\item \code{message} : message informatif si le calcul est impossible
+\item \code{value} : valeur numérique de l'âge Peak Plus, ou \code{NULL} si indisponible
+}
+
+Règles appliquées :
+\itemize{
+\item les valeurs manquantes (\code{NA}) sont ignorées
+\item si plusieurs âges partagent la fréquence maximale, le plus petit âge est retenu
+\item si aucune donnée exploitable n'est disponible, la fonction retourne
+\code{success = FALSE} et \code{value = NULL}
+\item si la colonne \code{age} est absente, la fonction retourne aussi
+\code{success = FALSE}
 }
 }
 \examples{
 # Jeu de données simple avec un mode clair
 df <- data.frame(age = c(1, 2, 2, 3, 3, 3, 4))
-mortalite_get_peak_plus(df) # retourne 4 (mode = 3, +1)
+mortalite_get_peak_plus(df)
 
-# Cas avec ex aequo : le plus petit est retenu
+# Cas avec ex aequo : le plus petit âge est retenu
 df <- data.frame(age = c(2, 2, 3, 3))
-mortalite_get_peak_plus(df) # retourne 3
+mortalite_get_peak_plus(df)
 
 # Données avec NA
 df <- data.frame(age = c(NA, 2, 2, NA, 3))
-mortalite_get_peak_plus(df) # retourne 3
+mortalite_get_peak_plus(df)
 
 # Données vides ou toutes manquantes
-mortalite_get_peak_plus(data.frame(age = numeric(0))) # retourne NA_integer_
-mortalite_get_peak_plus(data.frame(age = c(NA, NA)))   # retourne NA_integer_
+mortalite_get_peak_plus(data.frame(age = numeric(0)))
+mortalite_get_peak_plus(data.frame(age = c(NA, NA)))
 }

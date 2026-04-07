@@ -7,17 +7,23 @@
 mortalite_fit_best_modele(data, methode = NULL)
 }
 \arguments{
-\item{data}{Un \code{data.frame} contenant au minimum les colonnes \code{age} et \code{number}
-(habituellement produit par \code{mortalite_prepare()})}
+\item{data}{Un \code{data.frame} contenant au minimum les colonnes \code{age} et \code{number},
+généralement produit par \code{mortalite_prepare_extended()}.}
 
-\item{methode}{Chaîne de caractères optionnelle ("poisson", "nb1", "nb2", "cmp", "gp").
-Si précisée, ce modèle est ajusté directement sans comparaison.}
+\item{methode}{Chaîne de caractères optionnelle parmi \code{"poisson"}, \code{"nb1"},
+\code{"nb2"}, \code{"cmp"} ou \code{"gp"}. Si précisée, ce modèle est ajusté directement
+sans étape de comparaison.}
 }
 \value{
-Un objet de classe \code{glm}, \code{glm.nb} ou \code{glmmTMB}, selon la méthode choisie
+Un objet de classe \code{glm}, \code{glm.nb} ou \code{glmmTMB}, selon la méthode
+choisie, ou \code{NULL} si aucun modèle n'a pu être ajusté.
 }
 \description{
-Cette fonction ajuste les cinq modèles de mortalité (Poisson, NB1, NB2, CMP, GP),
-sélectionne automatiquement le meilleur via \code{mortalite_select_best_modele()},
-et retourne l'objet \code{modele} correspondant. Si \code{methode} est précisé, il est utilisé directement.
+Cette fonction ajuste le modèle de mortalité correspondant à la méthode
+sélectionnée. Si \code{methode} n'est pas précisée, elle compare d'abord les
+modèles disponibles à l'aide de \code{mortalite_compare_modele()} puis sélectionne
+automatiquement le meilleur via \code{mortalite_select_best_modele()}.
+}
+\details{
+La fonction retourne \code{NULL} si aucun modèle ne peut être sélectionné ou ajusté.
 }

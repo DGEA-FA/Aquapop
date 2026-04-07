@@ -1,30 +1,39 @@
 #' Préparer les données corrigées de fréquence d'âge pour l'estimation de la mortalité
 #'
-#' Cette fonction applique `agesurv()` avec `type = 1` pour générer
-#' les données individuelles de fréquence d'âge sur la *descending limb* (partie descendante de la courbe de capture).
-#' Elle filtre d'abord les spécimens ayant un âge valide (`data_valid`), applique l'estimation (`data_agesurv`),
-#' puis complète les classes d'âge manquantes avec des zéros pour produire une table uniforme (`data_final`).
+#' Cette fonction applique `agesurv()` avec `type = 1` pour générer les données
+#' individuelles de fréquence d'âge sur la partie descendante de la courbe de capture.
+#' Elle filtre d'abord les spécimens ayant un âge valide, applique l'estimation,
+#' puis complète les classes d'âge manquantes avec des zéros pour produire une
+#' table uniforme.
+#'
+#' La fonction retourne toujours une liste structurée contenant :
+#' \itemize{
+#'   \item `success` : indicateur logique de réussite
+#'   \item `message` : message informatif si la préparation est impossible
+#'   \item `data` : tableau de fréquences corrigées, ou `NULL` si indisponible
+#' }
+#'
+#' @param data Un `data.frame` contenant les spécimens d'une seule espèce, avec
+#'   une colonne nommée `age`. Les valeurs manquantes (`NA`) sont automatiquement exclues.
+#' @param age_peak_plus Un entier indiquant l'âge à partir duquel commence
+#'   l'analyse de mortalité.
+#' @param age_max Un entier indiquant l'âge maximum à considérer pour
+#'   l'estimation de la mortalité.
+#'
+#' @return Une liste avec les éléments suivants :
+#' \describe{
+#'   \item{success}{Un booléen indiquant si la préparation a réussi.}
+#'   \item{message}{Un message informatif si la préparation est impossible, sinon `NULL`.}
+#'   \item{data}{Un `data.frame` contenant les colonnes `age` et `number`, ou `NULL` si la préparation est impossible.}
+#' }
 #'
 #' @importFrom dplyr arrange
-#' @importFrom tidyr replace_na
-#' @importFrom dplyr mutate
-#' @importFrom dplyr left_join
-#' @importFrom tibble tibble
 #' @importFrom dplyr filter
-#' @importFrom checkmate assert_int assert_numeric assert_names assert_data_frame assert
+#' @importFrom dplyr left_join
+#' @importFrom dplyr mutate
 #' @importFrom fishmethods agesurv
-#' @param data Un `data.frame` contenant les spécimens d'une seule espèce, avec une colonne nommée `age`
-#'             (valeurs numériques entières ≥ 0). Les valeurs manquantes (`NA`) seront automatiquement exclues.
-#' @param age_peak_plus Un entier indiquant l'âge à partir duquel commence l'analyse de mortalité
-#'                      (souvent le pic d'abondance + 1).
-#' @param age_max Un entier indiquant l'âge maximum à considérer pour l'estimation de la mortalité.
-#'
-#' @return Un `data.frame` nommé `data_final` contenant :
-#' \describe{
-#'   \item{`age`}{Âge (entier)}
-#'   \item{`number`}{Nombre d'individus observés à cet âge, incluant les zéros pour les classes absentes}
-#' }
-#' Toutes les classes entre les âges extrêmes sont incluses, même celles absentes dans les données sources.
+#' @importFrom tibble tibble
+#' @importFrom tidyr replace_na
 #'
 #' @export
 #'
@@ -32,52 +41,139 @@
 #' data_exemple <- data.frame(age = c(2, 3, 3, 4, 5, 5, 5, 6, 7, NA))
 #' mortalite_prepare_corr(data = data_exemple, age_peak_plus = 5, age_max = 7)
 mortalite_prepare_corr <- function(data, age_peak_plus, age_max) {
-  # Validations ----
-  assert_data_frame(data)
-  assert_names(names(data), must.include = "age")
-  assert_numeric(data$age, any.missing = TRUE)
-  assert_int(age_peak_plus, lower = 0)
-  assert_int(age_max, lower = 0)
+  # Validation de base ====
+  if (is.null(data) || !is.data.frame(data)) {
+    return(list(
+      success = FALSE,
+      message = "Les données fournies sont invalides.",
+      data = NULL
+    ))
+  }
   
-  data_valid <- filter(data, !is.na(age))
+  if (!"age" %in% names(data)) {
+    return(list(
+      success = FALSE,
+      message = "La colonne `age` est absente des données.",
+      data = NULL
+    ))
+  }
   
-  assert(
-    nrow(data_valid) > 0,
-    "Aucune valeur d'âge valide après suppression des NA."
+  if (nrow(data) == 0) {
+    return(list(
+      success = FALSE,
+      message = "Aucun spécimen n'est disponible pour préparer les données de mortalité.",
+      data = NULL
+    ))
+  }
+  
+  if (is.null(age_peak_plus) || length(age_peak_plus) != 1 || is.na(age_peak_plus)) {
+    return(list(
+      success = FALSE,
+      message = "L'âge de départ (`age_peak_plus`) est invalide ou manquant.",
+      data = NULL
+    ))
+  }
+  
+  if (is.null(age_max) || length(age_max) != 1 || is.na(age_max)) {
+    return(list(
+      success = FALSE,
+      message = "L'âge maximal (`age_max`) est invalide ou manquant.",
+      data = NULL
+    ))
+  }
+  
+  if (!is.numeric(age_peak_plus) || !is.numeric(age_max)) {
+    return(list(
+      success = FALSE,
+      message = "Les arguments `age_peak_plus` et `age_max` doivent être numériques.",
+      data = NULL
+    ))
+  }
+  
+  if (age_peak_plus < 0 || age_max < 0) {
+    return(list(
+      success = FALSE,
+      message = "Les âges doivent être supérieurs ou égaux à 0.",
+      data = NULL
+    ))
+  }
+  
+  # Nettoyage des âges ====
+  data_valid <- data |>
+    filter(!is.na(age))
+  
+  if (nrow(data_valid) == 0) {
+    return(list(
+      success = FALSE,
+      message = "Aucune valeur d'âge valide n'est disponible après suppression des NA.",
+      data = NULL
+    ))
+  }
+  
+  age_observe_max <- max(data_valid$age)
+  
+  if (age_peak_plus > age_observe_max) {
+    return(list(
+      success = FALSE,
+      message = "`age_peak_plus` est supérieur à l'âge maximum observé dans les données.",
+      data = NULL
+    ))
+  }
+  
+  if (age_peak_plus >= age_max) {
+    return(list(
+      success = FALSE,
+      message = paste(
+        "L'âge de départ doit être strictement inférieur à l'âge maximal.",
+        "Veuillez choisir manuellement une valeur de `age_peak_plus` plus petite."
+      ),
+      data = NULL
+    ))
+  }
+  
+  # Estimation avec agesurv ====
+  resultat <- tryCatch(
+    agesurv(
+      type = 1,
+      age = data_valid$age,
+      full = age_peak_plus,
+      last = age_max,
+      estimate = "z",
+      method = "cr"
+    ),
+    error = function(e) NULL
   )
   
-  assert(
-    age_peak_plus <= max(data_valid$age),
-    "`age_peak_plus` est supérieur à l'âge maximum observé dans les données."
-  )
-  
-  assert(
-    age_max >= age_peak_plus,
-    "`age_max` doit être supérieur ou égal à `age_peak_plus`."
-  )
-  
-  # Estimation avec agesurv ----
-  resultat <- agesurv(
-    type = 1,
-    age = data_valid$age,
-    full = age_peak_plus,
-    last = age_max,
-    estimate = "z",
-    method = "cr"
-  )
+  if (is.null(resultat) || is.null(resultat$data)) {
+    return(list(
+      success = FALSE,
+      message = "La préparation des données de mortalité avec `agesurv()` a échoué.",
+      data = NULL
+    ))
+  }
   
   data_agesurv <- resultat$data
   
-  assert(
-    nrow(data_agesurv) >= 2,
-    "L'ajustement agesurv() a retourné un jeu de données trop incomplet (moins de 2 âges)."
-  )
+  if (!is.data.frame(data_agesurv) || nrow(data_agesurv) < 2) {
+    return(list(
+      success = FALSE,
+      message = paste(
+        "L'ajustement `agesurv()` a retourné un jeu de données trop incomplet",
+        "(moins de 2 âges exploitables)."
+      ),
+      data = NULL
+    ))
+  }
   
-  # Complétion des classes d'âge ----
+  # Complétion des classes d'âge ====
   data_final <- tibble(age = seq(min(data_agesurv$age), max(data_agesurv$age))) |>
     left_join(data_agesurv, by = "age") |>
     mutate(number = replace_na(number, 0L)) |>
     arrange(age)
   
-  return(data_final)
+  list(
+    success = TRUE,
+    message = NULL,
+    data = data_final
+  )
 }

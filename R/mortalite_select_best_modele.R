@@ -1,56 +1,79 @@
-#' Sélectionner le meilleur modèle de mortalité selon aicc et ajustement HNP
+#' Sélectionner le meilleur modèle de mortalité selon AICc et ajustement HNP
 #'
-#' Cette fonction identifie automatiquement le meilleur modèle parmi ceux comparés (Poisson, NB1, NB2, CMP, GP),
-#' en priorisant les modèles avec un bon ajustement HNP (inférieur à 10 %). Si aucun modèle ne satisfait ce critère,
-#' le modèle avec le plus faible aicc est sélectionné.
+#' Cette fonction identifie automatiquement le meilleur modèle parmi ceux
+#' comparés (Poisson, NB1, NB2, CMP, GP), en priorisant les modèles ayant un
+#' bon ajustement HNP (inférieur à 10 %). Si aucun modèle ne satisfait ce
+#' critère, le modèle avec le plus faible AICc est sélectionné parmi les modèles
+#' disponibles.
 #'
-#' @param tablemodele Un `data.frame` (souvent `mortalite_compare_modele_res$data`)
-#'   contenant au minimum les colonnes :
+#' La fonction retourne `NULL` si aucun modèle n'est sélectionnable.
+#'
+#' @param tablemodele Un `data.frame` généralement issu de
+#'   `mortalite_compare_modele()$data`, contenant au minimum les colonnes :
 #'   \describe{
-#'     \item{methode}{Nom du modèle (ex. "Poisson", "NB1", "NB2", "CMP", "GP").}
+#'     \item{methode}{Nom du modèle.}
 #'     \item{aicc}{Critère d'information corrigé (numérique).}
 #'     \item{ajustement_hnp}{Pourcentage d'ajustement HNP (numérique).}
+#'     \item{convergence}{Booléen indiquant si le modèle est interprétable.}
 #'   }
 #'
-#' @return Une chaîne de caractères correspondant au nom du meilleur modèle, ou `NA` si aucun modèle n'est sélectionnable.
-#' @export
+#' @return Une chaîne de caractères correspondant au nom du meilleur modèle, ou
+#'   `NULL` si aucun modèle n'est sélectionnable.
 #'
 #' @importFrom dplyr filter pull
 #'
+#' @export
+#'
 #' @examples
-#' # Exemple minimal
 #' df <- data.frame(
-#'   methode = c("Poisson", "NB1", "NB2", "CMP", "GP"),
+#'   methode = c("poisson", "nb1", "nb2", "cmp", "gp"),
 #'   aicc = c(112, 108, 109, 107, 106),
-#'   ajustement_hnp = c(15, 12, 8, 6, 11)
+#'   ajustement_hnp = c(15, 12, 8, 6, 11),
+#'   convergence = c(TRUE, TRUE, TRUE, TRUE, TRUE)
 #' )
 #' mortalite_select_best_modele(df)
 mortalite_select_best_modele <- function(tablemodele) {
-  # Validation ----
-  if (!all(c("methode", "aicc","ajustement_hnp") %in% names(tablemodele))) {
-    stop("Le tableau fourni n'est pas valide. Il doit contenir les colonnes : 'methode', 'aicc' et 'ajustement_hnp'.")
+  # Validation de base ====
+  if (is.null(tablemodele) || !is.data.frame(tablemodele) || nrow(tablemodele) == 0) {
+    return(NULL)
   }
   
-  # Filtrage des modèles bien ajustés (HNP < 10) ----
-  modeles_bien_ajustes <- tablemodele |>
-    filter(ajustement_hnp < 10)
+  required_cols <- c("methode", "aicc", "ajustement_hnp")
   
-  # Sélection finale selon le plus faible AICc ----
+  if (!all(required_cols %in% names(tablemodele))) {
+    return(NULL)
+  }
+  
+  # Filtrer les modèles sélectionnables ====
+  modeles_valides <- tablemodele |>
+    filter(!is.na(aicc))
+  
+  if ("convergence" %in% names(modeles_valides)) {
+    modeles_valides <- modeles_valides |>
+      filter(convergence %in% TRUE)
+  }
+  
+  if (nrow(modeles_valides) == 0) {
+    return(NULL)
+  }
+  
+  # Priorité aux modèles bien ajustés selon HNP ====
+  modeles_bien_ajustes <- modeles_valides |>
+    filter(!is.na(ajustement_hnp), ajustement_hnp < 10)
+  
   if (nrow(modeles_bien_ajustes) > 0) {
     selection <- modeles_bien_ajustes |>
       filter(aicc == min(aicc, na.rm = TRUE)) |>
       pull(methode)
   } else {
-    selection <- tablemodele |>
+    selection <- modeles_valides |>
       filter(aicc == min(aicc, na.rm = TRUE)) |>
       pull(methode)
   }
   
-  # Retourner la sélection (ou NA) ----
   if (length(selection) == 0 || is.na(selection[1])) {
-    warning("Aucun modèle n'a pu être sélectionné.")
-    return(NA)
+    return(NULL)
   }
   
-  return(selection[1])
+  selection[1]
 }

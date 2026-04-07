@@ -7,23 +7,37 @@
 mortalite_chaprob(specimen, pp, age_max)
 }
 \arguments{
-\item{specimen}{Un \code{data.frame} produit par \code{mortalite_prepare_corr()}, contenant une colonne \code{age}.}
+\item{specimen}{Un \code{data.frame} contenant une colonne \code{age}.}
 
-\item{pp}{Valeur de "peak-plus", soit la classe d'âge au-delà de laquelle les âges sont regroupés.}
+\item{pp}{Valeur de "peak-plus", soit la classe d'âge au-delà de laquelle les
+âges sont regroupés.}
 
 \item{age_max}{Âge maximum à considérer dans le calcul.}
 }
 \value{
-Une liste avec deux éléments :
+Une liste contenant :
 \describe{
-\item{data}{Un \code{data.frame} contenant les estimations de mortalité. Colonnes :  \code{z}, \code{se}, \code{a}, \code{ic_95}}
-\item{flextable}{Une version formatée du tableau, prête à être affichée ou exportée}
+\item{success}{Un booléen indiquant si l'estimation a réussi.}
+\item{message}{Un message informatif si l'estimation est impossible, sinon \code{NULL}.}
+\item{data}{Un \code{data.frame} contenant les colonnes \code{z}, \code{se}, \code{a}, \code{ic_95}, ou \code{NULL}.}
+\item{flextable}{Une version formatée du tableau, prête à être affichée ou exportée, ou \code{NULL}.}
 }
 }
 \description{
-Cette fonction applique la méthode Chapman-Robson via \code{fishmethods::agesurv()} pour estimer
-le coefficient de mortalité (Z) à partir d'une distribution d'âge, puis calcule le taux de mortalité (A).
-Elle retourne à la fois un tableau brut (\code{data.frame}) et une version formatée (\code{flextable}).
+Cette fonction applique la méthode Chapman-Robson via
+\code{fishmethods::agesurv()} pour estimer le coefficient de mortalité (\code{Z}) à
+partir d'une distribution d'âge, puis calcule le taux de mortalité (\code{A}).
+Elle retourne à la fois un tableau brut (\code{data.frame}) et une version
+formatée (\code{flextable}).
+}
+\details{
+La fonction retourne toujours une liste structurée contenant :
+\itemize{
+\item \code{success} : indicateur logique de réussite
+\item \code{message} : message informatif si le calcul est impossible
+\item \code{data} : tableau brut des estimations, ou \code{NULL}
+\item \code{flextable} : tableau formaté, ou \code{NULL}
+}
 }
 \examples{
 fake_data <- data.frame(age = c(2, 3, 3, 4, 4, 4, 5, 5, 6))

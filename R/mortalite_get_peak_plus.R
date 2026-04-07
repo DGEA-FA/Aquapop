@@ -1,18 +1,34 @@
 #' Déterminer l'âge Peak Plus (âge de départ) à partir de la structure d'âge
 #'
-#' Cette fonction retourne l'âge le plus fréquent (le mode) dans la colonne `age`,
-#' augmenté de 1, conformément à la définition du Peak Plus (âge de départ) utilisée en analyse de mortalité.
-#' Elle suppose que les données ont été filtrées au préalable pour une seule espèce.
+#' Cette fonction détermine l'âge de départ (`peak plus`) utilisé dans l'analyse
+#' de mortalité à partir de la structure d'âge observée. Elle identifie l'âge le
+#' plus fréquent (le mode) dans la colonne `age`, puis ajoute 1 à cette valeur.
 #'
-#' La fonction gère les cas particuliers suivants :
-#' - Si plusieurs âges partagent la fréquence maximale, le plus petit âge est retenu.
-#' - Les valeurs manquantes (`NA`) sont ignorées.
-#' - Si toutes les valeurs sont manquantes ou si aucune ligne n'est présente, la fonction retourne `NA_integer_`.
-#' - Une erreur est générée si la colonne `age` est absente.
+#' La fonction retourne toujours une liste structurée contenant :
+#' \itemize{
+#'   \item `success` : indicateur logique de réussite
+#'   \item `message` : message informatif si le calcul est impossible
+#'   \item `value` : valeur numérique de l'âge Peak Plus, ou `NULL` si indisponible
+#' }
+#'
+#' Règles appliquées :
+#' \itemize{
+#'   \item les valeurs manquantes (`NA`) sont ignorées
+#'   \item si plusieurs âges partagent la fréquence maximale, le plus petit âge est retenu
+#'   \item si aucune donnée exploitable n'est disponible, la fonction retourne
+#'   `success = FALSE` et `value = NULL`
+#'   \item si la colonne `age` est absente, la fonction retourne aussi
+#'   `success = FALSE`
+#' }
 #'
 #' @param data Un `data.frame` contenant une colonne `age`, de type numérique ou entier.
 #'
-#' @return Un entier (`integer`) correspondant au Peak Plus (âge de départ), ou `NA_integer_` si le calcul est impossible.
+#' @return Une liste avec les éléments suivants :
+#' \describe{
+#'   \item{success}{Un booléen indiquant si le calcul a réussi.}
+#'   \item{message}{Un message informatif si le calcul est impossible, sinon `NULL`.}
+#'   \item{value}{Un entier correspondant au Peak Plus, ou `NULL` si le calcul est impossible.}
+#' }
 #'
 #' @importFrom stats na.omit
 #'
@@ -21,29 +37,65 @@
 #' @examples
 #' # Jeu de données simple avec un mode clair
 #' df <- data.frame(age = c(1, 2, 2, 3, 3, 3, 4))
-#' mortalite_get_peak_plus(df) # retourne 4 (mode = 3, +1)
+#' mortalite_get_peak_plus(df)
 #'
-#' # Cas avec ex aequo : le plus petit est retenu
+#' # Cas avec ex aequo : le plus petit âge est retenu
 #' df <- data.frame(age = c(2, 2, 3, 3))
-#' mortalite_get_peak_plus(df) # retourne 3
+#' mortalite_get_peak_plus(df)
 #'
 #' # Données avec NA
 #' df <- data.frame(age = c(NA, 2, 2, NA, 3))
-#' mortalite_get_peak_plus(df) # retourne 3
+#' mortalite_get_peak_plus(df)
 #'
 #' # Données vides ou toutes manquantes
-#' mortalite_get_peak_plus(data.frame(age = numeric(0))) # retourne NA_integer_
-#' mortalite_get_peak_plus(data.frame(age = c(NA, NA)))   # retourne NA_integer_
+#' mortalite_get_peak_plus(data.frame(age = numeric(0)))
+#' mortalite_get_peak_plus(data.frame(age = c(NA, NA)))
 mortalite_get_peak_plus <- function(data) {
-  if (!"age" %in% names(data)) stop("La colonne `age` est manquante.")
-  if (nrow(data) == 0) return(NA_integer_)
+  # Validation de base ====
+  if (is.null(data) || !is.data.frame(data)) {
+    return(list(
+      success = FALSE,
+      message = "Les données fournies sont invalides.",
+      value = NULL
+    ))
+  }
   
+  if (!"age" %in% names(data)) {
+    return(list(
+      success = FALSE,
+      message = "La colonne `age` est absente des données.",
+      value = NULL
+    ))
+  }
+  
+  if (nrow(data) == 0) {
+    return(list(
+      success = FALSE,
+      message = "Aucun spécimen n'est disponible pour déterminer l'âge Peak Plus.",
+      value = NULL
+    ))
+  }
+  
+  # Nettoyage des âges ====
   ages_clean <- na.omit(data$age)
-  if (length(ages_clean) == 0) return(NA_integer_)
   
-  tab <- table(ages_clean)
-  mode_age <- as.integer(names(tab)[tab == max(tab)]) |> min()
-  peak_plus <- mode_age + 1
+  if (length(ages_clean) == 0) {
+    return(list(
+      success = FALSE,
+      message = "Aucun âge valide n'est disponible pour déterminer l'âge Peak Plus.",
+      value = NULL
+    ))
+  }
   
-  return(peak_plus)
+  # Calcul du mode et du peak plus ====
+  age_table <- table(ages_clean)
+  mode_age <- as.integer(names(age_table)[age_table == max(age_table)]) |> min()
+  peak_plus <- mode_age + 1L
+  
+  # Sortie ====
+  list(
+    success = TRUE,
+    message = NULL,
+    value = peak_plus
+  )
 }

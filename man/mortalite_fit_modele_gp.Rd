@@ -7,31 +7,36 @@
 mortalite_fit_modele_gp(df_age_etendue)
 }
 \arguments{
-\item{df_age_etendue}{Un \code{data.frame} produit par \code{mortalite_prepare_extended()} contenant au minimum :
-\describe{
-\item{age}{Âge des individus}
-\item{number}{Nombre d'individus observés à cet âge}
-}}
+\item{df_age_etendue}{Un \code{data.frame} produit par
+\code{mortalite_prepare_extended()} contenant au minimum les colonnes \code{age} et
+\code{number}.}
 }
 \value{
 Un \code{data.frame} d'une ligne contenant :
 \describe{
-\item{methode}{Modèle utilisé (\code{"gp"})}
-\item{ajustement_hnp}{Pourcentage moyen d'observations hors bande (HNP)}
-\item{aicc}{Critère d'information corrigé aicc}
-\item{Z}{Coefficient d'âge (valeur absolue)}
-\item{SE}{Erreur standard de Z}
-\item{A}{Taux de mortalité annuel estimé (\%)}
-\item{IC 95\%}{Intervalle de confiance de A (bornes min–max)}
-\item{commentaire}{Appréciation qualitative de l'ajustement}
-\item{convergence}{Convergence du modèle (booléen)}
-\item{nb_iterations_hnp}{Nombre d'itérations HNP effectuées}
+\item{methode}{Modèle utilisé (\code{"gp"}).}
+\item{ajustement_hnp}{Pourcentage moyen d'observations hors bande (HNP).}
+\item{aicc}{Critère d'information corrigé (AICc).}
+\item{Z}{Coefficient d'âge (valeur absolue).}
+\item{SE}{Erreur standard de \code{Z}.}
+\item{A}{Taux de mortalité annuel estimé en pourcentage.}
+\item{ic95}{Intervalle de confiance approximatif de \code{A}.}
+\item{commentaire}{Appréciation qualitative de l'ajustement ou message d'échec.}
+\item{convergence}{Booléen indiquant si le modèle a convergé.}
+\item{nb_iterations_hnp}{Nombre d'itérations HNP effectuées.}
 }
 }
 \description{
-Cette fonction ajuste un modèle de régression \code{glmmTMB} avec distribution GP (Generalized Poisson)
-sur des données de fréquence d'âge. Elle applique un test HNP (Half-Normal Plot) en 2 à 5 simulations,
-puis retourne les estimations du modèle et un commentaire sur la qualité de l'ajustement.
+Cette fonction ajuste un modèle de régression \code{glmmTMB} avec distribution GP
+(Generalized Poisson) sur des données de fréquence d'âge. Elle applique un
+test HNP (Half-Normal Plot) en 2 à 5 simulations, puis retourne les
+estimations du modèle et un commentaire sur la qualité de l'ajustement.
+}
+\details{
+La fonction retourne toujours un \code{data.frame} d'une ligne. Si le modèle ne
+peut pas être ajusté ou si certaines statistiques ne peuvent pas être
+calculées, les valeurs correspondantes sont retournées à \code{NA} et
+\code{convergence = FALSE}.
 }
 \examples{
 df_fake <- tibble::tibble(age = 1:6, number = c(180, 120, 70, 40, 25, 10))

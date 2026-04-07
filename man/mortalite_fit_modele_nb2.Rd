@@ -7,31 +7,36 @@
 mortalite_fit_modele_nb2(df_age_etendue)
 }
 \arguments{
-\item{df_age_etendue}{Un \code{data.frame} produit par \code{mortalite_prepare_extended()} contenant au minimum :
-\describe{
-\item{age}{Âge des individus (entier)}
-\item{number}{Nombre d'individus observés à cet âge}
-}}
+\item{df_age_etendue}{Un \code{data.frame} produit par
+\code{mortalite_prepare_extended()} contenant au minimum les colonnes \code{age} et
+\code{number}.}
 }
 \value{
 Un \code{data.frame} d'une ligne contenant :
 \describe{
-\item{methode}{Nom du modèle (\code{"nb2"})}
-\item{ajustement_hnp}{Pourcentage moyen d'observations hors bande (test HNP)}
-\item{aicc}{Critère d'information corrigé (aicc)}
-\item{Z}{Coefficient de l'âge estimé dans le modèle}
-\item{SE}{Erreur standard de Z}
-\item{A}{Taux de mortalité annuel estimé (\%)}
-\item{IC 95\%}{Intervalle de confiance de A}
-\item{commentaire}{Appréciation qualitative de l'ajustement}
-\item{convergence}{Toujours TRUE (glm.nb échoue sinon)}
-\item{nb_iterations_hnp}{Nombre total de simulations HNP (2 ou 5)}
+\item{methode}{Nom du modèle (\code{"nb2"}).}
+\item{ajustement_hnp}{Pourcentage moyen d'observations hors bande (test HNP).}
+\item{aicc}{Critère d'information corrigé (AICc).}
+\item{Z}{Coefficient estimé de l'âge dans le modèle.}
+\item{SE}{Erreur standard associée à \code{Z}.}
+\item{A}{Taux de mortalité annuel estimé en pourcentage.}
+\item{ic95}{Intervalle de confiance approximatif du taux \code{A}.}
+\item{commentaire}{Interprétation qualitative de l'ajustement ou message d'échec.}
+\item{convergence}{Booléen indiquant si le modèle a pu être ajusté correctement.}
+\item{nb_iterations_hnp}{Nombre total de simulations HNP effectuées.}
 }
 }
 \description{
-Cette fonction ajuste un modèle NB2 (\code{glm.nb}) sur les données de fréquence d'âge étendues.
-Elle applique un test HNP (Half-Normal Plot) avec 2 à 5 simulations pour évaluer l'ajustement,
-puis retourne les estimations de mortalité et leur intervalle de confiance.
+Cette fonction ajuste un modèle NB2 (\code{glm.nb}) sur les données de fréquence
+d'âge étendues. Elle applique un test HNP (Half-Normal Plot) avec 2 à
+5 simulations pour évaluer l'ajustement, puis retourne les estimations de
+mortalité et leur intervalle de confiance.
+}
+\details{
+La fonction retourne toujours un \code{data.frame} d'une ligne. Si le modèle ne
+peut pas être ajusté ou si certaines statistiques ne peuvent pas être
+calculées, les valeurs correspondantes sont retournées à \code{NA} et
+\code{convergence = FALSE}.
 }
 \examples{
 df_fake <- tibble::tibble(age = 1:6, number = c(180, 120, 70, 40, 25, 10))

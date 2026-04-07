@@ -9,36 +9,38 @@ mortalite_test_surdispersion_poisson(data)
 \arguments{
 \item{data}{Un \code{data.frame} contenant au minimum deux colonnes :
 \itemize{
-\item \code{age} : l'âge des poissons (entier ou numérique),
-\item \code{number} : la fréquence d'individus observés pour chaque âge.
+\item \code{age} : l'âge des poissons
+\item \code{number} : la fréquence d'individus observés pour chaque âge
 }}
 }
 \value{
-Une liste nommée avec trois éléments :
-\itemize{
-\item \code{dispersion} : (numérique) valeur estimée de dispersion ;
-\item \code{message} : (caractère) interprétation textuelle de la valeur ;
-\item \code{plot} : (ggplot) graphique des résidus de Pearson.
+Une liste avec les éléments suivants :
+\describe{
+\item{success}{Un booléen indiquant si le test a pu être réalisé.}
+\item{message}{Un message d'interprétation si le test a réussi, ou un message informatif sinon.}
+\item{dispersion}{La valeur estimée de dispersion, ou \code{NULL} si le test n'a pas pu être réalisé.}
+\item{plot}{Un objet \code{ggplot} des résidus de Pearson, ou \code{NULL} si le modèle n'a pas pu être ajusté.}
 }
 }
 \description{
 Cette fonction applique un test de sur-dispersion (\code{dispersiontest()})
 à un modèle de Poisson ajusté sur les fréquences d'âge (\code{number ~ age}).
-Elle retourne :
+Elle retourne une liste structurée contenant :
 \itemize{
-\item la valeur numérique de dispersion,
-\item un message d'interprétation textuel,
-\item un graphique des résidus de Pearson vs les valeurs ajustées.
+\item \code{success} : indicateur logique de réussite
+\item \code{message} : message d'interprétation ou d'erreur
+\item \code{dispersion} : valeur numérique estimée de dispersion, ou \code{NULL}
+\item \code{plot} : graphique des résidus de Pearson, ou \code{NULL}
 }
 }
 \examples{
-# Exemple simulé
 set.seed(1)
 df_test <- data.frame(
   age = 1:10,
   number = rpois(10, lambda = c(5, 10, 15, 20, 15, 10, 5, 4, 3, 2))
 )
+
 res <- mortalite_test_surdispersion_poisson(df_test)
-print(res$message)
-print(res$plot)
+res$message
+res$plot
 }

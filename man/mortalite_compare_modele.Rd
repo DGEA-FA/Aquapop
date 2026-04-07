@@ -13,8 +13,10 @@ tel que produit par la fonction \code{mortalite_prepare_extended()}.}
 \value{
 Une liste contenant :
 \describe{
-\item{data}{Le tableau comparatif des modèles sous forme de \code{data.frame}}
-\item{flextable}{Le même tableau formaté avec \code{flextable} pour affichage ou exportation}
+\item{success}{Un booléen indiquant si la comparaison a pu être réalisée.}
+\item{message}{Un message informatif si la comparaison est impossible ou partielle, sinon \code{NULL}.}
+\item{data}{Le tableau comparatif des modèles sous forme de \code{data.frame}, ou \code{NULL}.}
+\item{flextable}{Le même tableau formaté avec \code{flextable}, ou \code{NULL}.}
 }
 }
 \description{
@@ -23,4 +25,13 @@ sur les fréquences d'âge, puis retourne un tableau comparatif incluant :
 le critère d'information corrigé (AICc), le pourcentage d'ajustement HNP,
 l'estimation de Z, l'intervalle de confiance de A (\%), et les commentaires
 interprétatifs pour guider la sélection du meilleur modèle.
+}
+\details{
+La fonction retourne toujours une liste structurée contenant :
+\itemize{
+\item \code{success} : indicateur logique de réussite
+\item \code{message} : message informatif si la comparaison est impossible ou partielle
+\item \code{data} : tableau comparatif des modèles
+\item \code{flextable} : tableau formaté pour affichage ou exportation
+}
 }

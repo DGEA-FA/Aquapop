@@ -7,7 +7,8 @@
 mortalite_fit_modele_cmp(df_age_etendue)
 }
 \arguments{
-\item{df_age_etendue}{Un \code{data.frame} produit par \code{mortalite_prepare_extended()} contenant au minimum :
+\item{df_age_etendue}{Un \code{data.frame} produit par \code{mortalite_prepare_extended()}
+contenant au minimum :
 \describe{
 \item{age}{Âge des individus (entier)}
 \item{number}{Nombre d'individus observés à cet âge}
@@ -18,20 +19,30 @@ Un \code{data.frame} d'une ligne contenant :
 \describe{
 \item{methode}{Type de modèle (\code{"cmp"})}
 \item{ajustement_hnp}{Pourcentage moyen d'observations hors bande (test HNP)}
-\item{aicc}{Critère d'information corrigé (aicc)}
+\item{aicc}{Critère d'information corrigé (AICc)}
 \item{Z}{Coefficient de régression sur l'âge}
-\item{SE}{Erreur standard associée à Z}
+\item{SE}{Erreur standard associée à \code{Z}}
 \item{A}{Taux de mortalité annuel estimé (\%)}
-\item{IC 95\%}{Intervalle de confiance de A}
+\item{ic95}{Intervalle de confiance de \code{A}}
 \item{commentaire}{Appréciation qualitative de l'ajustement}
-\item{convergence}{Convergence du modèle (booléen)}
+\item{convergence}{Convergence interprétable du modèle (booléen)}
 \item{nb_iterations_hnp}{Nombre de simulations HNP effectuées (2 ou 5)}
 }
 }
 \description{
-Cette fonction ajuste un modèle CMP (\code{glmmTMB}) sur des données de fréquence d'âge étendues.
-Elle applique un test HNP (Half-Normal Plot) avec 2 à 5 simulations pour évaluer la qualité de l'ajustement,
-et retourne les paramètres estimés, le taux de mortalité annuel, et un commentaire sur l'ajustement.
+Cette fonction ajuste un modèle CMP (\code{glmmTMB}) sur des données de fréquence
+d'âge étendues. Elle applique un test HNP (Half-Normal Plot) avec 2 à
+5 simulations pour évaluer la qualité de l'ajustement, puis retourne les
+paramètres estimés, le taux de mortalité annuel, et un commentaire sur
+l'ajustement.
+}
+\details{
+Dans cette version refactorisée, la logique est rendue plus robuste :
+\itemize{
+\item les cas d'échec retournent une ligne standardisée plutôt qu'une erreur;
+\item la boucle de réajustement utilisée dans le test HNP est bornée;
+\item la logique HNP est isolée dans une fonction interne dédiée.
+}
 }
 \examples{
 df_fake <- tibble::tibble(age = 1:6, number = c(180, 120, 70, 40, 25, 10))

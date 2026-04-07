@@ -2,33 +2,40 @@
 % Please edit documentation in R/mortalite_select_best_modele.R
 \name{mortalite_select_best_modele}
 \alias{mortalite_select_best_modele}
-\title{Sélectionner le meilleur modèle de mortalité selon aicc et ajustement HNP}
+\title{Sélectionner le meilleur modèle de mortalité selon AICc et ajustement HNP}
 \usage{
 mortalite_select_best_modele(tablemodele)
 }
 \arguments{
-\item{tablemodele}{Un \code{data.frame} (souvent \code{mortalite_compare_modele_res$data})
-contenant au minimum les colonnes :
+\item{tablemodele}{Un \code{data.frame} généralement issu de
+\code{mortalite_compare_modele()$data}, contenant au minimum les colonnes :
 \describe{
-\item{methode}{Nom du modèle (ex. "Poisson", "NB1", "NB2", "CMP", "GP").}
+\item{methode}{Nom du modèle.}
 \item{aicc}{Critère d'information corrigé (numérique).}
 \item{ajustement_hnp}{Pourcentage d'ajustement HNP (numérique).}
+\item{convergence}{Booléen indiquant si le modèle est interprétable.}
 }}
 }
 \value{
-Une chaîne de caractères correspondant au nom du meilleur modèle, ou \code{NA} si aucun modèle n'est sélectionnable.
+Une chaîne de caractères correspondant au nom du meilleur modèle, ou
+\code{NULL} si aucun modèle n'est sélectionnable.
 }
 \description{
-Cette fonction identifie automatiquement le meilleur modèle parmi ceux comparés (Poisson, NB1, NB2, CMP, GP),
-en priorisant les modèles avec un bon ajustement HNP (inférieur à 10 \%). Si aucun modèle ne satisfait ce critère,
-le modèle avec le plus faible aicc est sélectionné.
+Cette fonction identifie automatiquement le meilleur modèle parmi ceux
+comparés (Poisson, NB1, NB2, CMP, GP), en priorisant les modèles ayant un
+bon ajustement HNP (inférieur à 10 \%). Si aucun modèle ne satisfait ce
+critère, le modèle avec le plus faible AICc est sélectionné parmi les modèles
+disponibles.
+}
+\details{
+La fonction retourne \code{NULL} si aucun modèle n'est sélectionnable.
 }
 \examples{
-# Exemple minimal
 df <- data.frame(
-  methode = c("Poisson", "NB1", "NB2", "CMP", "GP"),
+  methode = c("poisson", "nb1", "nb2", "cmp", "gp"),
   aicc = c(112, 108, 109, 107, 106),
-  ajustement_hnp = c(15, 12, 8, 6, 11)
+  ajustement_hnp = c(15, 12, 8, 6, 11),
+  convergence = c(TRUE, TRUE, TRUE, TRUE, TRUE)
 )
 mortalite_select_best_modele(df)
 }

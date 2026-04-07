@@ -7,29 +7,35 @@
 mortalite_plot_modele(specimen, modele, info_modele)
 }
 \arguments{
-\item{specimen}{Un \code{data.frame} contenant au moins les colonnes \code{sp} (code de l'espèce) et \code{age}.}
+\item{specimen}{Un \code{data.frame} contenant au moins les colonnes \code{sp} et \code{age}.}
 
-\item{modele}{Un objet de modèle ajusté (\code{glm}, \code{glm.nb}, \code{glmmTMB}, etc.) pour prédire la fréquence selon l'âge.}
+\item{modele}{Un objet de modèle ajusté (\code{glm}, \code{glm.nb}, \code{glmmTMB}, etc.)
+pour prédire la fréquence selon l'âge.}
 
-\item{info_modele}{Un \code{data.frame} issu de \code{mortalite_compare_modele()$data} contenant les estimations de A et IC 95\%.}
+\item{info_modele}{Un \code{data.frame} issu de \code{mortalite_compare_modele()$data}
+contenant les estimations de \code{A} et \code{ic95}.}
 }
 \value{
-Un objet \code{ggplot2} combinant histogramme observé et courbe prédite.
+Un objet \code{ggplot2}, ou \code{NULL} si le graphique ne peut pas être produit.
 }
 \description{
-Cette fonction affiche l'histogramme des âges issus du tableau \code{specimen} et y superpose
-la courbe prédite à partir d'un modèle de mortalité ajusté (\code{modele}). Le style graphique
-est cohérent avec les autres figures de structure d'âge (voir \code{structure_age()}).
+Cette fonction affiche l'histogramme des âges issus du tableau \code{specimen} et
+y superpose la courbe prédite à partir d'un modèle de mortalité ajusté
+(\code{modele}). Le style graphique est cohérent avec les autres figures de
+structure d'âge.
+}
+\details{
+La fonction retourne \code{NULL} si les données ou le modèle ne permettent pas de
+produire un graphique interprétable.
 }
 \examples{
-# Exemple fictif avec données simulées
 data_exemple <- tibble::tibble(
   sp = "SAFO",
   age = sample(0:10, size = 200, replace = TRUE)
 )
 modele_exemple <- stats::glm(age ~ 1, data = data_exemple, family = stats::poisson())
 info_modele_exemple <- tibble::tibble(
-  methode = "poisson", A = 38, ic95 = "32–45"
+  methode = "poisson", A = 38, ic95 = "[32-45]"
 )
 mortalite_plot_modele(data_exemple, modele_exemple, info_modele_exemple)
 }

@@ -7,14 +7,35 @@
 mortalite_get_age_max(data)
 }
 \arguments{
-\item{data}{Un \code{data.frame} contenant les données de spécimens. Doit inclure une colonne nommée \code{age} de type numérique ou entier.}
+\item{data}{Un \code{data.frame} contenant les données de spécimens. Doit inclure
+une colonne nommée \code{age} de type numérique ou entier.}
 }
 \value{
-Un entier (\code{integer}) correspondant à l'âge maximal observé. Retourne \code{NA_integer_} si aucun âge valide n'est présent.
+Une liste avec les éléments suivants :
+\describe{
+\item{success}{Un booléen indiquant si le calcul a réussi.}
+\item{message}{Un message informatif si le calcul est impossible, sinon \code{NULL}.}
+\item{value}{Un entier correspondant à l'âge maximal observé, ou \code{NULL} si le calcul est impossible.}
+}
 }
 \description{
-Cette fonction retourne l'âge maximal observé dans les données de mortalité, en ignorant les valeurs manquantes.
-Elle vérifie également la présence de la colonne \code{age} et la présence de données valides.
+Cette fonction détermine l'âge maximal observé dans les données de mortalité,
+en ignorant les valeurs manquantes de la colonne \code{age}.
+}
+\details{
+La fonction retourne toujours une liste structurée contenant :
+\itemize{
+\item \code{success} : indicateur logique de réussite
+\item \code{message} : message informatif si le calcul est impossible
+\item \code{value} : âge maximal observé, ou \code{NULL} si indisponible
+}
+
+La fonction retourne \code{success = FALSE} dans les cas suivants :
+\itemize{
+\item les données sont \code{NULL} ou ne sont pas un \code{data.frame}
+\item la colonne \code{age} est absente
+\item aucun âge valide n'est disponible
+}
 }
 \examples{
 # Exemple avec des âges valides
@@ -26,6 +47,6 @@ df2 <- data.frame(age = c(NA, NA))
 mortalite_get_age_max(df2)
 
 # Exemple sans colonne 'age'
-try(mortalite_get_age_max(data.frame(other = 1:5)))
+mortalite_get_age_max(data.frame(other = 1:5))
 
 }

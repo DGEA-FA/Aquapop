@@ -7,27 +7,37 @@
 mortalite_prepare_corr(data, age_peak_plus, age_max)
 }
 \arguments{
-\item{data}{Un \code{data.frame} contenant les spécimens d'une seule espèce, avec une colonne nommée \code{age}
-(valeurs numériques entières ≥ 0). Les valeurs manquantes (\code{NA}) seront automatiquement exclues.}
+\item{data}{Un \code{data.frame} contenant les spécimens d'une seule espèce, avec
+une colonne nommée \code{age}. Les valeurs manquantes (\code{NA}) sont automatiquement exclues.}
 
-\item{age_peak_plus}{Un entier indiquant l'âge à partir duquel commence l'analyse de mortalité
-(souvent le pic d'abondance + 1).}
+\item{age_peak_plus}{Un entier indiquant l'âge à partir duquel commence
+l'analyse de mortalité.}
 
-\item{age_max}{Un entier indiquant l'âge maximum à considérer pour l'estimation de la mortalité.}
+\item{age_max}{Un entier indiquant l'âge maximum à considérer pour
+l'estimation de la mortalité.}
 }
 \value{
-Un \code{data.frame} nommé \code{data_final} contenant :
+Une liste avec les éléments suivants :
 \describe{
-\item{\code{age}}{Âge (entier)}
-\item{\code{number}}{Nombre d'individus observés à cet âge, incluant les zéros pour les classes absentes}
+\item{success}{Un booléen indiquant si la préparation a réussi.}
+\item{message}{Un message informatif si la préparation est impossible, sinon \code{NULL}.}
+\item{data}{Un \code{data.frame} contenant les colonnes \code{age} et \code{number}, ou \code{NULL} si la préparation est impossible.}
 }
-Toutes les classes entre les âges extrêmes sont incluses, même celles absentes dans les données sources.
 }
 \description{
-Cette fonction applique \code{agesurv()} avec \code{type = 1} pour générer
-les données individuelles de fréquence d'âge sur la \emph{descending limb} (partie descendante de la courbe de capture).
-Elle filtre d'abord les spécimens ayant un âge valide (\code{data_valid}), applique l'estimation (\code{data_agesurv}),
-puis complète les classes d'âge manquantes avec des zéros pour produire une table uniforme (\code{data_final}).
+Cette fonction applique \code{agesurv()} avec \code{type = 1} pour générer les données
+individuelles de fréquence d'âge sur la partie descendante de la courbe de capture.
+Elle filtre d'abord les spécimens ayant un âge valide, applique l'estimation,
+puis complète les classes d'âge manquantes avec des zéros pour produire une
+table uniforme.
+}
+\details{
+La fonction retourne toujours une liste structurée contenant :
+\itemize{
+\item \code{success} : indicateur logique de réussite
+\item \code{message} : message informatif si la préparation est impossible
+\item \code{data} : tableau de fréquences corrigées, ou \code{NULL} si indisponible
+}
 }
 \examples{
 data_exemple <- data.frame(age = c(2, 3, 3, 4, 5, 5, 5, 6, 7, NA))
