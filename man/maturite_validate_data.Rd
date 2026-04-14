@@ -4,15 +4,13 @@
 \alias{maturite_validate_data}
 \title{Valider et préparer les données de maturité}
 \usage{
-maturite_validate_data(specimen_data, variable = c("ltm", "age"), min_n = 10)
+maturite_validate_data(specimen_data, variable = c("ltm", "age"))
 }
 \arguments{
 \item{specimen_data}{Un \code{data.frame} contenant les données de spécimens.}
 
 \item{variable}{Chaîne indiquant la variable quantitative à utiliser :
 \code{"ltm"} ou \code{"age"}.}
-
-\item{min_n}{Nombre minimal d'individus exploitables requis après nettoyage.}
 }
 \value{
 Une liste contenant :
@@ -31,10 +29,20 @@ Elle vérifie :
 \itemize{
 \item la présence des colonnes requises ;
 \item si le jeu de données brut est vide ;
+\item si des données sont disponibles pour la variable demandée (\code{ltm} ou \code{age}) ;
 \item si des données exploitables demeurent après nettoyage ;
-\item si le nombre d'individus restants est suffisant ;
 \item si les deux états de maturité (\code{N} et \code{O}) sont présents.
 }
+
+Contrairement aux versions précédentes, aucun seuil minimal d'effectif (\code{n})
+n'est imposé. Si les données sont présentes mais insuffisantes pour ajuster
+correctement un modèle, cela sera détecté plus tard lors de l'ajustement
+(ex. : non-convergence des modèles).
+
+Cette fonction distingue explicitement le cas où aucune donnée n'est disponible
+pour la variable demandée (\code{ltm} ou \code{age}). Dans ce cas, un message spécifique
+est retourné. Dans tous les autres cas, les données sont transmises aux fonctions
+d'ajustement, même si elles sont limitées.
 }
 \examples{
 \dontrun{
@@ -45,7 +53,8 @@ data_exemple <- data.frame(
   age = c(2, 4, 3, 5)
 )
 
-maturite_validate_data(data_exemple, variable = "ltm", min_n = 2)
+maturite_validate_data(data_exemple, variable = "ltm")
 }
+
 }
 \keyword{internal}

@@ -58,9 +58,7 @@ maturite_generate_modele <- function(data,
   # Validation minimale des cas limites ----
   validation_res <- maturite_validate_data(
     specimen_data = data,
-    variable = variable,
-    min_n = 10
-  )
+    variable = variable  )
   
   if (!isTRUE(validation_res$success)) {
     return(list(

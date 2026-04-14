@@ -105,9 +105,7 @@ maturite_compare_modele <- function(specimen_data,
   
   validation_res <- maturite_validate_data(
     specimen_data = specimen_data,
-    variable = variable,
-    min_n = 10
-  )
+    variable = variable  )
   
   if (!isTRUE(validation_res$success)) {
     empty_dual <- to_dual_format(add_labels_maturite(empty_eval))

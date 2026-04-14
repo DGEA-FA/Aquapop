@@ -60,33 +60,33 @@ force_lazy <- function(expr) {
 #'
 #' @param output_id Identifiant de `plotOutput()`
 #' @param plot Objet ggplot ou `reactive()` le retournant
-#' @param height Hauteur en pixels
 #' @param res Résolution en DPI
 #' @param message_si_vide Message à afficher si graphique vide ou invalide
-#' @importFrom shiny downloadButton showNotification getDefaultReactiveDomain renderPlot
+#' @importFrom shiny showNotification getDefaultReactiveDomain renderPlot
 #' @export
 render_plot_ggplot <- function(output_id, plot,
-                               height = 500, res = 96,
+                               res = 96,
                                message_si_vide = NULL) {
   output <- get("output", envir = parent.frame())
-  session <- getDefaultReactiveDomain()
   get_plot <- as_reactive(plot)
   
   output[[output_id]] <- renderPlot({
     p <- get_plot()
+    
     if (is.null(p) || !inherits(p, "gg")) {
       if (!is.null(message_si_vide)) {
         showNotification(message_si_vide, type = "warning", duration = 5)
       }
       return(NULL)
     }
+    
     if (length(p$layers) == 0 && !is.null(message_si_vide)) {
       showNotification(message_si_vide, type = "warning", duration = 5)
       return(NULL)
     }
+    
     p
   },
-  height = height,
   res = res
   )
 }

@@ -4,20 +4,12 @@
 \alias{render_plot_ggplot}
 \title{Affiche un graphique ggplot dans Shiny avec largeur dynamique}
 \usage{
-render_plot_ggplot(
-  output_id,
-  plot,
-  height = 500,
-  res = 96,
-  message_si_vide = NULL
-)
+render_plot_ggplot(output_id, plot, res = 96, message_si_vide = NULL)
 }
 \arguments{
 \item{output_id}{Identifiant de \code{plotOutput()}}
 
 \item{plot}{Objet ggplot ou \code{reactive()} le retournant}
-
-\item{height}{Hauteur en pixels}
 
 \item{res}{Résolution en DPI}
 

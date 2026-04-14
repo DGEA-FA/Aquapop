@@ -30,7 +30,7 @@ mod_maturite_l50_server <- function(id, specimen, filename_suffix) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
-    # Résultat global de comparaison ----
+    # ==== Résultat global ----
     table_modeles_l50_resultats <- reactive({
       req(specimen())
       
@@ -41,10 +41,35 @@ mod_maturite_l50_server <- function(id, specimen, filename_suffix) {
       )
     })
     
-    # Message complémentaire dynamique ----
+    # ==== Règles d'affichage ----
+    afficher_modeles_separes_l50 <- reactive({
+      res <- table_modeles_l50_resultats()
+      req(!is.null(res))
+      
+      best_model <- res$best_model
+      
+      has_F <- !is.null(best_model$best_model_F)
+      has_M <- !is.null(best_model$best_model_M)
+      
+      has_F && has_M
+    })
+    
+    afficher_modeles_combines_l50 <- reactive({
+      res <- table_modeles_l50_resultats()
+      req(!is.null(res))
+      
+      best_model <- res$best_model
+      
+      has_F <- !is.null(best_model$best_model_F)
+      has_M <- !is.null(best_model$best_model_M)
+      has_comb <- !is.null(best_model$best_model_combined)
+      
+      (!has_F || !has_M) && has_comb
+    })
+    
+    # ==== Message complémentaire ----
     message_complementaire_l50 <- reactive({
       res <- table_modeles_l50_resultats()
-      
       req(!is.null(res))
       
       best_model <- res$best_model
@@ -54,63 +79,38 @@ mod_maturite_l50_server <- function(id, specimen, filename_suffix) {
       has_comb <- !is.null(best_model$best_model_combined)
       
       if (!has_F && !has_M && !has_comb) {
-        return(HTML(
-          "Les données disponibles ne permettent pas d'ajuster des modèles de maturité. 
-          Vérifiez la quantité et la qualité des données pour cette pêche."
-        ))
+        return(HTML("Les données disponibles ne permettent pas d'ajuster des modèles de maturité."))
       }
       
-      if (!has_F && !has_M && has_comb) {
-        return(HTML(
-          "Les modèles séparés par sexe sont à privilégier lorsqu'ils sont disponibles. 
-          Dans ce cas, les données ne permettent pas d'ajuster des modèles distincts pour les femelles et les mâles. 
-          Un modèle combiné est présenté comme alternative. 
-          Tous les modèles sont affichés afin de permettre une exploration complète des résultats."
-        ))
+      if (has_F && has_M) {
+        return(HTML("Les modèles séparés sont retenus pour les femelles et les mâles."))
       }
       
-      if ((has_F && !has_M) || (!has_F && has_M)) {
-        return(HTML(
-          "Les modèles séparés par sexe sont à privilégier lorsqu'ils sont disponibles. 
-          Dans ce cas, un seul des deux sexes permet un ajustement valide. 
-          Un modèle combiné est également présenté en complément. 
-          Tous les modèles sont affichés afin de permettre une exploration complète des résultats."
-        ))
+      if (has_comb) {
+        return(HTML("Les modèles séparés ne sont pas retenus, car au moins un des deux sexes ne permet pas un ajustement valide. Seuls les modèles combinés sont affichés."))
       }
       
-      HTML(
-        "Les modèles séparés par sexe sont à privilégier lorsqu'ils sont disponibles. 
-        Les modèles combinés sont présentés en complément. 
-        Tous les modèles sont affichés afin de permettre une exploration complète des résultats."
-      )
+      HTML("Les données disponibles ne permettent pas d'ajuster des modèles de maturité.")
     })
     
-    # Message utilisateur ----
+    # ==== Message UI ----
     output$message_l50 <- renderUI({
       res <- table_modeles_l50_resultats()
-      
       req(!is.null(res))
       
       if (is.null(res$message) || identical(res$message, "")) {
         return(NULL)
       }
       
-      titre_message <- if (isTRUE(res$success)) {
-        HTML("Sélection des modèles L<sub>50</sub>")
-      } else {
-        "Analyse non disponible"
-      }
+      couleur_bordure <- if (isTRUE(res$success)) "#4c6ef5" else "#c0392b"
+      couleur_fond <- if (isTRUE(res$success)) "#f5f7ff" else "#fdf2f2"
       
-      couleur_bordure <- if (isTRUE(res$success)) {
-        "#4c6ef5"
-      } else {
-        "#c0392b"
-      }
+      msg <- res$message
       
-      couleur_fond <- if (isTRUE(res$success)) {
-        "#f5f7ff"
-      } else {
-        "#fdf2f2"
+      if (afficher_modeles_separes_l50()) {
+        msg <- gsub("Modèle combiné sélectionné :.*", "", msg)
+        msg <- gsub("\n+", "\n", msg)
+        msg <- trimws(msg)
       }
       
       div(
@@ -118,608 +118,358 @@ mod_maturite_l50_server <- function(id, specimen, filename_suffix) {
           "margin: 15px 0;",
           "padding: 12px 16px;",
           "border-left: 4px solid", couleur_bordure, ";",
-          "background-color:", couleur_fond, ";",
-          "color: #333;"
+          "background-color:", couleur_fond
         ),
-        tags$h4(
-          style = "margin-top: 0; margin-bottom: 8px;",
-          titre_message
-        ),
-        tagList(
-          tags$p(
-            style = "margin: 0 0 10px 0; white-space: pre-line;",
-            res$message
-          ),
-          tags$p(
-            style = "margin: 0;",
-            message_complementaire_l50()
-          )
-        )
+        tags$h4("Sélection des modèles L50"),
+        tags$p(msg),
+        tags$p(message_complementaire_l50())
       )
     })
     
-    # Tables par section ----
-    table_l50_femelles <- reactive({
-      res <- table_modeles_l50_resultats()
-      
-      req(isTRUE(res$success))
-      req(!is.null(res$table_sep$df))
-      
-      res$table_sep$df |>
+    # ==== Tables de sélection ----
+    table_l50_f <- reactive({
+      table_modeles_l50_resultats()$table_sep$df |>
         dplyr::filter(type == "séparé_F")
     })
     
-    table_l50_males <- reactive({
-      res <- table_modeles_l50_resultats()
-      
-      req(isTRUE(res$success))
-      req(!is.null(res$table_sep$df))
-      
-      res$table_sep$df |>
+    table_l50_m <- reactive({
+      table_modeles_l50_resultats()$table_sep$df |>
         dplyr::filter(type == "séparé_M")
     })
     
-    table_l50_combine <- reactive({
-      res <- table_modeles_l50_resultats()
-      
-      req(isTRUE(res$success))
-      req(!is.null(res$table_comb$df))
-      
-      res$table_comb$df
+    table_l50_comb <- reactive({
+      table_modeles_l50_resultats()$table_comb$df
     })
     
-    # Index par défaut ----
-    default_model_index_l50_femelles <- reactive({
-      table <- table_l50_femelles()
-      req(nrow(table) > 0)
-      
-      idx <- which(table$recommande)
-      
-      if (length(idx) == 0) {
-        idx <- 1
-      }
-      
-      idx[1]
+    # ==== Sélection des modèles ----
+    selected_f <- reactive({
+      req(afficher_modeles_separes_l50())
+      sel <- getReactableState("table_l50_f", "selected")
+      if (is.null(sel)) sel <- 1
+      table_l50_f()[sel, "modele_id"]
     })
     
-    default_model_index_l50_males <- reactive({
-      table <- table_l50_males()
-      req(nrow(table) > 0)
-      
-      idx <- which(table$recommande)
-      
-      if (length(idx) == 0) {
-        idx <- 1
-      }
-      
-      idx[1]
+    selected_m <- reactive({
+      req(afficher_modeles_separes_l50())
+      sel <- getReactableState("table_l50_m", "selected")
+      if (is.null(sel)) sel <- 1
+      table_l50_m()[sel, "modele_id"]
     })
     
-    default_model_index_l50_combine <- reactive({
-      table <- table_l50_combine()
-      req(nrow(table) > 0)
-      
-      idx <- which(table$recommande)
-      
-      if (length(idx) == 0) {
-        idx <- 1
-      }
-      
-      idx[1]
+    selected_comb <- reactive({
+      req(afficher_modeles_combines_l50())
+      sel <- getReactableState("table_l50_comb", "selected")
+      if (is.null(sel)) sel <- 1
+      table_l50_comb()[sel, "modele_id"]
     })
     
-    # Section Femelles UI ----
+    # ==== Résultats détaillés ----
+    res_f <- reactive({
+      req(afficher_modeles_separes_l50())
+      
+      maturite_generate_modele(
+        specimen(),
+        variable = "ltm",
+        modele = "TLO",
+        lien = stringr::str_extract(selected_f(), "logit|probit|cloglog")
+      )
+    })
+    
+    res_m <- reactive({
+      req(afficher_modeles_separes_l50())
+      
+      maturite_generate_modele(
+        specimen(),
+        variable = "ltm",
+        modele = "TLO",
+        lien = stringr::str_extract(selected_m(), "logit|probit|cloglog")
+      )
+    })
+    
+    res_comb <- reactive({
+      req(afficher_modeles_combines_l50())
+      
+      maturite_generate_modele(
+        specimen(),
+        variable = "ltm",
+        modele = stringr::str_extract(selected_comb(), "TLO|ADD|INT|COM"),
+        lien = stringr::str_extract(selected_comb(), "logit|probit|cloglog")
+      )
+    })
+    
+    # ==== Section Femelles ----
     output$section_l50_femelles <- renderUI({
-      res <- table_modeles_l50_resultats()
-      
-      req(!is.null(res))
-      
-      if (!isTRUE(res$success)) {
+      if (!afficher_modeles_separes_l50()) {
         return(NULL)
       }
       
-      table <- table_l50_femelles()
+      table <- table_l50_f()
+      if (nrow(table) == 0) return(NULL)
       
-      if (is.null(table) || nrow(table) == 0) {
-        return(NULL)
-      }
-      
-      model_section_card_ui(
-        title = "Femelles",
-        subtitle = "Modèles ajustés uniquement sur les femelles.",
+      tagList(
+        tags$h3("Femelles"),
+        tags$p("Modèles ajustés sur les femelles"),
         
-        withSpinner(
-          reactableOutput(ns("table_modeles_l50_femelles")),
-          type = myspinner
-        ),
+        reactableOutput(ns("table_l50_f")),
+        div(style = "margin: 10px 0 20px 0;", download_button_ui(ns("dl_l50_f"))),
         
-        br(),
-        download_button_ui(ns("table_modeles_l50_femelles_dl")),
+        tags$hr(),
         
-        tags$hr(style = "margin: 18px 0;"),
+        uiOutput(ns("res_l50_f")),
+        div(style = "margin: 10px 0 20px 0;", download_button_ui(ns("dl_res_l50_f"))),
         
-        uiOutput(ns("ogive_l50_femelles_table")),
-        br(),
-        download_button_ui(ns("ogive_l50_femelles_table_dl")),
+        tags$hr(),
         
-        tags$hr(style = "margin: 18px 0;"),
+        plotOutput(ns("plot_l50_f"), height = "500px"),
+        div(style = "margin-top: 10px;", downloadButton(ns("dl_plot_l50_f"), "Télécharger")),
         
-        div(
-          style = "max-width: 900px; margin: auto;",
-          withSpinner(
-            plotOutput(ns("plot_ogive_l50_femelles"), height = "500px"),
-            type = myspinner
-          ),
-          br(),
-          downloadButton(
-            ns("download_ogive_l50_femelles_plot"),
-            "Téléchargement du graphique"
-          )
-        )
+        tags$hr(style = "margin: 30px 0;")
       )
     })
     
-    # Section Mâles UI ----
+    output$table_l50_f <- renderReactable({
+      req(afficher_modeles_separes_l50())
+      reactable(as.data.frame(table_l50_f()), selection = "single")
+    })
+    
+    # ==== Section Mâles ----
     output$section_l50_males <- renderUI({
-      res <- table_modeles_l50_resultats()
-      
-      req(!is.null(res))
-      
-      if (!isTRUE(res$success)) {
+      if (!afficher_modeles_separes_l50()) {
         return(NULL)
       }
       
-      table <- table_l50_males()
+      table <- table_l50_m()
+      if (nrow(table) == 0) return(NULL)
       
-      if (is.null(table) || nrow(table) == 0) {
-        return(NULL)
-      }
-      
-      model_section_card_ui(
-        title = "Mâles",
-        subtitle = "Modèles ajustés uniquement sur les mâles.",
+      tagList(
+        tags$h3("Mâles"),
+        tags$p("Modèles ajustés sur les mâles"),
         
-        withSpinner(
-          reactableOutput(ns("table_modeles_l50_males")),
-          type = myspinner
-        ),
+        reactableOutput(ns("table_l50_m")),
+        div(style = "margin: 10px 0 20px 0;", download_button_ui(ns("dl_l50_m"))),
         
-        br(),
-        download_button_ui(ns("table_modeles_l50_males_dl")),
+        tags$hr(),
         
-        tags$hr(style = "margin: 18px 0;"),
+        uiOutput(ns("res_l50_m")),
+        div(style = "margin: 10px 0 20px 0;", download_button_ui(ns("dl_res_l50_m"))),
         
-        uiOutput(ns("ogive_l50_males_table")),
-        br(),
-        download_button_ui(ns("ogive_l50_males_table_dl")),
+        tags$hr(),
         
-        tags$hr(style = "margin: 18px 0;"),
+        plotOutput(ns("plot_l50_m"), height = "500px"),
+        div(style = "margin-top: 10px;", downloadButton(ns("dl_plot_l50_m"), "Télécharger")),
         
-        div(
-          style = "max-width: 900px; margin: auto;",
-          withSpinner(
-            plotOutput(ns("plot_ogive_l50_males"), height = "500px"),
-            type = myspinner
-          ),
-          br(),
-          downloadButton(
-            ns("download_ogive_l50_males_plot"),
-            "Téléchargement du graphique"
-          )
-        )
+        tags$hr(style = "margin: 30px 0;")
       )
     })
     
-    # Section Combiné UI ----
+    output$table_l50_m <- renderReactable({
+      req(afficher_modeles_separes_l50())
+      reactable(as.data.frame(table_l50_m()), selection = "single")
+    })
+    
+    # ==== Section combinée ----
     output$section_l50_combine <- renderUI({
-      res <- table_modeles_l50_resultats()
-      
-      req(!is.null(res))
-      
-      if (!isTRUE(res$success)) {
+      if (!afficher_modeles_combines_l50()) {
         return(NULL)
       }
       
-      table <- table_l50_combine()
+      table <- table_l50_comb()
+      if (nrow(table) == 0) return(NULL)
       
-      if (is.null(table) || nrow(table) == 0) {
-        return(NULL)
-      }
-      
-      model_section_card_ui(
-        title = "Modèles combinés",
-        subtitle = "Modèles ajustés sur l’ensemble des données, sans séparation explicite par sexe ou avec effet du sexe selon la structure du modèle.",
+      tagList(
+        tags$h3("Modèles combinés"),
+        tags$p("Modèles ajustés sur l'ensemble des données"),
         
-        withSpinner(
-          reactableOutput(ns("table_modeles_l50_combine")),
-          type = myspinner
-        ),
+        reactableOutput(ns("table_l50_comb")),
+        div(style = "margin: 10px 0 20px 0;", download_button_ui(ns("dl_l50_comb"))),
         
-        br(),
-        download_button_ui(ns("table_modeles_l50_combine_dl")),
+        tags$hr(),
         
-        tags$hr(style = "margin: 18px 0;"),
+        uiOutput(ns("res_l50_comb")),
+        div(style = "margin: 10px 0 20px 0;", download_button_ui(ns("dl_res_l50_comb"))),
         
-        uiOutput(ns("ogive_l50_combine_table")),
-        br(),
-        download_button_ui(ns("ogive_l50_combine_table_dl")),
+        tags$hr(),
         
-        tags$hr(style = "margin: 18px 0;"),
+        plotOutput(ns("plot_l50_comb"), height = "500px"),
+        div(style = "margin-top: 10px;", downloadButton(ns("dl_plot_l50_comb"), "Télécharger")),
         
-        div(
-          style = "max-width: 900px; margin: auto;",
-          withSpinner(
-            plotOutput(ns("plot_ogive_l50_combine"), height = "500px"),
-            type = myspinner
-          ),
-          br(),
-          downloadButton(
-            ns("download_ogive_l50_combine_plot"),
-            "Téléchargement du graphique"
-          )
-        )
+        tags$hr(style = "margin: 30px 0;")
       )
     })
     
-    # Reactable Femelles ----
-    output$table_modeles_l50_femelles <- renderReactable({
-      table <- table_l50_femelles()
-      idx <- default_model_index_l50_femelles()
-      
-      req(nrow(table) > 0)
-      
-      reactable(
-        as.data.frame(table),
-        selection = "single",
-        sortable = FALSE,
-        onClick = "select",
-        highlight = TRUE,
-        defaultPageSize = 20,
-        defaultSelected = idx,
-        defaultColDef = colDef(
-          align = "center",
-          headerStyle = list(textAlign = "center")
-        )
-      )
+    output$table_l50_comb <- renderReactable({
+      req(afficher_modeles_combines_l50())
+      reactable(as.data.frame(table_l50_comb()), selection = "single")
     })
     
-    # Reactable Mâles ----
-    output$table_modeles_l50_males <- renderReactable({
-      table <- table_l50_males()
-      idx <- default_model_index_l50_males()
-      
-      req(nrow(table) > 0)
-      
-      reactable(
-        as.data.frame(table),
-        selection = "single",
-        sortable = FALSE,
-        onClick = "select",
-        highlight = TRUE,
-        defaultPageSize = 20,
-        defaultSelected = idx,
-        defaultColDef = colDef(
-          align = "center",
-          headerStyle = list(textAlign = "center")
-        )
-      )
-    })
-    
-    # Reactable Combiné ----
-    output$table_modeles_l50_combine <- renderReactable({
-      table <- table_l50_combine()
-      idx <- default_model_index_l50_combine()
-      
-      req(nrow(table) > 0)
-      
-      reactable(
-        as.data.frame(table),
-        selection = "single",
-        sortable = FALSE,
-        onClick = "select",
-        highlight = TRUE,
-        defaultPageSize = 20,
-        defaultSelected = idx,
-        defaultColDef = colDef(
-          align = "center",
-          headerStyle = list(textAlign = "center")
-        )
-      )
-    })
-    
-    # Téléchargement tables de sélection ----
-    render_download_table(
-      id = "table_modeles_l50_femelles_dl",
-      data = table_l50_femelles,
-      filename = reactive(
-        build_export_filename("modeles_l50_femelles", filename_suffix())
-      )
-    )
-    
-    render_download_table(
-      id = "table_modeles_l50_males_dl",
-      data = table_l50_males,
-      filename = reactive(
-        build_export_filename("modeles_l50_males", filename_suffix())
-      )
-    )
-    
-    render_download_table(
-      id = "table_modeles_l50_combine_dl",
-      data = table_l50_combine,
-      filename = reactive(
-        build_export_filename("modeles_l50_combine", filename_suffix())
-      )
-    )
-    
-    # Modèle sélectionné Femelles ----
-    selected_model_info_l50_femelles <- reactive({
-      table <- table_l50_femelles()
-      
-      req(nrow(table) > 0)
-      
-      selected <- getReactableState("table_modeles_l50_femelles", "selected")
-      
-      if (is.null(selected) || length(selected) == 0) {
-        selected <- default_model_index_l50_femelles()
-      }
-      
-      model_id <- table[selected, "modele_id", drop = TRUE]
-      
-      req(!is.na(model_id))
-      
-      list(
-        variable = "ltm",
-        modele = "TLO",
-        lien = stringr::str_extract(model_id, "logit|probit|cloglog")
-      )
-    })
-    
-    # Modèle sélectionné Mâles ----
-    selected_model_info_l50_males <- reactive({
-      table <- table_l50_males()
-      
-      req(nrow(table) > 0)
-      
-      selected <- getReactableState("table_modeles_l50_males", "selected")
-      
-      if (is.null(selected) || length(selected) == 0) {
-        selected <- default_model_index_l50_males()
-      }
-      
-      model_id <- table[selected, "modele_id", drop = TRUE]
-      
-      req(!is.na(model_id))
-      
-      list(
-        variable = "ltm",
-        modele = "TLO",
-        lien = stringr::str_extract(model_id, "logit|probit|cloglog")
-      )
-    })
-    
-    # Modèle sélectionné Combiné ----
-    selected_model_info_l50_combine <- reactive({
-      table <- table_l50_combine()
-      
-      req(nrow(table) > 0)
-      
-      selected <- getReactableState("table_modeles_l50_combine", "selected")
-      
-      if (is.null(selected) || length(selected) == 0) {
-        selected <- default_model_index_l50_combine()
-      }
-      
-      model_id <- table[selected, "modele_id", drop = TRUE]
-      
-      req(!is.na(model_id))
-      
-      list(
-        variable = "ltm",
-        modele = stringr::str_extract(model_id, "TLO|ADD|INT|COM"),
-        lien = stringr::str_extract(model_id, "logit|probit|cloglog")
-      )
-    })
-    
-    # Résultats détaillés Femelles ----
-    l50_generate_modele_femelles_res <- reactive({
-      req(specimen())
-      req(selected_model_info_l50_femelles())
-      
-      maturite_generate_modele(
-        data = specimen(),
-        variable = selected_model_info_l50_femelles()$variable,
-        modele = selected_model_info_l50_femelles()$modele,
-        lien = selected_model_info_l50_femelles()$lien
-      )
-    })
-    
-    # Résultats détaillés Mâles ----
-    l50_generate_modele_males_res <- reactive({
-      req(specimen())
-      req(selected_model_info_l50_males())
-      
-      maturite_generate_modele(
-        data = specimen(),
-        variable = selected_model_info_l50_males()$variable,
-        modele = selected_model_info_l50_males()$modele,
-        lien = selected_model_info_l50_males()$lien
-      )
-    })
-    
-    # Résultats détaillés Combiné ----
-    l50_generate_modele_combine_res <- reactive({
-      req(specimen())
-      req(selected_model_info_l50_combine())
-      
-      maturite_generate_modele(
-        data = specimen(),
-        variable = selected_model_info_l50_combine()$variable,
-        modele = selected_model_info_l50_combine()$modele,
-        lien = selected_model_info_l50_combine()$lien
-      )
-    })
-    
-    # Tableau détaillé Femelles ----
+    # ==== Affichage des tableaux de résultats ----
     render_table_flextable(
-      "ogive_l50_femelles_table",
+      "res_l50_f",
       reactive({
-        res <- l50_generate_modele_femelles_res()
-        
-        req(isTRUE(res$success))
-        req(!is.null(res$table_resultats_flextable))
-        
-        res$table_resultats_flextable
+        req(afficher_modeles_separes_l50())
+        req(!is.null(res_f()))
+        req(!is.null(res_f()$table_resultats_flextable))
+        res_f()$table_resultats_flextable
       })
     )
     
-    # Tableau détaillé Mâles ----
     render_table_flextable(
-      "ogive_l50_males_table",
+      "res_l50_m",
       reactive({
-        res <- l50_generate_modele_males_res()
-        
-        req(isTRUE(res$success))
-        req(!is.null(res$table_resultats_flextable))
-        
-        res$table_resultats_flextable
+        req(afficher_modeles_separes_l50())
+        req(!is.null(res_m()))
+        req(!is.null(res_m()$table_resultats_flextable))
+        res_m()$table_resultats_flextable
       })
     )
     
-    # Tableau détaillé Combiné ----
     render_table_flextable(
-      "ogive_l50_combine_table",
+      "res_l50_comb",
       reactive({
-        res <- l50_generate_modele_combine_res()
-        
-        req(isTRUE(res$success))
-        req(!is.null(res$table_resultats_flextable))
-        
-        res$table_resultats_flextable
+        req(afficher_modeles_combines_l50())
+        req(!is.null(res_comb()))
+        req(!is.null(res_comb()$table_resultats_flextable))
+        res_comb()$table_resultats_flextable
       })
     )
     
-    # Téléchargement tableaux détaillés ----
-    render_download_table(
-      id = "ogive_l50_femelles_table_dl",
-      data = reactive({
-        res <- l50_generate_modele_femelles_res()
-        
-        req(isTRUE(res$success))
-        req(!is.null(res$table_resultats))
-        
-        res$table_resultats
-      }),
-      filename = reactive(
-        build_export_filename("ogive_l50_femelles", filename_suffix())
-      )
-    )
-    
-    render_download_table(
-      id = "ogive_l50_males_table_dl",
-      data = reactive({
-        res <- l50_generate_modele_males_res()
-        
-        req(isTRUE(res$success))
-        req(!is.null(res$table_resultats))
-        
-        res$table_resultats
-      }),
-      filename = reactive(
-        build_export_filename("ogive_l50_males", filename_suffix())
-      )
-    )
-    
-    render_download_table(
-      id = "ogive_l50_combine_table_dl",
-      data = reactive({
-        res <- l50_generate_modele_combine_res()
-        
-        req(isTRUE(res$success))
-        req(!is.null(res$table_resultats))
-        
-        res$table_resultats
-      }),
-      filename = reactive(
-        build_export_filename("ogive_l50_combine", filename_suffix())
-      )
-    )
-    
-    # Graphiques ----
+    # ==== Affichage des graphiques ----
     render_plot_ggplot(
-      "plot_ogive_l50_femelles",
-      reactive({
-        res <- l50_generate_modele_femelles_res()
-        
-        req(isTRUE(res$success))
-        req(!is.null(res$graphique))
-        
-        res$graphique
+      output_id = "plot_l50_f",
+      plot = reactive({
+        req(afficher_modeles_separes_l50())
+        req(!is.null(res_f()))
+        req(!is.null(res_f()$graphique))
+        res_f()$graphique
       })
     )
     
     render_plot_ggplot(
-      "plot_ogive_l50_males",
-      reactive({
-        res <- l50_generate_modele_males_res()
-        
-        req(isTRUE(res$success))
-        req(!is.null(res$graphique))
-        
-        res$graphique
+      output_id = "plot_l50_m",
+      plot = reactive({
+        req(afficher_modeles_separes_l50())
+        req(!is.null(res_m()))
+        req(!is.null(res_m()$graphique))
+        res_m()$graphique
       })
     )
     
     render_plot_ggplot(
-      "plot_ogive_l50_combine",
-      reactive({
-        res <- l50_generate_modele_combine_res()
-        
-        req(isTRUE(res$success))
-        req(!is.null(res$graphique))
-        
-        res$graphique
+      output_id = "plot_l50_comb",
+      plot = reactive({
+        req(afficher_modeles_combines_l50())
+        req(!is.null(res_comb()))
+        req(!is.null(res_comb()$graphique))
+        res_comb()$graphique
       })
     )
     
-    # Téléchargement graphiques ----
+    # ==== Téléchargement des graphiques ----
     render_download_plot(
-      id = "download_ogive_l50_femelles_plot",
+      id = "dl_plot_l50_f",
       plot = reactive({
-        res <- l50_generate_modele_femelles_res()
-        
-        req(isTRUE(res$success))
-        req(!is.null(res$graphique))
-        
-        res$graphique
+        req(afficher_modeles_separes_l50())
+        req(!is.null(res_f()))
+        req(!is.null(res_f()$graphique))
+        res_f()$graphique
       }),
-      filename_suffix = paste0(filename_suffix(), "_l50_femelles")
+      filename_suffix = filename_suffix()
     )
     
     render_download_plot(
-      id = "download_ogive_l50_males_plot",
+      id = "dl_plot_l50_m",
       plot = reactive({
-        res <- l50_generate_modele_males_res()
-        
-        req(isTRUE(res$success))
-        req(!is.null(res$graphique))
-        
-        res$graphique
+        req(afficher_modeles_separes_l50())
+        req(!is.null(res_m()))
+        req(!is.null(res_m()$graphique))
+        res_m()$graphique
       }),
-      filename_suffix = paste0(filename_suffix(), "_l50_males")
+      filename_suffix = filename_suffix()
     )
     
     render_download_plot(
-      id = "download_ogive_l50_combine_plot",
+      id = "dl_plot_l50_comb",
       plot = reactive({
-        res <- l50_generate_modele_combine_res()
-        
-        req(isTRUE(res$success))
-        req(!is.null(res$graphique))
-        
-        res$graphique
+        req(afficher_modeles_combines_l50())
+        req(!is.null(res_comb()))
+        req(!is.null(res_comb()$graphique))
+        res_comb()$graphique
       }),
-      filename_suffix = paste0(filename_suffix(), "_l50_combine")
+      filename_suffix = filename_suffix()
+    )
+    
+    # ==== Téléchargement des tableaux de sélection ----
+    render_download_table(
+      id = "dl_l50_f",
+      data = reactive({
+        req(afficher_modeles_separes_l50())
+        table_l50_f()
+      }),
+      filename = reactive(
+        build_export_filename("l50_modeles_femelles", filename_suffix())
+      )
+    )
+    
+    render_download_table(
+      id = "dl_l50_m",
+      data = reactive({
+        req(afficher_modeles_separes_l50())
+        table_l50_m()
+      }),
+      filename = reactive(
+        build_export_filename("l50_modeles_males", filename_suffix())
+      )
+    )
+    
+    render_download_table(
+      id = "dl_l50_comb",
+      data = reactive({
+        req(afficher_modeles_combines_l50())
+        table_l50_comb()
+      }),
+      filename = reactive(
+        build_export_filename("l50_modeles_combines", filename_suffix())
+      )
+    )
+    
+    # ==== Téléchargement des tableaux de résultats ----
+    render_download_table(
+      id = "dl_res_l50_f",
+      data = reactive({
+        req(afficher_modeles_separes_l50())
+        req(!is.null(res_f()))
+        req(!is.null(res_f()$table_resultats))
+        res_f()$table_resultats
+      }),
+      filename = reactive(
+        build_export_filename("l50_resultats_femelles", filename_suffix())
+      )
+    )
+    
+    render_download_table(
+      id = "dl_res_l50_m",
+      data = reactive({
+        req(afficher_modeles_separes_l50())
+        req(!is.null(res_m()))
+        req(!is.null(res_m()$table_resultats))
+        res_m()$table_resultats
+      }),
+      filename = reactive(
+        build_export_filename("l50_resultats_males", filename_suffix())
+      )
+    )
+    
+    render_download_table(
+      id = "dl_res_l50_comb",
+      data = reactive({
+        req(afficher_modeles_combines_l50())
+        req(!is.null(res_comb()))
+        req(!is.null(res_comb()$table_resultats))
+        res_comb()$table_resultats
+      }),
+      filename = reactive(
+        build_export_filename("l50_resultats_combines", filename_suffix())
+      )
     )
   })
 }

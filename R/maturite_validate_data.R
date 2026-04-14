@@ -7,15 +7,19 @@
 #' \itemize{
 #'   \item la présence des colonnes requises ;
 #'   \item si le jeu de données brut est vide ;
+#'   \item si des données sont disponibles pour la variable demandée (`ltm` ou `age`) ;
 #'   \item si des données exploitables demeurent après nettoyage ;
-#'   \item si le nombre d'individus restants est suffisant ;
 #'   \item si les deux états de maturité (`N` et `O`) sont présents.
 #' }
+#'
+#' Contrairement aux versions précédentes, aucun seuil minimal d'effectif (`n`)
+#' n'est imposé. Si les données sont présentes mais insuffisantes pour ajuster
+#' correctement un modèle, cela sera détecté plus tard lors de l'ajustement
+#' (ex. : non-convergence des modèles).
 #'
 #' @param specimen_data Un `data.frame` contenant les données de spécimens.
 #' @param variable Chaîne indiquant la variable quantitative à utiliser :
 #'   `"ltm"` ou `"age"`.
-#' @param min_n Nombre minimal d'individus exploitables requis après nettoyage.
 #'
 #' @return Une liste contenant :
 #' \describe{
@@ -23,6 +27,12 @@
 #'   \item{data}{`data.frame` préparé pour la modélisation, ou `NULL`}
 #'   \item{message}{Message explicatif si les données sont non exploitables}
 #' }
+#'
+#' @details
+#' Cette fonction distingue explicitement le cas où aucune donnée n'est disponible
+#' pour la variable demandée (`ltm` ou `age`). Dans ce cas, un message spécifique
+#' est retourné. Dans tous les autres cas, les données sont transmises aux fonctions
+#' d'ajustement, même si elles sont limitées.
 #'
 #' @keywords internal
 #'
@@ -35,15 +45,15 @@
 #'   age = c(2, 4, 3, 5)
 #' )
 #'
-#' maturite_validate_data(data_exemple, variable = "ltm", min_n = 2)
+#' maturite_validate_data(data_exemple, variable = "ltm")
 #' }
+#'
 #' @importFrom checkmate assert_choice assert_data_frame
 #' @importFrom dplyr filter mutate
 #' @importFrom glue glue
 #' @importFrom rlang .data
 maturite_validate_data <- function(specimen_data,
-                                   variable = c("ltm", "age"),
-                                   min_n = 10) {
+                                   variable = c("ltm", "age")) {
   variable <- match.arg(variable)
   
   # Validation des intrants ----
@@ -68,9 +78,22 @@ maturite_validate_data <- function(specimen_data,
       data = NULL,
       message = paste(
         "Aucun spécimen valide disponible pour modéliser la maturité",
-        "en fonction de la",
-        ifelse(variable == "ltm", "longueur.", "de l'âge.")
+        "en fonction de",
+        ifelse(variable == "ltm", "la longueur.", "l'âge.")
       )
+    ))
+  }
+  
+  # Cas particulier : aucune donnée disponible pour la variable demandée ----
+  if (all(is.na(specimen_data[[variable]]))) {
+    return(list(
+      success = FALSE,
+      data = NULL,
+      message = if (variable == "age") {
+        "Il n'y a pas d'âge disponible dans ce jeu de données, ce qui empêche la modélisation de l'âge à maturité."
+      } else {
+        "Il n'y a pas de longueur disponible dans ce jeu de données, ce qui empêche la modélisation de la longueur à maturité."
+      }
     ))
   }
   
@@ -99,16 +122,7 @@ maturite_validate_data <- function(specimen_data,
     ))
   }
   
-  # Cas avec effectif insuffisant ----
-  if (nrow(data_preparee) < min_n) {
-    return(list(
-      success = FALSE,
-      data = NULL,
-      message = glue(
-        "Trop peu d'individus exploitables après nettoyage (n = {nrow(data_preparee)})."
-      )
-    ))
-  }
+
   
   # Cas sans variation de maturité exploitable ----
   etats_maturite <- unique(as.character(stats::na.omit(data_preparee$maturite)))
