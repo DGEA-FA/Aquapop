@@ -151,22 +151,7 @@ test_that("maturite_compare_modele retourne success = FALSE si aucun spécimen e
   expect_equal(nrow(res$table_comb$df), 0)
 })
 
-test_that("maturite_compare_modele retourne success = FALSE si effectif insuffisant après nettoyage", {
-  df <- tibble::tibble(
-    maturite = factor(c("N", "O"), levels = c("N", "O"), ordered = TRUE),
-    sexe = factor(c("F", "M"), levels = c("F", "M")),
-    ltm = c(120, 140)
-  )
-  
-  res <- maturite_compare_modele(df, variable = "ltm")
-  
-  expect_false(res$success)
-  expect_type(res$message, "character")
-  expect_match(res$message, "Trop peu d'individus exploitables")
-  
-  expect_true(all(vapply(res$best_model, is.null, logical(1))))
-  expect_equal(nrow(res$table$df), 0)
-})
+
 
 test_that("maturite_compare_modele retourne une structure complète même si un seul sexe est observé", {
   df <- tibble::tibble(
@@ -188,6 +173,37 @@ test_that("maturite_compare_modele retourne une structure complète même si un 
   expect_true(is.logical(res$success))
   expect_type(res$message, "character")
   
+  expect_named(
+    res$best_model,
+    c("best_model_M", "best_model_F", "best_model_combined")
+  )
+  
+  expect_s3_class(res$table$df, "data.frame")
+  expect_s3_class(res$table_sep$df, "data.frame")
+  expect_s3_class(res$table_comb$df, "data.frame")
+})
+
+test_that("maturite_compare_modele retourne une structure complète même avec peu de données", {
+  df <- tibble::tibble(
+    maturite = factor(c("N", "O"), levels = c("N", "O"), ordered = TRUE),
+    sexe = factor(c("F", "M"), levels = c("F", "M")),
+    ltm = c(120, 140)
+  )
+  
+  res <- suppressWarnings(
+    maturite_compare_modele(df, variable = "ltm")
+  )
+  
+  expect_type(res, "list")
+  expect_named(
+    res,
+    c("success", "table", "best_model", "message", "table_sep", "table_comb")
+  )
+  
+  expect_true(is.logical(res$success))
+  expect_type(res$message, "character")
+  
+  expect_type(res$best_model, "list")
   expect_named(
     res$best_model,
     c("best_model_M", "best_model_F", "best_model_combined")

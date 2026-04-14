@@ -12,47 +12,7 @@ mod_mortalite_ui <- function(id) {
     title = "Mortalité",
     
     uiOutput(ns("mortalite_message")),
-    
-    h4("Paramètre avancé : recalcul avec un autre âge de départ"),
-    p("Vous pouvez forcer un recalcul avec une autre valeur."),
-    uiOutput(ns("ui_custom_peak_plus")),
-    actionButton(ns("recalculer_mortalite"), "Recalculer avec cet âge de départ"),
-    em(textOutput(ns("texte_pp_utilise"))),
-    br(), br(),
-    
-    h3("Test de sur-dispersion du modèle Poisson"),
-    p("Ce test évalue si les données de mortalité par âge violent l'hypothèse d'équidispersion du modèle de Poisson."),
-    strong("Interprétation :"),
-    verbatimTextOutput(ns("dispersion_msg")),
-    br(),
-    div(
-      style = "max-width: 900px; margin: auto;",
-      withSpinner(plotOutput(ns("plot_dispersion_poisson"), height = "500px"), type = myspinner),
-      br(),
-      downloadButton(ns("download_plot_dispersion_poisson"), "Téléchargement du graphique")
-    ),
-    br(),
-    
-    h3("Table de sélection du modèle de mortalité"),
-    p("Le tableau suivant présente les résultats pour l'ensemble des modèles testés."),
-    withSpinner(reactableOutput(ns("comparaison_mortalite_table")), type = myspinner),
-    download_button_ui(ns("download_comparaison_mortalite_table")),
-    textOutput(ns("phrase_mortalite")),
-    br(),
-    
-    h3("Distribution d'âge et modèle de mortalité retenu"),
-    div(
-      style = "max-width: 900px; margin: auto;",
-      withSpinner(plotOutput(ns("plot_mortalite"), height = "500px"), type = myspinner),
-      br(),
-      downloadButton(ns("download_plot_mortalite"), "Téléchargement du graphique")
-    ),
-    br(),
-    
-    h3("Chapman-Robson"),
-    p("La mortalité estimée selon la méthode de Chapman-Robson est présentée à titre comparatif seulement."),
-    uiOutput(ns("table_chaprobson")),
-    download_button_ui(ns("download_chaprob_df"))
+    uiOutput(ns("mortalite_main_section"))
   )
 }
 
@@ -106,7 +66,17 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
         ))
       }
       
-      mortalite_get_age_max(data = info$data)
+      res <- mortalite_get_age_max(data = info$data)
+      
+      if (isFALSE(res$success)) {
+        return(list(
+          success = FALSE,
+          message = "Il n'y a pas d'âge disponible dans ce jeu de données, ce qui empêche la modélisation de la mortalité.",
+          value = NULL
+        ))
+      }
+      
+      res
     })
     
     # Résultat peak plus automatique ----
@@ -131,11 +101,11 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
       info_peak_plus <- peak_plus_auto_res()
       
       if (isFALSE(info_data$success)) {
-        return(div(class = "alert alert-warning", info_data$message))
+        return(div(class = "alert alert-danger", info_data$message))
       }
       
       if (isFALSE(info_age_max$success)) {
-        return(div(class = "alert alert-warning", info_age_max$message))
+        return(div(class = "alert alert-danger", info_age_max$message))
       }
       
       if (isFALSE(info_peak_plus$success)) {
@@ -161,6 +131,59 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
       }
       
       NULL
+    })
+    
+    # Section principale du module ----
+    output$mortalite_main_section <- renderUI({
+      info_data <- specimen_info()
+      info_age_max <- age_max_res()
+      
+      if (isFALSE(info_data$success) || isFALSE(info_age_max$success)) {
+        return(NULL)
+      }
+      
+      tagList(
+        h4("Paramètre avancé : recalcul avec un autre âge de départ"),
+        p("Vous pouvez forcer un recalcul avec une autre valeur."),
+        uiOutput(ns("ui_custom_peak_plus")),
+        actionButton(ns("recalculer_mortalite"), "Recalculer avec cet âge de départ"),
+        em(textOutput(ns("texte_pp_utilise"))),
+        br(), br(),
+        
+        h3("Test de sur-dispersion du modèle Poisson"),
+        p("Ce test évalue si les données de mortalité par âge violent l'hypothèse d'équidispersion du modèle de Poisson."),
+        strong("Interprétation :"),
+        verbatimTextOutput(ns("dispersion_msg")),
+        br(),
+        div(
+          style = "max-width: 900px; margin: auto;",
+          withSpinner(plotOutput(ns("plot_dispersion_poisson"), height = "500px"), type = myspinner),
+          br(),
+          downloadButton(ns("download_plot_dispersion_poisson"), "Téléchargement du graphique")
+        ),
+        br(),
+        
+        h3("Table de sélection du modèle de mortalité"),
+        p("Le tableau suivant présente les résultats pour l'ensemble des modèles testés."),
+        withSpinner(reactableOutput(ns("comparaison_mortalite_table")), type = myspinner),
+        download_button_ui(ns("download_comparaison_mortalite_table")),
+        textOutput(ns("phrase_mortalite")),
+        br(),
+        
+        h3("Distribution d'âge et modèle de mortalité retenu"),
+        div(
+          style = "max-width: 900px; margin: auto;",
+          withSpinner(plotOutput(ns("plot_mortalite"), height = "500px"), type = myspinner),
+          br(),
+          downloadButton(ns("download_plot_mortalite"), "Téléchargement du graphique")
+        ),
+        br(),
+        
+        h3("Chapman-Robson"),
+        p("La mortalité estimée selon la méthode de Chapman-Robson est présentée à titre comparatif seulement."),
+        uiOutput(ns("table_chaprobson")),
+        download_button_ui(ns("download_chaprob_df"))
+      )
     })
     
     # UI du choix manuel de peak plus ----
