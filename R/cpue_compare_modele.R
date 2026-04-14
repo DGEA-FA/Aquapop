@@ -15,7 +15,7 @@
 #'
 #' @importFrom dplyr mutate select left_join arrange filter bind_rows
 #' @importFrom tidyr replace_na
-#' @importFrom flextable flextable set_caption
+#' @importFrom flextable flextable set_caption set_header_labels
 #'
 #' @export
 cpue_compare_modele <- function(cpue_data) {
@@ -130,6 +130,16 @@ cpue_compare_modele <- function(cpue_data) {
   # --- Création de la table formatée ---
   ft_final <- flextable(tableau_final) |>
     set_caption(titre_caption) |>
+    set_header_labels(
+      methode = "Méthode",
+      ajustement_hnp = "Ajustement HNP",
+      aicc = "AICc",
+      delta_aicc = "Δ AICc",
+      cpue = "CPUE moyenne",
+      ic95 = "IC 95 %",
+      commentaires = "Commentaires",
+      convergence = "Convergence"
+    ) |>
     labelled_data() |>
     style_flextable_aquapop()
   

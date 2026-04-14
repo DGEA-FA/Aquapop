@@ -15,6 +15,7 @@ Un objet \code{flextable} stylisé
 \description{
 Applique un style professionnel et uniforme à un objet flextable, avec
 police Arial, texte centré, bordures simples et taille de police adaptée aux rapports.
+Les nombres sont formatés avec une virgule comme séparateur décimal.
 }
 \examples{
 flextable::flextable(head(iris)) |> style_flextable_aquapop()

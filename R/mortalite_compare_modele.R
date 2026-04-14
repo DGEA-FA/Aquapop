@@ -26,7 +26,7 @@
 #' }
 #'
 #' @importFrom dplyr arrange bind_rows case_when mutate select
-#' @importFrom flextable flextable set_caption
+#' @importFrom flextable flextable set_caption set_header_labels colformat_double
 #'
 #' @export
 mortalite_compare_modele <- function(data) {
@@ -122,8 +122,21 @@ mortalite_compare_modele <- function(data) {
   # Tableau formaté ====
   ft <- flextable(df_final) |>
     set_caption("Comparaison des modèles de mortalité") |>
-    style_flextable_aquapop()
-  
+    set_header_labels(
+      methode   = "Modèle",
+      ajustement_hnp = "Ajustement HNP",
+      aicc  = "AICc",
+      delta_aic     = "Δ AICc",
+      Z   = "Z",
+      SE = "SE",
+      A  = "A",
+      ic95   = "IC 95%",
+      convergence = "Convergence",
+      commentaire  = "Commentaires"
+    ) |>
+    style_flextable_aquapop() |>
+    colformat_double(j = "aicc", digits = 2,decimal.mark = ",", big.mark = " ", na_str = "-" )  
+
   # Message global ====
   message <- NULL
   

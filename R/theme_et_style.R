@@ -93,6 +93,7 @@ geom_text_aquapop <- function(...) {
 #'
 #' Applique un style professionnel et uniforme à un objet flextable, avec
 #' police Arial, texte centré, bordures simples et taille de police adaptée aux rapports.
+#' Les nombres sont formatés avec une virgule comme séparateur décimal.
 #'
 #' @param ft Un objet `flextable`
 #'
@@ -109,9 +110,9 @@ style_flextable_aquapop <- function(ft) {
     align(align = "center", part = "all") |>
     border_remove() |>
     border_outer() |>
-    colformat_double(na_str = "-") |>
-    colformat_lgl(na_str = "-")|>
-    colformat_num(na_str = "-")|>
-    colformat_int(na_str = "-") |>
+    colformat_double(decimal.mark = ",", big.mark = " ", na_str = "-") |>
+    colformat_num(decimal.mark = ",", big.mark = " ", na_str = "-") |>
+    colformat_int(big.mark = " ", na_str = "-") |>
+    colformat_lgl(na_str = "-") |>
     colformat_char(na_str = "-")
 }

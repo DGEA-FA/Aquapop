@@ -8,11 +8,11 @@ devtools::load_all()
 
 path     <- "inst/extdata/Extract_IFA_AquaPop_2026-02-27.xlsx"
 typ_pech <- "PENOF"
-no_lac   <- "39834"
-annee    <- 2020
+no_lac   <- "05629"
+annee    <- 2009
 
  # 01589, PENT 2012
-# 39413, PENOF 1994 #rendu a maturite qui bug pcq specimen = 0
+# 39834, PENOF 2020
 
 df <- get_analysis_data(path, typ_pech, no_lac, annee)
 data_station         <- df$data_station
