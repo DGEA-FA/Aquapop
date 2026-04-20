@@ -319,15 +319,11 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
         NULL
       }
       
-      chaprob_res <- if (has_converged_model) {
-        mortalite_chaprob(
-          specimen = info_data$data,
-          pp = pp_selected,
-          age_max = info_age_max$value
-        )
-      } else {
-        NULL
-      }
+      chaprob_res <- mortalite_chaprob(
+        specimen = info_data$data,
+        pp = pp_selected,
+        age_max = info_age_max$value
+      )
       
       list(
         success = TRUE,
@@ -372,13 +368,22 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
           tagList(
             div(
               class = "alert alert-warning",
-              p("Aucun des modèles de mortalité n'a convergé avec la valeur de Peak Plus sélectionnée."),
-              p("Le tableau comparatif est affiché à titre informatif. Les autres sections ne sont pas présentées car elles seraient vides ou non interprétables.")
+              p("Aucun des modèles de mortalité n'a convergé avec la valeur de Peak Plus sélectionnée.")
             ),
             h3("Table de sélection du modèle de mortalité"),
             p("Le tableau suivant présente les résultats pour l'ensemble des modèles testés."),
             withSpinner(reactableOutput(ns("comparaison_mortalite_table")), type = myspinner),
-            download_button_ui(ns("download_comparaison_mortalite_table"))
+            download_button_ui(ns("download_comparaison_mortalite_table")),
+            br(),
+            
+            if (isTRUE(analyse$chaprob$success)) {
+              tagList(
+                h3("Chapman-Robson"),
+                p("La mortalité estimée selon la méthode de Chapman-Robson est présentée à titre comparatif seulement."),
+                uiOutput(ns("table_chaprobson")),
+                download_button_ui(ns("download_chaprob_df"))
+              )
+            }
           )
         )
       }
@@ -471,10 +476,60 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
         table,
         selection = "single",
         onClick = "select",
-        defaultSelected = idx,
+        defaultSelected = if (is.na(idx)) NULL else idx,
+        
         defaultColDef = colDef(
           align = "center",
           headerStyle = list(textAlign = "center")
+        ),
+        
+        columns = list(
+          methode = colDef(name = "Modèles"),
+          
+          ajustement_hnp = colDef(
+            name = "Ajustement HNP",
+            format = colFormat(digits = 1, locales = "fr-CA")
+          ),
+          
+          aicc = colDef(
+            name = "AICc",
+            format = colFormat(digits = 2,locales = "fr-CA")
+          ),
+          
+          delta_aic = colDef(
+            name = "Δ AICc",
+            format = colFormat(digits = 2,locales = "fr-CA")
+          ),
+          
+          Z = colDef(
+            name = "Coefficient de mortalité (Z)",
+            format = colFormat(digits = 3, locales = "fr-CA")
+          ),
+          
+          SE = colDef(
+            name = "SE",
+            format = colFormat(digits = 3,locales = "fr-CA")
+          ),
+          
+          A = colDef(
+            name = "Taux de mortalité (A%)",
+            format = colFormat(digits = 1, locales = "fr-CA")
+          ),
+          ic95 = colDef(
+            name = "A IC 95%",
+            format = colFormat(digits = 1, locales = "fr-CA")
+          ),
+          convergence = colDef(
+            name = "Convergence",
+            cell = function(value) {
+              if (isTRUE(value)) {
+                htmltools::span(style = "color: green; font-weight: bold;", "✓")
+              } else {
+                htmltools::span(style = "color: red; font-weight: bold;", "✗")
+              }
+            }
+          ),
+          commentaire = colDef(name = "Commentaires")
         )
       )
     })
@@ -613,7 +668,7 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
       reactive({
         analyse <- analyse_mortalite_res()
         
-        if (isFALSE(analyse$has_converged_model) || is.null(analyse$chaprob)) {
+        if (is.null(analyse$chaprob) || isFALSE(analyse$chaprob$success)) {
           return(NULL)
         }
         
@@ -626,7 +681,7 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
       data = reactive({
         analyse <- analyse_mortalite_res()
         
-        if (isFALSE(analyse$has_converged_model) || is.null(analyse$chaprob)) {
+        if (is.null(analyse$chaprob) || isFALSE(analyse$chaprob$success)) {
           return(NULL)
         }
         

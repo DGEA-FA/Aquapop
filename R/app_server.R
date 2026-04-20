@@ -2,7 +2,7 @@
 #' @importFrom glue glue
 #' @importFrom stringr str_extract
 #' @importFrom DT renderDT
-#' @importFrom reactable colDef reactable getReactableState
+#' @importFrom reactable colDef reactable getReactableState colFormat
 #' @import shiny 
 app_server <- function(input, output, session) {
 
