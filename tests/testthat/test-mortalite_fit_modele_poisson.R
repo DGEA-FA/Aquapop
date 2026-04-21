@@ -35,7 +35,7 @@ test_that("mortalite_fit_modele_poisson retourne un tableau structuré dans le c
   expect_lte(res$A, 100)
   
   # IC 95 % formaté
-  expect_match(res$ic95, "^\\[[0-9.]+-[0-9.]+\\]$")
+  expect_match(res$ic95, "^\\[[0-9,]+-[0-9,]+\\]$")
   
   # HNP entre 0 et 100
   expect_gte(res$ajustement_hnp, 0)

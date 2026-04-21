@@ -36,7 +36,7 @@ test_that("mortalite_fit_modele_cmp retourne un tableau structuré dans le cas n
   expect_lte(res$A, 100)
   
   # Format IC 95 %
-  expect_match(res$ic95, "^\\[[0-9.]+-[0-9.]+\\]$")
+  expect_match(res$ic95, "^\\[[0-9,]+-[0-9,]+\\]$")
   
   # Ajustement HNP
   expect_gte(res$ajustement_hnp, 0)
