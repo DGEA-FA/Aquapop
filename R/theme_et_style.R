@@ -110,9 +110,11 @@ style_flextable_aquapop <- function(ft) {
     align(align = "center", part = "all") |>
     border_remove() |>
     border_outer() |>
+    
+    # Format général
     colformat_double(decimal.mark = ",", big.mark = " ", na_str = "-") |>
     colformat_num(decimal.mark = ",", big.mark = " ", na_str = "-") |>
     colformat_int(big.mark = " ", na_str = "-") |>
     colformat_lgl(na_str = "-") |>
-    colformat_char(na_str = "-")
+    colformat_char(na_str = "-") 
 }

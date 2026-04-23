@@ -263,9 +263,6 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
       l_inf_ic = if_else(convergence == "Convergé", l_inf_ic, "-"),
       k_ic = if_else(convergence == "Convergé", k_ic, "-"),
       t0_ic = if_else(convergence == "Convergé", t0_ic, "-"),
-      aicc = if_else(is.na(aicc), "-", as.character(round(aicc, 2))),
-      delta_aicc = if_else(is.na(delta_aicc), "-", as.character(round(delta_aicc, 2))),
-      aiccwt = if_else(is.na(aiccwt), "-", as.character(round(aiccwt, 2)))
     ) |>
     select(
       methode,
@@ -305,6 +302,7 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
   
   ft <- flextable(final) |>
     set_caption("Paramètres des modèles de croissance (VB, Gompertz, Logistique)") |>
+    style_flextable_aquapop()|>
     set_header_labels(values = list(
       methode = "Modèles",
       l_inf = "L∞",
@@ -318,7 +316,12 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
       aiccwt = "Poids d’Akaike",
       convergence = "Convergence"
     )) |>
-    style_flextable_aquapop()
+    
+    # Ajustement spécifique
+    colformat_double(j = "k", digits = 3, decimal.mark = ",", big.mark = " ", na_str = "-") |>
+    colformat_double(j = "t0", digits = 3, decimal.mark = ",", big.mark = " ", na_str = "-") |>
+    colformat_double(j = "l_inf", digits = 0, decimal.mark = ",", big.mark = " ", na_str = "-") |>
+    colformat_double(j = c("aicc", "delta_aicc", "aiccwt"), digits = 2, decimal.mark = ",", big.mark = " ", na_str = "-")
   
   return(list(
     success = TRUE,
@@ -487,13 +490,20 @@ format_growth_ic <- function(res, index, digits = 3) {
   ic <- extract_param_ic(res, index)
   
   if (is.numeric(ic) && length(ic) == 2 && !any(is.na(ic))) {
-    return(paste0(
-      "[",
+    
+    lower <- format(
       round(ic[1], digits),
-      "-",
+      nsmall = digits,
+      decimal.mark = ","
+    )
+    
+    upper <- format(
       round(ic[2], digits),
-      "]"
-    ))
+      nsmall = digits,
+      decimal.mark = ","
+    )
+    
+    return(paste0("[", lower, "-", upper, "]"))
   }
   
   "IC non calculable"

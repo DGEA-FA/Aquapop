@@ -30,8 +30,8 @@
 #'
 #' @export
 #'
-#' @importFrom flextable flextable
-#' @importFrom labelled var_label
+#' @importFrom dplyr mutate select if_else
+#' @importFrom flextable flextable set_header_labels
 #' @importFrom stringr str_extract
 #' @importFrom tibble tibble
 maturite_compare_modele <- function(specimen_data,
@@ -39,77 +39,49 @@ maturite_compare_modele <- function(specimen_data,
                                     variable = c("ltm", "age")) {
   variable <- match.arg(variable)
   
-  # ==== Fonctions internes ----
-  
-  to_dual_format <- function(df) {
-    list(
-      df = df,
-      flextable = df |>
-        flextable() |>
-        style_flextable_aquapop()
-    )
-  }
-  
-  add_labels_maturite <- function(df) {
-    var_labels <- list()
-    
-    if ("modele_id" %in% names(df)) {
-      var_labels$modele_id <- "Modèle"
-    }
-    if ("modele" %in% names(df)) {
-      var_labels$modele <- "Type"
-    }
-    if ("lien" %in% names(df)) {
-      var_labels$lien <- "Lien"
-    }
-    if ("convergence" %in% names(df)) {
-      var_labels$convergence <- "Convergence"
-    }
-    if ("aicc" %in% names(df)) {
-      var_labels$aicc <- "AICc"
-    }
-    if ("pearson_x2_pval" %in% names(df)) {
-      var_labels$pearson_x2_pval <- "p (χ² de Pearson)"
-    }
-    if ("goodness_of_link_pval" %in% names(df)) {
-      var_labels$goodness_of_link_pval <- "p (test du lien)"
-    }
-    if ("commentaire" %in% names(df)) {
-      var_labels$commentaire <- "Commentaire"
-    }
-    if ("type" %in% names(df)) {
-      var_labels$type <- "Type de modèle"
-    }
-    if ("recommande" %in% names(df)) {
-      var_labels$recommande <- "✔ Recommandé"
-    }
-    
-    var_label(df) <- var_labels
-    df
-  }
+  # ==== Tableau vide par défaut ----
   
   empty_eval <- tibble(
     modele_id = character(),
     modele = character(),
     lien = character(),
-    convergence = logical(),
+    convergence = character(),
     pearson_x2_pval = character(),
     goodness_of_link_pval = character(),
-    aicc = numeric(),
+    aicc = character(),
     commentaire = character(),
     type = character(),
-    recommande = logical()
+    recommande = character()
+  )
+  
+  empty_ft <- flextable(empty_eval) |>
+    set_header_labels(
+      modele_id = "Modèle",
+      modele = "Type",
+      lien = "Lien",
+      convergence = "Convergence",
+      pearson_x2_pval = "p (χ² de Pearson)",
+      goodness_of_link_pval = "p (test du lien)",
+      aicc = "AICc",
+      commentaire = "Commentaire",
+      type = "Type de modèle",
+      recommande = "✔ Recommandé"
+    ) |>
+    style_flextable_aquapop()
+  
+  empty_dual <- list(
+    df = empty_eval,
+    flextable = empty_ft
   )
   
   # ==== Validation des données ----
   
   validation_res <- maturite_validate_data(
     specimen_data = specimen_data,
-    variable = variable  )
+    variable = variable
+  )
   
   if (!isTRUE(validation_res$success)) {
-    empty_dual <- to_dual_format(add_labels_maturite(empty_eval))
-    
     return(list(
       success = FALSE,
       table = empty_dual,
@@ -171,11 +143,6 @@ maturite_compare_modele <- function(specimen_data,
     )
   }
   
-  # ==== Labels ----
-  
-  eval_sep <- add_labels_maturite(eval_sep)
-  eval_comb <- add_labels_maturite(eval_comb)
-  
   # ==== Meilleurs modèles disponibles ----
   
   best_model <- list(
@@ -208,22 +175,6 @@ maturite_compare_modele <- function(specimen_data,
     }
   )
   
-  # ==== Tableau principal ----
-  
-  if (prefer_combined || isTRUE(best_sep$use_combined)) {
-    table_main <- to_dual_format(eval_comb)
-  } else {
-    modele_ids_valides <- c(best_sep$best_model_M, best_sep$best_model_F)
-    
-    eval_sep$recommande <- rep(FALSE, nrow(eval_sep))
-    
-    if (length(modele_ids_valides) > 0) {
-      eval_sep$recommande <- eval_sep$modele_id %in% modele_ids_valides
-    }
-    
-    table_main <- to_dual_format(eval_sep)
-  }
-  
   # ==== Valeurs par défaut sûres ----
   
   if (!"recommande" %in% names(eval_sep)) {
@@ -234,6 +185,104 @@ maturite_compare_modele <- function(specimen_data,
     eval_comb$recommande <- FALSE
   }
   
+  # ==== Détermination des modèles recommandés séparés ----
+  
+  modele_ids_valides_sep <- c(best_sep$best_model_M, best_sep$best_model_F)
+  
+  eval_sep$recommande <- rep(FALSE, nrow(eval_sep))
+  
+  if (length(modele_ids_valides_sep) > 0) {
+    eval_sep$recommande <- eval_sep$modele_id %in% modele_ids_valides_sep
+  }
+  
+  # ==== Tableau affichage séparé ----
+  
+  eval_sep_affichage <- eval_sep |>
+    mutate(
+      convergence = if_else(convergence, "Convergé", "Non convergé"),
+      aicc = if_else(is.na(aicc), "-", as.character(round(aicc, 2))),
+      recommande = if_else(recommande, "✔", "")
+    ) |>
+    select(
+      modele_id,
+      lien,
+      convergence,
+      pearson_x2_pval,
+      goodness_of_link_pval,
+      aicc,
+      commentaire,
+      type,
+      recommande
+    )
+  
+  ft_sep <- flextable(eval_sep_affichage) |>
+    set_header_labels(
+      modele_id = "Modèle",
+      lien = "Lien",
+      convergence = "Convergence",
+      pearson_x2_pval = "p (χ² de Pearson)",
+      goodness_of_link_pval = "p (test du lien)",
+      aicc = "AICc",
+      commentaire = "Commentaire",
+      type = "Type de modèle",
+      recommande = "✔ Recommandé"
+    ) |>
+    style_flextable_aquapop()
+  
+  table_sep <- list(
+    df = eval_sep_affichage,
+    flextable = ft_sep
+  )
+  
+  # ==== Tableau affichage combiné ----
+  
+  eval_comb_affichage <- eval_comb |>
+    mutate(
+      convergence = if_else(convergence, "Convergé", "Non convergé"),
+      aicc = if_else(is.na(aicc), "-", as.character(round(aicc, 2))),
+      recommande = if_else(recommande, "✔", "")
+    ) |>
+    select(
+      modele_id,
+      modele,
+      lien,
+      convergence,
+      pearson_x2_pval,
+      goodness_of_link_pval,
+      aicc,
+      commentaire,
+      type,
+      recommande
+    )
+  
+  ft_comb <- flextable(eval_comb_affichage) |>
+    set_header_labels(
+      modele_id = "Modèle",
+      modele = "Type",
+      lien = "Lien",
+      convergence = "Convergence",
+      pearson_x2_pval = "p (χ² de Pearson)",
+      goodness_of_link_pval = "p (test du lien)",
+      aicc = "AICc",
+      commentaire = "Commentaire",
+      type = "Type de modèle",
+      recommande = "✔ Recommandé"
+    ) |>
+    style_flextable_aquapop()
+  
+  table_comb <- list(
+    df = eval_comb_affichage,
+    flextable = ft_comb
+  )
+  
+  # ==== Tableau principal ----
+  
+  if (prefer_combined || isTRUE(best_sep$use_combined)) {
+    table_main <- table_comb
+  } else {
+    table_main <- table_sep
+  }
+  
   # ==== Retour ----
   
   list(
@@ -241,7 +290,7 @@ maturite_compare_modele <- function(specimen_data,
     table = table_main,
     best_model = best_model,
     message = message,
-    table_sep = to_dual_format(eval_sep),
-    table_comb = to_dual_format(eval_comb)
+    table_sep = table_sep,
+    table_comb = table_comb
   )
 }

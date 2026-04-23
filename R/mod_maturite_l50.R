@@ -299,7 +299,28 @@ mod_maturite_l50_server <- function(id, specimen, filename_suffix) {
     
     output$table_l50_comb <- renderReactable({
       req(afficher_modeles_combines_l50())
-      reactable(as.data.frame(table_l50_comb()), selection = "single")
+      reactable(
+        as.data.frame(table_l50_comb()),
+        selection = "single",
+        onClick = "select",
+        defaultColDef = colDef(
+          align = "center",
+          headerStyle = list(textAlign = "center")
+        ),
+        
+        columns = list(
+          modele_id = colDef(name = "Modèle"),
+          modele = colDef(name = "Type"),
+          lien = colDef(name = "Lien"),
+          convergence = colDef(name = "Convergence"),
+          pearson_x2_pval = colDef(name = "p (χ² de Pearson)"),
+          goodness_of_link_pval = colDef(name = "p (test du lien)"),
+          aicc = colDef(name = "AICc"),
+          commentaire = colDef(name = "Commentaire"),
+          type = colDef(name = "Type de modèle"),
+          recommande = colDef(name = "✔ Recommandé")
+          )
+        )
     })
     
     # ==== Affichage des tableaux de résultats ----

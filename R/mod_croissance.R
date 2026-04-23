@@ -205,15 +205,43 @@ mod_croissance_server <- function(id, specimen, filename_suffix) {
         
         columns = list(
           methode = colDef(name = "Modèles"),
-          l_inf = colDef(name = "L∞"),
+          
+          l_inf = colDef(
+            name = "L∞",
+            format = colFormat(digits = 0,  locales = "fr-CA")
+          ),
+          
           l_inf_ic = colDef(name = "L∞ IC 95%"),
-          k = colDef(name = "K"),
+          
+          k = colDef(
+            name = "K",
+            format = colFormat(digits = 3, locales = "fr-CA" )
+          ),
+          
           k_ic = colDef(name = "K IC 95%"),
-          t0 = colDef(name = "t\u2080"),
+          
+          t0 = colDef(
+            name = "t\u2080",
+            format = colFormat(digits = 3, locales = "fr-CA")
+          ),
+          
           t0_ic = colDef(name = "t\u2080 IC 95%"),
-          aicc = colDef(name = "AICc"),
-          delta_aicc = colDef(name = "Δ AICc"),
-          aiccwt = colDef(name = "Poids d'Akaike"),
+          
+          aicc = colDef(
+            name = "AICc",
+            format = colFormat(digits = 2, locales = "fr-CA")
+          ),
+          
+          delta_aicc = colDef(
+            name = "Δ AICc",
+            format = colFormat(digits = 2, locales = "fr-CA")
+          ),
+          
+          aiccwt = colDef(
+            name = "Poids d'Akaike",
+            format = colFormat(digits = 2, locales = "fr-CA")
+          ),
+          
           convergence = colDef(name = "Convergence")
         )
         
