@@ -44,7 +44,7 @@ test_that("mortalite_chaprob fonctionne dans le cas nominal", {
     decimal.mark = ","
   )
   
-  ic_attendu <- glue("[{borne_inf}–{borne_sup}]")
+  ic_attendu <- glue("[{borne_inf} – {borne_sup}]")
   
   expect_equal(res$data$ic_95, ic_attendu)
 })

@@ -36,7 +36,7 @@ test_that("mortalite_fit_modele_gp retourne un tableau structuré dans le cas no
   expect_lte(res$A, 100)
   
   # Format IC
-  expect_match(res$ic95, "^\\[[0-9,]+-[0-9,]+\\]$")
+  expect_match(res$ic95, "^\\[[0-9]+,[0-9] ?– ?[0-9]+,[0-9]\\]$")
   
   # Ajustement HNP valide
   expect_gte(res$ajustement_hnp, 0)

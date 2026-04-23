@@ -141,9 +141,9 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
       }
       
       help_text <- if (isTRUE(info_peak_plus$success)) {
-        "Une valeur automatique de Peak Plus a été proposée à partir des données. Vous pouvez la conserver ou la modifier avant de lancer l'analyse."
+        "Une valeur automatique d'âge de départ a été proposée à partir des données. Vous pouvez la conserver ou la modifier avant de lancer l'analyse."
       } else {
-        "La valeur automatique de Peak Plus n'a pas pu être déterminée. Veuillez en sélectionner une manuellement avant de lancer l'analyse."
+        "La valeur automatique d'âge de départ n'a pas pu être déterminée. Veuillez en sélectionner une manuellement avant de lancer l'analyse."
       }
       
       tagList(
@@ -151,7 +151,7 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
         p(help_text),
         numericInput(
           inputId = ns("peak_plus"),
-          label = "Valeur de Peak Plus à utiliser",
+          label = "Âge de départ à utiliser",
           value = selected_value,
           min = 0,
           max = age_max - 1L,
@@ -391,7 +391,7 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
       tagList(
         div(
           class = "alert alert-info",
-          glue("Analyse effectuée avec la valeur de Peak Plus : {analyse$peak_plus}") |>
+          glue("Analyse effectuée avec l'âge de départ : {analyse$peak_plus}") |>
             as.character()
         ),
         
@@ -487,7 +487,7 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
         ),
         
         columns = list(
-          methode = colDef(name = "Modèles"),
+          methode = colDef(name = "Modèle"),
           
           ajustement_hnp = colDef(
             name = "Ajustement HNP",
@@ -510,7 +510,7 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
           ),
           
           SE = colDef(
-            name = "SE",
+            name = "Erreur standard",
             format = colFormat(digits = 3,locales = "fr-CA")
           ),
           
@@ -519,7 +519,7 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
             format = colFormat(digits = 1, locales = "fr-CA")
           ),
           ic95 = colDef(
-            name = "A IC 95%",
+            name = "A IC 95% (%)",
             format = colFormat(digits = 1, locales = "fr-CA")
           ),
           convergence = colDef(

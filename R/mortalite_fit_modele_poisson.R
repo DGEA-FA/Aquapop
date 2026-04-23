@@ -188,7 +188,7 @@ mortalite_fit_modele_poisson <- function(df_age_etendue) {
   upperZ <- Z + SE
   lowerA <- round((1 - exp(-lowerZ)) * 100, 1)
   upperA <- round((1 - exp(-upperZ)) * 100, 1)
-  ic_95 <- glue("[{lowerA}-{upperA}]") |>
+  ic_95 <- glue("[{lowerA} – {upperA}]") |>
     gsub("\\.", ",", x = _)
   
   # Commentaire ====

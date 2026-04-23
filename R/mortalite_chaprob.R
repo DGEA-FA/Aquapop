@@ -151,7 +151,7 @@ mortalite_chaprob <- function(specimen, pp, age_max) {
               decimal.mark = ","
             )
             
-            glue("[{lower}–{upper}]")
+            glue("[{lower} – {upper}]")
           }
         )
     },
@@ -176,7 +176,7 @@ mortalite_chaprob <- function(specimen, pp, age_max) {
           z = "Coefficient de mortalité (Z)",
           se = "Erreur standard",
           a = "Taux de mortalité (A%)",
-          ic_95 = "A IC 95%"
+          ic_95 = "A IC 95% (%)"
         ) |>
         style_flextable_aquapop()|>
         colformat_double(j = "z", digits = 3, decimal.mark = ",") |>
