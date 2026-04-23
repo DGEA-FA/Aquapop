@@ -145,9 +145,9 @@ wri <- function(data) {
       xend = Inf,
       y = 100,
       yend = 100,
-      color = "lightgrey",
-      linewidth = 0.5,
-      linetype = 2
+      color = "grey34",
+      linewidth = 1.2,
+      linetype = 1
     ) +
     geom_hline(
       data = moyenne_par_sexe,
@@ -258,7 +258,7 @@ wri <- function(data) {
     as.data.frame() |>
     mutate(
       groupe = "Tous",
-      ic95 = paste0("[", round(lwr), "-", round(upr), "]"),
+      ic95 = paste0("[", round(lwr), " – ", round(upr), "]"),
       wr = round(fit),
       n = nrow(data_wr)
     ) |>
@@ -327,10 +327,10 @@ wri <- function(data) {
   
   table_flextable <- table_sommaire |>
     flextable() |>
-    set_caption("Indice de condition (Wr)") |>
+    set_caption("Indice de condition (Wᵣ)") |>
     set_header_labels(
       groupe = "Groupe",
-      wr = "Wr (%)",
+      wr = "Wᵣ (%)",
       ic95 = "IC 95%",
       n = "N"
     ) |>
@@ -372,7 +372,7 @@ resumer_wr_par_groupe <- function(mod, var) {
     as.data.frame() |>
     mutate(
       groupe = valeurs,
-      ic95 = paste0("[", round(lwr), "-", round(upr), "]"),
+      ic95 = paste0("[", round(lwr), " – ", round(upr), "]"),
       wr = round(fit)
     ) |>
     select(groupe, wr, ic95)

@@ -121,9 +121,9 @@ mod_wri_server <- function(id, specimen, filename_suffix) {
       
       tagList(
         p(
-          "Le tableau ci-dessous présente l'indice de masse relative (Wr) et son intervalle ",
-          "de confiance à 95 % pour les individus à partir d'une taille minimale déterminée ",
-          "selon l'espèce, par sexe et par classe de PSD (classes selon Gabelhouse 1984)."
+          "Le tableau ci-dessous présente l'indice de masse relative (Wᵣ) ainsi que son intervalle de confiance à 95 %, ",
+          "calculés pour les individus dont la taille dépasse le seuil minimal spécifique à chaque espèce. ",
+          "Les résultats sont ventilés par sexe et par classe de PSD (Proportional Size Distribution; Gabelhouse, 1984)."
         ),
         
         withSpinner(
@@ -178,7 +178,7 @@ mod_wri_server <- function(id, specimen, filename_suffix) {
       tagList(
         br(),
         
-        h3("Indice de condition (Wr) selon la longueur et le sexe"),
+        h3("Indice de condition (Wᵣ) selon la longueur et le sexe"),
         
         p(
           "Le graphique suivant illustre, pour chaque spécimen capturé, l'indice de condition en ",
@@ -250,7 +250,7 @@ mod_wri_server <- function(id, specimen, filename_suffix) {
       tagList(
         br(),
         
-        h3("Indice de condition (Wr) moyen par classe de taille"),
+        h3("Indice de condition (Wᵣ) moyen par classe de taille"),
         
         p(
           "Ce graphique présente la variation de l'indice de condition selon les classes de PSD. ",
