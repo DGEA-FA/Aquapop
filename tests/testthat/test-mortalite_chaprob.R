@@ -29,11 +29,23 @@ test_that("mortalite_chaprob fonctionne dans le cas nominal", {
   a_calcule <- round((1 - exp(-z)) * 100, 1)
   expect_equal(res$data$a, a_calcule)
   
-  # Vérifie le calcul de l'IC 95 %
+  # Vérifie le calcul de l'IC 95 % (avec virgules)
   se <- res$data$se
-  borne_inf <- round((1 - exp(-(z - se))) * 100, 1)
-  borne_sup <- round((1 - exp(-(z + se))) * 100, 1)
-  ic_attendu <- glue("[{borne_inf}-{borne_sup}]")
+  
+  borne_inf <- format(
+    round((1 - exp(-(z - se))) * 100, 1),
+    nsmall = 1,
+    decimal.mark = ","
+  )
+  
+  borne_sup <- format(
+    round((1 - exp(-(z + se))) * 100, 1),
+    nsmall = 1,
+    decimal.mark = ","
+  )
+  
+  ic_attendu <- glue("[{borne_inf}–{borne_sup}]")
+  
   expect_equal(res$data$ic_95, ic_attendu)
 })
 

@@ -137,9 +137,22 @@ mortalite_chaprob <- function(specimen, pp, age_max) {
           z = .data$Estimate,
           se = .data$SE,
           a = round((1 - exp(-z)) * 100, 1),
-          ic_95 = glue(
-            "[{round((1 - exp(-(z - se))) * 100, 1)}-{round((1 - exp(-(z + se))) * 100, 1)}]"
-          )
+          ic_95 = {
+            
+            lower <- format(
+              round((1 - exp(-(z - se))) * 100, 1),
+              nsmall = 1,
+              decimal.mark = ","
+            )
+            
+            upper <- format(
+              round((1 - exp(-(z + se))) * 100, 1),
+              nsmall = 1,
+              decimal.mark = ","
+            )
+            
+            glue("[{lower}–{upper}]")
+          }
         )
     },
     error = function(e) NULL
@@ -160,12 +173,15 @@ mortalite_chaprob <- function(specimen, pp, age_max) {
       flextable(table_resultats) |>
         set_caption("Estimation de la mortalité par la méthode de Chapman-Robson") |>
         set_header_labels(
-          z = "Z (coefficient de mortalité)",
+          z = "Coefficient de mortalité (Z)",
           se = "Erreur standard",
           a = "Taux de mortalité (A%)",
-          ic_95 = "Intervalle de confiance à 95%"
+          ic_95 = "A IC 95%"
         ) |>
-        style_flextable_aquapop()
+        style_flextable_aquapop()|>
+        colformat_double(j = "z", digits = 3, decimal.mark = ",") |>
+        colformat_double(j = "se", digits = 3, decimal.mark = ",") |>
+        colformat_double(j = "a", digits = 1, decimal.mark = ",")
     },
     error = function(e) NULL
   )

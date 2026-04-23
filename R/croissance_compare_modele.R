@@ -2,40 +2,53 @@
 #'
 #' Cette fonction ajuste trois modèles de croissance non linéaire à un jeu de
 #' données de spécimens et retourne un tableau comparatif des paramètres estimés,
-#' des intervalles de confiance et du critère d'information corrigé (AICc).
+#' des intervalles de confiance à 95 % et du critère d'information corrigé
+#' (AICc).
 #'
-#' Si les données ne permettent pas la modélisation (ex. moins de 3 âges
-#' distincts), la fonction retourne un résultat avec `success = FALSE` et un
-#' message explicatif.
+#' Si les données ne permettent pas la modélisation, par exemple en présence de
+#' moins de 3 spécimens valides ou de moins de 3 âges distincts, la fonction
+#' retourne un résultat avec `success = FALSE` et un message explicatif.
 #'
 #' Si `vbStarts()` échoue à produire des valeurs initiales, une stratégie de
 #' rechange est utilisée avec :
-#' - `Linf` = longueur du plus grand spécimen de l'échantillon
-#' - `K = 0.3`
-#' - `t0 = 0`
+#' \itemize{
+#'   \item `Linf` = longueur du plus grand spécimen de l'échantillon
+#'   \item `K = 0.3`
+#'   \item `t0 = 0`
+#' }
 #'
-#' Un message d’avertissement est alors retourné dans l’output afin d’informer
-#' l’utilisateur que des valeurs initiales fixes ont été utilisées.
+#' Un message est alors inclus dans la sortie afin d’informer l’utilisateur que
+#' des valeurs initiales fixes ont été utilisées.
 #'
 #' Si un ou plusieurs modèles ne convergent pas, la fonction retourne quand même
-#' un tableau comparatif. Les valeurs associées aux modèles non convergents sont
-#' alors remplacées par `"-"` et la colonne `convergence` indique explicitement
-#' que le modèle n'a pas convergé.
+#' un tableau comparatif. Les valeurs numériques associées aux modèles non
+#' convergents sont alors laissées à `NA`, les intervalles de confiance sont
+#' laissés vides, et la colonne `convergence` indique `FALSE`.
 #'
-#' @param data Un `data.frame` contenant au minimum : `sp`, `ltm`, `age`,
-#'   `no_specimen`
-#' @param format Format de sortie souhaité : `"data.frame"` (par défaut) ou
-#'   `"flextable"`
+#' @param data Un `data.frame` contenant au minimum les colonnes `ltm`, `age`
+#'   et `no_specimen`.
 #'
 #' @return Une liste contenant :
 #' \describe{
-#'   \item{success}{Indique si l'analyse a pu être réalisée}
-#'   \item{data}{`data.frame` résumant les résultats des modèles}
-#'   \item{flextable}{Tableau formaté prêt pour insertion dans un document}
-#'   \item{message}{Message explicatif si l'analyse n'est pas disponible, si
-#'   des valeurs initiales de secours ont été utilisées, ou si aucun modèle n'a
-#'   convergé}
+#'   \item{success}{Un indicateur logique précisant si l'analyse a pu être
+#'   réalisée.}
+#'   \item{data}{Un `data.frame` résumant les résultats des trois modèles, ou
+#'   `NULL` si l'analyse n'a pas pu être effectuée.}
+#'   \item{flextable}{Un objet `flextable` formaté pour affichage ou exportation,
+#'   ou `NULL` si l'analyse n'a pas pu être effectuée.}
+#'   \item{message}{Un message informatif ou explicatif, ou `NULL` si aucun
+#'   message n'est nécessaire.}
 #' }
+#'
+#' @details
+#' Les modèles sont comparés uniquement à partir des ajustements convergés.
+#' Le calcul de l'AICc est effectué seulement pour ces modèles. Si aucun modèle
+#' ne converge, le tableau final est tout de même retourné et un message global
+#' l'indique.
+#'
+#' Les intervalles de confiance sont extraits individuellement pour chaque
+#' paramètre. Lorsqu'un intervalle de confiance ne peut pas être calculé, la
+#' valeur `"IC non calculable"` est utilisée.
 #'
 #' @export
 #'
@@ -46,9 +59,7 @@
 #' @importFrom fishmethods growth
 #' @importFrom FSA vbStarts
 #' @importFrom flextable flextable set_caption set_header_labels
-croissance_compare_modele <- function(data, format = c("data.frame", "flextable")) {
-  
-  format <- match.arg(format)
+croissance_compare_modele <- function(data) {
   
   df <- data |>
     filter(!is.na(ltm), !is.na(age)) |>
@@ -176,7 +187,7 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
       l_inf_ic = format_growth_ic(mod, 1, digits = 0),
       k_ic = format_growth_ic(mod, 2, digits = 3),
       t0_ic = format_growth_ic(mod, 3, digits = 3),
-      convergence = "Convergé",
+      convergence = TRUE,
       stringsAsFactors = FALSE
     )
     
@@ -245,24 +256,12 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
     ) |>
     arrange(aicc_sort, methode) |>
     mutate(
-      l_inf = if_else(
-        convergence == "Convergé",
-        as.character(round(as.numeric(l_inf), 0)),
-        "-"
-      ),
-      k = if_else(
-        convergence == "Convergé",
-        as.character(round(as.numeric(k), 3)),
-        "-"
-      ),
-      t0 = if_else(
-        convergence == "Convergé",
-        as.character(round(as.numeric(t0), 3)),
-        "-"
-      ),
-      l_inf_ic = if_else(convergence == "Convergé", l_inf_ic, "-"),
-      k_ic = if_else(convergence == "Convergé", k_ic, "-"),
-      t0_ic = if_else(convergence == "Convergé", t0_ic, "-"),
+      l_inf = if_else(convergence, l_inf, NA_real_),
+      k = if_else(convergence, k, NA_real_),
+      t0 = if_else(convergence, t0, NA_real_),
+      l_inf_ic = if_else(convergence, l_inf_ic, NA_character_),
+      k_ic = if_else(convergence, k_ic, NA_character_),
+      t0_ic = if_else(convergence, t0_ic, NA_character_)
     ) |>
     select(
       methode,
@@ -277,7 +276,7 @@ croissance_compare_modele <- function(data, format = c("data.frame", "flextable"
   
   # Message global ----
   
-  aucun_modele_converge <- all(final$convergence == "Le modèle n'a pas convergé")
+  aucun_modele_converge <- all(!final$convergence)
   
   message_parts <- c()
   
@@ -469,10 +468,10 @@ build_growth_failure_row <- function(methode) {
     l_inf = NA_real_,
     k = NA_real_,
     t0 = NA_real_,
-    l_inf_ic = "-",
-    k_ic = "-",
-    t0_ic = "-",
-    convergence = "Le modèle n'a pas convergé",
+    l_inf_ic = NA_character_,
+    k_ic = NA_character_,
+    t0_ic = NA_character_,
+    convergence = FALSE,
     stringsAsFactors = FALSE
   )
 }

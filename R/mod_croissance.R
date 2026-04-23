@@ -55,9 +55,7 @@ mod_croissance_server <- function(id, specimen, filename_suffix) {
       req(res$success)
       req(!is.null(res$data))
       
-      aucun_modele_converge <- all(
-        res$data$convergence == "Le modèle n'a pas convergé"
-      )
+      aucun_modele_converge <- all(!res$data$convergence)
       
       if (isTRUE(aucun_modele_converge)) {
         return(NULL)
@@ -242,7 +240,22 @@ mod_croissance_server <- function(id, specimen, filename_suffix) {
             format = colFormat(digits = 2, locales = "fr-CA")
           ),
           
-          convergence = colDef(name = "Convergence")
+          convergence = colDef(
+            name = "Convergence",
+            cell = function(value) {
+              if (isTRUE(value)) {
+                htmltools::span(
+                  style = "color: green; font-weight: bold;",
+                  "\u2713"
+                )
+              } else {
+                htmltools::span(
+                  style = "color: red; font-weight: bold;",
+                  "\u2717"
+                )
+              }
+            }
+          )
         )
         
       )
@@ -272,7 +285,7 @@ mod_croissance_server <- function(id, specimen, filename_suffix) {
       modele <- table$methode[[selected]]
       convergence <- table$convergence[[selected]]
       
-      if (!identical(convergence, "Convergé")) {
+      if (!isTRUE(convergence)) {
         return(NULL)
       }
       

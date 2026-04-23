@@ -18,7 +18,7 @@ test_that("mortalite_plot_modele retourne un ggplot valide avec données simulé
   expect_s3_class(p, "ggplot")
   expect_true(inherits(p$layers[[1]]$geom, "GeomBar"))
   expect_true(inherits(p$layers[[2]]$geom, "GeomLine"))
-  expect_true(grepl("A = 42 %", p$labels$subtitle))
+  expect_true(grepl("A = 42,0 %", p$labels$subtitle, fixed = TRUE))
 })
 
 test_that("mortalite_plot_modele retourne NULL si aucun âge valide n'est présent", {
@@ -120,4 +120,30 @@ test_that("mortalite_plot_modele retourne NULL si plusieurs espèces sont prése
   )
   
   expect_null(mortalite_plot_modele(specimen, modele, info_modele))
+})
+
+test_that("mortalite_plot_modele affiche un sous-titre formaté correctement", {
+  specimen <- tibble::tibble(
+    sp = "TEST",
+    age = sample(0:10, size = 200, replace = TRUE)
+  )
+  
+  modele <- glm(age ~ 1, data = specimen, family = poisson())
+  attr(modele, "methode") <- "poisson"
+  
+  info_modele <- tibble::tibble(
+    methode = "poisson",
+    A = 42,
+    ic95 = "[36,0-48,0]"
+  )
+  
+  p <- mortalite_plot_modele(specimen, modele, info_modele)
+  
+  expect_s3_class(p, "ggplot")
+  
+  # Vérifie présence de A formaté
+  expect_match(p$labels$subtitle, "A = 42,0 %")
+  
+  # Vérifie présence de l'IC avec virgules
+  expect_match(p$labels$subtitle, "\\[36,0-48,0\\]")
 })

@@ -116,8 +116,15 @@ mortalite_plot_modele <- function(specimen, modele, info_modele) {
       filter(tolower(methode) == tolower(methode_modele))
     
     if (nrow(ligne_info_modele) >= 1) {
+      
+      a_formate <- format(
+        ligne_info_modele$A[1],
+        nsmall = 1,
+        decimal.mark = ","
+      )
+      
       sous_titre <- glue(
-        "A = {ligne_info_modele$A[1]} %, IC 95 % = {ligne_info_modele$ic95[1]}"
+        "A = {a_formate} %, IC 95 % = {ligne_info_modele$ic95[1]}"
       ) |>
         as.character()
     }

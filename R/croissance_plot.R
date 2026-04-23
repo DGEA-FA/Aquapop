@@ -104,14 +104,14 @@ croissance_plot <- function(dfspecimen, tablemodele, modele) {
     return(NULL)
   }
   
-  if (!identical(model_params$convergence[[1]], "Convergé")) {
+  if (!isTRUE(model_params$convergence[[1]])) {
     warning(
       "Le graphique de croissance ne peut pas être produit, car le modèle sélectionné n'a pas convergé."
     )
     return(NULL)
   }
   
-  if (any(model_params[1, c("l_inf", "k", "t0")] == "-")) {
+  if (any(is.na(model_params[1, c("l_inf", "k", "t0")]))) {
     warning(
       "Le graphique de croissance ne peut pas être produit, car un ou plusieurs paramètres du modèle sont invalides."
     )

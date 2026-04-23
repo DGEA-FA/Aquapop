@@ -73,7 +73,7 @@ croissance_select_best_modele <- function(tablemodele) {
   table_filtre <- tablemodele |>
     mutate(aicc_num = suppressWarnings(as.numeric(aicc))) |>
     filter(
-      convergence == "Convergé",
+      convergence == TRUE,
       !is.na(aicc_num)
     )
   

@@ -11,7 +11,7 @@ test_that("croissance_plot() fonctionne pour les trois modèles convergés", {
     l_inf = c("220", "215", "210"),
     k = c("0.25", "0.30", "0.35"),
     t0 = c("-0.5", "0.0", "0.3"),
-    convergence = c("Convergé", "Convergé", "Convergé")
+    convergence = c(TRUE, TRUE, TRUE)
   )
   
   for (mod in model_table$methode) {
@@ -45,7 +45,7 @@ test_that("croissance_plot() filtre les NA correctement", {
     l_inf = "200",
     k = "0.2",
     t0 = "-0.5",
-    convergence = "Convergé"
+    convergence = TRUE
   )
   
   g <- croissance_plot(data_na, model_table, "Von Bertalanffy")
@@ -67,7 +67,7 @@ test_that("croissance_plot() retourne NULL avec un warning pour un modèle incon
     l_inf = "200",
     k = "0.2",
     t0 = "-0.5",
-    convergence = "Convergé"
+    convergence = TRUE
   )
   
   expect_warning(
@@ -92,7 +92,7 @@ test_that("croissance_plot() fonctionne avec peu d'individus", {
     l_inf = "180",
     k = "0.25",
     t0 = "0.1",
-    convergence = "Convergé"
+    convergence = TRUE
   )
   
   g <- croissance_plot(small_data, model_table, "Gompertz")
@@ -131,7 +131,7 @@ test_that("croissance_plot() retourne NULL avec un warning si modele est NA", {
     l_inf = "200",
     k = "0.2",
     t0 = "-0.5",
-    convergence = "Convergé"
+    convergence = TRUE
   )
   
   expect_warning(
@@ -156,7 +156,7 @@ test_that("croissance_plot() retourne NULL avec un warning si le modèle est abs
     l_inf = "200",
     k = "0.2",
     t0 = "-0.5",
-    convergence = "Convergé"
+    convergence = TRUE
   )
   
   expect_warning(
@@ -178,10 +178,10 @@ test_that("croissance_plot() retourne NULL avec un warning si le modèle n'a pas
   
   model_table <- tibble::tibble(
     methode = "Von Bertalanffy",
-    l_inf = "-",
-    k = "-",
-    t0 = "-",
-    convergence = "Le modèle n'a pas convergé"
+    l_inf = NA_real_,
+    k = NA_real_,
+    t0 = NA_real_,
+    convergence = FALSE
   )
   
   expect_warning(
@@ -203,10 +203,10 @@ test_that("croissance_plot() retourne NULL avec un warning si les paramètres du
   
   model_table <- tibble::tibble(
     methode = "Von Bertalanffy",
-    l_inf = "-",
-    k = "0.2",
-    t0 = "-0.5",
-    convergence = "Convergé"
+    l_inf = NA_real_,
+    k = 0.2,
+    t0 = -0.5,
+    convergence = TRUE
   )
   
   expect_warning(
@@ -231,7 +231,7 @@ test_that("croissance_plot() retourne NULL avec un warning si les paramètres du
     l_inf = "abc",
     k = "0.2",
     t0 = "-0.5",
-    convergence = "Convergé"
+    convergence = TRUE
   )
   
   expect_warning(

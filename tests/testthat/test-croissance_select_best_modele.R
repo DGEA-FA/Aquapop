@@ -3,7 +3,7 @@ test_that("sélectionne le modèle convergé avec le plus bas aicc", {
   df <- tibble::tibble(
     methode = c("Von Bertalanffy", "Gompertz", "Logistique"),
     aicc = c("120.5", "115.2", "118.9"),
-    convergence = c("Convergé", "Convergé", "Convergé")
+    convergence = c(TRUE, TRUE, TRUE)
   )
   
   best <- croissance_select_best_modele(df)
@@ -17,7 +17,7 @@ test_that("retourne le premier en cas d'ex-aequo sur l'aicc", {
   df <- tibble::tibble(
     methode = c("Von Bertalanffy", "Gompertz", "Logistique"),
     aicc = c("115.2", "115.2", "118.9"),
-    convergence = c("Convergé", "Convergé", "Convergé")
+    convergence = c(TRUE, TRUE, TRUE)
   )
   
   best <- croissance_select_best_modele(df)
@@ -31,11 +31,7 @@ test_that("ignore les modèles non convergés", {
   df <- tibble::tibble(
     methode = c("Von Bertalanffy", "Gompertz", "Logistique"),
     aicc = c("110.0", "115.2", "-"),
-    convergence = c(
-      "Le modèle n'a pas convergé",
-      "Convergé",
-      "Le modèle n'a pas convergé"
-    )
+    convergence = c(FALSE, TRUE, FALSE)
   )
   
   best <- croissance_select_best_modele(df)
@@ -65,7 +61,7 @@ test_that("retourne NA avec un warning si le tableau est vide", {
   df_vide <- tibble::tibble(
     methode = character(),
     aicc = character(),
-    convergence = character()
+    convergence = logical()
   )
   
   expect_warning(
@@ -93,11 +89,7 @@ test_that("retourne NA avec un warning si aucun modèle convergé n'est disponib
   df <- tibble::tibble(
     methode = c("Von Bertalanffy", "Gompertz", "Logistique"),
     aicc = c("-", "-", "-"),
-    convergence = c(
-      "Le modèle n'a pas convergé",
-      "Le modèle n'a pas convergé",
-      "Le modèle n'a pas convergé"
-    )
+    convergence = c(FALSE, FALSE, FALSE)
   )
   
   expect_warning(
@@ -114,7 +106,7 @@ test_that("retourne NA si aucun aicc valide n'est disponible parmi les modèles 
   df <- tibble::tibble(
     methode = c("Von Bertalanffy", "Gompertz"),
     aicc = c("-", "-"),
-    convergence = c("Convergé", "Convergé")
+    convergence = c(TRUE, TRUE)
   )
   
   expect_warning(

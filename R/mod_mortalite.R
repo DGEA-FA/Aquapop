@@ -476,11 +476,14 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
         table,
         selection = "single",
         onClick = "select",
+        outlined =TRUE,
+        compact =TRUE,
         defaultSelected = if (is.na(idx)) NULL else idx,
         
         defaultColDef = colDef(
           align = "center",
-          headerStyle = list(textAlign = "center")
+          headerStyle = list(textAlign = "center"),
+          na = "-"
         ),
         
         columns = list(
@@ -523,9 +526,15 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
             name = "Convergence",
             cell = function(value) {
               if (isTRUE(value)) {
-                htmltools::span(style = "color: green; font-weight: bold;", "✓")
+                htmltools::span(
+                  style = "color: green; font-weight: bold;",
+                  "\u2713"
+                )
               } else {
-                htmltools::span(style = "color: red; font-weight: bold;", "✗")
+                htmltools::span(
+                  style = "color: red; font-weight: bold;",
+                  "\u2717"
+                )
               }
             }
           ),

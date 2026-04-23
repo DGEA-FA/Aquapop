@@ -4,35 +4,35 @@
 \alias{croissance_compare_modele}
 \title{Comparer trois modèles de croissance (Von Bertalanffy, Gompertz, Logistique)}
 \usage{
-croissance_compare_modele(data, format = c("data.frame", "flextable"))
+croissance_compare_modele(data)
 }
 \arguments{
-\item{data}{Un \code{data.frame} contenant au minimum : \code{sp}, \code{ltm}, \code{age},
-\code{no_specimen}}
-
-\item{format}{Format de sortie souhaité : \code{"data.frame"} (par défaut) ou
-\code{"flextable"}}
+\item{data}{Un \code{data.frame} contenant au minimum les colonnes \code{ltm}, \code{age}
+et \code{no_specimen}.}
 }
 \value{
 Une liste contenant :
 \describe{
-\item{success}{Indique si l'analyse a pu être réalisée}
-\item{data}{\code{data.frame} résumant les résultats des modèles}
-\item{flextable}{Tableau formaté prêt pour insertion dans un document}
-\item{message}{Message explicatif si l'analyse n'est pas disponible, si
-des valeurs initiales de secours ont été utilisées, ou si aucun modèle n'a
-convergé}
+\item{success}{Un indicateur logique précisant si l'analyse a pu être
+réalisée.}
+\item{data}{Un \code{data.frame} résumant les résultats des trois modèles, ou
+\code{NULL} si l'analyse n'a pas pu être effectuée.}
+\item{flextable}{Un objet \code{flextable} formaté pour affichage ou exportation,
+ou \code{NULL} si l'analyse n'a pas pu être effectuée.}
+\item{message}{Un message informatif ou explicatif, ou \code{NULL} si aucun
+message n'est nécessaire.}
 }
 }
 \description{
 Cette fonction ajuste trois modèles de croissance non linéaire à un jeu de
 données de spécimens et retourne un tableau comparatif des paramètres estimés,
-des intervalles de confiance et du critère d'information corrigé (AICc).
+des intervalles de confiance à 95 \% et du critère d'information corrigé
+(AICc).
 }
 \details{
-Si les données ne permettent pas la modélisation (ex. moins de 3 âges
-distincts), la fonction retourne un résultat avec \code{success = FALSE} et un
-message explicatif.
+Si les données ne permettent pas la modélisation, par exemple en présence de
+moins de 3 spécimens valides ou de moins de 3 âges distincts, la fonction
+retourne un résultat avec \code{success = FALSE} et un message explicatif.
 
 Si \code{vbStarts()} échoue à produire des valeurs initiales, une stratégie de
 rechange est utilisée avec :
@@ -42,11 +42,20 @@ rechange est utilisée avec :
 \item \code{t0 = 0}
 }
 
-Un message d’avertissement est alors retourné dans l’output afin d’informer
-l’utilisateur que des valeurs initiales fixes ont été utilisées.
+Un message est alors inclus dans la sortie afin d’informer l’utilisateur que
+des valeurs initiales fixes ont été utilisées.
 
 Si un ou plusieurs modèles ne convergent pas, la fonction retourne quand même
-un tableau comparatif. Les valeurs associées aux modèles non convergents sont
-alors remplacées par \code{"-"} et la colonne \code{convergence} indique explicitement
-que le modèle n'a pas convergé.
+un tableau comparatif. Les valeurs numériques associées aux modèles non
+convergents sont alors laissées à \code{NA}, les intervalles de confiance sont
+laissés vides, et la colonne \code{convergence} indique \code{FALSE}.
+
+Les modèles sont comparés uniquement à partir des ajustements convergés.
+Le calcul de l'AICc est effectué seulement pour ces modèles. Si aucun modèle
+ne converge, le tableau final est tout de même retourné et un message global
+l'indique.
+
+Les intervalles de confiance sont extraits individuellement pour chaque
+paramètre. Lorsqu'un intervalle de confiance ne peut pas être calculé, la
+valeur \code{"IC non calculable"} est utilisée.
 }
