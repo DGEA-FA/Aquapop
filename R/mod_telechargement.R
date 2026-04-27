@@ -148,12 +148,12 @@ mod_telechargement_server <- function(id) {
       updateTabsetPanel(session = session, inputId = "switcher", selected = input$controller)
     })
     
-    output$table_lac <- renderDT(data_lac())
-    output$table_station <- renderDT(analysis_data()$data_station)
-    output$table_specimen_tous <- renderDT(analysis_data()$specimen_tous)
-    output$table_specimen_valide <- renderDT(analysis_data()$specimen_valide)
-    output$table_specimen_hasard_valide <- renderDT(analysis_data()$specimen_hasard_valide)
-    output$table_capture <- renderDT(analysis_data()$capture)
+    output$table_lac <- renderDT(data_lac(), selection = "none", options = list(lengthChange = FALSE, paging = FALSE, searching = FALSE))
+    output$table_station <- renderDT(analysis_data()$data_station, selection = "none", options = list(searching = FALSE, lengthMenu = -1, lengthChange = FALSE, paging = FALSE))
+    output$table_specimen_tous <- renderDT(analysis_data()$specimen_tous, selection = "none", options = list(searching = FALSE, lengthChange = FALSE, paging = FALSE))
+    output$table_specimen_valide <- renderDT(analysis_data()$specimen_valide, selection = "none", options = list(searching = FALSE, lengthChange = FALSE, paging = FALSE))
+    output$table_specimen_hasard_valide <- renderDT(analysis_data()$specimen_hasard_valide, selection = "none", options = list(searching = FALSE, lengthChange = FALSE, paging = FALSE))
+    output$table_capture <- renderDT(analysis_data()$capture, selection = "none", options = list(searching = FALSE, lengthChange = FALSE, paging = FALSE))
     
     filename_suffix <- reactive({
       generate_filename_suffix(
