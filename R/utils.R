@@ -119,3 +119,42 @@ labelled_data <- function(data) {
 handle_error <- function(e) {
   conditionMessage(e)
 }
+
+
+# ==== Formatter un nombre en style français ====
+
+#' Formatter un nombre avec virgule décimale
+#'
+#' Convertit un nombre en texte avec un nombre fixe de décimales,
+#' en utilisant la virgule comme séparateur décimal.
+#'
+#' @param x Un vecteur numérique.
+#' @param digits Nombre de décimales à afficher.
+#' @param na Valeur à afficher si `NA`.
+#'
+#' @return Un vecteur caractère formaté.
+#' @export
+#'
+#' @examples
+#' format_num_fr(1.2)
+#' format_num_fr(1.2, digits = 3)
+#'
+#' @importFrom checkmate assert_numeric assert_int
+format_num_fr <- function(x, digits = 2, na = "-") {
+  
+  assert_numeric(x, any.missing = TRUE, null.ok = FALSE)
+
+  out <- ifelse(
+    is.na(x),
+    na,
+    format(
+      round(x, digits),
+      nsmall = digits,
+      decimal.mark = ",",
+      scientific = FALSE,
+      trim = TRUE
+    )
+  )
+  
+  return(out)
+}

@@ -117,12 +117,16 @@ cpue_fit_modele_cmp <- function(cpue_data) {
   } else {
     pred <- predict(model, type = "link", se.fit = TRUE)
     fit_mean <- unname(exp(pred$fit[1]))
+    
+    lower_num <- exp(pred$fit[1] - 1.96 * pred$se.fit[1])
+    upper_num <- exp(pred$fit[1] + 1.96 * pred$se.fit[1])
+    
     ic95 <- paste0(
-      "(",
-      round(exp(pred$fit[1] - 1.96 * pred$se.fit[1]), 2),
-      "-",
-      round(exp(pred$fit[1] + 1.96 * pred$se.fit[1]), 2),
-      ")"
+      "[",
+      format_num_fr(lower_num, digits = 2),
+      " – ",
+      format_num_fr(upper_num, digits = 2),
+      "]"
     )
   }
   

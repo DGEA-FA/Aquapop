@@ -12,31 +12,41 @@ mod_abondance_cpue_ui <- function(id) {
   tabPanel(
     title = "CPUE",
     
-    p("Le tableau ci-dessous présente le nombre de captures de 
-      l'espèce visée selon la table *Récolte* et le nombre d'individus
-      dans la table *Spécimens*.  
-      Si la récolte est plus élevée que le nombre de spécimens,
-      il peut s'agir d'un poisson échappé ou trop abîmé pour
-      prendre des mesures, etc. Si le nombre de spécimens est plus 
-      élevé que la récolte, il y a erreur à corriger dans la base
-      de données. Les modèles d'abondance globale (cpue_tous)
-      sont calculés à partir du nombre de captures indiqués 
-      dans la *Récolte* alors que le tableau récapitulatif 
-      est calculé à partir des données de la table *Spécimens*."),
+    h3("Validation des captures et des spécimens"),
+    
+    p(
+      "Le tableau ci-dessous présente le nombre de captures de l'espèce visée ",
+      "selon la table Récolte et le nombre d'individus dans la table Spécimens. ",
+      "Si la récolte est plus élevée que le nombre de spécimens, il peut s'agir ",
+      "d'un poisson échappé ou trop abîmé pour prendre des mesures. ",
+      "Si le nombre de spécimens est plus élevé que la récolte, il y a une erreur ",
+      "à corriger dans la base de données."
+    ),
+    
+    uiOutput(ns("capture_specimen_message")),
+    withSpinner(uiOutput(ns("capture_specimen_table")), type = myspinner),
+    download_button_ui(ns("capture_specimen_table_dl")),
+    
+    br(),
+    
+    h3("Modèles de CPUE"),
     
     ## CPUE - Tous
+    h4("CPUE - Tous les individus"),
     withSpinner(uiOutput(ns("cpue_tous_table")), type = myspinner),
     download_button_ui(ns("cpue_tous_table_dl")),
     
     br(),
     
     ## CPUE - Femelles matures
+    h4("CPUE - Femelles matures"),
     uiOutput(ns("cpue_femelles_table")),
     download_button_ui(ns("cpue_femelles_table_dl")),
     
     br(),
     
     ## Abondance
+    h3("Tableau récapitulatif d'abondance"),
     uiOutput(ns("abondance_table")),
     download_button_ui(ns("abondance_table_dl"))
   )
@@ -54,6 +64,36 @@ mod_abondance_cpue_ui <- function(id) {
 mod_abondance_cpue_server <- function(id, specimen, capture, filename_suffix) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
+    
+    ## Validation - Récolte vs Spécimens
+    capture_specimen_res <- reactive({
+      req(specimen(), capture())
+      
+      cpue_compare_capture_specimen(
+        capture = capture(),
+        specimen = specimen()
+      )
+    })
+    
+    output$capture_specimen_message <- renderUI({
+      req(capture_specimen_res())
+      
+      p(strong(capture_specimen_res()$message))
+    })
+    
+    render_table_flextable(
+      "capture_specimen_table",
+      reactive(capture_specimen_res()$flextable)
+    )
+    
+    render_download_table(
+      "capture_specimen_table_dl",
+      data = reactive(capture_specimen_res()$data),
+      filename = reactive(build_export_filename(
+        "validation_capture_specimen",
+        filename_suffix()
+      ))
+    )
     
     ## CPUE - Tous
     cpue_table_tous <- reactive({

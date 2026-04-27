@@ -16,7 +16,7 @@ test_that("cpue_fit_modele_gp() fonctionne correctement - cas nominal", {
   expect_equal(res$methode, "gp")
   expect_true(is.numeric(res$ajustement_hnp))
   expect_true(res$ajustement_hnp >= 0 && res$ajustement_hnp <= 100)
-  expect_match(res$ic_95, "^\\([0-9.]+-[0-9.]+\\)$")
+  expect_match(res$ic_95, "^\\[[0-9,]+ – [0-9,]+\\]$")
   expect_true(res$convergence %in% c(TRUE, FALSE))
   expect_true(res$nb_iterations_hnp %in% c(2, 5))
   

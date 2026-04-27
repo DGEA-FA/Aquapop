@@ -90,9 +90,16 @@ cpue_fit_modele_poisson <- function(cpue_data) {
   if (all(cpue_data$cpue == 0)) {
     pred_ic95 <- "IC non calculable"
   } else {
-    ic_low <- round(exp(pred$fit[1] - 1.96 * pred$se.fit[1]), 2)
-    ic_up  <- round(exp(pred$fit[1] + 1.96 * pred$se.fit[1]), 2)
-    pred_ic95 <- sprintf("(%s-%s)", ic_low, ic_up)
+    lower_num <- exp(pred$fit[1] - 1.96 * pred$se.fit[1])
+    upper_num <- exp(pred$fit[1] + 1.96 * pred$se.fit[1])
+    
+    pred_ic95 <- paste0(
+      "[",
+      format_num_fr(lower_num, digits = 2),
+      " – ",
+      format_num_fr(upper_num, digits = 2),
+      "]"
+    )
   }
   
   # --- Commentaire sur l'ajustement ---

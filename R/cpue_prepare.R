@@ -25,7 +25,7 @@
 #' @importFrom dplyr filter group_by summarise left_join mutate select n
 #' @importFrom checkmate assert_data_frame assert_choice
 #' @importFrom rlang abort
-#'
+#' @importFrom tidyr replace_na
 #' @export
 cpue_prepare <- function(capture, specimen, group = c("tous", "femelles")) {
   group <- match.arg(group)

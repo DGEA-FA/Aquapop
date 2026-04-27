@@ -82,6 +82,16 @@ mortalite_phrase_resume(mortalite_compare_modele_res$data, meilleur_modele_nom)
 
 # CPUE - Abondance ----
 ## Tableau CPUE - Tous ----
+
+# CPUE - Abondance ----
+
+## Validation Récolte vs Spécimens ----
+validation_capture_specimen_res <- cpue_compare_capture_specimen(capture,specimen_hasard_valide)
+
+validation_capture_specimen_res$message
+validation_capture_specimen_res$data
+validation_capture_specimen_res$flextable
+
 df_cpue_tous <- cpue_prepare(capture, specimen_hasard_valide, group = "tous")
 cpue_compare_modele_tous_res <- cpue_compare_modele(df_cpue_tous)
 cpue_compare_modele_tous_res$data

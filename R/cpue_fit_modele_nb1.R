@@ -102,12 +102,16 @@ cpue_fit_modele_nb1 <- function(cpue_data) {
   } else {
     pred <- predict(model_nb1, type = "link", se.fit = TRUE)
     pred_mean <- unname(exp(pred$fit[1]))
+    
+    lower_num <- exp(pred$fit[1] - 1.96 * pred$se.fit[1])
+    upper_num <- exp(pred$fit[1] + 1.96 * pred$se.fit[1])
+    
     pred_ic95 <- paste0(
-      "(",
-      round(exp(pred$fit[1] - 1.96 * pred$se.fit[1]), 2),
-      "-",
-      round(exp(pred$fit[1] + 1.96 * pred$se.fit[1]), 2),
-      ")"
+      "[",
+      format_num_fr(lower_num, digits = 2),
+      " – ",
+      format_num_fr(upper_num, digits = 2),
+      "]"
     )
   }
   
