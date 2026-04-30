@@ -15,7 +15,7 @@
 #'
 #' @importFrom dplyr mutate select left_join arrange filter bind_rows
 #' @importFrom tidyr replace_na
-#' @importFrom flextable flextable set_caption set_header_labels
+#' @importFrom flextable flextable set_caption set_header_labels colformat_double
 #'
 #' @export
 cpue_compare_modele <- function(cpue_data) {
@@ -93,32 +93,10 @@ cpue_compare_modele <- function(cpue_data) {
       delta_aicc = delta_aicc,
       cpue = cpue_moyenne,
       ic95 = ic_95,
-      commentaires = commentaire,
-      convergence = convergence
+      convergence = convergence,
+      commentaires = commentaire
     ) |>
     as.data.frame()
-  
-  # --- Formatage numérique conditionnel ---
-  tableau_final <- tableau_final |>
-    mutate(
-      ajustement_hnp = ifelse(ajustement_hnp == 0, "0", format(round(ajustement_hnp, 2), nsmall = 2)),
-      cpue = ifelse(cpue == 0, "0", format(round(cpue, 2), nsmall = 2)),
-      aicc           = ifelse(aicc == 0, "0", format(round(aicc, 2), nsmall = 2)),
-      delta_aicc     = ifelse(delta_aicc == 0, "0", format(round(delta_aicc, 2), nsmall = 2))
-    )
-  
-  
-  tableau_final <- set_variable_labels(
-    tableau_final,
-    methode = "Méthode",
-    ajustement_hnp = "Ajustement HNP",
-    aicc = "AICc",
-    delta_aicc = "Δ AICc",
-    cpue = "CPUE moyenne",
-    ic95 = "IC 95 %",
-    commentaires = "Commentaires",
-    convergence = "Convergence"
-  )
   
 
   # --- Création du titre dynamique ---
@@ -128,20 +106,22 @@ cpue_compare_modele <- function(cpue_data) {
   }
   
   # --- Création de la table formatée ---
-  ft_final <- flextable(tableau_final) |>
+  ft_final <- tableau_final |>
+    mutate(convergence = ifelse(convergence, "\u2713", "\u2717")) |>
+    flextable() |>
     set_caption(titre_caption) |>
     set_header_labels(
-      methode = "Méthode",
+      methode = "Modèle",
       ajustement_hnp = "Ajustement HNP",
       aicc = "AICc",
       delta_aicc = "Δ AICc",
       cpue = "CPUE moyenne",
-      ic95 = "IC 95 %",
-      commentaires = "Commentaires",
-      convergence = "Convergence"
+      ic95 = "IC 95%",
+      convergence = "Convergence",
+      commentaires = "Commentaires"
     ) |>
-    labelled_data() |>
-    style_flextable_aquapop()
+    style_flextable_aquapop() |>
+    colformat_double(j = c("aicc", "ajustement_hnp", "delta_aicc", "cpue"), digits = 2, decimal.mark = ",", na_str = "-" ) 
   
   # --- Retour des résultats ---
   return(list(

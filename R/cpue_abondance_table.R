@@ -20,7 +20,7 @@
 #' @importFrom tidyr complete 
 #' @importFrom tibble tibble
 #' @importFrom labelled set_variable_labels
-#' @importFrom flextable flextable set_caption
+#' @importFrom flextable flextable set_caption colformat_double
 #'
 #' @export
 cpue_abondance_table <- function(data,
@@ -28,10 +28,10 @@ cpue_abondance_table <- function(data,
                                  cpue_table_femelles,
                                  best_model_tous,
                                  best_model_femelles) {
-  # --- Étape 1 : Statistiques globales ---
+  # --- Statistiques globales ---
   total_individus <- nrow(data)
 
-  # --- Étape 2 : Extraction des CPUE et IC 95 % ---
+  # --- Extraction des CPUE et IC 95 % ---
   best_tous <- cpue_table_tous[cpue_table_tous$methode == best_model_tous, ]
   best_femelles <- cpue_table_femelles[cpue_table_femelles$methode == best_model_femelles, ]
 
@@ -41,13 +41,13 @@ cpue_abondance_table <- function(data,
   cpue_femelles <- best_femelles$cpue
   ic95_femelles <- best_femelles$ic95
 
-  # --- Étape 3 : Tableaux par groupe biologique ---
+  # --- Tableaux par groupe biologique ---
 
   # Groupe : Tous
   table_tous <- tibble(
     groupe = "Tous",
     abondance = total_individus,
-    proportion = format(100, nsmall =1),
+    proportion = 100,
     mf_ratio = calculate_mf_ratio(sum(data$sexe == "M"), sum(data$sexe == "F"))
   )
 
@@ -56,12 +56,11 @@ cpue_abondance_table <- function(data,
     count(sexe, name = "abondance") |>
     mutate(
       groupe = recode(sexe,
-        "F" = "Femelle",
-        "M" = "Mâle",
+        "F" = "Femelles",
+        "M" = "Mâles",
         "IND" = "Sexe inconnu"
       ),
-      proportion = format(round(abondance / total_individus * 100, digits = 1), nsmall = 1),
-      mf_ratio = NA_character_
+      proportion = abondance / total_individus * 100,      mf_ratio = NA_character_
     ) |>
     select(groupe, abondance, proportion, mf_ratio)
 
@@ -74,12 +73,12 @@ cpue_abondance_table <- function(data,
                       "F" = "Repro. actifs femelles",
                       "M" = "Repro. actifs mâles"
       ),
-      proportion = format(round(abondance / total_individus * 100, digits = 1), nsmall = 1),
+      proportion = abondance / total_individus * 100,
       mf_ratio = NA_character_
     ) |>
     complete(
       groupe = c("Repro. actifs femelles", "Repro. actifs mâles"),
-      fill = list(abondance = 0, proportion = "0.0", mf_ratio = NA_character_)
+      fill = list(abondance = 0, proportion = 0, mf_ratio = NA_character_)
     )
 
   # Groupe : Immatures ou inactifs
@@ -88,7 +87,7 @@ cpue_abondance_table <- function(data,
     summarise(
       groupe = "Immatures ou reprod. inactifs",
       abondance = n(),
-      proportion = format(round(abondance / total_individus * 100, digits = 1), nsmall = 1),
+      proportion = abondance / total_individus * 100,
       mf_ratio = calculate_mf_ratio(sum(sexe == "M"), sum(sexe == "F"))
     )
 
@@ -98,17 +97,17 @@ cpue_abondance_table <- function(data,
     summarise(
       groupe = "Statut reprod. inconnu",
       abondance = n(),
-      proportion = format(round(abondance / total_individus * 100, digits = 1), nsmall = 1),
+      proportion = abondance / total_individus * 100,
       mf_ratio = calculate_mf_ratio(sum(sexe == "M"), sum(sexe == "F"))
     )
 
-  # --- Étape 4 : Fusion et ajout des CPUE ---
+  # --- Fusion et ajout des CPUE ---
   table_finale <- bind_rows(
     table_tous, table_sexe, table_repro, table_inactifs, table_inconnu
   ) |>
     mutate(
       groupe = factor(groupe, levels = c(
-        "Tous", "Femelle", "Mâle", "Sexe inconnu",
+        "Tous", "Femelles", "Mâles", "Sexe inconnu",
         "Repro. actifs femelles", "Repro. actifs mâles",
         "Immatures ou reprod. inactifs", "Statut reprod. inconnu"
       ))
@@ -118,7 +117,7 @@ cpue_abondance_table <- function(data,
       cpue = case_when(
         groupe == "Tous" ~ cpue_tous,
         groupe == "Repro. actifs femelles" ~ cpue_femelles,
-        TRUE ~ NA_character_
+        TRUE ~ NA_real_
       ),
       ic95 = case_when(
         groupe == "Tous" ~ ic95_tous,
@@ -127,20 +126,31 @@ cpue_abondance_table <- function(data,
       )
     ) |> select(-sexe)
 
-  # --- Étape 5 : Ajout des labels et création flextable ---
-  table_finale <- set_variable_labels(
-    table_finale,
-    groupe = "Groupe",
-    abondance = "Nombre",
-    proportion = "Proportion (%)",
-    cpue = "CPUE",
-    ic95 = "IC 95%",
-    mf_ratio = "Ratio M:F"
-  )
+  # --- Création flextable ---
 
   ft <- flextable(table_finale) |>
     set_caption("Tableau d'abondance") |>
-    style_flextable_aquapop()
+    set_header_labels(
+      groupe = "Groupe",
+      abondance = "Nombre",
+      proportion = "Proportion (%)",
+      cpue = "CPUE",
+      ic95 = "IC 95%",
+      mf_ratio = "Ratio M:F"
+    ) |>
+    style_flextable_aquapop() |>
+    colformat_double(
+      j = "proportion",
+      digits = 1,
+      decimal.mark = ",",
+      na_str = "-"
+    ) |>
+    colformat_double(
+      j = "cpue",
+      digits = 2,
+      decimal.mark = ",",
+      na_str = "-"
+    )
 
   list(
     data = table_finale,

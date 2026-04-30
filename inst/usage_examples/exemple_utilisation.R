@@ -101,6 +101,8 @@ meilleur_modele_cpue_tous
 ## Tableau CPUE - Femelles matures ----
 df_cpue_femelles <- cpue_prepare(capture, specimen_hasard_valide, group = "femelles")
 cpue_compare_modele_fem_res <- cpue_compare_modele(df_cpue_femelles)
+cpue_compare_modele_fem_res$data
+cpue_compare_modele_fem_res$flextable
 meilleur_modele_cpue_femelles <- cpue_select_best_modele(cpue_compare_modele_fem_res$data)
 meilleur_modele_cpue_femelles
 ## Tableau d'abondance ----
