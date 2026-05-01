@@ -1,5 +1,4 @@
 test_that("masse_longueur_fit() retourne une liste bien structurée", {
-  # --- Données fictives valides ---
   data_valide <- tibble::tibble(
     ltm = c(100, 120, 140, 160, 180),
     masse = c(10, 15, 25, 35, 50),
@@ -9,29 +8,73 @@ test_that("masse_longueur_fit() retourne une liste bien structurée", {
   
   resultat <- masse_longueur_fit(data_valide)
   
-  # --- Structure de sortie ---
   expect_type(resultat, "list")
-  expect_named(
-    resultat,
-    c("success", "data", "flextable", "plot", "message")
-  )
+  expect_named(resultat, c("success", "data", "flextable", "plot", "message"))
   
-  # --- Succès attendu ---
   expect_true(resultat$success)
   expect_null(resultat$message)
   
-  # --- Types attendus ---
   expect_s3_class(resultat$data, "data.frame")
   expect_s3_class(resultat$plot, "ggplot")
   expect_s3_class(resultat$flextable, "flextable")
   
-  # --- Colonnes attendues ---
-  expect_true(all(c(
-    "coefficient",
-    "estimation",
-    "erreur_standard",
-    "ic95"
-  ) %in% names(resultat$data)))
+  expect_equal(
+    colnames(resultat$data),
+    c("coefficient", "estimation", "erreur_standard", "ic95")
+  )
+})
+
+test_that("masse_longueur_fit() conserve les types analytiques dans data", {
+  data_valide <- tibble::tibble(
+    ltm = c(100, 120, 140, 160, 180),
+    masse = c(10, 15, 25, 35, 50),
+    sp = rep("SAFO", 5),
+    no_specimen = 1:5
+  )
+  
+  resultat <- masse_longueur_fit(data_valide)
+  
+  expect_true(resultat$success)
+  
+  expect_type(resultat$data$coefficient, "character")
+  expect_type(resultat$data$estimation, "double")
+  expect_type(resultat$data$erreur_standard, "double")
+  expect_type(resultat$data$ic95, "character")
+  
+  expect_setequal(resultat$data$coefficient, c("log10_a", "b"))
+})
+
+test_that("masse_longueur_fit() retourne des IC 95 % au format français attendu", {
+  data_valide <- tibble::tibble(
+    ltm = c(100, 120, 140, 160, 180),
+    masse = c(10, 15, 25, 35, 50),
+    sp = rep("SAFO", 5),
+    no_specimen = 1:5
+  )
+  
+  resultat <- masse_longueur_fit(data_valide)
+  
+  expect_true(resultat$success)
+  expect_match(
+    resultat$data$ic95,
+    "^\\[-?[0-9]+,[0-9]{3} – -?[0-9]+,[0-9]{3}\\]$"
+  )
+})
+
+test_that("masse_longueur_fit() ajoute l'équation dans la légende du graphique", {
+  data_valide <- tibble::tibble(
+    ltm = c(100, 120, 140, 160, 180),
+    masse = c(10, 15, 25, 35, 50),
+    sp = rep("SAFO", 5),
+    no_specimen = 1:5
+  )
+  
+  resultat <- masse_longueur_fit(data_valide)
+  
+  expect_true(resultat$success)
+  expect_s3_class(resultat$plot, "ggplot")
+  expect_match(resultat$plot$labels$caption, "Équation : W = 10\\^\\(")
+  expect_match(resultat$plot$labels$caption, "log10\\(L\\)")
 })
 
 test_that("masse_longueur_fit() échoue si plus d'une espèce est présente", {
@@ -63,10 +106,7 @@ test_that("masse_longueur_fit() retourne success = FALSE si les données sont vi
   expect_null(resultat$data)
   expect_null(resultat$flextable)
   expect_null(resultat$plot)
-  expect_match(
-    resultat$message,
-    "Aucun spécimen valide disponible"
-  )
+  expect_match(resultat$message, "Aucun spécimen valide disponible")
 })
 
 test_that("masse_longueur_fit() gère les NA en les filtrant", {
@@ -101,10 +141,7 @@ test_that("masse_longueur_fit() retourne success = FALSE si aucune donnée explo
   expect_null(resultat$data)
   expect_null(resultat$flextable)
   expect_null(resultat$plot)
-  expect_match(
-    resultat$message,
-    "Aucune donnée exploitable"
-  )
+  expect_match(resultat$message, "Aucune donnée exploitable")
 })
 
 test_that("masse_longueur_fit() retourne success = FALSE s'il y a moins de deux spécimens exploitables", {
@@ -121,10 +158,7 @@ test_that("masse_longueur_fit() retourne success = FALSE s'il y a moins de deux 
   expect_null(resultat$data)
   expect_null(resultat$flextable)
   expect_null(resultat$plot)
-  expect_match(
-    resultat$message,
-    "au moins deux spécimens"
-  )
+  expect_match(resultat$message, "au moins deux spécimens")
 })
 
 test_that("masse_longueur_fit() retourne success = FALSE si toutes les longueurs valides sont identiques", {
@@ -141,8 +175,5 @@ test_that("masse_longueur_fit() retourne success = FALSE si toutes les longueurs
   expect_null(resultat$data)
   expect_null(resultat$flextable)
   expect_null(resultat$plot)
-  expect_match(
-    resultat$message,
-    "longueurs valides sont identiques"
-  )
+  expect_match(resultat$message, "longueurs valides sont identiques")
 })

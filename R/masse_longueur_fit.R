@@ -20,12 +20,10 @@
 #' }
 #'
 #' @importFrom checkmate assert_data_frame assert_subset
-#' @importFrom dplyr filter mutate
+#' @importFrom dplyr filter mutate recode
 #' @importFrom FSA logbtcf
-#' @importFrom flextable flextable
+#' @importFrom flextable flextable set_header_labels colformat_double
 #' @importFrom ggplot2 aes geom_line geom_point ggplot labs
-#' @importFrom glue glue
-#' @importFrom labelled set_variable_labels
 #' @importFrom stats confint lm predict
 #' @importFrom tibble tibble
 #'
@@ -124,30 +122,47 @@ masse_longueur_fit <- function(data) {
   
   # Tableau brut ----
   table_resultats <- tibble(
-    coefficient = c("log10(a)", "b"),
-    estimation = round(resume_modele[, 1], 3),
-    erreur_standard = round(resume_modele[, 2], 3),
-    ic95 = c(
-      glue("[{round(intervalle_confiance[1, 1], 3)} - {round(intervalle_confiance[1, 2], 3)}]"),
-      glue("[{round(intervalle_confiance[2, 1], 3)} - {round(intervalle_confiance[2, 2], 3)}]")
+    coefficient = c("log10_a", "b"),
+    estimation = resume_modele[, 1],
+    erreur_standard = resume_modele[, 2],
+    ic95 = paste0(
+      "[",
+      format_num_fr(intervalle_confiance[, 1], digits = 3),
+      " – ",
+      format_num_fr(intervalle_confiance[, 2], digits = 3),
+      "]"
     )
   )
   
-  table_resultats <- set_variable_labels(
-    table_resultats,
-    coefficient = "Coefficient",
-    estimation = "Estimation",
-    erreur_standard = "ET",
-    ic95 = "IC 95 %"
-  )
-  
   # Tableau formaté ----
-  table_flextable <- table_resultats |>
+  table_flextable <- table_resultats |> 
+    mutate(
+      coefficient = dplyr::recode(
+        coefficient,
+        "log10_a" = "log\u2081\u2080(a)",
+        "b" = "b"
+      )) |>
     flextable() |>
-    labelled_data() |>
-    style_flextable_aquapop()
+    set_header_labels(
+      coefficient = "Coefficient",
+      estimation = "Estimation",
+      erreur_standard = "Erreur standard",
+      ic95 = "IC 95%"
+    ) |>
+    style_flextable_aquapop() |>
+    colformat_double(
+      j = c("estimation", "erreur_standard"),
+      digits = 3,
+      decimal.mark = ",",
+      big.mark = " ",
+      na_str = "-"
+    )
   
   # Données de prédiction ----
+  
+  
+  
+  
   sequence_log_longueur <- seq(
     min(donnees_filtrees$log_longueur),
     max(donnees_filtrees$log_longueur),
@@ -170,6 +185,18 @@ masse_longueur_fit <- function(data) {
   )
   
   # Graphique ----
+  log10_a <- table_resultats$estimation[table_resultats$coefficient == "log10_a"]
+  b <- table_resultats$estimation[table_resultats$coefficient == "b"]
+  
+  equation_label <- paste0(
+    "Équation : W = 10^(",
+    format_num_fr(log10_a, digits = 3),
+    " + ",
+    format_num_fr(b, digits = 3),
+    " × log10(L))"
+  )
+  
+  
   graphique_relation <- ggplot() +
     geom_point(data = donnees_filtrees, aes(x = ltm, y = masse)) +
     geom_line(data = donnees_prediction, aes(x = ltm, y = fit), color = "blue") +
@@ -178,7 +205,8 @@ masse_longueur_fit <- function(data) {
     theme_aquapop() +
     labs(
       x = "Longueur totale maximale (mm)",
-      y = "Masse (g)"
+      y = "Masse (g)",
+      caption = equation_label
     )
   
   # Retour ----
