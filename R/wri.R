@@ -38,14 +38,14 @@
 #' @importFrom dplyr filter mutate select group_by summarise left_join count n_distinct bind_cols bind_rows arrange recode rename slice
 #' @importFrom tidyr complete
 #' @importFrom ggplot2 ggplot aes geom_point geom_errorbar geom_hline annotate labs scale_color_manual scale_x_discrete xlab ylab scale_linetype_manual guide_legend guides
-#' @importFrom flextable flextable set_caption set_header_labels
-#' @importFrom labelled set_variable_labels
+#' @importFrom flextable flextable set_caption set_header_labels hline
 #' @importFrom tibble tibble
 #' @importFrom FSA lencat
 #' @importFrom rlang sym
 #' @importFrom plyr mapvalues
 #' @importFrom glue glue
 #' @importFrom stats lm predict setNames
+#' @importFrom officer fp_border
 #'
 #' @export
 wri <- function(data) {
@@ -296,8 +296,8 @@ wri <- function(data) {
       complete(
         groupe = psd_classnames,
         fill = list(
-          wr = 0,
-          ic95 = "0",
+          wr = NA_real_,
+          ic95 = NA_character_,
           n = 0
         )
       ) |>
@@ -306,8 +306,8 @@ wri <- function(data) {
   } else {
     tibble(
       groupe = factor(psd_classnames, levels = psd_classnames),
-      wr = 0,
-      ic95 = "0",
+      wr = NA_real_,
+      ic95 = NA_character_,
       n = 0
     )
   }
@@ -317,13 +317,7 @@ wri <- function(data) {
     table_tous,
     table_par_sexe,
     table_par_classe
-  ) |>
-    labelled::set_variable_labels(
-      groupe = "Groupe",
-      wr = "Wr (%)",
-      ic95 = "IC 95%",
-      n = "N"
-    )
+  )
   
   table_flextable <- table_sommaire |>
     flextable() |>
@@ -334,7 +328,8 @@ wri <- function(data) {
       ic95 = "IC 95%",
       n = "N"
     ) |>
-    style_flextable_aquapop()
+    style_flextable_aquapop() |>
+    hline(i = 3, border = fp_border(color = "black", width = 0.5))  
   
   # Retour ----
   return(list(

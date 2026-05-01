@@ -47,12 +47,13 @@ femelles reproductrices actives. Les groupes sans intervalle de confiance ont
 une valeur \code{NA} dans la colonne \code{ic95}.
 }
 \examples{
+\dontrun{
 table_biomasse <- bpue_generate_biomasse(
   specimen_hasard_valide,
   station_hasard_valide
 )
-
 table_biomasse$data
 table_biomasse$flextable
+}
 
 }

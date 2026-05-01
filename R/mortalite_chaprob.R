@@ -179,9 +179,9 @@ mortalite_chaprob <- function(specimen, pp, age_max) {
           ic_95 = "A IC 95% (%)"
         ) |>
         style_flextable_aquapop()|>
-        colformat_double(j = "z", digits = 3, decimal.mark = ",") |>
-        colformat_double(j = "se", digits = 3, decimal.mark = ",") |>
-        colformat_double(j = "a", digits = 1, decimal.mark = ",")
+        colformat_double(j = "z", digits = 3, decimal.mark = ",", big.mark =  " ") |>
+        colformat_double(j = "se", digits = 3, decimal.mark = ",", big.mark =  " ") |>
+        colformat_double(j = "a", digits = 1, decimal.mark = ",", big.mark =  " ")
     },
     error = function(e) NULL
   )

@@ -19,7 +19,6 @@
 #' @importFrom dplyr count filter mutate recode select summarise bind_rows arrange case_when n
 #' @importFrom tidyr complete 
 #' @importFrom tibble tibble
-#' @importFrom labelled set_variable_labels
 #' @importFrom flextable flextable set_caption colformat_double hline
 #' @importFrom officer fp_border
 #'
@@ -141,8 +140,8 @@ cpue_abondance_table <- function(data,
     ) |>
     style_flextable_aquapop() |>
     hline(i = 3, border = fp_border(color = "black", width = 0.5))  |>
-    colformat_double(j = "proportion", digits = 1, decimal.mark = ",", na_str = "-") |> 
-    colformat_double(j = "cpue", digits = 2, decimal.mark = ",", na_str = "-")
+    colformat_double(j = "proportion", digits = 1, decimal.mark = ",", na_str = "-", big.mark = " ") |> 
+    colformat_double(j = "cpue", digits = 2, decimal.mark = ",", na_str = "-", big.mark = " ")
 
   list(
     data = table_finale,

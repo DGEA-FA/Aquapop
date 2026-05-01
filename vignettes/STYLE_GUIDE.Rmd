@@ -89,6 +89,74 @@ Chaque bloc est introduit par un commentaire structurant, rédigé en français 
 - Objets retournés : `table_resultats`, `table_flextable`, `plot_tous`, etc.
 - Préférer des noms longs explicites
 
+## Gestion des décimales et du formatage numérique
+
+Les fonctions métier doivent préserver les valeurs numériques dans les objets retournés, afin que les résultats puissent être réutilisés dans d'autres calculs, scripts, exports ou modules Shiny.
+
+### Principe général
+
+- Les colonnes numériques doivent rester numériques dans `res$data`.
+- Le formatage des décimales doit être appliqué seulement dans les objets d'affichage, notamment les `flextable`.
+- Les valeurs manquantes doivent rester des `NA` dans `res$data`.
+- Les valeurs manquantes peuvent être affichées avec `"-"` dans les tableaux formatés.
+- Les intervalles de confiance déjà formatés peuvent rester en caractères dans une colonne `ic95`.
+
+### À éviter
+
+```r
+table_resultats <- table_resultats |>
+  mutate(
+    estimation = format(round(estimation, 2), nsmall = 2),
+    valeur = ifelse(is.na(valeur), "-", as.character(valeur))
+  )
+```
+
+### Approche recommandée
+
+```r
+table_resultats <- tibble::tibble(
+  groupe = c("Tous", "Femelle", "Mâle"),
+  estimation = c(12.345, 8.901, NA_real_)
+)
+
+table_flextable <- table_resultats |>
+  flextable::flextable() |>
+  flextable::colformat_double(
+    j = "estimation",
+    digits = 2,
+    decimal.mark = ",",
+    big.mark =  " ",
+    na_str = "-"
+  )
+```
+
+### Intervalles de confiance
+
+```r
+ic95 <- paste0(
+  "[",
+  format_num_fr(lower_num, digits = 2),
+  " – ",
+  format_num_fr(upper_num, digits = 2),
+  "]"
+)
+```
+
+Les intervalles non calculés doivent être représentés par `NA_character_`.
+
+### Fonction utilitaire
+
+```r
+format_num_fr(1.2345, digits = 2)
+# "1,23"
+```
+
+### Règle à retenir
+
+- `res$data` : valeurs numériques brutes
+- `res$flextable` : valeurs formatées
+
+
 ## Documentation `roxygen2`
 
 Chaque fonction exportée doit inclure :

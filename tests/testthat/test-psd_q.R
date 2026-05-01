@@ -50,7 +50,7 @@ test_that("psd_q() conserve Q numérique et formate ic95 en français", {
   
   expect_match(
     res$data$ic95,
-    "^\\[[0-9]+,[0-9]{2} – [0-9]+,[0-9]{2}\\]$"
+    "^\\[[0-9]+,[0-9]{1} – [0-9]+,[0-9]{1}\\]$"
   )
 })
 

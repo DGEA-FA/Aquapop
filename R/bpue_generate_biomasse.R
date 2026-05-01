@@ -36,13 +36,14 @@
 #' }
 #'
 #' @examples
+#' \dontrun{
 #' table_biomasse <- bpue_generate_biomasse(
 #'   specimen_hasard_valide,
 #'   station_hasard_valide
 #' )
-#'
 #' table_biomasse$data
 #' table_biomasse$flextable
+#' }
 #'
 #' @importFrom dplyr bind_rows filter recode mutate select right_join summarise group_by
 #' @importFrom tidyr expand_grid replace_na

@@ -121,7 +121,7 @@ cpue_compare_modele <- function(cpue_data) {
       commentaires = "Commentaires"
     ) |>
     style_flextable_aquapop() |>
-    colformat_double(j = c("aicc", "ajustement_hnp", "delta_aicc", "cpue"), digits = 2, decimal.mark = ",", na_str = "-" ) 
+    colformat_double(j = c("aicc", "ajustement_hnp", "delta_aicc", "cpue"), digits = 2, decimal.mark = ",", na_str = "-", big.mark =  " ") 
   
   # --- Retour des résultats ---
   return(list(

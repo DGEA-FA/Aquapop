@@ -22,7 +22,7 @@
 #' @importFrom tidyselect ends_with
 #' @importFrom dplyr inner_join mutate rename rename_with across
 #' @importFrom tibble tibble
-#' @importFrom flextable flextable merge_h set_header_df border set_caption
+#' @importFrom flextable flextable merge_h set_header_df border set_caption colformat_double
 #' @importFrom officer fp_border
 #' @importFrom checkmate assert_data_frame assert_numeric assert_subset
 #'
@@ -89,17 +89,7 @@ taille_masse_age <- function(data) {
   table_resultats <- table_ltm |>
     inner_join(table_masse, by = "sexe") |>
     inner_join(table_age, by = "sexe") |>
-    rename(Sexe = sexe) |>
-    mutate(
-      across(
-        ends_with(c("min", "max", "moy", "e_t")),
-        ~ ifelse(is.na(.), "-", as.character(.))
-      ),
-      across(
-        c(ltm_nb, masse_nb, age_nb),
-        ~ ifelse(is.na(.), "-", as.character(.))
-      )
-    )
+    rename(Sexe = sexe) 
   
   # Création du tableau flextable ----
   bordure_normale <- fp_border(width = 1)
@@ -116,7 +106,21 @@ taille_masse_age <- function(data) {
     merge_h(part = "header") |>
     border(i = 2, border.bottom = bordure_normale, part = "header") |>
     set_caption("Aperçu des données morphologiques") |>
-    style_flextable_aquapop()
+    style_flextable_aquapop() |>
+    colformat_double(
+      j = grep("moy|e_t|min|max", names(table_resultats), value = TRUE),
+      digits = 1,
+      decimal.mark = ",",
+      big.mark = " ",
+      na_str = "-"
+    ) |>
+    colformat_double(
+      j = grep("_nb$", names(table_resultats), value = TRUE),
+      digits = 0,
+      decimal.mark = ",",
+      big.mark = " ",
+      na_str = "-"
+    )
   
   for (col in c("ltm_max", "masse_max")) {
     table_flextable <- table_flextable |>
@@ -216,10 +220,10 @@ stats_morpho <- function(data, var, group_var = NULL) {
   data |>
     summarise(
       nb  = sum(!is.na(!!sym(var))),
-      moy = ifelse(all(is.na(!!sym(var))), NA, mean(!!sym(var), na.rm = TRUE)) |> round(1),
-      e_t = ifelse(all(is.na(!!sym(var))), NA, sd(!!sym(var), na.rm = TRUE)) |> round(1),
-      min = ifelse(all(is.na(!!sym(var))), NA, min(!!sym(var), na.rm = TRUE)) |> round(1),
-      max = ifelse(all(is.na(!!sym(var))), NA, max(!!sym(var), na.rm = TRUE)) |> round(1),
+      moy = ifelse(all(is.na(!!sym(var))), NA_real_, mean(!!sym(var), na.rm = TRUE)),
+      e_t = ifelse(all(is.na(!!sym(var))), NA_real_, sd(!!sym(var), na.rm = TRUE)),
+      min = ifelse(all(is.na(!!sym(var))), NA_real_, min(!!sym(var), na.rm = TRUE)),
+      max = ifelse(all(is.na(!!sym(var))), NA_real_, max(!!sym(var), na.rm = TRUE)),
       .groups = "drop"
     )
 }
