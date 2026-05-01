@@ -20,7 +20,8 @@
 #' @importFrom tidyr complete 
 #' @importFrom tibble tibble
 #' @importFrom labelled set_variable_labels
-#' @importFrom flextable flextable set_caption colformat_double
+#' @importFrom flextable flextable set_caption colformat_double hline
+#' @importFrom officer fp_border
 #'
 #' @export
 cpue_abondance_table <- function(data,
@@ -139,18 +140,9 @@ cpue_abondance_table <- function(data,
       mf_ratio = "Ratio M:F"
     ) |>
     style_flextable_aquapop() |>
-    colformat_double(
-      j = "proportion",
-      digits = 1,
-      decimal.mark = ",",
-      na_str = "-"
-    ) |>
-    colformat_double(
-      j = "cpue",
-      digits = 2,
-      decimal.mark = ",",
-      na_str = "-"
-    )
+    hline(i = 3, border = fp_border(color = "black", width = 0.5))  |>
+    colformat_double(j = "proportion", digits = 1, decimal.mark = ",", na_str = "-") |> 
+    colformat_double(j = "cpue", digits = 2, decimal.mark = ",", na_str = "-")
 
   list(
     data = table_finale,

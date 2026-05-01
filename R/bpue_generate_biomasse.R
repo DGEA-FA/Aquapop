@@ -1,24 +1,56 @@
-#' Creer une table de biomasse et BPUE par groupe biologique
+#' Créer une table de biomasse et BPUE par groupe biologique
 #'
-#' Cette fonction calcule la biomasse totale (kg), la proportion relative (%) et la biomasse
-#' par unite d'effort (BPUE, en kg/station) pour differents groupes biologiques d'une espece cible.
-#' Elle retourne a la fois un tableau brut (`data.frame`) et une version mise en page avec `flextable`.
+#' Cette fonction calcule la biomasse totale (kg), la proportion relative (%) et
+#' la biomasse par unité d'effort (BPUE, en kg/station) pour différents groupes
+#' biologiques d'une espèce cible.
 #'
-#' @param data_specimen Un `data.frame` de specimens filtres (issu de `load_specimen()`), contenant les colonnes `masse`, `sexe`, `maturite`, etc.
-#' @param data_station Un `data.frame` des stations valides (issu de `load_station()`), utilise pour calculer le nombre de stations (effort).
+#' Elle est conçue pour être utilisée à la fois dans un script reproductible,
+#' par exemple avec `specimen_hasard_valide` et `station_hasard_valide`, et dans
+#' le module Shiny de biomasse-BPUE.
+#'
+#' Le tableau brut (`data`) conserve les valeurs numériques non arrondies pour
+#' les colonnes `biomasse`, `percent` et `bpue`, afin de permettre leur
+#' réutilisation dans d'autres analyses ou exports. Le formatage des décimales
+#' est appliqué uniquement dans la version `flextable`.
+#'
+#' Les intervalles de confiance (`ic95`) sont calculés lorsque le modèle de
+#' biomasse par station est ajusté, notamment pour le groupe complet et les
+#' femelles reproductrices actives. Les groupes sans intervalle de confiance ont
+#' une valeur `NA` dans la colonne `ic95`.
+#'
+#' @param data_specimen Un `data.frame` de spécimens filtrés, contenant
+#'   minimalement les colonnes `no_station`, `masse`, `sexe` et `maturite`.
+#' @param data_station Un `data.frame` des stations valides, contenant
+#'   minimalement la colonne `no_station`. Ce tableau est utilisé pour calculer
+#'   l'effort d'échantillonnage.
 #'
 #' @return Une liste contenant :
 #' \describe{
-#'   \item{`data`}{Un `data.frame` resumant la biomasse totale, la proportion relative, la BPUE et les intervalles de confiance pour chaque groupe biologique.}
-#'   \item{`flextable`}{Une version formatee du tableau (`flextable`) pour l'exportation (Word, Shiny, etc.).}
+#'   \item{`data`}{Un `data.frame` résumant la biomasse totale, la proportion
+#'   relative, la BPUE et les intervalles de confiance par groupe biologique.
+#'   Les colonnes `biomasse`, `percent` et `bpue` sont numériques. La colonne
+#'   `ic95` est de type caractère et contient `NA` lorsque l'intervalle n'est
+#'   pas calculé.}
+#'   \item{`flextable`}{Une version formatée du tableau (`flextable`) pour
+#'   l'affichage dans Shiny ou l'exportation vers Word.}
 #' }
+#'
+#' @examples
+#' table_biomasse <- bpue_generate_biomasse(
+#'   specimen_hasard_valide,
+#'   station_hasard_valide
+#' )
+#'
+#' table_biomasse$data
+#' table_biomasse$flextable
 #'
 #' @importFrom dplyr bind_rows filter recode mutate select right_join summarise group_by
 #' @importFrom tidyr expand_grid replace_na
 #' @importFrom tibble tibble
-#' @importFrom flextable flextable set_caption set_header_labels hline
+#' @importFrom flextable flextable set_caption set_header_labels hline colformat_double
 #' @importFrom MASS glm.nb
 #' @importFrom officer fp_border
+#'
 #' @export
 bpue_generate_biomasse <- function(data_specimen, data_station) {
   n_stations <- nrow(data_station)
@@ -26,7 +58,7 @@ bpue_generate_biomasse <- function(data_specimen, data_station) {
   # ---- Fonction interne : ajustement NB2 securise ----
   safe_nb_fit <- function(y) {
     if (length(unique(y)) <= 1 || all(y == 0, na.rm = TRUE)) {
-      return(list(bpue = 0, ic95 = "(0.0-0.0)"))
+      return(list(bpue = 0, ic95 = "[0,00 – 0,00]"))
     }
     
     suppressWarnings({
@@ -34,16 +66,27 @@ bpue_generate_biomasse <- function(data_specimen, data_station) {
     })
     
     if (inherits(model, "try-error")) {
-      return(list(bpue = NA_real_, ic95 = "(NA-NA)"))
+      return(list(bpue = NA_real_, ic95 = NA_character_))
     }
     
     pred <- predict(model, se.fit = TRUE, type = "link", newdata = data.frame(biomasse_g = 0))
     fit_val <- as.numeric(pred$fit[1])
     se_val <- as.numeric(pred$se.fit[1])
-    bpue <- exp(fit_val) / 1000
-    ic <- exp(fit_val + c(-1.96, 1.96) * se_val) / 1000
     
-    list(bpue = bpue, ic95 = sprintf("(%.1f-%.1f)", ic[1], ic[2]))
+    bpue <- exp(fit_val) / 1000
+    
+    lower_num <- exp(fit_val - 1.96 * se_val) / 1000
+    upper_num <- exp(fit_val + 1.96 * se_val) / 1000
+    
+    ic95 <- paste0(
+      "[",
+      format_num_fr(lower_num, digits = 2),
+      " – ",
+      format_num_fr(upper_num, digits = 2),
+      "]"
+    )
+    
+    list(bpue = bpue, ic95 = ic95)
   }
   
   
@@ -79,7 +122,7 @@ bpue_generate_biomasse <- function(data_specimen, data_station) {
       biomasse = sum(biomasse) / 1000,
       bpue = biomasse / n_stations,
       percent = biomasse * 100 / biomasse_totale_kg,
-      ic95 = ""
+      ic95 = NA_character_
     ) |>
     mutate(groupe = recode(sexe,
                                          "F" = "Femelle",
@@ -100,7 +143,7 @@ bpue_generate_biomasse <- function(data_specimen, data_station) {
     biomasse = sum(data_males_matures$biomasse) / 1000,
     percent = biomasse * 100 / biomasse_totale_kg,
     bpue = biomasse / n_stations,
-    ic95 = ""
+    ic95 = NA_character_
   )
   
   # ---- Repro. actifs femelles ----
@@ -135,7 +178,7 @@ bpue_generate_biomasse <- function(data_specimen, data_station) {
     biomasse = sum(data_immatures$biomasse) / 1000,
     percent = biomasse * 100 / biomasse_totale_kg,
     bpue = biomasse / n_stations,
-    ic95 = ""
+    ic95 = NA_character_
   )
   
   # ---- Inconnu ----
@@ -151,7 +194,7 @@ bpue_generate_biomasse <- function(data_specimen, data_station) {
     biomasse = sum(data_inconnu$biomasse) / 1000,
     percent = biomasse * 100 / biomasse_totale_kg,
     bpue = biomasse / n_stations,
-    ic95 = ""
+    ic95 = NA_character_
   )
   
   # ---- Table finale ----
@@ -162,14 +205,10 @@ bpue_generate_biomasse <- function(data_specimen, data_station) {
     ligne_males_matures,
     ligne_immatures,
     ligne_inconnu
-  ) |>
-    mutate(
-      biomasse = format(round(biomasse, 2), nsmall = 2),
-      percent  = format(round(percent, 1), nsmall = 1),
-      bpue     = format(round(bpue, 2), nsmall = 2)
-    )
+  )
   
-  table_flex <- flextable(table_biomasse) |>
+  table_flex <- table_biomasse |>
+    flextable() |>
     set_caption("Tableau de biomasse") |>
     set_header_labels(
       groupe   = "Groupe",
@@ -178,8 +217,10 @@ bpue_generate_biomasse <- function(data_specimen, data_station) {
       bpue     = "BPUE (kg/station)",
       ic95     = "IC 95%"
     ) |>
-    hline(i = 3, border = fp_border(color = "black", width = 0.5)) |>
-    style_flextable_aquapop()
+    style_flextable_aquapop() |>
+    colformat_double(j = c("biomasse", "bpue"), digits = 2, decimal.mark = ",", big.mark = " ", na_str = "-") |>
+    colformat_double(j = "percent", digits = 1, decimal.mark = ",", big.mark = " ", na_str = "-") |>
+    hline(i = 3, border = fp_border(color = "black", width = 0.5))
   
   return(list(
     data = table_biomasse,

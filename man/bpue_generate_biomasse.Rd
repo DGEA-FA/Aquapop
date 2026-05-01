@@ -2,24 +2,57 @@
 % Please edit documentation in R/bpue_generate_biomasse.R
 \name{bpue_generate_biomasse}
 \alias{bpue_generate_biomasse}
-\title{Creer une table de biomasse et BPUE par groupe biologique}
+\title{Créer une table de biomasse et BPUE par groupe biologique}
 \usage{
 bpue_generate_biomasse(data_specimen, data_station)
 }
 \arguments{
-\item{data_specimen}{Un \code{data.frame} de specimens filtres (issu de \code{load_specimen()}), contenant les colonnes \code{masse}, \code{sexe}, \code{maturite}, etc.}
+\item{data_specimen}{Un \code{data.frame} de spécimens filtrés, contenant
+minimalement les colonnes \code{no_station}, \code{masse}, \code{sexe} et \code{maturite}.}
 
-\item{data_station}{Un \code{data.frame} des stations valides (issu de \code{load_station()}), utilise pour calculer le nombre de stations (effort).}
+\item{data_station}{Un \code{data.frame} des stations valides, contenant
+minimalement la colonne \code{no_station}. Ce tableau est utilisé pour calculer
+l'effort d'échantillonnage.}
 }
 \value{
 Une liste contenant :
 \describe{
-\item{\code{data}}{Un \code{data.frame} resumant la biomasse totale, la proportion relative, la BPUE et les intervalles de confiance pour chaque groupe biologique.}
-\item{\code{flextable}}{Une version formatee du tableau (\code{flextable}) pour l'exportation (Word, Shiny, etc.).}
+\item{\code{data}}{Un \code{data.frame} résumant la biomasse totale, la proportion
+relative, la BPUE et les intervalles de confiance par groupe biologique.
+Les colonnes \code{biomasse}, \code{percent} et \code{bpue} sont numériques. La colonne
+\code{ic95} est de type caractère et contient \code{NA} lorsque l'intervalle n'est
+pas calculé.}
+\item{\code{flextable}}{Une version formatée du tableau (\code{flextable}) pour
+l'affichage dans Shiny ou l'exportation vers Word.}
 }
 }
 \description{
-Cette fonction calcule la biomasse totale (kg), la proportion relative (\%) et la biomasse
-par unite d'effort (BPUE, en kg/station) pour differents groupes biologiques d'une espece cible.
-Elle retourne a la fois un tableau brut (\code{data.frame}) et une version mise en page avec \code{flextable}.
+Cette fonction calcule la biomasse totale (kg), la proportion relative (\%) et
+la biomasse par unité d'effort (BPUE, en kg/station) pour différents groupes
+biologiques d'une espèce cible.
+}
+\details{
+Elle est conçue pour être utilisée à la fois dans un script reproductible,
+par exemple avec \code{specimen_hasard_valide} et \code{station_hasard_valide}, et dans
+le module Shiny de biomasse-BPUE.
+
+Le tableau brut (\code{data}) conserve les valeurs numériques non arrondies pour
+les colonnes \code{biomasse}, \code{percent} et \code{bpue}, afin de permettre leur
+réutilisation dans d'autres analyses ou exports. Le formatage des décimales
+est appliqué uniquement dans la version \code{flextable}.
+
+Les intervalles de confiance (\code{ic95}) sont calculés lorsque le modèle de
+biomasse par station est ajusté, notamment pour le groupe complet et les
+femelles reproductrices actives. Les groupes sans intervalle de confiance ont
+une valeur \code{NA} dans la colonne \code{ic95}.
+}
+\examples{
+table_biomasse <- bpue_generate_biomasse(
+  specimen_hasard_valide,
+  station_hasard_valide
+)
+
+table_biomasse$data
+table_biomasse$flextable
+
 }
