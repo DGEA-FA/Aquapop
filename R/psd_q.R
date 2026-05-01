@@ -1,23 +1,20 @@
 #' Calculer l'indice PSD-Q global (Proportional Size Distribution – Quality)
 #'
-#' Cette fonction calcule l'indice PSD-Q pour une espèce cible, à partir des longueurs des spécimens capturés.
-#' L'indice PSD-Q correspond à la proportion d'individus situés dans les classes de qualité (Q), définies
-#' par des seuils spécifiques à chaque espèce.
+#' Cette fonction calcule l'indice PSD-Q pour une espèce cible, à partir des
+#' longueurs des spécimens capturés.
 #'
-#' @importFrom flextable flextable set_header_labels
-#' @importFrom dplyr select rename mutate filter
-#' @importFrom glue glue
-#' @importFrom FSA psdCI lencat
-#' @importFrom stats xtabs 
+#' L'indice PSD-Q correspond à la proportion d'individus situés dans les classes
+#' de qualité (Q), définies par des seuils spécifiques à chaque espèce.
 #'
 #' @param data Un `data.frame` contenant les données pour une seule espèce.
 #'
 #' @return Une liste nommée contenant :
 #' \describe{
-#'   \item{success}{Indique si l'analyse a pu être produite}
-#'   \item{data}{Un `data.frame` avec la valeur de l'indice PSD-Q et son intervalle de confiance à 95 %}
-#'   \item{flextable}{Une version formatée du tableau}
-#'   \item{message}{Message explicatif si l'analyse n'est pas disponible}
+#'   \item{success}{Indique si l'analyse a pu être produite.}
+#'   \item{data}{Un `data.frame` avec la valeur numérique de l'indice PSD-Q
+#'   et son intervalle de confiance à 95 %.}
+#'   \item{flextable}{Une version formatée du tableau.}
+#'   \item{message}{Message explicatif si l'analyse n'est pas disponible.}
 #' }
 #'
 #' @examples
@@ -28,6 +25,11 @@
 #' )
 #' data_ex <- dplyr::filter(data_ex, ltm > 0)
 #' psd_q(data_ex)
+#'
+#' @importFrom flextable flextable set_header_labels colformat_double
+#' @importFrom dplyr select rename mutate filter
+#' @importFrom FSA psdCI lencat
+#' @importFrom stats xtabs na.omit
 #'
 #' @export
 psd_q <- function(data) {
@@ -131,16 +133,30 @@ psd_q <- function(data) {
       UCI = `95% UCI`
     ) |>
     mutate(
-      ic95 = glue("[{round(LCI, 1)}-{round(UCI, 1)}]")
+      ic95 = paste0(
+        "[",
+        format_num_fr(LCI, digits = 1),
+        " – ",
+        format_num_fr(UCI, digits = 1),
+        "]"
+      )
     ) |>
     select(Q, ic95)
   
-  table_flextable <- flextable(table_resultats) |>
-    set_header_labels(values = list(
+  table_flextable <- table_resultats |>
+    flextable() |>
+    set_header_labels(
       Q = "Q",
       ic95 = "IC 95%"
-    )) |>
-    style_flextable_aquapop()
+    ) |>
+    style_flextable_aquapop() |>
+    colformat_double(
+      j = "Q",
+      digits = 1,
+      decimal.mark = ",",
+      big.mark = " ",
+      na_str = "-"
+    )
   
   return(list(
     success = TRUE,

@@ -15,7 +15,6 @@
 #' @importFrom plyr mapvalues
 #' @importFrom janitor clean_names
 #' @importFrom FSA lencat
-#' @importFrom labelled set_variable_labels
 #' @importFrom stats xtabs
 #' 
 #' @param data Un `data.frame` filtré pour une seule espèce, contenant les colonnes `ltm` et `sp`.
@@ -96,7 +95,8 @@ psd_byclass <- function(data) {
   
   # Catégorisation ----
   donnees_classes <- data |>
-    filter(!is.na(ltm), ltm >= seuil_min_stock) |>
+    filter(!is.na(ltm)#, ltm >= seuil_min_stock
+           ) |>
     mutate(
       gcat = lencat(ltm, breaks = seuils_psd, droplevels = TRUE),
       classe = mapvalues(gcat, from = seuils_psd, to = noms_classes, warn_missing = FALSE),
@@ -145,8 +145,7 @@ psd_byclass <- function(data) {
   ) |>
     mutate(
       classe = factor(classe, levels = noms_classes),
-      freq = round(as.numeric(freq), 0),
-      freq = ifelse(is.na(freq), "0", freq),
+      freq = as.numeric(freq),
       n = replace_na(n, 0)
     ) |>
     arrange(classe)
@@ -156,25 +155,23 @@ psd_byclass <- function(data) {
     summarise(n = n()) |>
     pull(n)
   
-  table_finale <- set_variable_labels(
-    table_finale,
-    classe = "Classe",
-    intervalle = "Intervalle (mm)",
-    n = "n",
-    freq = "%"
-  )
+  
   
   # Flextable ----
-  ft <- flextable(table_finale)
-  ft <- labelled_data(ft)
-  ft <- style_flextable_aquapop(ft)
+  ft <- flextable(table_finale) |>
+    set_header_labels(
+      classe = "Classe de taille",
+      intervalle = "Intervalle (mm)",
+      n = "N",
+      freq = "Fréquence relative (%)"
+    ) |>
+    style_flextable_aquapop() |>
+    colformat_double(j = "freq", digits = 0, decimal.mark = ",", na_str = "-", big.mark = " ")
   
   # Graphique ----
-  table_finale$freq <- as.numeric(table_finale$freq)
-  
   fig <- ggplot(table_finale, aes(x = classe, y = freq)) +
     geom_bar(stat = "identity") +
-    geom_text_aquapop(aes(label = paste0("n = ", n)), nudge_y = 3) +
+    geom_text_aquapop(aes(label = paste0("n = ", n)), nudge_y = 4) +
     xlab("Classe de taille") +
     ylab("Fréquence relative (%)") +
     theme_aquapop() +

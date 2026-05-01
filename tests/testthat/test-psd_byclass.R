@@ -11,10 +11,7 @@ test_that("psd_byclass() retourne les bons éléments avec des données valides"
   res <- psd_byclass(data_ex)
   
   expect_type(res, "list")
-  expect_named(
-    res,
-    c("success", "data", "flextable", "plot", "message")
-  )
+  expect_named(res, c("success", "data", "flextable", "plot", "message"))
   
   expect_true(res$success)
   expect_null(res$message)
@@ -24,7 +21,27 @@ test_that("psd_byclass() retourne les bons éléments avec des données valides"
   expect_s3_class(res$plot, "ggplot")
 })
 
-test_that("Les fréquences de psd_byclass() sont cohérentes et bien arrondies", {
+test_that("psd_byclass() conserve les types analytiques dans data", {
+  set.seed(123)
+  
+  data_ex <- tibble(
+    sp = rep("SANA", 100),
+    ltm = sample(100:1000, 100, replace = TRUE)
+  )
+  
+  res <- psd_byclass(data_ex)
+  result <- res$data
+  
+  expect_true(res$success)
+  expect_equal(colnames(result), c("classe", "intervalle", "n", "freq"))
+  
+  expect_s3_class(result$classe, "factor")
+  expect_type(result$intervalle, "character")
+  expect_type(result$n, "integer")
+  expect_type(result$freq, "double")
+})
+
+test_that("les fréquences de psd_byclass() sont numériques et cohérentes", {
   set.seed(123)
   
   data_ex <- tibble(
@@ -33,32 +50,31 @@ test_that("Les fréquences de psd_byclass() sont cohérentes et bien arrondies",
   )
   
   res <- psd_byclass(data_ex)
+  result <- res$data
   
   expect_true(res$success)
   
-  result <- res$data
+  freq_non_na <- result$freq[!is.na(result$freq)]
   
-  expect_true(all(as.numeric(result$freq) >= 0))
-  expect_true(sum(as.numeric(result$freq)) <= 101)
+  expect_true(all(freq_non_na >= 0))
+  expect_true(sum(freq_non_na) <= 101)
 })
 
-test_that("Les classes manquantes apparaissent avec des fréquences nulles", {
+test_that("les classes manquantes apparaissent avec des fréquences NA", {
   data_ex <- tibble(
     sp = rep("SANA", 20),
     ltm = rep(120, 20)
   )
   
   res <- psd_byclass(data_ex)
-  
-  expect_true(res$success)
-  
   result <- res$data
   
-  expect_true(any(as.numeric(result$freq) == 0))
+  expect_true(res$success)
+  expect_true(any(is.na(result$freq)))
   expect_equal(length(result$classe), length(psd_classnames))
 })
 
-test_that("Les noms de classes et les intervalles sont bien alignés", {
+test_that("les noms de classes et les intervalles sont bien alignés", {
   set.seed(123)
   
   data_ex <- tibble(
@@ -67,10 +83,9 @@ test_that("Les noms de classes et les intervalles sont bien alignés", {
   )
   
   res <- psd_byclass(data_ex)
+  result <- res$data
   
   expect_true(res$success)
-  
-  result <- res$data
   
   expect_true(all(as.character(result$classe) %in% psd_classnames))
   expect_equal(nrow(result), length(psd_classnames))
@@ -89,7 +104,7 @@ test_that("psd_byclass() retourne success = FALSE si les données sont vides", {
   expect_null(res$data)
   expect_null(res$flextable)
   expect_null(res$plot)
-  expect_match(res$message, "Aucun spécimen valide disponible", fixed = FALSE)
+  expect_match(res$message, "Aucun spécimen valide disponible")
 })
 
 test_that("psd_byclass() retourne success = FALSE si toutes les longueurs sont manquantes", {
@@ -104,7 +119,7 @@ test_that("psd_byclass() retourne success = FALSE si toutes les longueurs sont m
   expect_null(res$data)
   expect_null(res$flextable)
   expect_null(res$plot)
-  expect_match(res$message, "Aucune longueur exploitable", fixed = FALSE)
+  expect_match(res$message, "Aucune longueur exploitable")
 })
 
 test_that("psd_byclass() retourne success = FALSE si l'espèce n'est pas supportée", {
@@ -119,7 +134,7 @@ test_that("psd_byclass() retourne success = FALSE si l'espèce n'est pas support
   expect_null(res$data)
   expect_null(res$flextable)
   expect_null(res$plot)
-  expect_match(res$message, "n'est pas supportée", fixed = FALSE)
+  expect_match(res$message, "n'est pas supportée")
 })
 
 test_that("psd_byclass() échoue si colonne ltm ou sp absente", {

@@ -12,16 +12,20 @@ psd_q(data)
 \value{
 Une liste nommée contenant :
 \describe{
-\item{success}{Indique si l'analyse a pu être produite}
-\item{data}{Un \code{data.frame} avec la valeur de l'indice PSD-Q et son intervalle de confiance à 95 \%}
-\item{flextable}{Une version formatée du tableau}
-\item{message}{Message explicatif si l'analyse n'est pas disponible}
+\item{success}{Indique si l'analyse a pu être produite.}
+\item{data}{Un \code{data.frame} avec la valeur numérique de l'indice PSD-Q
+et son intervalle de confiance à 95 \%.}
+\item{flextable}{Une version formatée du tableau.}
+\item{message}{Message explicatif si l'analyse n'est pas disponible.}
 }
 }
 \description{
-Cette fonction calcule l'indice PSD-Q pour une espèce cible, à partir des longueurs des spécimens capturés.
-L'indice PSD-Q correspond à la proportion d'individus situés dans les classes de qualité (Q), définies
-par des seuils spécifiques à chaque espèce.
+Cette fonction calcule l'indice PSD-Q pour une espèce cible, à partir des
+longueurs des spécimens capturés.
+}
+\details{
+L'indice PSD-Q correspond à la proportion d'individus situés dans les classes
+de qualité (Q), définies par des seuils spécifiques à chaque espèce.
 }
 \examples{
 set.seed(123)

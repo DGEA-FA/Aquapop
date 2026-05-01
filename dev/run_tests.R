@@ -1,6 +1,6 @@
 # dev/run_tests.R
 
-# Charger les fonctions du package en développement
+  # Charger les fonctions du package en développement
 devtools::document()
 
 devtools::load_all()

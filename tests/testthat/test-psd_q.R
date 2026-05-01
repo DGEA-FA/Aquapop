@@ -15,18 +15,43 @@ test_that("psd_q() retourne les bons éléments avec des données valides", {
   res <- psd_q(data_ex)
   
   expect_type(res, "list")
-  expect_named(
-    res,
-    c("success", "data", "flextable", "message")
-  )
+  expect_named(res, c("success", "data", "flextable", "message"))
   
   expect_true(res$success)
   expect_null(res$message)
   
   expect_s3_class(res$data, "data.frame")
-  expect_true(all(c("Q", "ic95") %in% colnames(res$data)))
+  expect_equal(colnames(res$data), c("Q", "ic95"))
+  
+  expect_type(res$data$Q, "double")
+  expect_type(res$data$ic95, "character")
+  
+  expect_false(any(is.na(res$data$Q)))
+  expect_false(any(is.na(res$data$ic95)))
   
   expect_s3_class(res$flextable, "flextable")
+})
+
+test_that("psd_q() conserve Q numérique et formate ic95 en français", {
+  set.seed(123)
+  
+  data_ex <- data.frame(
+    ltm = c(
+      runif(10, 50, 99),
+      runif(15, 100, 199),
+      runif(10, 200, 299)
+    ),
+    sp = "SAFO"
+  )
+  
+  res <- psd_q(data_ex)
+  
+  expect_type(res$data$Q, "double")
+  
+  expect_match(
+    res$data$ic95,
+    "^\\[[0-9]+,[0-9]{2} – [0-9]+,[0-9]{2}\\]$"
+  )
 })
 
 test_that("psd_q() retourne success = FALSE si les données sont vides", {
@@ -40,7 +65,7 @@ test_that("psd_q() retourne success = FALSE si les données sont vides", {
   expect_false(res$success)
   expect_null(res$data)
   expect_null(res$flextable)
-  expect_match(res$message, "Aucun spécimen valide disponible", fixed = FALSE)
+  expect_match(res$message, "Aucun spécimen valide disponible")
 })
 
 test_that("psd_q() retourne success = FALSE si toutes les longueurs sont manquantes", {
@@ -54,7 +79,7 @@ test_that("psd_q() retourne success = FALSE si toutes les longueurs sont manquan
   expect_false(res$success)
   expect_null(res$data)
   expect_null(res$flextable)
-  expect_match(res$message, "Aucune longueur exploitable", fixed = FALSE)
+  expect_match(res$message, "Aucune longueur exploitable")
 })
 
 test_that("psd_q() retourne success = FALSE si l'espèce n'est pas supportée", {
@@ -68,7 +93,7 @@ test_that("psd_q() retourne success = FALSE si l'espèce n'est pas supportée", 
   expect_false(res$success)
   expect_null(res$data)
   expect_null(res$flextable)
-  expect_match(res$message, "n'est pas supportée", fixed = FALSE)
+  expect_match(res$message, "n'est pas supportée")
 })
 
 test_that("psd_q() retourne success = FALSE si aucun spécimen n'atteint le seuil requis", {
@@ -82,7 +107,7 @@ test_that("psd_q() retourne success = FALSE si aucun spécimen n'atteint le seui
   expect_false(res$success)
   expect_null(res$data)
   expect_null(res$flextable)
-  expect_match(res$message, "Aucun spécimen n'atteint la longueur minimale", fixed = FALSE)
+  expect_match(res$message, "Aucun spécimen n'atteint la longueur minimale")
 })
 
 test_that("psd_q() échoue si plusieurs espèces sont présentes", {
