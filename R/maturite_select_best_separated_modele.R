@@ -23,13 +23,13 @@ maturite_select_best_separated_modele <- function(evaluation_df) {
   # --- Étape 1 : Filtrer les modèles valides ---
   valid_models <- evaluation_df |>
     filter(
-      convergence == TRUE,
-      !grepl("rejeter|choisir un autre modèle", commentaire)
+      .data$convergence == TRUE,
+      !grepl("rejeter|choisir un autre modèle", .data$commentaire)
     )
   
   # --- Étape 2 : Séparer les modèles par sexe ---
-  valid_M <- filter(valid_models, grepl("^M_", modele_id))
-  valid_F <- filter(valid_models, grepl("^F_", modele_id))
+  valid_M <- filter(valid_models, grepl("^M_", .data$modele_id))
+  valid_F <- filter(valid_models, grepl("^F_", .data$modele_id))
   
   # --- Étape 3 : Aucun modèle valide du tout ---
   if (nrow(valid_M) == 0 && nrow(valid_F) == 0) {
@@ -57,13 +57,13 @@ maturite_select_best_separated_modele <- function(evaluation_df) {
   
   # --- Étape 6 : Modèles valides pour les deux sexes ---
   best_M <- valid_M |>
-    filter(aicc == min(aicc)) |>
-    pull(modele_id) |>
+    filter(.data$aicc == min(.data$aicc, na.rm = TRUE)) |>
+    pull(.data$modele_id) |>
     head(1)
   
   best_F <- valid_F |>
-    filter(aicc == min(aicc)) |>
-    pull(modele_id) |>
+    filter(.data$aicc == min(.data$aicc, na.rm = TRUE)) |>
+    pull(.data$modele_id) |>
     head(1)
   
   return(list(

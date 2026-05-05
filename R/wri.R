@@ -41,7 +41,7 @@
 #' @importFrom flextable flextable set_caption set_header_labels hline
 #' @importFrom tibble tibble
 #' @importFrom FSA lencat
-#' @importFrom rlang sym
+#' @importFrom rlang sym :=
 #' @importFrom plyr mapvalues
 #' @importFrom glue glue
 #' @importFrom stats lm predict setNames

@@ -134,8 +134,8 @@ croissance_plot <- function(dfspecimen, tablemodele, modele) {
   
   # --- Séquence d'âges pour les prédictions ----
   age_summary <- Summarize(ltm ~ age, data = data_clean)
-  age_min <- min(age_summary$age)
-  age_max <- max(age_summary$age)
+  age_min <- min(age_summary$age, na.rm = TRUE)
+  age_max <- max(age_summary$age, na.rm = TRUE)
   age_range_plot <- c(0, ceiling(age_max / 5) * 5 + 1)
   age_ticks <- seq(age_range_plot[1], age_range_plot[2])
   
@@ -225,7 +225,11 @@ croissance_plot <- function(dfspecimen, tablemodele, modele) {
       linetype = "dashed"
     ) +
     geom_line(
-      data = filter(predictions, age >= age_min, age <= age_max),
+      data = filter(
+        predictions,
+        .data$age >= age_min,
+        .data$age <= age_max
+      ),
       aes(x = .data$age, y = .data$fit),
       linewidth = 1
     ) +

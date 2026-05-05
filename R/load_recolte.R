@@ -101,7 +101,7 @@ load_recolte <- function(path,
   
   # --- Suppression optionnelle de nom_lac ---
   if ("nom_lac" %in% names(recolte)) {
-    recolte <- select(recolte, -nom_lac)
+    recolte <- select(recolte, -"nom_lac")
     if (verbose) message("[load_recolte] Colonne ‘nom_lac' supprimée.")
   }
   
@@ -114,15 +114,15 @@ load_recolte <- function(path,
   # --- Nettoyage des statuts ---
   recolte <- recolte |>
     mutate(
-      st_valide = case_when(is.na(st_valide) | st_valide %in% c("IND", "-", "VALIDE") ~ "O", TRUE ~ st_valide),
-      st_hasard = case_when(is.na(st_hasard) | st_hasard %in% c("IND", "-") ~ "O", TRUE ~ st_hasard)
+      st_valide = case_when(is.na(.data$st_valide) | .data$st_valide %in% c("IND", "-", "VALIDE") ~ "O", TRUE ~ .data$st_valide),
+      st_hasard = case_when(is.na(.data$st_hasard) | .data$st_hasard %in% c("IND", "-") ~ "O", TRUE ~ .data$st_hasard)
     )
   
   # --- Conversion des types ---
   recolte <- recolte |>
     mutate(
-      across(c(no_lac, typ_pech, no_station, sp, st_valide, st_hasard), as.factor),
-      across(c(nb_capture, nb_pese), as.numeric),
+      across(c("no_lac", "typ_pech", "no_station", "sp", "st_valide", "st_hasard"), as.factor),
+      across(c("nb_capture", "nb_pese"), as.numeric),
       comments_recolte = if ("comments" %in% names(recolte)) as.character(recolte$comments) else NA_character_
     ) |>
     select(-any_of("comments"))

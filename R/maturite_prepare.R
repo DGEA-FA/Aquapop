@@ -58,13 +58,13 @@ maturite_prepare <- function(specimen_data,
   # Préparation des données ----
   data_preparee <- specimen_data |>
     filter(
-      maturite != "IND",
-      sexe != "IND",
+      .data$maturite != "IND",
+      .data$sexe != "IND",
       !is.na(.data[[variable]])
     ) |>
     mutate(
-      maturite = factor(maturite, levels = c("N", "O"), ordered = TRUE),
-      sexe = factor(sexe, levels = c("F", "M"))
+      maturite = factor(.data$maturite, levels = c("N", "O"), ordered = TRUE),
+      sexe = factor(.data$sexe, levels = c("F", "M"))
     )
   
   if (isTRUE(drop_levels)) {

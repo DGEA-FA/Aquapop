@@ -218,12 +218,12 @@ croissance_compare_modele <- function(data) {
     aic_tab <- tryCatch(
       aictab(modeles_valides, modnames = noms_modeles_valides) |>
         rename(
-          methode = Modnames,
-          aicc = AICc,
-          delta_aicc = Delta_AICc,
-          aiccwt = AICcWt
+          methode = .data$Modnames,
+          aicc = .data$AICc,
+          delta_aicc = .data$Delta_AICc,
+          aiccwt = .data$AICcWt
         ) |>
-        select(methode, aicc, delta_aicc, aiccwt),
+        select("methode", "aicc", "delta_aicc", "aiccwt"),
       error = function(e) {
         data.frame(
           methode = noms_modeles_valides,

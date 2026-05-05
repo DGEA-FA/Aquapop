@@ -1,5 +1,6 @@
 Sys.setlocale("LC_TIME", "French")  # Pour définir le format de la date en français
 options(shiny.maxRequestSize = 10 * 1024^2)  # Limite de la taille des fichiers uploadés
+myspinner <- 6
 
 # utils::globalVariables(c(
 #   "ltm", "masse", "sexe", "wr", "moyenne", "classe_brute",
@@ -20,4 +21,3 @@ options(shiny.maxRequestSize = 10 * 1024^2)  # Limite de la taille des fichiers 
 #   "k", "cpue_moyenne", "bpue", "percent","ic_95", "freq", "abondance", "group", "a", "z", "se", "biomasse_g", "proportion", "cpue", "quantile"    
 # ))
 
-myspinner <- 6

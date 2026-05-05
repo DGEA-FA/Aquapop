@@ -29,8 +29,8 @@ maturite_select_best_combined_modele <- function(evaluation_df) {
   # --- Étape 1 : Filtrer les modèles valides (convergence + commentaire positif) ---
   valid_models <- evaluation_df |>
     filter(
-      convergence == TRUE,
-      !grepl("rejeter|choisir un autre modèle", commentaire)
+      .data$convergence == TRUE,
+      !grepl("rejeter|choisir un autre modèle", .data$commentaire)
     )
   
   # --- Étape 2 : Aucun modèle valide ---
@@ -43,8 +43,8 @@ maturite_select_best_combined_modele <- function(evaluation_df) {
   
   # --- Étape 3 : Sélection du meilleur AICc ---
   best_model <- valid_models |>
-    filter(aicc == min(aicc, na.rm = TRUE)) |>
-    pull(modele_id) |>
+    filter(.data$aicc == min(.data$aicc, na.rm = TRUE)) |>
+    pull(.data$modele_id) |>
     head(1)
   
   return(list(
