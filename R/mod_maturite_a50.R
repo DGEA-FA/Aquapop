@@ -142,24 +142,53 @@ mod_maturite_a50_server <- function(id, specimen, filename_suffix) {
     })
     
     # ==== Sélection des modèles ----
+    default_index_a50_f <- reactive({
+      table <- table_a50_f()
+      req(nrow(table) > 0)
+      
+      idx <- which(table$recommande %in% TRUE)
+      
+      if (length(idx) == 0) return(1)
+      idx[1]
+    })
+    
+    default_index_a50_m <- reactive({
+      table <- table_a50_m()
+      req(nrow(table) > 0)
+      
+      idx <- which(table$recommande %in% TRUE)
+      if (length(idx) == 0) return(1)
+      idx[1]
+    })
+    
+    default_index_a50_comb <- reactive({
+      table <- table_a50_comb()
+      req(nrow(table) > 0)
+      
+      idx <- which(table$recommande %in% TRUE)
+      if (length(idx) == 0) return(1)
+      idx[1]
+    })
+    
+    
     selected_f <- reactive({
       req(afficher_modeles_separes_a50())
       sel <- getReactableState("table_a50_f", "selected")
-      if (is.null(sel)) sel <- 1
+      if (is.null(sel)) sel <- default_index_a50_f()
       table_a50_f()[sel, "modele_id"]
     })
     
     selected_m <- reactive({
       req(afficher_modeles_separes_a50())
       sel <- getReactableState("table_a50_m", "selected")
-      if (is.null(sel)) sel <- 1
+      if (is.null(sel)) sel <- default_index_a50_m()
       table_a50_m()[sel, "modele_id"]
     })
     
     selected_comb <- reactive({
       req(afficher_modeles_combines_a50())
       sel <- getReactableState("table_a50_comb", "selected")
-      if (is.null(sel)) sel <- 1
+      if (is.null(sel)) sel <- default_index_a50_comb()
       table_a50_comb()[sel, "modele_id"]
     })
     
@@ -229,7 +258,35 @@ mod_maturite_a50_server <- function(id, specimen, filename_suffix) {
     
     output$table_a50_f <- renderReactable({
       req(afficher_modeles_separes_a50())
-      reactable(as.data.frame(table_a50_f()), selection = "single")
+      idx <- default_index_a50_f()
+      
+      
+      reactable(
+        as.data.frame(table_a50_f()),
+        selection = "single",
+        pagination = FALSE,
+        defaultSelected = if (is.na(idx)) NULL else idx,
+        showPageInfo = FALSE,
+        compact = TRUE,
+        outlined = TRUE,
+        defaultPageSize = 20,
+        onClick = "select",
+        defaultColDef = colDef(
+          align = "center",
+          headerStyle = list(textAlign = "center")
+        ),
+        columns = list(
+          modele_id = colDef(name = "Modèle"),
+          lien = colDef(name = "Lien", show = FALSE),
+          convergence = colDef(name = "Convergence"),
+          pearson_x2_pval = colDef(name = "p (χ² de Pearson)"),
+          goodness_of_link_pval = colDef(name = "p (test du lien)"),
+          aicc = colDef(name = "AICc"),
+          commentaire = colDef(name = "Commentaire"),
+          type = colDef(name = "Type de modèle", show = FALSE),
+          recommande = colDef(name = "✔ Recommandé")
+        )
+      )
     })
     
     # ==== Section Mâles ----
@@ -264,7 +321,35 @@ mod_maturite_a50_server <- function(id, specimen, filename_suffix) {
     
     output$table_a50_m <- renderReactable({
       req(afficher_modeles_separes_a50())
-      reactable(as.data.frame(table_a50_m()), selection = "single")
+      
+      idx <- default_index_a50_m()
+      
+      reactable(
+        as.data.frame(table_a50_m()),
+        defaultSelected = if (is.na(idx)) NULL else idx,
+        selection = "single",
+        pagination = FALSE,
+        showPageInfo = FALSE,
+        compact = TRUE,
+        outlined = TRUE,
+        defaultPageSize = 20,
+        onClick = "select",
+        defaultColDef = colDef(
+          align = "center",
+          headerStyle = list(textAlign = "center")
+        ),
+        columns = list(
+          modele_id = colDef(name = "Modèle"),
+          lien = colDef(name = "Lien", show = FALSE),
+          convergence = colDef(name = "Convergence"),
+          pearson_x2_pval = colDef(name = "p (χ² de Pearson)"),
+          goodness_of_link_pval = colDef(name = "p (test du lien)"),
+          aicc = colDef(name = "AICc"),
+          commentaire = colDef(name = "Commentaire"),
+          type = colDef(name = "Type de modèle", show = FALSE),
+          recommande = colDef(name = "✔ Recommandé")
+        )
+      )
     })
     
     # ==== Section combinée ----
@@ -299,7 +384,36 @@ mod_maturite_a50_server <- function(id, specimen, filename_suffix) {
     
     output$table_a50_comb <- renderReactable({
       req(afficher_modeles_combines_a50())
-      reactable(as.data.frame(table_a50_comb()), selection = "single")
+      
+      idx <- default_index_a50_comb()
+      
+      reactable(
+        as.data.frame(table_a50_comb()),
+        selection = "single",
+        pagination = FALSE,
+        showPageInfo = FALSE,
+        defaultSelected = if (is.na(idx)) NULL else idx,
+        compact = TRUE,
+        outlined = TRUE,
+        defaultPageSize = 20,
+        onClick = "select",
+        defaultColDef = colDef(
+          align = "center",
+          headerStyle = list(textAlign = "center")
+        ),
+        columns = list(
+          modele_id = colDef(name = "Modèle"),
+          modele = colDef(name = "Type"),
+          lien = colDef(name = "Lien"),
+          convergence = colDef(name = "Convergence"),
+          pearson_x2_pval = colDef(name = "p (χ² de Pearson)"),
+          goodness_of_link_pval = colDef(name = "p (test du lien)"),
+          aicc = colDef(name = "AICc"),
+          commentaire = colDef(name = "Commentaire"),
+          type = colDef(name = "Type de modèle", show = FALSE),
+          recommande = colDef(name = "✔ Recommandé")
+        )
+      )
     })
     
     # ==== Affichage des tableaux de résultats ----

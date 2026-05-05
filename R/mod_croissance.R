@@ -194,6 +194,8 @@ mod_croissance_server <- function(id, specimen, filename_suffix) {
         as.data.frame(table),
         selection = "single",
         onClick = "select",
+        compact = TRUE,
+        outlined = TRUE,
         defaultSelected = if (is.na(index_defaut)) NULL else index_defaut,
         
         defaultColDef = colDef(
