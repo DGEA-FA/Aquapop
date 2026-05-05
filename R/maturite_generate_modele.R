@@ -324,9 +324,9 @@ maturite_generate_modele <- function(data,
   # Graphique -------------------------------------------------------------------
   color_by_sex <- "sexe" %in% names(donnees_ogive)
   
-  graphique <- ggplot(data = donnees_ogive, aes(x = .data[[variable]], y = maturite)) +
-    { if (color_by_sex) geom_line(aes(color = sexe)) else geom_line(color = couleur_default) } +
-    geom_ribbon(aes(ymin = lim_inf, ymax = lim_sup), alpha = 0.1, fill = couleur_default) +
+  graphique <- ggplot(data = donnees_ogive, aes(x = .data[[variable]], y = .data$maturite)) +
+    { if (color_by_sex) geom_line(aes(color = .data$sexe)) else geom_line(color = couleur_default) } +
+    geom_ribbon(aes(ymin = .data$lim_inf, ymax = .data$lim_sup), alpha = 0.1, fill = couleur_default) +
     { 
       if (color_by_sex) scale_color_manual(
         values = group_colors$sexe,
@@ -349,13 +349,13 @@ maturite_generate_modele <- function(data,
   
   if (modele %in% c("COM", "ADD", "INT")) {
     if (modele == "COM") {
-      vmin_m <- min(donnees_modeles |> filter(sexe == "M") |> pull(.data[[variable]]))
-      vmin_f <- min(donnees_modeles |> filter(sexe == "F") |> pull(.data[[variable]]))
+      vmin_m <- min(donnees_modeles |> filter(.data$sexe == "M") |> pull(.data[[variable]]))
+      vmin_f <- min(donnees_modeles |> filter(.data$sexe == "F") |> pull(.data[[variable]]))
     } else {
       form <- stats::as.formula(glue("{variable} ~ sexe"))
       var_minmax <- Summarize(form, data = donnees_modeles)
-      vmin_m <- var_minmax |> filter(sexe == "M") |> pull(min)
-      vmin_f <- var_minmax |> filter(sexe == "F") |> pull(min)
+      vmin_m <- var_minmax |> filter(.data$sexe == "M") |> pull(.data$min)
+      vmin_f <- var_minmax |> filter(.data$sexe == "F") |> pull(.data$min)
     }
     
     graphique <- graphique +
@@ -371,8 +371,8 @@ maturite_generate_modele <- function(data,
       data = donnees_modeles,
       mapping = aes(
         x = .data[[variable]],
-        y = as.numeric(maturite) - 1,
-        color = if (color_by_sex) sexe else NULL
+        y = as.numeric(.data$maturite) - 1,
+        color = if (color_by_sex) .data$sexe else NULL
       ),
       alpha = 0.5
     )

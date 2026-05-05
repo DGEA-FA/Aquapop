@@ -95,17 +95,17 @@ psd_byclass <- function(data) {
   
   # Catégorisation ----
   donnees_classes <- data |>
-    filter(!is.na(ltm)#, ltm >= seuil_min_stock
+    filter(!is.na(.data$ltm)#, ltm >= seuil_min_stock
            ) |>
     mutate(
-      gcat = lencat(ltm, breaks = seuils_psd, droplevels = TRUE),
-      classe = mapvalues(gcat, from = seuils_psd, to = noms_classes, warn_missing = FALSE),
-      intervalle = mapvalues(gcat, from = seuils_psd, to = etiquettes, warn_missing = FALSE)
+      gcat = lencat(.data$ltm, breaks = seuils_psd, droplevels = TRUE),
+      classe = mapvalues(.data$gcat, from = seuils_psd, to = noms_classes, warn_missing = FALSE),
+      intervalle = mapvalues(.data$gcat, from = seuils_psd, to = etiquettes, warn_missing = FALSE)
     )
   
   # Calculs ----
   n_par_classe <- donnees_classes |>
-    group_by(gcat, classe, intervalle) |>
+    group_by(.data$gcat, .data$classe, .data$intervalle) |>
     summarise(n = n(), .groups = "drop")
   
   donnees_classes <- merge(
@@ -128,8 +128,8 @@ psd_byclass <- function(data) {
   donnees_classes <- merge(donnees_classes, table_frequence, by = "gcat")
   
   table_resumee <- donnees_classes |>
-    select(classe, intervalle, n, freq) |>
-    group_by(classe, intervalle, n, freq) |>
+    select("classe", "intervalle", "n", "freq") |>
+    group_by(.data$classe, .data$intervalle, .data$n, .data$freq) |>
     summarise(.groups = "drop")
   
   structure_complete <- tibble(
@@ -144,16 +144,16 @@ psd_byclass <- function(data) {
     all.x = TRUE
   ) |>
     mutate(
-      classe = factor(classe, levels = noms_classes),
-      freq = as.numeric(freq),
-      n = replace_na(n, 0)
+      classe = factor(.data$classe, levels = noms_classes),
+      freq = as.numeric(.data$freq),
+      n = replace_na(.data$n, 0)
     ) |>
-    arrange(classe)
+    arrange(.data$classe)
   
   table_finale[1, "n"] <- data |>
-    filter(!is.na(ltm), sp == espece, ltm < seuil_min_stock) |>
+    filter(!is.na(.data$ltm), .data$sp == espece, .data$ltm < seuil_min_stock) |>
     summarise(n = n()) |>
-    pull(n)
+    pull(.data$n)
   
   
   
@@ -169,9 +169,9 @@ psd_byclass <- function(data) {
     colformat_double(j = "freq", digits = 0, decimal.mark = ",", na_str = "-", big.mark = " ")
   
   # Graphique ----
-  fig <- ggplot(table_finale, aes(x = classe, y = freq)) +
+  fig <- ggplot(table_finale, aes(x = .data$classe, y = .data$freq)) +
     geom_bar(stat = "identity") +
-    geom_text_aquapop(aes(label = paste0("n = ", n)), nudge_y = 4) +
+    geom_text_aquapop(aes(label = paste0("n = ", .data$n)), nudge_y = 4) +
     xlab("Classe de taille") +
     ylab("Fréquence relative (%)") +
     theme_aquapop() +

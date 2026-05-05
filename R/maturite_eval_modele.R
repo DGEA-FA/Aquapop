@@ -63,7 +63,7 @@ maturite_eval_modele <- function(models) {
       build_individual_model_row(models[[n]], n)
     }) |>
       bind_rows() |>
-      arrange(desc(convergence), aicc)
+      arrange(desc(.data$convergence), .data$aicc)
   }
   
   # Ajout de labels pour affichage clair dans l'application

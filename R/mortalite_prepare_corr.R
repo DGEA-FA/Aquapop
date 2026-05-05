@@ -100,7 +100,7 @@ mortalite_prepare_corr <- function(data, age_peak_plus, age_max) {
   
   # Nettoyage des âges ====
   data_valid <- data |>
-    filter(!is.na(age))
+    filter(!is.na(.data$age))
   
   if (nrow(data_valid) == 0) {
     return(list(
@@ -168,8 +168,8 @@ mortalite_prepare_corr <- function(data, age_peak_plus, age_max) {
   # Complétion des classes d'âge ====
   data_final <- tibble(age = seq(min(data_agesurv$age), max(data_agesurv$age))) |>
     left_join(data_agesurv, by = "age") |>
-    mutate(number = replace_na(number, 0L)) |>
-    arrange(age)
+    mutate(number = replace_na(.data$number, 0L)) |>
+    arrange(.data$age)
   
   list(
     success = TRUE,

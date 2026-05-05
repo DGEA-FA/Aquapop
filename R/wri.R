@@ -41,7 +41,7 @@
 #' @importFrom flextable flextable set_caption set_header_labels hline
 #' @importFrom tibble tibble
 #' @importFrom FSA lencat
-#' @importFrom rlang sym :=
+#' @importFrom rlang sym := .data
 #' @importFrom plyr mapvalues
 #' @importFrom glue glue
 #' @importFrom stats lm predict setNames
@@ -87,11 +87,11 @@ wri <- function(data) {
     filter(
       !is.na(.data$ltm),
       !is.na(.data$masse),
-      ltm >= constantes_wr$min_TL
+      .data$ltm >= constantes_wr$min_TL
     ) |>
     mutate(
-      prediction = 10 ^ (constantes_wr$int + constantes_wr$slope * log10(ltm)),
-      wr = masse * 100 / prediction
+      prediction = 10 ^ (constantes_wr$int + constantes_wr$slope * log10(.data$ltm)),
+      wr = .data$masse * 100 / .data$prediction
     )
   
   # Cas sans donnée exploitable pour Wr ----
@@ -114,14 +114,14 @@ wri <- function(data) {
   niveaux_sexe <- c("F", "M", "IND")
   
   data_wr <- data_wr |>
-    mutate(sexe = factor(sexe, levels = niveaux_sexe))
+    mutate(sexe = factor(.data$sexe, levels = niveaux_sexe))
   
   # Graphique Wr selon la longueur et le sexe ----
   moyenne_par_sexe <- tibble(sexe = factor(niveaux_sexe, levels = niveaux_sexe)) |>
     left_join(
       data_wr |>
-        group_by(sexe) |>
-        summarise(moyenne = mean(wr, na.rm = TRUE), .groups = "drop"),
+        group_by(.data$sexe) |>
+        summarise(moyenne = mean(.data$wr, na.rm = TRUE), .groups = "drop"),
       by = "sexe"
     )
   
@@ -151,7 +151,7 @@ wri <- function(data) {
     ) +
     geom_hline(
       data = moyenne_par_sexe,
-      aes(yintercept = moyenne, color = sexe),
+      aes(yintercept = .data$moyenne, color = .data$sexe),
       linetype = 2,
       linewidth = 0.5
     ) +
@@ -176,19 +176,19 @@ wri <- function(data) {
   # Préparation des classes PSD ----
   data_wr <- data_wr |>
     mutate(
-      classe_brute = lencat(ltm, breaks = info_pen$breaks, as.fact = TRUE),
+      classe_brute = lencat(.data$ltm, breaks = info_pen$breaks, as.fact = TRUE),
       classe = recode(
-        as.character(classe_brute),
+        as.character(.data$classe_brute),
         !!!setNames(psd_classnames, as.character(info_pen$breaks))
       ),
       intervalle = recode(
-        as.character(classe_brute),
+        as.character(.data$classe_brute),
         !!!setNames(info_pen$break_labels, as.character(info_pen$breaks))
       )
     )
   
   sommaire_classe <- data_wr |>
-    count(classe_brute, classe, intervalle, name = "n")
+    count(.data$classe_brute, .data$classe, .data$intervalle, name = "n")
   
   data_wr <- data_wr |>
     left_join(
@@ -259,7 +259,7 @@ wri <- function(data) {
     mutate(
       groupe = "Tous",
       ic95 = paste0("[", round(.data$lwr), " – ", round(.data$upr), "]"),
-      wr = round(fit),
+      wr = round(.data$fit),
       n = nrow(data_wr)
     ) |>
     select("groupe", "wr", "ic95", "n")
@@ -270,10 +270,10 @@ wri <- function(data) {
       mod = lm(wr ~ sexe, data = data_wr),
       var = "sexe"
     ) |>
-      filter(groupe %in% c("F", "M")) |>
+      filter(.data$groupe %in% c("F", "M")) |>
       mutate(
         groupe = mapvalues(
-          groupe,
+          .data$groupe,
           from = c("F", "M"),
           to = c("Femelle", "Mâle")
         )
@@ -301,8 +301,8 @@ wri <- function(data) {
           n = 0
         )
       ) |>
-      mutate(groupe = factor(groupe, levels = psd_classnames)) |>
-      arrange(groupe)
+      mutate(groupe = factor(.data$groupe, levels = psd_classnames)) |>
+      arrange(.data$groupe)
   } else {
     tibble(
       groupe = factor(psd_classnames, levels = psd_classnames),

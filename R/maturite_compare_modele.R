@@ -199,20 +199,20 @@ maturite_compare_modele <- function(specimen_data,
   
   eval_sep_affichage <- eval_sep |>
     mutate(
-      convergence = if_else(convergence, "Convergé", "Non convergé"),
-      aicc = if_else(is.na(aicc), "-", as.character(round(aicc, 2))),
-      recommande = if_else(recommande, "✔", "")
+      convergence = if_else(.data$convergence, "Convergé", "Non convergé"),
+      aicc = if_else(is.na(.data$aicc), "-", as.character(round(.data$aicc, 2))),
+      recommande = if_else(.data$recommande, "✔", "")
     ) |>
     select(
-      modele_id,
-      lien,
-      convergence,
-      pearson_x2_pval,
-      goodness_of_link_pval,
-      aicc,
-      commentaire,
-      type,
-      recommande
+      "modele_id",
+      "lien",
+      "convergence",
+      "pearson_x2_pval",
+      "goodness_of_link_pval",
+      "aicc",
+      "commentaire",
+      "type",
+      "recommande"
     )
   
   ft_sep <- flextable(eval_sep_affichage) |>
@@ -238,21 +238,21 @@ maturite_compare_modele <- function(specimen_data,
   
   eval_comb_affichage <- eval_comb |>
     mutate(
-      convergence = if_else(convergence, "Convergé", "Non convergé"),
-      aicc = if_else(is.na(aicc), "-", as.character(round(aicc, 2))),
-      recommande = if_else(recommande, "✔", "")
+      convergence = if_else(.data$convergence, "Convergé", "Non convergé"),
+      aicc = if_else(is.na(.data$aicc), "-", as.character(round(.data$aicc, 2))),
+      recommande = if_else(.data$recommande, "✔", "")
     ) |>
     select(
-      modele_id,
-      modele,
-      lien,
-      convergence,
-      pearson_x2_pval,
-      goodness_of_link_pval,
-      aicc,
-      commentaire,
-      type,
-      recommande
+      "modele_id",
+      "modele",
+      "lien",
+      "convergence",
+      "pearson_x2_pval",
+      "goodness_of_link_pval",
+      "aicc",
+      "commentaire",
+      "type",
+      "recommande"
     )
   
   ft_comb <- flextable(eval_comb_affichage) |>
