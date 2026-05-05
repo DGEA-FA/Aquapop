@@ -62,8 +62,8 @@
 croissance_compare_modele <- function(data) {
   
   df <- data |>
-    filter(!is.na(ltm), !is.na(age)) |>
-    select(ltm, age, no_specimen)
+    filter(!is.na(.data$ltm), !is.na(.data$age)) |>
+    select("ltm", "age", "no_specimen")
   
   rownames(df) <- seq_len(nrow(df))
   
@@ -252,26 +252,26 @@ croissance_compare_modele <- function(data) {
   final <- tableresult |>
     left_join(aic_tab, by = "methode") |>
     mutate(
-      aicc_sort = if_else(is.na(aicc), Inf, aicc)
+      aicc_sort = if_else(is.na(.data$aicc), Inf, .data$aicc)
     ) |>
-    arrange(aicc_sort, methode) |>
+    arrange(.data$aicc_sort, .data$methode) |>
     mutate(
-      l_inf = if_else(convergence, l_inf, NA_real_),
-      k = if_else(convergence, k, NA_real_),
-      t0 = if_else(convergence, t0, NA_real_),
-      l_inf_ic = if_else(convergence, l_inf_ic, NA_character_),
-      k_ic = if_else(convergence, k_ic, NA_character_),
-      t0_ic = if_else(convergence, t0_ic, NA_character_)
+      l_inf = if_else(.data$convergence, .data$l_inf, NA_real_),
+      k = if_else(.data$convergence, .data$k, NA_real_),
+      t0 = if_else(.data$convergence, .data$t0, NA_real_),
+      l_inf_ic = if_else(.data$convergence, .data$l_inf_ic, NA_character_),
+      k_ic = if_else(.data$convergence, .data$k_ic, NA_character_),
+      t0_ic = if_else(.data$convergence, .data$t0_ic, NA_character_)
     ) |>
     select(
-      methode,
-      l_inf, l_inf_ic,
-      k, k_ic,
-      t0, t0_ic,
-      aicc,
-      delta_aicc,
-      aiccwt,
-      convergence
+      "methode",
+      "l_inf", "l_inf_ic",
+      "k", "k_ic",
+      "t0", "t0_ic",
+      "aicc",
+      "delta_aicc",
+      "aiccwt",
+      "convergence"
     )
   
   # Message global ----
@@ -383,7 +383,7 @@ get_growth_start_values <- function(df) {
   
   message <- paste(
     "Les valeurs des paramètres initiaux pi n’ont pas pu être estimées automatiquement à partir des données.",
-    "Elles ont été fixées à Linf = longueur du plus grand spécimen de l’échantillon, K = 0.3 et t0 = 0 (Ogle 2016).",
+    "Elles ont été fixées à L∞ = longueur du plus grand spécimen de l’échantillon, K = 0.3 et t₀ = 0 (Ogle 2016).",
     sep = "\n"
   )
   

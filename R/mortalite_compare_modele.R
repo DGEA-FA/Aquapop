@@ -84,8 +84,8 @@ mortalite_compare_modele <- function(data) {
     resultats <- resultats |>
       mutate(
         delta_aic = case_when(
-          is.na(aicc) ~ NA_real_,
-          TRUE ~ round(aicc - meilleur_aicc, 2)
+          is.na(.data$aicc) ~ NA_real_,
+          TRUE ~ round(.data$aicc - meilleur_aicc, 2)
         )
       )
   }
@@ -94,29 +94,29 @@ mortalite_compare_modele <- function(data) {
   resultats <- resultats |>
     mutate(
       commentaire = case_when(
-        convergence %in% FALSE ~ commentaire,
-        !is.na(ajustement_hnp) & !is.na(delta_aic) & ajustement_hnp < 10 & delta_aic == 0 ~
+        .data$convergence %in% FALSE ~ .data$commentaire,
+        !is.na(.data$ajustement_hnp) & !is.na(.data$delta_aic) & .data$ajustement_hnp < 10 & .data$delta_aic == 0 ~
           "Le modèle s'ajuste bien à vos données. Ce modèle est recommandé car son AICc est le plus faible.",
-        !is.na(ajustement_hnp) & !is.na(delta_aic) & ajustement_hnp >= 10 & delta_aic == 0 ~
+        !is.na(.data$ajustement_hnp) & !is.na(.data$delta_aic) & .data$ajustement_hnp >= 10 & .data$delta_aic == 0 ~
           "Le modèle ne s'ajuste pas bien à vos données. Il s'agit toutefois du meilleur modèle parmi les options disponibles.",
-        TRUE ~ commentaire
+        TRUE ~ .data$commentaire
       )
     )
   
   # Colonnes finales ====
   df_final <- resultats |>
-    arrange(aicc) |>
+    arrange(.data$aicc) |>
     select(
-      methode,
-      ajustement_hnp,
-      aicc,
-      delta_aic,
-      Z,
-      SE,
-      A,
-      ic95,
-      convergence,
-      commentaire
+      "methode",
+      "ajustement_hnp",
+      "aicc",
+      "delta_aic",
+      "Z",
+      "SE",
+      "A",
+      "ic95",
+      "convergence",
+      "commentaire"
     )
   
   # Tableau formaté ====

@@ -19,20 +19,20 @@ generate_recapitulatif_inventaire <- function(data_lac, data_station) {
   
   # --- Informations générales sur le lac ---
   info_lac <- data_lac |> reframe(
-    `Type de pêche` = unique(typ_pech),
-    `No de lac` = unique(no_lac),
-    `Nom du lac` = unique(nom_lac),
-    `Superficie du lac (ha)` = unique(superficie_ha),
-    `Année(s) de l'inventaire (aaaa)` = toString(sort(unique(annee)))
+    `Type de pêche` = unique(.data$typ_pech),
+    `No de lac` = unique(.data$no_lac),
+    `Nom du lac` = unique(.data$nom_lac),
+    `Superficie du lac (ha)` = unique(.data$superficie_ha),
+    `Année(s) de l'inventaire (aaaa)` = toString(sort(unique(.data$annee)))
   )
   
   # --- Dates de l'inventaire ---
   date_info <- data_station |> reframe(
     `Date de début de l'inventaire (aaaa-mm-jj)` = {
-      if (all(is.na(date_pose))) "Aucune donnée disponible" else min(date_pose, na.rm = TRUE)
+      if (all(is.na(.data$date_pose))) "Aucune donnée disponible" else min(.data$date_pose, na.rm = TRUE)
     },
     `Date de fin de l'inventaire (aaaa-mm-jj)` = {
-      if (all(is.na(date_leve))) "Aucune donnée disponible" else max(date_leve, na.rm = TRUE)
+      if (all(is.na(.data$date_leve))) "Aucune donnée disponible" else max(.data$date_leve, na.rm = TRUE)
     }
   )
   
@@ -68,6 +68,6 @@ generate_recapitulatif_compter_valeurs <- function(df, col, val) {
   df |>
     filter(.data[[col]] == val) |>
     summarise(n = n()) |>
-    pull(n)
+    pull("n")
 }
 

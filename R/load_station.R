@@ -111,13 +111,13 @@ load_station <- function(path,
   station <- station |>
     mutate(
       st_valide = case_when(
-        is.na(st_valide) | st_valide %in% c("IND", "-", "VALIDE") ~ "O",
-        TRUE ~ st_valide
+        is.na(.data$st_valide) | .data$st_valide %in% c("IND", "-", "VALIDE") ~ "O",
+        TRUE ~ .data$st_valide
       ),
       st_hasard = case_when(
-        st_hasard %in% c("REJETEE") ~ "N",
-        is.na(st_hasard) | st_hasard %in% c("IND", "-") ~ "O",
-        TRUE ~ st_hasard
+        .data$st_hasard %in% c("REJETEE") ~ "N",
+        is.na(.data$st_hasard) | .data$st_hasard %in% c("IND", "-") ~ "O",
+        TRUE ~ .data$st_hasard
       )
     )
   
@@ -125,20 +125,20 @@ load_station <- function(path,
   station <- station |>
     mutate(
       annee = case_when(
-        nchar(annee) == 5 ~ as.integer(year(as.Date(as.numeric(annee), origin = "1899-12-30"))),
-        TRUE              ~ suppressWarnings(as.integer(annee))
+        nchar(.data$annee) == 5 ~ as.integer(year(as.Date(as.numeric(.data$annee), origin = "1899-12-30"))),
+        TRUE              ~ suppressWarnings(as.integer(.data$annee))
       ),
       across(
         intersect(c("no_lac", "typ_pech", "no_station", "type_maill", "st_hasard", "st_valide"), names(station)),
         as.factor
       ),
-      lat_dd.dec  = suppressWarnings(as.numeric(lat_dd.dec)),
-      long_dd.dec = suppressWarnings(as.numeric(long_dd.dec)),
-      prof_deb    = suppressWarnings(as.numeric(prof_deb)),
-      prof_fin    = suppressWarnings(as.numeric(prof_fin)),
-      comments_station = as.character(comments)
+      lat_dd.dec  = suppressWarnings(as.numeric(.data$lat_dd.dec)),
+      long_dd.dec = suppressWarnings(as.numeric(.data$long_dd.dec)),
+      prof_deb    = suppressWarnings(as.numeric(.data$prof_deb)),
+      prof_fin    = suppressWarnings(as.numeric(.data$prof_fin)),
+      comments_station = as.character(.data$comments)
     ) |>
-    select(-comments)
+    select(-"comments")
   
   # --- Dates et heures combinées ---
   station$date_leve <- suppressWarnings(as.Date(as.numeric(station$date_leve), origin = "1899-12-30"))
@@ -146,15 +146,23 @@ load_station <- function(path,
   
   station <- station |>
     mutate(
-      min_pose   = str_pad(min_pose,   2, pad = "0"),
-      heure_pose = str_pad(heure_pose, 2, pad = "0"),
-      min_leve   = str_pad(min_leve,   2, pad = "0"),
-      heure_leve = str_pad(heure_leve, 2, pad = "0"),
-      h_pose     = ifelse(!is.na(heure_pose) & !is.na(min_pose), paste0(heure_pose, ":", min_pose, ":00"), NA),
-      h_leve     = ifelse(!is.na(heure_leve) & !is.na(min_leve), paste0(heure_leve, ":", min_leve, ":00"), NA),
-      pose       = suppressWarnings(as.POSIXct(paste(date_pose, h_pose), format = "%Y-%m-%d %H:%M:%S")),
-      leve       = suppressWarnings(as.POSIXct(paste(date_leve, h_leve), format = "%Y-%m-%d %H:%M:%S")),
-      duree      = difftime(leve, pose, units = "hours")
+      min_pose   = str_pad(.data$min_pose,   2, pad = "0"),
+      heure_pose = str_pad(.data$heure_pose, 2, pad = "0"),
+      min_leve   = str_pad(.data$min_leve,   2, pad = "0"),
+      heure_leve = str_pad(.data$heure_leve, 2, pad = "0"),
+      h_pose     = ifelse(!is.na(.data$heure_pose) & !is.na(.data$min_pose), 
+                          paste0(.data$heure_pose, ":", .data$min_pose, ":00"), NA),
+      h_leve     = ifelse(!is.na(.data$heure_leve) & !is.na(.data$min_leve),
+                          paste0(.data$heure_leve, ":", .data$min_leve, ":00"), NA),
+      pose       = suppressWarnings(
+        as.POSIXct(
+          paste(.data$date_pose, .data$h_pose),
+          format = "%Y-%m-%d %H:%M:%S")),
+      leve       = suppressWarnings(
+        as.POSIXct(
+          paste(.data$date_leve, .data$h_leve),
+          format = "%Y-%m-%d %H:%M:%S")),
+      duree      = difftime(.data$leve, .data$pose, units = "hours")
     )
   
   # --- Suppression des doublons ---

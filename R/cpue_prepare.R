@@ -40,7 +40,11 @@ cpue_prepare <- function(capture, specimen, group = c("tous", "femelles")) {
     if (!"maturite" %in% names(specimen)) {
       abort("La colonne `maturite` est requise dans `specimen` lorsque group = 'femelles'.")
     }
-    specimen <- filter(specimen, sexe == "F", maturite == "O")
+    specimen <- filter(
+      specimen, 
+      .data$sexe == "F",
+      .data$maturite == "O")
+    
     group_label <- "Femelles"
   } else {
     group_label <- "Tous"
@@ -48,19 +52,20 @@ cpue_prepare <- function(capture, specimen, group = c("tous", "femelles")) {
   
   # --- Compter les spécimens par station ---
   nb_specimens <- specimen |>
-    group_by(no_station) |>
-    summarise(nb_specimens = n(), .groups = "drop")
+    group_by(.data$no_station) |>
+    summarise(nb_specimens = n(),
+              .groups = "drop")
   
   # --- Joindre avec la table des captures (pour conserver toutes les stations) ---
   cpue_par_station <- capture |>
-    select(no_station) |>
+    select("no_station") |>
     left_join(nb_specimens, by = "no_station") |>
     mutate(
-      nb_specimens = replace_na(nb_specimens, 0L),
-      cpue = nb_specimens,  # ici, effort = 1 filet/station
+      nb_specimens = replace_na(.data$nb_specimens, 0L),
+      cpue = .data$nb_specimens,  # ici, effort = 1 filet/station
       group = group_label
     ) |>
-    select(no_station, cpue, group)
+    select("no_station", "cpue", "group")
   
   return(cpue_par_station)
 }

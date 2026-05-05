@@ -83,8 +83,8 @@ croissance_plot <- function(dfspecimen, tablemodele, modele) {
   
   # --- Nettoyage des données ----
   data_clean <- dfspecimen |>
-    filter(!is.na(ltm), !is.na(age)) |>
-    select(ltm, age, no_specimen)
+    filter(!is.na(.data$ltm), !is.na(.data$age)) |>
+    select("ltm", "age", "no_specimen")
   
   if (nrow(data_clean) == 0) {
     warning(
@@ -95,7 +95,7 @@ croissance_plot <- function(dfspecimen, tablemodele, modele) {
   
   # --- Extraction des paramètres du modèle sélectionné ----
   model_params <- tablemodele |>
-    filter(methode == modele)
+    filter(.data$methode == modele)
   
   if (nrow(model_params) == 0) {
     warning(
@@ -209,24 +209,24 @@ croissance_plot <- function(dfspecimen, tablemodele, modele) {
   ggplot() +
     geom_ribbon(
       data = predictions,
-      aes(x = age, ymin = lwr, ymax = upr),
+      aes(x = .data$age, ymin = .data$lwr, ymax = .data$upr),
       fill = "gray80"
     ) +
     geom_point(
       data = data_clean,
-      aes(x = age, y = ltm),
+      aes(x = .data$age, y = .data$ltm),
       size = 2,
       alpha = 0.1
     ) +
     geom_line(
       data = predictions,
-      aes(x = age, y = fit),
+      aes(x = .data$age, y = .data$fit),
       linewidth = 1,
       linetype = "dashed"
     ) +
     geom_line(
       data = filter(predictions, age >= age_min, age <= age_max),
-      aes(x = age, y = fit),
+      aes(x = .data$age, y = .data$fit),
       linewidth = 1
     ) +
     annotate(

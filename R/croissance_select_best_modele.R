@@ -71,10 +71,10 @@ croissance_select_best_modele <- function(tablemodele) {
   }
   
   table_filtre <- tablemodele |>
-    mutate(aicc_num = suppressWarnings(as.numeric(aicc))) |>
+    mutate(aicc_num = suppressWarnings(as.numeric(.data$aicc))) |>
     filter(
-      convergence == TRUE,
-      !is.na(aicc_num)
+      .data$convergence == TRUE,
+      !is.na(.data$aicc_num)
     )
   
   if (nrow(table_filtre) == 0) {
@@ -83,8 +83,8 @@ croissance_select_best_modele <- function(tablemodele) {
   }
   
   best_row <- table_filtre |>
-    filter(aicc_num == min(aicc_num, na.rm = TRUE)) |>
-    pull(methode)
+    filter(.data$aicc_num == min(.data$aicc_num, na.rm = TRUE)) |>
+    pull("methode")
   
   best_row[[1]]
 }

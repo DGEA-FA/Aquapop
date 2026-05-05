@@ -74,8 +74,8 @@ mortalite_test_surdispersion_poisson <- function(data) {
   
   # Nettoyage des données ====
   data_clean <- data |>
-    filter(!is.na(age), !is.na(number)) |>
-    mutate(age = as.integer(age))
+    filter(!is.na(.data$age), !is.na(.data$number)) |>
+    mutate(age = as.integer(.data$age))
   
   if (nrow(data_clean) < 2) {
     return(list(

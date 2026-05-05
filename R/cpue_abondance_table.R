@@ -53,27 +53,27 @@ cpue_abondance_table <- function(data,
 
   # Groupe : Sexe
   table_sexe <- data |>
-    count(sexe, name = "abondance") |>
+    count(.data$sexe, name = "abondance") |>
     mutate(
-      groupe = recode(sexe,
+      groupe = recode(.data$sexe,
         "F" = "Femelles",
         "M" = "Mâles",
         "IND" = "Sexe inconnu"
       ),
-      proportion = abondance / total_individus * 100,      mf_ratio = NA_character_
+      proportion = .data$abondance / total_individus * 100,      mf_ratio = NA_character_
     ) |>
-    select(groupe, abondance, proportion, mf_ratio)
+    select("groupe", "abondance", "proportion", "mf_ratio")
 
   # Groupe : Reproducteurs actifs
   table_repro <- data |>
-    filter(maturite == "O", sexe %in% c("M", "F")) |>
-    count(sexe, name = "abondance") |>
+    filter(.data$maturite == "O", .data$sexe %in% c("M", "F")) |>
+    count(.data$sexe, name = "abondance") |>
     mutate(
-      groupe = recode(sexe,
+      groupe = recode(.data$sexe,
                       "F" = "Repro. actifs femelles",
                       "M" = "Repro. actifs mâles"
       ),
-      proportion = abondance / total_individus * 100,
+      proportion = .data$abondance / total_individus * 100,
       mf_ratio = NA_character_
     ) |>
     complete(
@@ -83,22 +83,22 @@ cpue_abondance_table <- function(data,
 
   # Groupe : Immatures ou inactifs
   table_inactifs <- data |>
-    filter(maturite == "N") |>
+    filter(.data$maturite == "N") |>
     summarise(
       groupe = "Immatures ou reprod. inactifs",
       abondance = n(),
-      proportion = abondance / total_individus * 100,
-      mf_ratio = calculate_mf_ratio(sum(sexe == "M"), sum(sexe == "F"))
+      proportion = .data$abondance / total_individus * 100,
+      mf_ratio = calculate_mf_ratio(sum(.data$sexe == "M"), sum(.data$sexe == "F"))
     )
 
   # Groupe : Statut inconnu
   table_inconnu <- data |>
-    filter(maturite == "IND") |>
+    filter(.data$maturite == "IND") |>
     summarise(
       groupe = "Statut reprod. inconnu",
       abondance = n(),
-      proportion = abondance / total_individus * 100,
-      mf_ratio = calculate_mf_ratio(sum(sexe == "M"), sum(sexe == "F"))
+      proportion = .data$abondance / total_individus * 100,
+      mf_ratio = calculate_mf_ratio(sum(.data$sexe == "M"), sum(.data$sexe == "F"))
     )
 
   # --- Fusion et ajout des CPUE ---
@@ -106,25 +106,25 @@ cpue_abondance_table <- function(data,
     table_tous, table_sexe, table_repro, table_inactifs, table_inconnu
   ) |>
     mutate(
-      groupe = factor(groupe, levels = c(
+      groupe = factor(.data$groupe, levels = c(
         "Tous", "Femelles", "Mâles", "Sexe inconnu",
         "Repro. actifs femelles", "Repro. actifs mâles",
         "Immatures ou reprod. inactifs", "Statut reprod. inconnu"
       ))
     ) |>
-    arrange(groupe) |>
+    arrange(.data$groupe) |>
     mutate(
       cpue = case_when(
-        groupe == "Tous" ~ cpue_tous,
-        groupe == "Repro. actifs femelles" ~ cpue_femelles,
+        .data$groupe == "Tous" ~ cpue_tous,
+        .data$groupe == "Repro. actifs femelles" ~ cpue_femelles,
         TRUE ~ NA_real_
       ),
       ic95 = case_when(
-        groupe == "Tous" ~ ic95_tous,
-        groupe == "Repro. actifs femelles" ~ ic95_femelles,
+        .data$groupe == "Tous" ~ ic95_tous,
+        .data$groupe == "Repro. actifs femelles" ~ ic95_femelles,
         TRUE ~ NA_character_
       )
-    ) |> select(-sexe)
+    ) |> select(-"sexe")
 
   # --- Création flextable ---
 

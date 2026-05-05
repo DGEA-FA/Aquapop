@@ -140,8 +140,8 @@ load_lac <- function(path,
   lac <- lac |>
     mutate(
       annee = case_when(
-        nchar(annee) == 5 ~ as.integer(year(as.Date(as.numeric(annee), origin = "1899-12-30"))),
-        TRUE              ~ suppressWarnings(as.integer(annee))
+        nchar(.data$annee) == 5 ~ as.integer(year(as.Date(as.numeric(.data$annee), origin = "1899-12-30"))),
+        TRUE              ~ suppressWarnings(as.integer(.data$annee))
       ),
       across(
         intersect(c("region_admin", "no_lac", "nom_lac", "typ_pech", "sp_pen", "terr_faun", "zon_pech"), names(lac)),
@@ -151,12 +151,12 @@ load_lac <- function(path,
         intersect(c("long_dd.dec", "lat_dd.dec", "superficie_ha", "perimetre_km", "prof_max_m", "prof_moy_m"), names(lac)),
         as.numeric
       ),
-      comments = if ("comments" %in% names(lac)) as.character(comments) else NA_character_
+      comments = if ("comments" %in% names(lac)) as.character(.data$comments) else NA_character_
     )
   
   # Création de l'identifiant unique + dédoublonnage ----
   lac <- lac |>
-    mutate(ID = paste0(nom_lac, " - ", annee, " - ", typ_pech)) |>
+    mutate(ID = paste0(.data$nom_lac, " - ", .data$annee, " - ", .data$typ_pech)) |>
     distinct()
   
   return(lac)

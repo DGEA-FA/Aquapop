@@ -20,7 +20,7 @@
 #' }
 #'
 #' @importFrom tidyselect ends_with
-#' @importFrom dplyr inner_join mutate rename rename_with across
+#' @importFrom dplyr inner_join mutate rename rename_with across bind_rows filter recode arrange
 #' @importFrom tibble tibble
 #' @importFrom flextable flextable merge_h set_header_df border set_caption colformat_double
 #' @importFrom officer fp_border
@@ -77,19 +77,19 @@ taille_masse_age <- function(data) {
   
   # Calcul des statistiques morphologiques ----
   table_ltm <- regrouper_stats_morpho(data, "ltm") |>
-    rename_with(~ paste0("ltm_", .), -sexe)
+    rename_with(~ paste0("ltm_", .), -"sexe")
   
   table_masse <- regrouper_stats_morpho(data, "masse") |>
-    rename_with(~ paste0("masse_", .), -sexe)
+    rename_with(~ paste0("masse_", .), -"sexe")
   
   table_age <- regrouper_stats_morpho(data, "age") |>
-    rename_with(~ paste0("age_", .), -sexe)
+    rename_with(~ paste0("age_", .), -"sexe")
   
   # Fusion des tableaux ----
   table_resultats <- table_ltm |>
     inner_join(table_masse, by = "sexe") |>
     inner_join(table_age, by = "sexe") |>
-    rename(Sexe = sexe) 
+    rename(Sexe = "sexe") 
   
   # Création du tableau flextable ----
   bordure_normale <- fp_border(width = 1)
@@ -165,29 +165,29 @@ regrouper_stats_morpho <- function(data, var) {
   table_groupes <- bind_rows(
     stats_morpho(data, var, "sexe"),
     stats_morpho(data, var) |> mutate(sexe = NA),
-    stats_morpho(filter(data, maturite == "O" & sexe == "M"), var) |> mutate(sexe = "Reprod. actifs mâles"),
-    stats_morpho(filter(data, maturite == "N"), var) |> mutate(sexe = "Imm. ou reprod. inactifs"),
-    stats_morpho(filter(data, maturite == "O" & sexe == "F"), var) |> mutate(sexe = "Reprod. actifs femelles"),
-    stats_morpho(filter(data, maturite == "IND"), var) |> mutate(sexe = "Statut reprod. inconnu")
+    stats_morpho(filter(data, .data$maturite == "O" & .data$sexe == "M"), var) |> mutate(sexe = "Reprod. actifs mâles"),
+    stats_morpho(filter(data, .data$maturite == "N"), var) |> mutate(sexe = "Imm. ou reprod. inactifs"),
+    stats_morpho(filter(data, .data$maturite == "O" & .data$sexe == "F"), var) |> mutate(sexe = "Reprod. actifs femelles"),
+    stats_morpho(filter(data, .data$maturite == "IND"), var) |> mutate(sexe = "Statut reprod. inconnu")
   )
   
   # --- Nettoyage et harmonisation des libellés de groupes ---
   table_groupes <- table_groupes |>
     mutate(
-      sexe = as.character(sexe),
-      sexe = ifelse(is.na(sexe), "Tous", sexe),
-      sexe = recode(sexe,
+      sexe = as.character(.data$sexe),
+      sexe = ifelse(is.na(.data$sexe), "Tous", .data$sexe),
+      sexe = recode(.data$sexe,
                     "M"   = "Mâle",
                     "F"   = "Femelle",
                     "IND" = "Sexe inconnu",
-                    .default = sexe),
-      sexe = factor(sexe, levels = c(
+                    .default = .data$sexe),
+      sexe = factor(.data$sexe, levels = c(
         "Tous", "Femelle", "Mâle", "Sexe inconnu",
         "Reprod. actifs femelles", "Reprod. actifs mâles",
         "Imm. ou reprod. inactifs", "Statut reprod. inconnu"
       ))
     ) |>
-    arrange(sexe)
+    arrange(.data$sexe)
   
   return(table_groupes)
 }

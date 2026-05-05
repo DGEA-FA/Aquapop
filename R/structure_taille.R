@@ -70,8 +70,8 @@ structure_taille <- function(data,
   binwidth <- info$binwidth
   
   data <- data |>
-    mutate(ltm = as.numeric(ltm)) |>
-    filter(!is.na(ltm))
+    mutate(ltm = as.numeric(.data$ltm)) |>
+    filter(!is.na(.data$ltm))
   
   # Cas sans donnée exploitable ----
   if (nrow(data) == 0) {
@@ -90,7 +90,7 @@ structure_taille <- function(data,
   labels <- paste0("[", head(breaks, -1), "-", tail(breaks, -1), "[")
   data$ltm_interval <- cut(data$ltm, breaks = breaks, include.lowest = TRUE, right = FALSE, labels = labels)
   data$ltm_interval <- factor(data$ltm_interval, levels = labels, ordered = TRUE)
-  data <- filter(data, !is.na(ltm_interval))
+  data <- filter(data, !is.na(.data$ltm_interval))
   
   # Cas sans classe de taille exploitable ----
   if (nrow(data) == 0) {
@@ -107,7 +107,7 @@ structure_taille <- function(data,
   
   # Préparation du graphique
   if (groupement == "tous") {
-    plt <- ggplot(data, aes(x = ltm_interval)) +
+    plt <- ggplot(data, aes(x = .data$ltm_interval)) +
       geom_bar(fill = couleur_default, color = "white", alpha = 1, na.rm = TRUE) +
       labs(x = "Longueur totale maximale (mm)", y = paste0("Nb. ", nomsp, " échantillonnés")) +
       theme_aquapop() +
@@ -126,9 +126,9 @@ structure_taille <- function(data,
       color = unname(group_colors[[groupement]])
     )
     
-    plt <- ggplot(data, aes(x = ltm_interval, fill = !!sym(groupement))) +
+    plt <- ggplot(data, aes(x = .data$ltm_interval, fill = !!sym(groupement))) +
       geom_bar(position = position_stack(reverse = TRUE), color = "white", na.rm = TRUE) +
-      geom_bar(data = df_legende, aes(x = categorie, fill = categorie),
+      geom_bar(data = df_legende, aes(x = .data$categorie, fill = .data$categorie),
                alpha = 1, width = 0, show.legend = TRUE, na.rm = TRUE) +
       labs(x = "Longueur totale maximale (mm)", y = paste0("Nb. ", nomsp, " échantillonnés")) +
       theme_aquapop() +
@@ -181,9 +181,9 @@ structure_taille_extraire_donnees <- function(plot, groupement) {
   
   # Extraire les données du graphique
   temp <- ggplot_build(plot)$data[[1]] |>
-    select(fill, count, x) |>
-    mutate(categorie = fill_to_category[fill])
+    select("fill", "count", "x") |>
+    mutate(categorie = fill_to_category[.data$fill])
   
   # Résultat final
-  temp |> select(categorie, count, x)
+  temp |> select("categorie", "count", "x")
 }

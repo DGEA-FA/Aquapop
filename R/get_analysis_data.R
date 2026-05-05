@@ -26,7 +26,7 @@
 #' }
 #'
 #' @importFrom tidyr replace_na
-#' @importFrom dplyr full_join mutate distinct left_join filter
+#' @importFrom dplyr full_join mutate distinct left_join filter inner_join if_else
 #' @export
 get_analysis_data <- function(path, typ_pech, no_lac, annee,
                               sheet_station = "Stations",
@@ -48,16 +48,19 @@ get_analysis_data <- function(path, typ_pech, no_lac, annee,
   ## Feuille des spécimens ----
   data_specimen <- load_specimen(path, sheet_specimen, verbose = verbose) |>
     filter_by_pen_lac_annee(typ_pech = typ_pech, no_lac = no_lac, annee = annee) |>
-    filter(sp == code_sp)
+    filter(.data$sp == code_sp)
   
   ## Feuille des récoltes ----
   data_recolte <- load_recolte(path, sheet_recolte, verbose = verbose) |>
     filter_by_pen_lac_annee(typ_pech = typ_pech, no_lac = no_lac, annee = annee) |>
-    filter(sp == code_sp)
+    filter(.data$sp == code_sp)
   
   # Préparation des stations ----
-  station_valide <- filter(data_station, st_valide == "O")
-  station_hasard_valide <- filter(data_station, st_valide == "O", st_hasard == "O")
+  station_valide <- filter(data_station, .data$st_valide == "O")
+  station_hasard_valide <- filter(
+    data_station, 
+    .data$st_valide == "O", 
+    .data$st_hasard == "O")
   
   # Préparation des spécimens ----
   ## Spécimens associés aux stations valides et au hasard ----
@@ -72,7 +75,7 @@ get_analysis_data <- function(path, typ_pech, no_lac, annee,
   # Spécimens associés à toutes les stations valides ----
 
    specimen_valide <- data_specimen |>
-    filter(st_valide == "O")
+    filter(.data$st_valide == "O")
   
   # Spécimens associés à toutes les stations ----
   
@@ -80,14 +83,15 @@ get_analysis_data <- function(path, typ_pech, no_lac, annee,
   
   # Préparation des captures (des stations valides et hasard) ----
   capture <- full_join(
-    station_hasard_valide, data_recolte,
+    station_hasard_valide, 
+    data_recolte,
     by = c("no_station", "annee", "no_lac", "typ_pech", "st_valide", "st_hasard"),
     relationship = "one-to-one" #possible puisqu'on a déjà fait filter(sp == code_sp) plus tôt
   ) |>
     mutate(
-      sp = if_else(is.na(sp), code_sp, sp),
-      nb_capture = replace_na(nb_capture, 0),
-      nb_pese    = replace_na(nb_pese, 0)
+      sp = if_else(is.na(.data$sp), code_sp, .data$sp),
+      nb_capture = replace_na(.data$nb_capture, 0),
+      nb_pese    = replace_na(.data$nb_pese, 0)
     ) |>
     distinct() |>
     droplevels()

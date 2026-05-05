@@ -93,10 +93,10 @@ bpue_generate_biomasse <- function(data_specimen, data_station) {
   
   # ---- Groupe "Tous" ----
   biomasse_totale_par_station <- data_specimen |>
-    group_by(no_station) |>
-    summarise(biomasse_g = sum(masse, na.rm = TRUE), .groups = "drop") |>
+    group_by(.data$no_station) |>
+    summarise(biomasse_g = sum(.data$masse, na.rm = TRUE), .groups = "drop") |>
     right_join(data_station |> select(no_station), by = "no_station") |>
-    mutate(biomasse_g = replace_na(biomasse_g, 0))
+    mutate(biomasse_g = replace_na(.data$biomasse_g, 0))
   
   biomasse_totale_kg <- sum(biomasse_totale_par_station$biomasse_g) / 1000
   fit_tous <- safe_nb_fit(biomasse_totale_par_station$biomasse_g)
@@ -111,31 +111,31 @@ bpue_generate_biomasse <- function(data_specimen, data_station) {
   
   # ---- Groupe par sexe ----
   biomasse_par_sexe <- data_specimen |>
-    group_by(no_station, sexe) |>
-    summarise(biomasse = sum(masse, na.rm = TRUE), .groups = "drop") |>
+    group_by(.data$no_station, .data$sexe) |>
+    summarise(biomasse = sum(.data$masse, na.rm = TRUE), .groups = "drop") |>
     right_join(
       expand_grid(no_station = data_station$no_station, sexe = unique(data_specimen$sexe)),
       by = c("no_station", "sexe")
     ) |>
-    mutate(biomasse = replace_na(biomasse, 0)) |>
-    group_by(sexe) |>
+    mutate(biomasse = replace_na(.data$biomasse, 0)) |>
+    group_by(.data$sexe) |>
     summarise(
-      biomasse = sum(biomasse) / 1000,
-      bpue = biomasse / n_stations,
-      percent = biomasse * 100 / biomasse_totale_kg,
+      biomasse = sum(.data$biomasse) / 1000,
+      bpue = .data$biomasse / n_stations,
+      percent = .data$biomasse * 100 / biomasse_totale_kg,
       ic95 = NA_character_
     ) |>
-    mutate(groupe = recode(sexe,
+    mutate(groupe = recode(.data$sexe,
                                          "F" = "Femelle",
                                          "M" = "Mâle",
                                          "IND" = "Sexe inconnu")) |>
-    select(groupe, biomasse, percent, bpue, ic95)
+    select("groupe", "biomasse", "percent", "bpue", "ic95")
   
   # ---- Repro. actifs males ----
   data_males_matures <- data_specimen |>
     filter(sexe == "M", maturite == "O") |>
-    group_by(no_station) |>
-    summarise(biomasse = sum(masse), .groups = "drop") |>
+    group_by(.data$no_station) |>
+    summarise(biomasse = sum(.data$masse), .groups = "drop") |>
     right_join(data_station |> select(no_station), by = "no_station") |>
     mutate(biomasse = replace_na(biomasse, 0))
   
@@ -150,10 +150,10 @@ bpue_generate_biomasse <- function(data_specimen, data_station) {
   # ---- Repro. actifs femelles ----
   data_femelles_matures <- data_specimen |>
     filter(sexe == "F", maturite == "O") |>
-    group_by(no_station) |>
-    summarise(biomasse_g = sum(masse), .groups = "drop") |>
+    group_by(.data$no_station) |>
+    summarise(biomasse_g = sum(.data$masse), .groups = "drop") |>
     right_join(data_station |> select(no_station), by = "no_station") |>
-    mutate(biomasse_g = replace_na(biomasse_g, 0))
+    mutate(biomasse_g = replace_na(.data$biomasse_g, 0))
   
   biomasse_femelles_matures <- sum(data_femelles_matures$biomasse_g)
   fit_femelles <- safe_nb_fit(data_femelles_matures$biomasse_g)
@@ -169,7 +169,7 @@ bpue_generate_biomasse <- function(data_specimen, data_station) {
   # ---- Immatures ----
   data_immatures <- data_specimen |>
     filter(maturite == "N") |>
-    group_by(no_station) |>
+    group_by(.data$no_station) |>
     summarise(biomasse = sum(masse), .groups = "drop") |>
     right_join(data_station |> select(no_station), by = "no_station") |>
     mutate(biomasse = replace_na(biomasse, 0))
@@ -185,10 +185,10 @@ bpue_generate_biomasse <- function(data_specimen, data_station) {
   # ---- Inconnu ----
   data_inconnu <- data_specimen |>
     filter(maturite == "IND") |>
-    group_by(no_station) |>
-    summarise(biomasse = sum(masse), .groups = "drop") |>
+    group_by(.data$no_station) |>
+    summarise(biomasse = sum(.data$masse), .groups = "drop") |>
     right_join(data_station |> select(no_station), by = "no_station") |>
-    mutate(biomasse = replace_na(biomasse, 0))
+    mutate(biomasse = replace_na(.data$biomasse, 0))
   
   ligne_inconnu <- tibble(
     groupe = "Statut reprod. inconnu",

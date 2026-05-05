@@ -28,7 +28,7 @@
 #' }
 #'
 #' @importFrom fishmethods agesurv
-#' @importFrom dplyr transmute
+#' @importFrom dplyr transmute filter
 #' @importFrom flextable flextable set_caption set_header_labels
 #' @importFrom glue glue
 #'
@@ -87,7 +87,8 @@ mortalite_chaprob <- function(specimen, pp, age_max) {
   }
   
   # Préparation des données ====
-  data_age <- subset(specimen, !is.na(age))
+  data_age <- specimen |>
+    filter(!is.na(.data$age))
   
   if (nrow(data_age) == 0) {
     return(list(
@@ -136,17 +137,17 @@ mortalite_chaprob <- function(specimen, pp, age_max) {
         transmute(
           z = .data$Estimate,
           se = .data$SE,
-          a = round((1 - exp(-z)) * 100, 1),
+          a = round((1 - exp(-.data$z)) * 100, 1),
           ic_95 = {
             
             lower <- format(
-              round((1 - exp(-(z - se))) * 100, 1),
+              round((1 - exp(-(.data$z - .data$se))) * 100, 1),
               nsmall = 1,
               decimal.mark = ","
             )
             
             upper <- format(
-              round((1 - exp(-(z + se))) * 100, 1),
+              round((1 - exp(-(.data$z + .data$se))) * 100, 1),
               nsmall = 1,
               decimal.mark = ","
             )

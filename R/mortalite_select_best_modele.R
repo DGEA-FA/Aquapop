@@ -46,11 +46,11 @@ mortalite_select_best_modele <- function(tablemodele) {
   
   # Filtrer les modèles sélectionnables ====
   modeles_valides <- tablemodele |>
-    filter(!is.na(aicc))
+    filter(!is.na(.data$aicc))
   
   if ("convergence" %in% names(modeles_valides)) {
     modeles_valides <- modeles_valides |>
-      filter(convergence %in% TRUE)
+      filter(.data$convergence %in% TRUE)
   }
   
   if (nrow(modeles_valides) == 0) {
@@ -59,16 +59,16 @@ mortalite_select_best_modele <- function(tablemodele) {
   
   # Priorité aux modèles bien ajustés selon HNP ====
   modeles_bien_ajustes <- modeles_valides |>
-    filter(!is.na(ajustement_hnp), ajustement_hnp < 10)
+    filter(!is.na(.data$ajustement_hnp), .data$ajustement_hnp < 10)
   
   if (nrow(modeles_bien_ajustes) > 0) {
     selection <- modeles_bien_ajustes |>
-      filter(aicc == min(aicc, na.rm = TRUE)) |>
-      pull(methode)
+      filter(.data$aicc == min(.data$aicc, na.rm = TRUE)) |>
+      pull("methode")
   } else {
     selection <- modeles_valides |>
-      filter(aicc == min(aicc, na.rm = TRUE)) |>
-      pull(methode)
+      filter(.data$aicc == min(.data$aicc, na.rm = TRUE)) |>
+      pull("methode")
   }
   
   if (length(selection) == 0 || is.na(selection[1])) {

@@ -68,10 +68,10 @@ masse_longueur_fit <- function(data) {
   
   # Prétraitement ----
   donnees_filtrees <- data |>
-    filter(!is.na(ltm), !is.na(masse)) |>
+    filter(!is.na(.data$ltm), !is.na(.data$masse)) |>
     mutate(
-      log_masse = log10(masse),
-      log_longueur = log10(ltm)
+      log_masse = log10(.data$masse),
+      log_longueur = log10(.data$ltm)
     )
   
   # Cas sans donnée exploitable ----
@@ -138,7 +138,7 @@ masse_longueur_fit <- function(data) {
   table_flextable <- table_resultats |> 
     mutate(
       coefficient = dplyr::recode(
-        coefficient,
+        .data$coefficient,
         "log10_a" = "log\u2081\u2080(a)",
         "b" = "b"
       )) |>
@@ -198,10 +198,10 @@ masse_longueur_fit <- function(data) {
   
   
   graphique_relation <- ggplot() +
-    geom_point(data = donnees_filtrees, aes(x = ltm, y = masse)) +
-    geom_line(data = donnees_prediction, aes(x = ltm, y = fit), color = "blue") +
-    geom_line(data = donnees_prediction, aes(x = ltm, y = lwr), color = "red", linetype = 2) +
-    geom_line(data = donnees_prediction, aes(x = ltm, y = upr), color = "red", linetype = 2) +
+    geom_point(data = donnees_filtrees, aes(x = .data$ltm, y = .data$masse)) +
+    geom_line(data = donnees_prediction, aes(x = .data$ltm, y = .data$fit), color = "blue") +
+    geom_line(data = donnees_prediction, aes(x = .data$ltm, y = .data$lwr), color = "red", linetype = 2) +
+    geom_line(data = donnees_prediction, aes(x = .data$ltm, y = .data$upr), color = "red", linetype = 2) +
     theme_aquapop() +
     labs(
       x = "Longueur totale maximale (mm)",

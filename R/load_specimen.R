@@ -152,25 +152,25 @@ load_specimen <- function(path,
   # --- Nettoyage des statuts ---
   specimen <- specimen |>
     mutate(
-      st_valide = case_when(is.na(st_valide) | st_valide %in% c("IND", "-", "VALIDE") ~ "O", TRUE ~ st_valide),
-      st_hasard = case_when(is.na(st_hasard) | st_hasard %in% c("IND", "-") ~ "O", TRUE ~ st_hasard)
+      st_valide = case_when(is.na(.data$st_valide) | .data$st_valide %in% c("IND", "-", "VALIDE") ~ "O", TRUE ~ .data$st_valide),
+      st_hasard = case_when(is.na(.data$st_hasard) | .data$st_hasard %in% c("IND", "-") ~ "O", TRUE ~ .data$st_hasard)
     )
   
   # --- Nettoyage et conversion des colonnes ---
   specimen <- specimen |>
     mutate(
-      maturite = replace_na(maturite, "IND"),
-      sexe     = replace_na(sexe, "IND"),
-      marquage = replace_na(marquage, "NMA"),
+      maturite = replace_na(.data$maturite, "IND"),
+      sexe     = replace_na(.data$sexe, "IND"),
+      marquage = replace_na(.data$marquage, "NMA"),
       
       annee = case_when(
         nchar(annee) == 5 ~ as.integer(year(as.Date(as.numeric(annee), origin = "1899-12-30"))),
         TRUE              ~ suppressWarnings(as.integer(annee))
       ),
       
-      sexe     = factor(sexe, levels = c("F", "M", "IND")),
-      maturite = factor(maturite, levels = c("O", "N", "IND")),
-      marquage = factor(marquage, levels = c("MA", "NMA")),
+      sexe     = factor(.data$sexe, levels = c("F", "M", "IND")),
+      maturite = factor(.data$maturite, levels = c("O", "N", "IND")),
+      marquage = factor(.data$marquage, levels = c("MA", "NMA")),
       
       across(
         intersect(c("no_lac", "typ_pech", "no_station", "st_hasard", "st_valide", "no_specimen", "sp", 
@@ -185,7 +185,7 @@ load_specimen <- function(path,
       ),
       
       comments_specimen = if ("comments_specimen" %in% names(specimen)) {
-        as.character(comments_specimen)
+        as.character(.data$comments_specimen)
       } else {
         rep(NA_character_, nrow(specimen))
       }

@@ -83,8 +83,8 @@ psd_q <- function(data) {
   seuil_qualite <- break_class[2]
   
   donnees_qualite <- data |>
-    filter(!is.na(ltm), ltm >= seuil_qualite) |>
-    mutate(gcat = lencat(ltm, breaks = break_class, droplevels = TRUE))
+    filter(!is.na(.data$ltm), .data$ltm >= seuil_qualite) |>
+    mutate(gcat = lencat(.data$ltm, breaks = break_class, droplevels = TRUE))
   
   freq_classes <- xtabs(~ gcat, data = donnees_qualite)
   
@@ -128,20 +128,20 @@ psd_q <- function(data) {
   ) |>
     as.data.frame() |>
     rename(
-      Q = Estimate,
-      LCI = `95% LCI`,
-      UCI = `95% UCI`
+      Q = "Estimate",
+      LCI = "95% LCI",
+      UCI = "95% UCI"
     ) |>
     mutate(
       ic95 = paste0(
         "[",
-        format_num_fr(LCI, digits = 1),
+        format_num_fr(.data$LCI, digits = 1),
         " – ",
-        format_num_fr(UCI, digits = 1),
+        format_num_fr(.data$UCI, digits = 1),
         "]"
       )
     ) |>
-    select(Q, ic95)
+    select("Q", "ic95")
   
   table_flextable <- table_resultats |>
     flextable() |>

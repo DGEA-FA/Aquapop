@@ -100,8 +100,8 @@ structure_age <- function(data, groupement = "tous") {
   nom_espece <- info_espece$nom_sp
   
   data_clean <- data |>
-    mutate(age = as.numeric(age)) |>
-    filter(!is.na(age))
+    mutate(age = as.numeric(.data$age)) |>
+    filter(!is.na(.data$age))
   
   # Cas sans donnée exploitable ----
   if (nrow(data_clean) == 0) {
@@ -120,8 +120,8 @@ structure_age <- function(data, groupement = "tous") {
   
   # Tableau brut ----
   age_counts <- data_clean |>
-    count(age, name = "n") |>
-    mutate(age = as.integer(age))
+    count(.data$age, name = "n") |>
+    mutate(age = as.integer(.data$age))
   
   tableau_age <- flextable(age_counts) |>
     set_caption("Structure d'âge") |>
@@ -129,7 +129,7 @@ structure_age <- function(data, groupement = "tous") {
   
   # Graphique ----
   graphique_structure_age <- if (groupement == "tous") {
-    ggplot(data_clean, aes(x = age)) +
+    ggplot(data_clean, aes(x = .data$age)) +
       geom_histogram(
         binwidth = 1,
         closed = "right",
@@ -172,7 +172,7 @@ structure_age <- function(data, groupement = "tous") {
       data_clean <- bind_rows(data_clean, faux_niveaux)
     }
     
-    ggplot(data_clean, aes(x = age, fill = groupe)) +
+    ggplot(data_clean, aes(x = .data$age, fill = .data$groupe)) +
       geom_histogram(
         binwidth = 1,
         closed = "right",

@@ -188,7 +188,7 @@ test_that("si vbStarts échoue, la fonction utilise les valeurs initiales de sec
   expect_type(res$message, "character")
   expect_match(res$message, "valeurs des paramètres initiaux", fixed = TRUE)
   expect_match(res$message, "K = 0.3", fixed = TRUE)
-  expect_match(res$message, "t0 = 0", fixed = TRUE)
+  expect_match(res$message, "t₀ = 0", fixed = TRUE)
   
 })
 

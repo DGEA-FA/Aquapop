@@ -80,7 +80,7 @@ mortalite_prepare_extended <- function(df_corrigee, age_max) {
       success = TRUE,
       message = NULL,
       data = df_corrigee |>
-        arrange(age)
+        arrange(.data$age)
     ))
   }
   
@@ -92,7 +92,7 @@ mortalite_prepare_extended <- function(df_corrigee, age_max) {
   
   # Fusion et tri ====
   df_etendue <- bind_rows(df_corrigee, ages_fictifs) |>
-    arrange(age)
+    arrange(.data$age)
   
   list(
     success = TRUE,

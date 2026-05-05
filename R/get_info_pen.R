@@ -36,13 +36,13 @@ get_info_pen <- function(input) {
   )
   
   sp_code <- if (input %in% mapping_typ_pech$typ_pech) {
-    mapping_typ_pech |> filter(typ_pech == input) |> pull(sp)
+    mapping_typ_pech |> filter(.data$typ_pech == input) |> pull("sp")
   } else {
     input
   }
   
   # --- Extraction dans le tableau pen_constants ---
-  info_sp <- pen_constants |> filter(sp == sp_code)
+  info_sp <- pen_constants |> filter(.data$sp == sp_code)
   
   if (nrow(info_sp) == 0) return(NULL)
   

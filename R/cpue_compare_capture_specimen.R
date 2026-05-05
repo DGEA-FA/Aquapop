@@ -16,7 +16,7 @@
 #' @importFrom checkmate assert_data_frame assert_names
 #' @importFrom dplyr count full_join group_by mutate select summarise case_when
 #' @importFrom tidyr replace_na
-#' @importFrom flextable flextable autofit
+#' @importFrom flextable flextable autofit set_header_labels
 cpue_compare_capture_specimen <- function(capture, specimen) {
   assert_data_frame(capture, min.rows = 1)
   assert_data_frame(specimen, min.cols = 1)
@@ -27,7 +27,7 @@ cpue_compare_capture_specimen <- function(capture, specimen) {
   capture_par_station <- capture |>
     group_by(no_station) |>
     summarise(
-      nb_capture_recolte = sum(nb_capture, na.rm = TRUE),
+      nb_capture_recolte = sum(.data$nb_capture, na.rm = TRUE),
       .groups = "drop"
     )
   
@@ -37,21 +37,21 @@ cpue_compare_capture_specimen <- function(capture, specimen) {
   data <- capture_par_station |>
     full_join(specimen_par_station, by = "no_station") |>
     mutate(
-      nb_capture_recolte = replace_na(nb_capture_recolte, 0),
-      nb_specimens = replace_na(nb_specimens, 0L),
-      ecart = nb_specimens - nb_capture_recolte,
+      nb_capture_recolte = replace_na(.data$nb_capture_recolte, 0),
+      nb_specimens = replace_na(.data$nb_specimens, 0L),
+      ecart = .data$nb_specimens - .data$nb_capture_recolte,
       interpretation = case_when(
-        ecart == 0 ~ "Aucun écart",
-        ecart < 0 ~ "Capture supérieure aux spécimens",
-        ecart > 0 ~ "Spécimens supérieurs à la capture"
+        .data$ecart == 0 ~ "Aucun écart",
+        .data$ecart < 0 ~ "Capture supérieure aux spécimens",
+        .data$ecart > 0 ~ "Spécimens supérieurs à la capture"
       )
     ) |>
     select(
-      no_station,
-      nb_capture_recolte,
-      nb_specimens,
-      ecart,
-      interpretation
+      "no_station",
+      "nb_capture_recolte",
+      "nb_specimens",
+      "ecart",
+      "interpretation"
     )
   
   message <- if (any(data$ecart != 0)) {

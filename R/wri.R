@@ -85,8 +85,8 @@ wri <- function(data) {
   # Préparation des données ----
   data_wr <- data |>
     filter(
-      !is.na(ltm),
-      !is.na(masse),
+      !is.na(.data$ltm),
+      !is.na(.data$masse),
       ltm >= constantes_wr$min_TL
     ) |>
     mutate(
@@ -127,7 +127,7 @@ wri <- function(data) {
   
   moyenne_totale <- mean(data_wr$wr, na.rm = TRUE)
   
-  plot_tous <- ggplot(data_wr, aes(x = ltm, y = wr, color = sexe)) +
+  plot_tous <- ggplot(data_wr, aes(x = .data$ltm, y = .data$wr, color = .data$sexe)) +
     geom_point(alpha = 0.8) +
     scale_color_manual(
       values = group_colors$sexe,
@@ -218,18 +218,18 @@ wri <- function(data) {
       bind_cols(grille_classe) |>
       left_join(sommaire_classe, by = "classe_brute")
     
-    plot_byclass <- ggplot(prediction_classe, aes(x = classe, y = fit)) +
+    plot_byclass <- ggplot(prediction_classe, aes(x = .data$classe, y = .data$fit)) +
       geom_point() +
       geom_point(
         data = data_wr,
-        aes(x = classe, y = wr),
+        aes(x = .data$classe, y = .data$wr),
         shape = 21,
         colour = "black",
         fill = "white",
         size = 1,
         alpha = 0.5
       ) +
-      geom_errorbar(aes(ymin = lwr, ymax = upr), width = 0.1) +
+      geom_errorbar(aes(ymin = .data$lwr, ymax = .data$upr), width = 0.1) +
       xlab("Classe de taille") +
       ylab("Indice de condition (%)") +
       scale_x_discrete(limits = psd_classnames, drop = FALSE) +
@@ -258,11 +258,11 @@ wri <- function(data) {
     as.data.frame() |>
     mutate(
       groupe = "Tous",
-      ic95 = paste0("[", round(lwr), " – ", round(upr), "]"),
+      ic95 = paste0("[", round(.data$lwr), " – ", round(.data$upr), "]"),
       wr = round(fit),
       n = nrow(data_wr)
     ) |>
-    select(groupe, wr, ic95, n)
+    select("groupe", "wr", "ic95", "n")
   
   # Tableau de synthèse : sexe ----
   table_par_sexe <- if (n_distinct(data_wr$sexe) >= 2) {
@@ -367,10 +367,10 @@ resumer_wr_par_groupe <- function(mod, var) {
     as.data.frame() |>
     mutate(
       groupe = valeurs,
-      ic95 = paste0("[", round(lwr), " – ", round(upr), "]"),
-      wr = round(fit)
+      ic95 = paste0("[", round(.data$lwr), " – ", round(.data$upr), "]"),
+      wr = round(.data$fit)
     ) |>
-    select(groupe, wr, ic95)
+    select("groupe", "wr", "ic95")
   
   effectifs <- mod$model |>
     count(!!sym(var)) |>
@@ -392,6 +392,6 @@ resumer_wr_par_groupe <- function(mod, var) {
 #' @keywords internal
 get_wr_constants <- function(espece) {
   wr_constants |>
-    filter(sp == espece) |>
+    filter(.data$sp == espece) |>
     slice(1)
 }
