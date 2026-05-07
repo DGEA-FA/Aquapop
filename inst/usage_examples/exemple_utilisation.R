@@ -8,9 +8,13 @@ devtools::load_all()
 
 path     <- "inst/extdata/Extract_IFA_AquaPop_2026-02-27.xlsx"
 typ_pech <- "PENOF"
-no_lac   <- "01131"
-annee    <- 2013
+no_lac   <- "39016"
+annee    <- 2014
 
+# path     <- get0("path",     ifnotfound = "inst/extdata/Extract_IFA_AquaPop_2026-02-27.xlsx")
+# typ_pech <- get0("typ_pech", ifnotfound = "PENOF")
+# no_lac   <- get0("no_lac",   ifnotfound = "39404")
+# annee    <- get0("annee",    ifnotfound = 1998)
  # 01589, PENT 2012
 # 39834, PENOF 2020
 

@@ -2,23 +2,35 @@
 #'
 #' Cette fonction prend en entrée un nombre de mâles et de femelles, puis retourne un
 #' ratio \eqn{M:F} (mâles pour femelles) sous forme réduite à ses plus simples expressions,
-#' comme `"3:2"` ou `"1:1"`. Si les deux valeurs sont nulles, la fonction retourne `NA`.
+#' comme `"3:2"` ou `"1:1"`.
 #'
-#' @importFrom labelled var_label
-#' @importFrom stringi stri_trans_general
-#' @importFrom writexl write_xlsx
-#' @param male_count Nombre d'individus de sexe masculin (entier)
-#' @param female_count Nombre d'individus de sexe féminin (entier)
+#' La fonction retourne `NA` si :
+#' \itemize{
+#'   \item une des valeurs est manquante (`NA`)
+#'   \item aucun mâle n'est présent
+#'   \item aucune femelle n'est présente
+#' }
 #'
-#' @return Une chaîne de caractères représentant le ratio simplifié (ex: `"3:2"`), ou `NA_character_` si les deux valeurs sont nulles.
+#' @param male_count Nombre d'individus de sexe masculin (entier).
+#' @param female_count Nombre d'individus de sexe féminin (entier).
+#'
+#' @return Une chaîne de caractères représentant le ratio simplifié
+#'   (ex: `"3:2"`), ou `NA_character_` si le ratio ne peut pas être calculé.
 #'
 #' @export
 calculate_mf_ratio <- function(male_count, female_count) {
-  if (male_count == 0 && female_count == 0) {
+  if (
+    is.na(male_count) ||
+    is.na(female_count) ||
+    male_count == 0 ||
+    female_count == 0
+  ) {
     return(NA_character_)
   }
   
-  pgcd <- function(a, b) if (b == 0) a else Recall(b, a %% b)
+  pgcd <- function(a, b) {
+    if (b == 0) a else Recall(b, a %% b)
+  }
   divisor <- pgcd(male_count, female_count)
   divisor <- ifelse(divisor == 0, 1, divisor)
   

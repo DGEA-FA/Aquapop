@@ -48,7 +48,7 @@ cpue_abondance_table <- function(data,
     groupe = "Tous",
     abondance = total_individus,
     proportion = 100,
-    mf_ratio = calculate_mf_ratio(sum(data$sexe == "M"), sum(data$sexe == "F"))
+    mf_ratio = calculate_mf_ratio(sum(data$sexe == "M", na.rm = TRUE), sum(data$sexe == "F", na.rm = TRUE))
   )
 
   # Groupe : Sexe
@@ -88,7 +88,7 @@ cpue_abondance_table <- function(data,
       groupe = "Immatures ou reprod. inactifs",
       abondance = n(),
       proportion = .data$abondance / total_individus * 100,
-      mf_ratio = calculate_mf_ratio(sum(.data$sexe == "M"), sum(.data$sexe == "F"))
+      mf_ratio = calculate_mf_ratio(sum(.data$sexe == "M", na.rm = TRUE), sum(.data$sexe == "F", na.rm = TRUE))
     )
 
   # Groupe : Statut inconnu
@@ -98,7 +98,7 @@ cpue_abondance_table <- function(data,
       groupe = "Statut reprod. inconnu",
       abondance = n(),
       proportion = .data$abondance / total_individus * 100,
-      mf_ratio = calculate_mf_ratio(sum(.data$sexe == "M"), sum(.data$sexe == "F"))
+      mf_ratio = calculate_mf_ratio(sum(.data$sexe == "M", na.rm = TRUE), sum(.data$sexe == "F", na.rm = TRUE))
     )
 
   # --- Fusion et ajout des CPUE ---

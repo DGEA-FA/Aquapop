@@ -7,15 +7,24 @@
 calculate_mf_ratio(male_count, female_count)
 }
 \arguments{
-\item{male_count}{Nombre d'individus de sexe masculin (entier)}
+\item{male_count}{Nombre d'individus de sexe masculin (entier).}
 
-\item{female_count}{Nombre d'individus de sexe féminin (entier)}
+\item{female_count}{Nombre d'individus de sexe féminin (entier).}
 }
 \value{
-Une chaîne de caractères représentant le ratio simplifié (ex: \code{"3:2"}), ou \code{NA_character_} si les deux valeurs sont nulles.
+Une chaîne de caractères représentant le ratio simplifié
+(ex: \code{"3:2"}), ou \code{NA_character_} si le ratio ne peut pas être calculé.
 }
 \description{
 Cette fonction prend en entrée un nombre de mâles et de femelles, puis retourne un
 ratio \eqn{M:F} (mâles pour femelles) sous forme réduite à ses plus simples expressions,
-comme \code{"3:2"} ou \code{"1:1"}. Si les deux valeurs sont nulles, la fonction retourne \code{NA}.
+comme \code{"3:2"} ou \code{"1:1"}.
+}
+\details{
+La fonction retourne \code{NA} si :
+\itemize{
+\item une des valeurs est manquante (\code{NA})
+\item aucun mâle n'est présent
+\item aucune femelle n'est présente
+}
 }
