@@ -50,8 +50,8 @@ mortalite_plot_modele <- function(specimen, modele, info_modele) {
   
   # Préparation des données ====
   donnees_age <- specimen |>
-    filter(!is.na(age)) |>
-    mutate(age = as.integer(age))
+    filter(!is.na(.data$age)) |>
+    mutate(age = as.integer(.data$age))
   
   if (nrow(donnees_age) == 0) {
     return(NULL)
@@ -113,7 +113,7 @@ mortalite_plot_modele <- function(specimen, modele, info_modele) {
       !is.na(methode_modele)) {
     
     ligne_info_modele <- info_modele |>
-      filter(tolower(methode) == tolower(methode_modele))
+      filter(tolower(.data$methode) == tolower(methode_modele))
     
     if (nrow(ligne_info_modele) >= 1) {
       
@@ -131,7 +131,7 @@ mortalite_plot_modele <- function(specimen, modele, info_modele) {
   }
   
   # Tracé final ====
-  ggplot(donnees_age, aes(x = age)) +
+  ggplot(donnees_age, aes(x = .data$age)) +
     geom_histogram(
       binwidth = 1,
       closed = "right",
@@ -141,7 +141,7 @@ mortalite_plot_modele <- function(specimen, modele, info_modele) {
     ) +
     geom_line(
       data = donnees_prediction,
-      aes(x = age, y = pred),
+      aes(x = .data$age, y = .data$pred),
       color = "red",
       linewidth = 1.2,
       inherit.aes = FALSE

@@ -23,27 +23,28 @@
 #'
 #' @export
 #' @importFrom dplyr filter pull
+#' @importFrom rlang .data
 cpue_select_best_modele <- function(tablemodele) {
   if (!"methode" %in% names(tablemodele) || !"aicc" %in% names(tablemodele)) {
     stop("Le tableau fourni n'est pas valide. Assurez-vous qu’il provient de `cpue_compare_modele()`.")
   }
   
   bien_ajuste <- tablemodele |>
-    filter(ajustement_hnp < 10)
+    filter(.data$ajustement_hnp < 10)
   
   if (nrow(bien_ajuste) > 0) {
     best <- bien_ajuste |>
-      filter(aicc == min(aicc, na.rm = TRUE)) |>
-      pull(methode)
+      filter(.data$aicc == min(.data$aicc, na.rm = TRUE)) |>
+      pull(.data$methode)
   } else {
     best <- tablemodele |>
-      filter(aicc == min(aicc, na.rm = TRUE)) |>
-      pull(methode)
+      filter(.data$aicc == min(.data$aicc, na.rm = TRUE)) |>
+      pull(.data$methode)
   }
   
   if (length(best) == 0) {
     warning("Aucun modèle n’a pu être sélectionné.")
-    return(NA)
+    return(NA_character_)
   }
   
   return(best[1])

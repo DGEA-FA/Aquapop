@@ -25,14 +25,14 @@ cpue_compare_capture_specimen <- function(capture, specimen) {
   assert_names(names(specimen), must.include = "no_station")
   
   capture_par_station <- capture |>
-    group_by(no_station) |>
+    group_by(.data$no_station) |>
     summarise(
       nb_capture_recolte = sum(.data$nb_capture, na.rm = TRUE),
       .groups = "drop"
     )
   
   specimen_par_station <- specimen |>
-    count(no_station, name = "nb_specimens")
+    count(no_station = .data$no_station, name = "nb_specimens")
   
   data <- capture_par_station |>
     full_join(specimen_par_station, by = "no_station") |>
