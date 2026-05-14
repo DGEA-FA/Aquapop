@@ -188,3 +188,31 @@ test_that("maturite_validate_data déclenche une erreur si specimen_data n'est p
     )
   )
 })
+
+test_that("maturite_validate_data conserve les valeurs numériques brutes sans arrondir", {
+  specimen_data <- data.frame(
+    maturite = c("N", "O", "N", "O"),
+    sexe = c("F", "M", "F", "M"),
+    ltm = c(120.12345, 130.67891, 140.11111, 150.99999),
+    age = c(1.25, 2.50, 3.75, 4.125)
+  )
+  
+  res_ltm <- maturite_validate_data(
+    specimen_data = specimen_data,
+    variable = "ltm"
+  )
+  
+  res_age <- maturite_validate_data(
+    specimen_data = specimen_data,
+    variable = "age"
+  )
+  
+  expect_true(res_ltm$success)
+  expect_true(res_age$success)
+  
+  expect_type(res_ltm$data$ltm, "double")
+  expect_type(res_age$data$age, "double")
+  
+  expect_equal(res_ltm$data$ltm, specimen_data$ltm)
+  expect_equal(res_age$data$age, specimen_data$age)
+})

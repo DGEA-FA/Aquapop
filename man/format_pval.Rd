@@ -16,12 +16,12 @@ Un vecteur de chaînes de caractères (\code{character}) contenant les valeurs p
 Cette fonction prend une ou plusieurs valeurs de p en entrée et retourne une version
 arrondie et formatée sous forme de chaîne de caractères, selon les conventions usuelles :
 \itemize{
-\item \verb{< 0.001} pour les valeurs très faibles
+\item \verb{< 0,001} pour les valeurs très faibles
 \item valeurs numériques à 3 décimales sinon
 }
 }
 \examples{
 format_pval(c(0.0005, 0.02, 0.3456, NA))
-# [1] "< 0.001" "0.020" "0.346" NA
+# [1] "< 0,001" "0,020" "0,346" NA
 
 }

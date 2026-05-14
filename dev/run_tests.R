@@ -22,6 +22,11 @@ stringi::stri_escape_unicode("Écart-type, Âge, Mâle, à, prêt, résumé")
 stringi::stri_escape_unicode("pen_constants")
 pen_constants
 
+
+
+
+
+
 Extract_IFA_AquaPop_2026_02_27 <- read_excel("inst/extdata/Extract_IFA_AquaPop_2026-02-27.xlsx", 
                                                   sheet = "Lac")
 
@@ -39,8 +44,8 @@ all_combinaisons <- Extract_IFA_AquaPop_2026_02_27 |>
 
 
 combinaisons <- all_combinaisons |>
-  dplyr::filter(!(no_lac == "39016" & annee == 2014 & type_pech == "PENOF"))
-
+  dplyr::filter(!(no_lac == "39016" & annee == 2014 & typ_pech == "PENOF"))
+combinaisons <- combinaisons[-seq_len(292), ]
 
 # ==== Tester exemple_utilisation.R sur les combinaisons observées ----
 

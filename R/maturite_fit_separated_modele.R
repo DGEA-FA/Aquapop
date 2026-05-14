@@ -39,20 +39,21 @@
 maturite_fit_separated_modele <- function(df, variable = c("ltm", "age")) {
   variable <- match.arg(variable)
   
-  # --- Étape 1 : Vérification des colonnes requises ---
+  # --- Vérification des colonnes requises ---
   required_cols <- c("maturite", "sexe", variable)
   missing_cols <- setdiff(required_cols, colnames(df))
+  
   if (length(missing_cols) > 0) {
     stop("Le dataframe doit contenir les colonnes : ", paste(missing_cols, collapse = ", "))
   }
   
-  # --- Étape 2 : Vérification de la présence des deux sexes ---
+  # --- Vérification de la présence des deux sexes ---
   if (!all(c("M", "F") %in% df$sexe)) {
     warning("Un seul sexe observé. L'ajustement des modèles séparés est impossible.")
     return(NULL)
   }
   
-  # --- Étape 3 : Ajustement des modèles séparés par sexe ---
+  # --- Ajustement des modèles séparés par sexe ---
   if (variable == "ltm") {
     list(
       M_logit   = glm(maturite ~ ltm, family = binomial(link = "logit"),   data = df[df$sexe == "M", ]),

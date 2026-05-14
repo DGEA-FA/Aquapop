@@ -254,38 +254,65 @@ mod_maturite_l50_server <- function(id, specimen, filename_suffix) {
       )
     })
     
-   output$table_l50_f <- renderReactable({
-  req(afficher_modeles_separes_l50())
-  
-     idx <- default_index_l50_f()
-     
-  reactable(
-    as.data.frame(table_l50_f()),
-    selection = "single",
-    defaultSelected = if (is.na(idx)) NULL else idx,
-    pagination = FALSE,
-    showPageInfo = FALSE,
-    compact = TRUE,
-    outlined = TRUE,
-    defaultPageSize = 20,
-    onClick = "select",
-    defaultColDef = colDef(
-      align = "center",
-      headerStyle = list(textAlign = "center")
-    ),
-    columns = list(
-      modele_id = colDef(name = "Modèle"),
-      lien = colDef(name = "Lien", show = FALSE),
-      convergence = colDef(name = "Convergence"),
-      pearson_x2_pval = colDef(name = "p (χ² de Pearson)"),
-      goodness_of_link_pval = colDef(name = "p (test du lien)"),
-      aicc = colDef(name = "AICc"),
-      commentaire = colDef(name = "Commentaire"),
-      type = colDef(name = "Type de modèle", show = FALSE),
-      recommande = colDef(name = "✔ Recommandé")
-    )
-  )
-})
+    output$table_l50_f <- renderReactable({
+      req(afficher_modeles_separes_l50())
+      
+      idx <- default_index_l50_f()
+      
+      reactable(
+        as.data.frame(table_l50_f()),
+        selection = "single",
+        defaultSelected = if (is.na(idx)) NULL else idx,
+        pagination = FALSE,
+        showPageInfo = FALSE,
+        compact = TRUE,
+        outlined = TRUE,
+        defaultPageSize = 20,
+        onClick = "select",
+        defaultColDef = colDef(
+          align = "center",
+          headerStyle = list(textAlign = "center"),
+          na = "-"
+        ),
+        columns = list(
+          modele_id = colDef(name = "Modèle"),
+          lien = colDef(name = "Lien", show = FALSE),
+          modele = colDef( show = FALSE),
+          
+          convergence = colDef(
+            name = "Convergence",
+            cell = function(value) {
+              if (isTRUE(value)) "\u2713" else "\u2717"
+            }
+          ),
+          
+          pearson_x2_pval = colDef(
+            name = "p (χ² de Pearson)",
+            cell = function(value) format_pval(value)
+          ),
+          
+          goodness_of_link_pval = colDef(
+            name = "p (test du lien)",
+            cell = function(value) format_pval(value)
+          ),
+          
+          aicc = colDef(
+            name = "AICc",
+            format = colFormat(digits = 2, locales = "fr-CA")
+          ),
+          
+          commentaire = colDef(name = "Commentaire"),
+          type = colDef(name = "Type de modèle", show = FALSE),
+          
+          recommande = colDef(
+            name = "Recommandé",
+            cell = function(value) {
+              if (isTRUE(value)) "\u2713" else ""
+            }
+          )
+        )
+      )
+    })
     
     # ==== Section Mâles ----
     output$section_l50_males <- renderUI({
@@ -317,36 +344,65 @@ mod_maturite_l50_server <- function(id, specimen, filename_suffix) {
       )
     })
     
-   output$table_l50_m <- renderReactable({
-     req(afficher_modeles_separes_l50())
-     idx <- default_index_l50_m()
-     reactable(
-       as.data.frame(table_l50_m()),
-       selection = "single",
-       pagination = FALSE,
-       defaultSelected = if (is.na(idx)) NULL else idx,
-       showPageInfo = FALSE,
-       compact = TRUE,
-       outlined = TRUE,
-       defaultPageSize = 20,
-       onClick = "select",
-       defaultColDef = colDef(
-         align = "center",
-         headerStyle = list(textAlign = "center")
-       ),
-       columns = list(
-         modele_id = colDef(name = "Modèle"),
-         lien = colDef(name = "Lien", show = FALSE),
-         convergence = colDef(name = "Convergence"),
-         pearson_x2_pval = colDef(name = "p (χ² de Pearson)"),
-         goodness_of_link_pval = colDef(name = "p (test du lien)"),
-         aicc = colDef(name = "AICc"),
-         commentaire = colDef(name = "Commentaire"),
-         type = colDef(name = "Type de modèle", show = FALSE),
-         recommande = colDef(name = "✔ Recommandé")
-       )
-     )
-   })
+    output$table_l50_m <- renderReactable({
+      req(afficher_modeles_separes_l50())
+      
+      idx <- default_index_l50_m()
+      
+      reactable(
+        as.data.frame(table_l50_m()),
+        selection = "single",
+        pagination = FALSE,
+        defaultSelected = if (is.na(idx)) NULL else idx,
+        showPageInfo = FALSE,
+        compact = TRUE,
+        outlined = TRUE,
+        defaultPageSize = 20,
+        onClick = "select",
+        defaultColDef = colDef(
+          align = "center",
+          headerStyle = list(textAlign = "center"),
+          na = "-"
+        ),
+        columns = list(
+          modele_id = colDef(name = "Modèle"),
+          lien = colDef(name = "Lien", show = FALSE),
+          modele = colDef( show = FALSE),
+          
+          convergence = colDef(
+            name = "Convergence",
+            cell = function(value) {
+              if (isTRUE(value)) "\u2713" else "\u2717"
+            }
+          ),
+          
+          pearson_x2_pval = colDef(
+            name = "p (χ² de Pearson)",
+            cell = function(value) format_pval(value)
+          ),
+          
+          goodness_of_link_pval = colDef(
+            name = "p (test du lien)",
+            cell = function(value) format_pval(value)
+          ),
+          
+          aicc = colDef(
+            name = "AICc",
+            format = colFormat(digits = 2, locales = "fr-CA")
+          ),
+          
+          commentaire = colDef(name = "Commentaire"),
+          type = colDef(name = "Type de modèle", show = FALSE),
+          
+          recommande = colDef(
+            name = "Recommandé",
+            cell = function(value) {
+              if (isTRUE(value)) "\u2713" else ""
+            }
+          )
+        )
+      )
+    })
     
     # ==== Section combinée ----
     output$section_l50_combine <- renderUI({
@@ -380,6 +436,7 @@ mod_maturite_l50_server <- function(id, specimen, filename_suffix) {
     
     output$table_l50_comb <- renderReactable({
       req(afficher_modeles_combines_l50())
+      
       idx <- default_index_l50_comb()
       
       reactable(
@@ -394,22 +451,48 @@ mod_maturite_l50_server <- function(id, specimen, filename_suffix) {
         onClick = "select",
         defaultColDef = colDef(
           align = "center",
-          headerStyle = list(textAlign = "center")
+          headerStyle = list(textAlign = "center"),
+          na = "-"
         ),
         
         columns = list(
           modele_id = colDef(name = "Modèle"),
           modele = colDef(name = "Type"),
           lien = colDef(name = "Lien"),
-          convergence = colDef(name = "Convergence"),
-          pearson_x2_pval = colDef(name = "p (χ² de Pearson)"),
-          goodness_of_link_pval = colDef(name = "p (test du lien)"),
-          aicc = colDef(name = "AICc"),
+          
+          convergence = colDef(
+            name = "Convergence",
+            cell = function(value) {
+              if (isTRUE(value)) "\u2713" else "\u2717"
+            }
+          ),
+          
+          pearson_x2_pval = colDef(
+            name = "p (χ² de Pearson)",
+            cell = function(value) format_pval(value)
+          ),
+          
+          goodness_of_link_pval = colDef(
+            name = "p (test du lien)",
+            cell = function(value) format_pval(value)
+          ),
+          
+          aicc = colDef(
+            name = "AICc",
+            format = colFormat(digits = 2, locales = "fr-CA")
+          ),
+          
           commentaire = colDef(name = "Commentaire"),
           type = colDef(name = "Type de modèle", show = FALSE),
-          recommande = colDef(name = "✔ Recommandé")
+          
+          recommande = colDef(
+            name = "Recommandé",
+            cell = function(value) {
+              if (isTRUE(value)) "\u2713" else ""
+            }
           )
         )
+      )
     })
     
     # ==== Affichage des tableaux de résultats ----

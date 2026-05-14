@@ -34,6 +34,8 @@ maturite_select_best_separated_modele <- function(evaluation_df) {
   # --- Étape 3 : Aucun modèle valide du tout ---
   if (nrow(valid_M) == 0 && nrow(valid_F) == 0) {
     return(list(
+      best_model_M = NULL,
+      best_model_F = NULL,
       use_combined = TRUE,
       message = "Aucun modèle valide n'a convergé pour les mâles et les femelles en approche séparée. Testez une approche sexes combinés."
     ))
@@ -42,6 +44,8 @@ maturite_select_best_separated_modele <- function(evaluation_df) {
   # --- Étape 4 : Aucun modèle valide pour les mâles ---
   if (nrow(valid_M) == 0) {
     return(list(
+      best_model_M = NULL,
+      best_model_F = NULL,
       use_combined = TRUE,
       message = "Aucun modèle valide n'a convergé pour les mâles. Testez une approche sexes combinés."
     ))
@@ -50,6 +54,8 @@ maturite_select_best_separated_modele <- function(evaluation_df) {
   # --- Étape 5 : Aucun modèle valide pour les femelles ---
   if (nrow(valid_F) == 0) {
     return(list(
+      best_model_M = NULL,
+      best_model_F = NULL,
       use_combined = TRUE,
       message = "Aucun modèle valide n'a convergé pour les femelles. Testez une approche sexes combinés."
     ))

@@ -140,7 +140,7 @@ build_individual_model_row <- function(mod, id) {
     convergence = conv,
     pearson_x2_pval = p_fit,
     goodness_of_link_pval = p_link,
-    aicc = round(aicc_val, 2),
+    aicc = aicc_val,
     commentaire = comm,
     stringsAsFactors = FALSE
   )

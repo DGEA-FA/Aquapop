@@ -29,6 +29,7 @@ test_that("Retourne use_combined = TRUE si aucun modèle mâle", {
   
   expect_true(res$use_combined)
   expect_null(res$best_model_M)
+  expect_null(res$best_model_F)
   expect_match(
     res$message,
     "Aucun modèle valide.*mâles"
@@ -47,6 +48,7 @@ test_that("Retourne use_combined = TRUE si aucun modèle femelle", {
   
   expect_true(res$use_combined)
   expect_null(res$best_model_F)
+  expect_null(res$best_model_M)
   expect_match(
     res$message,
     "Aucun modèle valide.*femelles"

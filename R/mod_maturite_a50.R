@@ -258,8 +258,8 @@ mod_maturite_a50_server <- function(id, specimen, filename_suffix) {
     
     output$table_a50_f <- renderReactable({
       req(afficher_modeles_separes_a50())
-      idx <- default_index_a50_f()
       
+      idx <- default_index_a50_f()
       
       reactable(
         as.data.frame(table_a50_f()),
@@ -273,18 +273,45 @@ mod_maturite_a50_server <- function(id, specimen, filename_suffix) {
         onClick = "select",
         defaultColDef = colDef(
           align = "center",
-          headerStyle = list(textAlign = "center")
+          headerStyle = list(textAlign = "center"),
+          na = "-"
         ),
         columns = list(
           modele_id = colDef(name = "Modèle"),
           lien = colDef(name = "Lien", show = FALSE),
-          convergence = colDef(name = "Convergence"),
-          pearson_x2_pval = colDef(name = "p (χ² de Pearson)"),
-          goodness_of_link_pval = colDef(name = "p (test du lien)"),
-          aicc = colDef(name = "AICc"),
+          modele = colDef( show = FALSE),
+          
+          convergence = colDef(
+            name = "Convergence",
+            cell = function(value) {
+              if (isTRUE(value)) "\u2713" else "\u2717"
+            }
+          ),
+          
+          pearson_x2_pval = colDef(
+            name = "p (χ² de Pearson)",
+            cell = function(value) format_pval(value)
+          ),
+          
+          goodness_of_link_pval = colDef(
+            name = "p (test du lien)",
+            cell = function(value) format_pval(value)
+          ),
+          
+          aicc = colDef(
+            name = "AICc",
+            format = colFormat(digits = 2, locales = "fr-CA")
+          ),
+          
           commentaire = colDef(name = "Commentaire"),
           type = colDef(name = "Type de modèle", show = FALSE),
-          recommande = colDef(name = "✔ Recommandé")
+          
+          recommande = colDef(
+            name = "Recommandé",
+            cell = function(value) {
+              if (isTRUE(value)) "\u2713" else ""
+            }
+          )
         )
       )
     })
@@ -336,18 +363,45 @@ mod_maturite_a50_server <- function(id, specimen, filename_suffix) {
         onClick = "select",
         defaultColDef = colDef(
           align = "center",
-          headerStyle = list(textAlign = "center")
+          headerStyle = list(textAlign = "center"),
+          na = "-"
         ),
         columns = list(
           modele_id = colDef(name = "Modèle"),
           lien = colDef(name = "Lien", show = FALSE),
-          convergence = colDef(name = "Convergence"),
-          pearson_x2_pval = colDef(name = "p (χ² de Pearson)"),
-          goodness_of_link_pval = colDef(name = "p (test du lien)"),
-          aicc = colDef(name = "AICc"),
+          modele = colDef( show = FALSE),
+          
+          convergence = colDef(
+            name = "Convergence",
+            cell = function(value) {
+              if (isTRUE(value)) "\u2713" else "\u2717"
+            }
+          ),
+          
+          pearson_x2_pval = colDef(
+            name = "p (χ² de Pearson)",
+            cell = function(value) format_pval(value)
+          ),
+          
+          goodness_of_link_pval = colDef(
+            name = "p (test du lien)",
+            cell = function(value) format_pval(value)
+          ),
+          
+          aicc = colDef(
+            name = "AICc",
+            format = colFormat(digits = 2, locales = "fr-CA")
+          ),
+          
           commentaire = colDef(name = "Commentaire"),
           type = colDef(name = "Type de modèle", show = FALSE),
-          recommande = colDef(name = "✔ Recommandé")
+          
+          recommande = colDef(
+            name = "Recommandé",
+            cell = function(value) {
+              if (isTRUE(value)) "\u2713" else ""
+            }
+          )
         )
       )
     })
@@ -399,19 +453,45 @@ mod_maturite_a50_server <- function(id, specimen, filename_suffix) {
         onClick = "select",
         defaultColDef = colDef(
           align = "center",
-          headerStyle = list(textAlign = "center")
+          headerStyle = list(textAlign = "center"),
+          na = "-"
         ),
         columns = list(
           modele_id = colDef(name = "Modèle"),
           modele = colDef(name = "Type"),
           lien = colDef(name = "Lien"),
-          convergence = colDef(name = "Convergence"),
-          pearson_x2_pval = colDef(name = "p (χ² de Pearson)"),
-          goodness_of_link_pval = colDef(name = "p (test du lien)"),
-          aicc = colDef(name = "AICc"),
+          
+          convergence = colDef(
+            name = "Convergence",
+            cell = function(value) {
+              if (isTRUE(value)) "\u2713" else "\u2717"
+            }
+          ),
+          
+          pearson_x2_pval = colDef(
+            name = "p (χ² de Pearson)",
+            cell = function(value) format_pval(value)
+          ),
+          
+          goodness_of_link_pval = colDef(
+            name = "p (test du lien)",
+            cell = function(value) format_pval(value)
+          ),
+          
+          aicc = colDef(
+            name = "AICc",
+            format = colFormat(digits = 2, locales = "fr-CA")
+          ),
+          
           commentaire = colDef(name = "Commentaire"),
           type = colDef(name = "Type de modèle", show = FALSE),
-          recommande = colDef(name = "✔ Recommandé")
+          
+          recommande = colDef(
+            name = "Recommandé",
+            cell = function(value) {
+              if (isTRUE(value)) "\u2713" else ""
+            }
+          )
         )
       )
     })

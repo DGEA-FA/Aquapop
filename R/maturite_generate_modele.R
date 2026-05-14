@@ -27,7 +27,7 @@
 #' @importFrom dplyr bind_rows filter mutate pull
 #' @importFrom ggplot2 ggplot aes geom_line geom_ribbon geom_point labs annotate theme
 #' @importFrom FSA Summarize
-#' @importFrom flextable flextable compose as_paragraph as_sub set_header_labels add_footer_lines
+#' @importFrom flextable flextable compose as_paragraph as_sub set_header_labels add_footer_lines colformat_double
 maturite_generate_modele <- function(data,
                                      variable = c("ltm", "age"),
                                      modele = c("TLO", "ADD", "COM", "INT"),
@@ -167,25 +167,25 @@ maturite_generate_modele <- function(data,
   if (modele == "TLO") {
     ic <- confint_L(modele_glm, method = "montecarlo", interval_type = "bca", nboot = nboot)
     
-    point50 <- round(ic[2])
-    point50_inf <- round(ic[1])
-    point50_sup <- round(ic[3])
+    point50 <- ic[2]
+    point50_inf <- ic[1]
+    point50_sup <- ic[3]
     
   } else {
     kappa <- if (lien == "cloglog") 0.3665129 else 0
     
     point50 <- switch(modele,
                       "ADD" = list(
-                        fem = round((-b0 - kappa) / b1),
-                        male = round((-b0 - b2 - kappa) / b1)
+                        fem = (-b0 - kappa) / b1,
+                        male = (-b0 - b2 - kappa) / b1
                       ),
                       "COM" = list(
-                        fem = round((-b0 - kappa) / b1),
-                        male = round((-b0 - kappa) / b2)
+                        fem = (-b0 - kappa) / b1,
+                        male = (-b0 - kappa) / b2
                       ),
                       "INT" = list(
-                        fem = round((-b0 - kappa) / b1),
-                        male = round((-b0 - b2 - kappa) / (b1 + b3))
+                        fem = (-b0 - kappa) / b1,
+                        male = (-b0 - b2 - kappa) / (b1 + b3)
                       ),
                       stop("❌ Modèle non supporté pour le calcul du point50.")
     )
@@ -232,9 +232,12 @@ maturite_generate_modele <- function(data,
   
   if (modele == "TLO") {
     table_resultats <- data.frame(
-      intervalle = glue("[{point50_inf}-{point50_sup}]"),
-      b0 = round(b0, 3),
-      b1 = round(b1, 3)
+      intervalle = glue(
+        "[{format(round(point50_inf, 0), decimal.mark = ',')} – ",
+        "{format(round(point50_sup, 0), decimal.mark = ',')}]"
+      ),
+      b0 = b0,
+      b1 = b1
     )
     
     col_point50 <- paste0(tolower(etiquette), "50")
@@ -246,10 +249,10 @@ maturite_generate_modele <- function(data,
     col_point50_m <- paste0(tolower(etiquette), "50_m")
     
     table_resultats <- data.frame(
-      b0 = round(b0, 3),
-      b1 = round(b1, 3),
-      sexe = if (exists("b2")) round(b2, 3) else NA,
-      interaction = if (exists("b3")) round(b3, 3) else NA
+      b0 = b0,
+      b1 = b1,
+      sexe = if (exists("b2")) b2 else NA_real_,
+      interaction = if (exists("b3")) b3 else NA_real_
     )
     
     table_resultats[[col_point50_f]] <- point50$fem
@@ -316,6 +319,36 @@ maturite_generate_modele <- function(data,
   
   ft <- ft |>
     style_flextable_aquapop()
+  
+  cols_coef <- intersect(
+    c("b0", "b1", "sexe", "interaction"),
+    names(table_resultats)
+  )
+  
+  if (length(cols_coef) > 0) {
+    ft <- ft |>
+      colformat_double(
+        j = cols_coef,
+        digits = 3,
+        decimal.mark = ",",
+        big.mark = " "
+      )
+  }
+  
+  cols_point50 <- intersect(
+    c("l50", "a50", "l50_f", "l50_m", "a50_f", "a50_m"),
+    names(table_resultats)
+  )
+  
+  if (length(cols_point50) > 0) {
+    ft <- ft |>
+      colformat_double(
+        j = cols_point50,
+        digits = 0,
+        decimal.mark = ",",
+        big.mark = " "
+      )
+  }
   
   ft <- add_footer_lines(ft, values = glue("Modèle: {modele}, lien: {lien}"))
   

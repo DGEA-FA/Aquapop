@@ -45,13 +45,13 @@ maturite_compare_modele <- function(specimen_data,
     modele_id = character(),
     modele = character(),
     lien = character(),
-    convergence = character(),
-    pearson_x2_pval = character(),
-    goodness_of_link_pval = character(),
-    aicc = character(),
+    convergence = logical(),
+    pearson_x2_pval = numeric(),
+    goodness_of_link_pval = numeric(),
+    aicc = numeric(),
     commentaire = character(),
     type = character(),
-    recommande = character()
+    recommande = logical()
   )
   
   empty_ft <- flextable(empty_eval) |>
@@ -122,14 +122,7 @@ maturite_compare_modele <- function(specimen_data,
   if (!is.null(best_comb$best_model) && length(best_comb$best_model) > 0) {
     eval_comb$recommande <- eval_comb$modele_id %in% best_comb$best_model
   }
-  
-  # ==== Formatage des p-valeurs ----
-  
-  eval_sep$pearson_x2_pval <- format_pval(eval_sep$pearson_x2_pval)
-  eval_sep$goodness_of_link_pval <- format_pval(eval_sep$goodness_of_link_pval)
-  eval_comb$pearson_x2_pval <- format_pval(eval_comb$pearson_x2_pval)
-  eval_comb$goodness_of_link_pval <- format_pval(eval_comb$goodness_of_link_pval)
-  
+
   # ==== Message final ----
   
   message <- paste0(best_sep$message, "\n", best_comb$message)
@@ -197,10 +190,16 @@ maturite_compare_modele <- function(specimen_data,
   
   # ==== Tableau affichage séparé ----
   
-  eval_sep_affichage <- eval_sep |>
+  ft_sep <- eval_sep |>
     mutate(
       convergence = if_else(.data$convergence, "Convergé", "Non convergé"),
-      aicc = if_else(is.na(.data$aicc), "-", as.character(round(.data$aicc, 2))),
+      pearson_x2_pval = format_pval(.data$pearson_x2_pval),
+      goodness_of_link_pval = format_pval(.data$goodness_of_link_pval),
+      aicc = if_else(
+        is.na(.data$aicc),
+        "-",
+        format(round(.data$aicc, 2), decimal.mark = ",", nsmall = 2)
+      ),
       recommande = if_else(.data$recommande, "✔", "")
     ) |>
     select(
@@ -213,9 +212,8 @@ maturite_compare_modele <- function(specimen_data,
       "commentaire",
       "type",
       "recommande"
-    )
-  
-  ft_sep <- flextable(eval_sep_affichage) |>
+    ) |>
+    flextable() |>
     set_header_labels(
       modele_id = "Modèle",
       lien = "Lien",
@@ -230,16 +228,22 @@ maturite_compare_modele <- function(specimen_data,
     style_flextable_aquapop()
   
   table_sep <- list(
-    df = eval_sep_affichage,
+    df = eval_sep,
     flextable = ft_sep
   )
   
   # ==== Tableau affichage combiné ----
   
-  eval_comb_affichage <- eval_comb |>
+  ft_comb <- eval_comb |>
     mutate(
       convergence = if_else(.data$convergence, "Convergé", "Non convergé"),
-      aicc = if_else(is.na(.data$aicc), "-", as.character(round(.data$aicc, 2))),
+      pearson_x2_pval = format_pval(.data$pearson_x2_pval),
+      goodness_of_link_pval = format_pval(.data$goodness_of_link_pval),
+      aicc = if_else(
+        is.na(.data$aicc),
+        "-",
+        format(round(.data$aicc, 2), decimal.mark = ",", nsmall = 2)
+      ),
       recommande = if_else(.data$recommande, "✔", "")
     ) |>
     select(
@@ -253,9 +257,8 @@ maturite_compare_modele <- function(specimen_data,
       "commentaire",
       "type",
       "recommande"
-    )
-  
-  ft_comb <- flextable(eval_comb_affichage) |>
+    ) |>
+    flextable() |>
     set_header_labels(
       modele_id = "Modèle",
       modele = "Type",
@@ -271,7 +274,7 @@ maturite_compare_modele <- function(specimen_data,
     style_flextable_aquapop()
   
   table_comb <- list(
-    df = eval_comb_affichage,
+    df = eval_comb,
     flextable = ft_comb
   )
   

@@ -8,8 +8,8 @@ devtools::load_all()
 
 path     <- "inst/extdata/Extract_IFA_AquaPop_2026-02-27.xlsx"
 typ_pech <- "PENOF"
-no_lac   <- "39016"
-annee    <- 2014
+no_lac   <- "01131"
+annee    <- 2013
 
 # path     <- get0("path",     ifnotfound = "inst/extdata/Extract_IFA_AquaPop_2026-02-27.xlsx")
 # typ_pech <- get0("typ_pech", ifnotfound = "PENOF")
@@ -261,6 +261,7 @@ str(res_l50$best_model)
 
 # Tableaux de comparaison
 res_l50$table$df
+str(res_l50$table$df)
 res_l50$table_sep$df
 res_l50$table_comb$df
 

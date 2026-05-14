@@ -41,23 +41,33 @@ calculate_mf_ratio <- function(male_count, female_count) {
 #'
 #' Cette fonction prend une ou plusieurs valeurs de p en entrée et retourne une version
 #' arrondie et formatée sous forme de chaîne de caractères, selon les conventions usuelles :
-#' - `< 0.001` pour les valeurs très faibles
+#' - `< 0,001` pour les valeurs très faibles
 #' - valeurs numériques à 3 décimales sinon
 #'
 #' @param p Un vecteur numérique contenant des valeurs p.
 #'
 #' @return Un vecteur de chaînes de caractères (`character`) contenant les valeurs p formatées.
-#' 
+#'
 #' @examples
 #' format_pval(c(0.0005, 0.02, 0.3456, NA))
-#' # [1] "< 0.001" "0.020" "0.346" NA
+#' # [1] "< 0,001" "0,020" "0,346" NA
 #'
 #' @export
 format_pval <- function(p) {
-  ifelse(is.na(p), NA_character_,
-         ifelse(p < 0.001, "< 0.001", formatC(round(p, 3), format = "f", digits = 3)))
+  ifelse(
+    is.na(p),
+    NA_character_,
+    ifelse(
+      p < 0.001,
+      "< 0,001",
+      format(
+        round(p, 3),
+        nsmall = 3,
+        decimal.mark = ","
+      )
+    )
+  )
 }
-
 
 
 #' Génère un suffixe de nom de fichier à partir des métadonnées du lac
