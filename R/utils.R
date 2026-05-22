@@ -78,7 +78,7 @@ format_pval <- function(p) {
 #' @param annee Année de l'inventaire (ex: `2022`)
 #' @param no_lac Numéro du lac (ex: `"01565"`)
 #' @param nom_lac Nom du lac (ex: `"Lac Archambault"`). Optionnel.
-#'
+#' @importFrom stringi stri_trans_general 
 #' @return Une chaîne de caractères.
 #'
 #' @export

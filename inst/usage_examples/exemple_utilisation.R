@@ -7,9 +7,9 @@ devtools::load_all()
 # Téléchargement des données ----
 
 path     <- "inst/extdata/Extract_IFA_AquaPop_2026-02-27.xlsx"
-typ_pech <- "PENOF"
-no_lac   <- "01131"
-annee    <- 2013
+typ_pech <- "PENDJ"
+no_lac   <- "98430"
+annee    <- 2017
 
 # path     <- get0("path",     ifnotfound = "inst/extdata/Extract_IFA_AquaPop_2026-02-27.xlsx")
 # typ_pech <- get0("typ_pech", ifnotfound = "PENOF")

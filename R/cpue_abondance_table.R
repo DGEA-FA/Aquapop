@@ -28,18 +28,48 @@ cpue_abondance_table <- function(data,
                                  cpue_table_femelles,
                                  best_model_tous,
                                  best_model_femelles) {
+  
+  extract_best_cpue <- function(cpue_table, best_model) {
+    if (is.na(best_model) || nrow(cpue_table) == 0) {
+      return(
+        tibble(
+          cpue = NA_real_,
+          ic95 = NA_character_
+        )
+      )
+    }
+    
+    best_row <- cpue_table |>
+      filter(.data$methode == best_model)
+    
+    if (nrow(best_row) == 0) {
+      return(
+        tibble(
+          cpue = NA_real_,
+          ic95 = NA_character_
+        )
+      )
+    }
+    
+    tibble(
+      cpue = best_row$cpue[[1]],
+      ic95 = best_row$ic95[[1]]
+    )
+  }
+  
+  
   # --- Statistiques globales ---
   total_individus <- nrow(data)
 
   # --- Extraction des CPUE et IC 95 % ---
-  best_tous <- cpue_table_tous[cpue_table_tous$methode == best_model_tous, ]
-  best_femelles <- cpue_table_femelles[cpue_table_femelles$methode == best_model_femelles, ]
-
-  cpue_tous <- best_tous$cpue
-  ic95_tous <- best_tous$ic95
-
-  cpue_femelles <- best_femelles$cpue
-  ic95_femelles <- best_femelles$ic95
+  best_tous <- extract_best_cpue(cpue_table_tous, best_model_tous)
+  best_femelles <- extract_best_cpue(cpue_table_femelles, best_model_femelles)
+  
+  cpue_tous <- best_tous$cpue[[1]]
+  ic95_tous <- best_tous$ic95[[1]]
+  
+  cpue_femelles <- best_femelles$cpue[[1]]
+  ic95_femelles <- best_femelles$ic95[[1]]
 
   # --- Tableaux par groupe biologique ---
 

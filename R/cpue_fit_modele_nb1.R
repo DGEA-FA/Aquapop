@@ -27,7 +27,7 @@
 #' @importFrom glmmTMB glmmTMB nbinom1
 #' @importFrom hnp hnp
 #' @importFrom stats predict simulate residuals
-#' @importFrom dplyr case_when
+#' @importFrom dplyr case_when n_distinct
 #' @importFrom tibble tibble
 #' @importFrom MuMIn AICc
 #' @export
@@ -50,6 +50,24 @@ cpue_fit_modele_nb1 <- function(cpue_data) {
         commentaire = "Le modèle n'a pas convergé.",
         convergence = FALSE,
         nb_iterations_hnp = NA_real_
+      )
+    )
+  }
+  
+  # --- Si une seule station : HNP non applicable ---
+  if (n_distinct(cpue_data$no_station) < 2) {
+    pred_mean <- unname(round(mean(cpue_data$cpue, na.rm = TRUE), 2))
+    
+    return(
+      tibble(
+        methode = "nb1",
+        ajustement_hnp = NA_real_,
+        aicc = NA_real_,
+        cpue_moyenne = pred_mean,
+        ic_95 = "IC non calculable",
+        commentaire = "Test HNP non applicable : une seule station disponible.",
+        convergence = TRUE,
+        nb_iterations_hnp = 0
       )
     )
   }

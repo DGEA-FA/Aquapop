@@ -12,8 +12,7 @@
 #'   \item{data}{Un `data.frame` comparatif des modèles.}
 #'   \item{flextable}{Une version formatée (`flextable`) pour exportation.}
 #' }
-#'
-#' @importFrom dplyr mutate select left_join arrange filter bind_rows
+#' @importFrom dplyr mutate select rename left_join arrange filter bind_rows if_else pull
 #' @importFrom tidyr replace_na
 #' @importFrom flextable flextable set_caption set_header_labels colformat_double
 #'
@@ -31,7 +30,7 @@ cpue_compare_modele <- function(cpue_data) {
   
   # --- Sélection des modèles bien ajustés selon le test HNP (< 10 %) ---
   resultats_bien_ajustes <- resultats_tous |>
-    filter(ajustement_hnp < 10)
+    filter(.data$ajustement_hnp < 10)
   
   # --- Calcul du delta AICc ---
   if (nrow(resultats_bien_ajustes) > 0) {
@@ -40,46 +39,46 @@ cpue_compare_modele <- function(cpue_data) {
     resultats_final <- resultats_tous |>
       mutate(
         delta_aicc = if_else(
-          ajustement_hnp < 10,
-          aicc - min_aicc_reference,
+          .data$ajustement_hnp < 10,
+          .data$aicc - min_aicc_reference,
           NA_real_
         )
       ) |>
-      arrange(ajustement_hnp >= 10, aicc)
+      arrange(.data$ajustement_hnp >= 10, .data$aicc)
     
   } else {
     min_aicc_reference <- min(resultats_tous$aicc, na.rm = TRUE)
     
     resultats_final <- resultats_tous |>
-      mutate(delta_aicc = aicc - min_aicc_reference) |>
-      arrange(aicc)
+      mutate(delta_aicc = .data$aicc - min_aicc_reference) |>
+      arrange(.data$aicc)
   }
   
   # --- Mise à jour des commentaires pour le modèle recommandé ---
   if (nrow(resultats_bien_ajustes) > 0) {
     best_methodes <- resultats_final |>
-      filter(delta_aicc == 0) |>
-      pull(methode)
+      filter(.data$delta_aicc == 0) |>
+      pull(.data$methode)
     
     resultats_final <- resultats_final |>
       mutate(
         commentaire = if_else(
-          methode %in% best_methodes,
-          paste0(commentaire, " Ce modèle est recommandé car son aicc est le plus faible."),
-          commentaire
+          .data$methode %in% best_methodes,
+          paste0(.data$commentaire, " Ce modèle est recommandé car son aicc est le plus faible."),
+          .data$commentaire
         )
       )
   } else {
     best_methodes <- resultats_final |>
-      filter(delta_aicc == 0) |>
-      pull(methode)
+      filter(.data$delta_aicc == 0) |>
+      pull(.data$methode)
     
     resultats_final <- resultats_final |>
       mutate(
         commentaire = if_else(
-          methode %in% best_methodes,
-          paste0(commentaire, " Il s'agit toutefois du meilleur modèle parmi les options disponibles."),
-          commentaire
+          .data$methode %in% best_methodes,
+          paste0(.data$commentaire, " Il s'agit toutefois du meilleur modèle parmi les options disponibles."),
+          .data$commentaire
         )
       )
   }
@@ -87,14 +86,19 @@ cpue_compare_modele <- function(cpue_data) {
   # --- Sélection et renommage des colonnes finales ---
   tableau_final <- resultats_final |>
     select(
-      methode = methode,
-      ajustement_hnp = ajustement_hnp,
-      aicc = aicc,
-      delta_aicc = delta_aicc,
-      cpue = cpue_moyenne,
-      ic95 = ic_95,
-      convergence = convergence,
-      commentaires = commentaire
+      "methode",
+      "ajustement_hnp",
+      "aicc",
+      "delta_aicc",
+      "cpue_moyenne",
+      "ic_95",
+      "convergence",
+      "commentaire"
+    ) |>
+    rename(
+      cpue = "cpue_moyenne",
+      ic95 = "ic_95",
+      commentaires = "commentaire"
     ) |>
     as.data.frame()
   
@@ -107,7 +111,7 @@ cpue_compare_modele <- function(cpue_data) {
   
   # --- Création de la table formatée ---
   ft_final <- tableau_final |>
-    mutate(convergence = ifelse(convergence, "\u2713", "\u2717")) |>
+    mutate(convergence = ifelse(.data$convergence, "\u2713", "\u2717")) |>
     flextable() |>
     set_caption(titre_caption) |>
     set_header_labels(
