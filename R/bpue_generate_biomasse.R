@@ -18,11 +18,11 @@
 #' femelles reproductrices actives. Les groupes sans intervalle de confiance ont
 #' une valeur `NA` dans la colonne `ic95`.
 #'
-#' @param data_specimen Un `data.frame` de spécimens filtrés, contenant
-#'   minimalement les colonnes `no_station`, `masse`, `sexe` et `maturite`.
-#' @param data_station Un `data.frame` des stations valides, contenant
-#'   minimalement la colonne `no_station`. Ce tableau est utilisé pour calculer
-#'   l'effort d'échantillonnage.
+#' @param specimen Un `data.frame` de spécimens filtrés pour les stations hasard et 
+#' valides, contenant minimalement les colonnes `no_station`, `masse`, `sexe` et `maturite`.
+#' @param station Un `data.frame` des stations hasard et valides, contenant
+#'  minimalement la colonne `no_station`. Ce tableau est utilisé pour calculer
+#'  l'effort d'échantillonnage.
 #'
 #' @return Une liste contenant :
 #' \describe{
@@ -53,12 +53,12 @@
 #' @importFrom officer fp_border
 #'
 #' @export
-bpue_generate_biomasse <- function(data_specimen, data_station) {
-  n_stations <- nrow(data_station)
+bpue_generate_biomasse <- function(specimen, station) {
+  n_stations <- nrow(station)
   
   # ---- Fonction interne : ajustement NB2 securise ----
   safe_nb_fit <- function(y) {
-    if (length(unique(y)) <= 1 || all(y == 0, na.rm = TRUE)) {
+   if (length(unique(y)) <= 1 || all(y == 0, na.rm = TRUE)) {
       return(list(bpue = 0, ic95 = "[0,00 – 0,00]"))
     }
     
@@ -92,10 +92,10 @@ bpue_generate_biomasse <- function(data_specimen, data_station) {
   
   
   # ---- Groupe "Tous" ----
-  biomasse_totale_par_station <- data_specimen |>
+  biomasse_totale_par_station <- specimen |>
     group_by(.data$no_station) |>
     summarise(biomasse_g = sum(.data$masse, na.rm = TRUE), .groups = "drop") |>
-    right_join(data_station |> select(.data$no_station), by = "no_station") |>
+    right_join(station |> select(.data$no_station), by = "no_station") |>
     mutate(biomasse_g = replace_na(.data$biomasse_g, 0))
   
   biomasse_totale_kg <- sum(biomasse_totale_par_station$biomasse_g) / 1000
@@ -110,11 +110,11 @@ bpue_generate_biomasse <- function(data_specimen, data_station) {
   )
   
   # ---- Groupe par sexe ----
-  biomasse_par_sexe <- data_specimen |>
+  biomasse_par_sexe <- specimen |>
     group_by(.data$no_station, .data$sexe) |>
     summarise(biomasse = sum(.data$masse, na.rm = TRUE), .groups = "drop") |>
     right_join(
-      expand_grid(no_station = data_station$no_station, sexe = unique(data_specimen$sexe)),
+      expand_grid(no_station = station$no_station, sexe = unique(specimen$sexe)),
       by = c("no_station", "sexe")
     ) |>
     mutate(biomasse = replace_na(.data$biomasse, 0)) |>
@@ -126,17 +126,17 @@ bpue_generate_biomasse <- function(data_specimen, data_station) {
       ic95 = NA_character_
     ) |>
     mutate(groupe = recode(.data$sexe,
-                                         "F" = "Femelle",
-                                         "M" = "Mâle",
-                                         "IND" = "Sexe inconnu")) |>
+                           "F" = "Femelle",
+                           "M" = "Mâle",
+                           "IND" = "Sexe inconnu")) |>
     select("groupe", "biomasse", "percent", "bpue", "ic95")
   
   # ---- Repro. actifs males ----
-  data_males_matures <- data_specimen |>
+  data_males_matures <- specimen |>
     filter(.data$sexe == "M", .data$maturite == "O") |>
     group_by(.data$no_station) |>
     summarise(biomasse = sum(.data$masse), .groups = "drop") |>
-    right_join(data_station |> select(.data$no_station), by = "no_station") |>
+    right_join(station |> select(.data$no_station), by = "no_station") |>
     mutate(biomasse = replace_na(.data$biomasse, 0))
   
   ligne_males_matures <- tibble(
@@ -148,11 +148,11 @@ bpue_generate_biomasse <- function(data_specimen, data_station) {
   )
   
   # ---- Repro. actifs femelles ----
-  data_femelles_matures <- data_specimen |>
+  data_femelles_matures <- specimen |>
     filter(.data$sexe == "F", .data$maturite == "O") |>
     group_by(.data$no_station) |>
     summarise(biomasse_g = sum(.data$masse), .groups = "drop") |>
-    right_join(data_station |> select(.data$no_station), by = "no_station") |>
+    right_join(station |> select(.data$no_station), by = "no_station") |>
     mutate(biomasse_g = replace_na(.data$biomasse_g, 0))
   
   biomasse_femelles_matures <- sum(data_femelles_matures$biomasse_g)
@@ -167,11 +167,11 @@ bpue_generate_biomasse <- function(data_specimen, data_station) {
   )
   
   # ---- Immatures ----
-  data_immatures <- data_specimen |>
+  data_immatures <- specimen |>
     filter(.data$maturite == "N") |>
     group_by(.data$no_station) |>
     summarise(biomasse = sum(.data$masse), .groups = "drop") |>
-    right_join(data_station |> select(.data$no_station), by = "no_station") |>
+    right_join(station |> select(.data$no_station), by = "no_station") |>
     mutate(biomasse = replace_na(.data$biomasse, 0))
   
   ligne_immatures <- tibble(
@@ -183,11 +183,11 @@ bpue_generate_biomasse <- function(data_specimen, data_station) {
   )
   
   # ---- Inconnu ----
-  data_inconnu <- data_specimen |>
+  data_inconnu <- specimen |>
     filter(.data$maturite == "IND") |>
     group_by(.data$no_station) |>
     summarise(biomasse = sum(.data$masse), .groups = "drop") |>
-    right_join(data_station |> select(.data$no_station), by = "no_station") |>
+    right_join(station |> select(.data$no_station), by = "no_station") |>
     mutate(biomasse = replace_na(.data$biomasse, 0))
   
   ligne_inconnu <- tibble(

@@ -3,8 +3,8 @@
 #' Cette fonction ajuste cinq modèles statistiques (Poisson, NB1, NB2, CMP, GP)
 #' sur les fréquences d'âge, puis retourne un tableau comparatif incluant :
 #' le critère d'information corrigé (AICc), le pourcentage d'ajustement HNP,
-#' l'estimation de Z, l'intervalle de confiance de A (%), et les commentaires
-#' interprétatifs pour guider la sélection du meilleur modèle.
+#' l'estimation de Z, l'intervalle de confiance de A (%), le poids d'Akaike et
+#' les commentaires interprétatifs pour guider la sélection du meilleur modèle.
 #'
 #' La fonction retourne toujours une liste structurée contenant :
 #' \itemize{
@@ -56,13 +56,20 @@ mortalite_compare_modele <- function(data) {
   result_cmp <- mortalite_fit_modele_cmp(data)
   result_gp <- mortalite_fit_modele_gp(data)
   
+  table_poisson <- result_poisson$tableau
+  table_nb1 <- result_nb1$tableau
+  table_nb2 <- result_nb2$tableau
+  table_cmp <- result_cmp$tableau
+  table_gp <- result_gp$tableau
+  
+  
   # Regroupement ====
   resultats <- bind_rows(
-    result_poisson,
-    result_nb1,
-    result_nb2,
-    result_cmp,
-    result_gp
+    result_poisson$tableau,
+    result_nb1$tableau,
+    result_nb2$tableau,
+    result_cmp$tableau,
+    result_gp$tableau
   )
   
   if (nrow(resultats) == 0) {
@@ -74,21 +81,41 @@ mortalite_compare_modele <- function(data) {
     ))
   }
   
-  # Calcul du delta AIC ====
+  # Calcul du delta AIC et poids d'Akaike ====
   if (all(is.na(resultats$aicc))) {
     resultats <- resultats |>
-      mutate(delta_aic = NA_real_)
+      mutate(delta_aic = NA_real_,
+             aiccwt = NA_real_
+             )
   } else {
     meilleur_aicc <- min(resultats$aicc, na.rm = TRUE)
     
     resultats <- resultats |>
       mutate(
-        delta_aic = case_when(
-          is.na(.data$aicc) ~ NA_real_,
-          TRUE ~ round(.data$aicc - meilleur_aicc, 2)
+        delta_aic = if_else(
+          is.na(.data$aicc),
+          NA_real_,
+          .data$aicc - meilleur_aicc
         )
       )
+    
+    somme_aiccwt <- sum(
+      exp(-0.5 * resultats$delta_aic),
+      na.rm = TRUE
+    )
+    
+    resultats <- resultats |>
+      mutate(
+        aiccwt = if_else(
+          is.na(.data$delta_aic),
+          NA_real_,
+          exp(-0.5 * .data$delta_aic) / somme_aiccwt
+        ),
+        delta_aic = round(.data$delta_aic, 2),
+        aiccwt = round(.data$aiccwt, 4)
+      )
   }
+  
   
   # Commentaires interprétatifs ====
   resultats <- resultats |>
@@ -96,7 +123,9 @@ mortalite_compare_modele <- function(data) {
       commentaire = case_when(
         .data$convergence %in% FALSE ~ .data$commentaire,
         !is.na(.data$ajustement_hnp) & !is.na(.data$delta_aic) & .data$ajustement_hnp < 10 & .data$delta_aic == 0 ~
-          "Le modèle s'ajuste bien à vos données. Ce modèle est recommandé car son AICc est le plus faible.",
+          "Bon ajustement. Ce modèle est recommandé car son AICc est le plus faible.",
+        !is.na(.data$ajustement_hnp) & !is.na(.data$delta_aic) & .data$ajustement_hnp < 10 & .data$delta_aic > 0 & .data$delta_aic < 2 ~
+          "Bon ajustement. Il s'agit d'un modèle alternatif ayant un support statistique similaire au modèle recommandé.",
         !is.na(.data$ajustement_hnp) & !is.na(.data$delta_aic) & .data$ajustement_hnp >= 10 & .data$delta_aic == 0 ~
           "Le modèle ne s'ajuste pas bien à vos données. Il s'agit toutefois du meilleur modèle parmi les options disponibles.",
         TRUE ~ .data$commentaire
@@ -115,6 +144,7 @@ mortalite_compare_modele <- function(data) {
       "SE",
       "A",
       "ic95",
+      "aiccwt",
       "convergence",
       "commentaire"
     )
@@ -129,13 +159,16 @@ mortalite_compare_modele <- function(data) {
       delta_aic     = "Δ AICc",
       Z   = "Z",
       SE = "SE",
-      A  = "A",
+      A  = "A (%)",
       ic95   = "IC 95%",
+      aiccwt = "Poids d’Akaike",
       convergence = "Convergence",
       commentaire  = "Commentaires"
     ) |>
     style_flextable_aquapop() |>
-    colformat_double(j = "aicc", digits = 2,decimal.mark = ",", big.mark = " ", na_str = "-" )  
+    colformat_double(j = "aicc", digits = 2,decimal.mark = ",", big.mark = " ", na_str = "-" ) |>
+    colformat_double(j = "aiccwt", digits = 3,decimal.mark = ",", big.mark = " ", na_str = "-" )  
+  
 
   # Message global ====
   message <- NULL
@@ -146,10 +179,34 @@ mortalite_compare_modele <- function(data) {
     message <- "Les modèles ont été ajustés partiellement, mais aucun AICc n'a pu être calculé."
   }
   
-  list(
+  # Graphique HNP ====
+  
+  graph_hnp_par_modele <- list(
+    poisson = result_poisson$graph_hnp,
+    nb1 = result_nb1$graph_hnp,
+    nb2 = result_nb2$graph_hnp,
+    cmp = result_cmp$graph_hnp,
+    gp = result_gp$graph_hnp
+  )
+  
+  best_model <- mortalite_select_best_modele(resultats)
+  
+  graph_hnp <- if (!is.null(best_model)) {
+    graph_hnp_par_modele[[best_model]]
+  } else {
+    NULL
+  }
+  
+  
+  return(list(
     success = TRUE,
     message = message,
     data = df_final,
-    flextable = ft
-  )
+    flextable = ft,
+    best_model = best_model,
+    graph_hnp = graph_hnp,
+    graph_hnp_par_modele = graph_hnp_par_modele
+  ))
+  
 }
+

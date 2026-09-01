@@ -42,9 +42,7 @@ mod_telechargement_ui <- function(id) {
           tabPanelBody("data_lac", DTOutput(ns("table_lac"))),
           tabPanelBody("data_station", DTOutput(ns("table_station"))),
           tabPanelBody("specimen_tous", DTOutput(ns("table_specimen_tous"))),
-          tabPanelBody("specimen_valide", DTOutput(ns("table_specimen_valide"))),
-          tabPanelBody("specimen_hasard_valide", DTOutput(ns("table_specimen_hasard_valide"))),
-          tabPanelBody("capture", DTOutput(ns("table_capture")))
+          tabPanelBody("data_recolte", DTOutput(ns("table_data_recolte")))
         )
       )
     )
@@ -94,7 +92,7 @@ mod_telechargement_server <- function(id) {
       tagList(
         checkboxGroupInput(ns("annee"), "Sélectionner les années à considérer",
                            choices = sort(unique(df_filtered2()$annee))),
-        p("Si plus d'une année d'inventaire est sélectionnée...",
+        p("Si plus d'une année est sélectionnée, l'ensemble des données seront compilées dans un seul inventaire.",
           style = "font-size: 85%; color: #555;")
       )
     })
@@ -136,11 +134,9 @@ mod_telechargement_server <- function(id) {
       selectInput(ns("controller"), "Visualiser les données", 
                   choices = c(
                     "Lac" = "data_lac",
-                    "Stations (TOUS)" = "data_station",
-                    "Spécimens (TOUS)" = "specimen_tous",
-                    "Spécimens valides" = "specimen_valide",
-                    "Spécimens hasards et valides" = "specimen_hasard_valide",
-                    "Capture" = "capture"
+                    "Stations" = "data_station",
+                    "Récolte" = "data_recolte",
+                    "Spécimens" = "specimen_tous"
                   ), selected = NULL)
     })
     
@@ -151,9 +147,7 @@ mod_telechargement_server <- function(id) {
     output$table_lac <- renderDT(data_lac(), selection = "none", options = list(lengthChange = FALSE, paging = FALSE, searching = FALSE))
     output$table_station <- renderDT(analysis_data()$data_station, selection = "none", options = list(searching = FALSE, lengthMenu = -1, lengthChange = FALSE, paging = FALSE))
     output$table_specimen_tous <- renderDT(analysis_data()$specimen_tous, selection = "none", options = list(searching = FALSE, lengthChange = FALSE, paging = FALSE))
-    output$table_specimen_valide <- renderDT(analysis_data()$specimen_valide, selection = "none", options = list(searching = FALSE, lengthChange = FALSE, paging = FALSE))
-    output$table_specimen_hasard_valide <- renderDT(analysis_data()$specimen_hasard_valide, selection = "none", options = list(searching = FALSE, lengthChange = FALSE, paging = FALSE))
-    output$table_capture <- renderDT(analysis_data()$capture, selection = "none", options = list(searching = FALSE, lengthChange = FALSE, paging = FALSE))
+    output$table_data_recolte <- renderDT(analysis_data()$data_recolte, selection = "none", options = list(searching = FALSE, lengthChange = FALSE, paging = FALSE))
     
     filename_suffix <- reactive({
       generate_filename_suffix(
@@ -166,6 +160,7 @@ mod_telechargement_server <- function(id) {
     
     return(list(
       data_lac = data_lac,
+      data_recolte = reactive(analysis_data()$data_recolte),
       capture = reactive(analysis_data()$capture),
       specimen_tous = reactive(analysis_data()$specimen_tous),
       specimen_hasard_valide = reactive(analysis_data()$specimen_hasard_valide),
@@ -174,7 +169,8 @@ mod_telechargement_server <- function(id) {
       station_valide = reactive(analysis_data()$station_valide),
       station_hasard_valide = reactive(analysis_data()$station_hasard_valide),
       filename_suffix = filename_suffix,
-      nom_lac = nom_lac_reactif
+      nom_lac = nom_lac_reactif,
+      info_pen = info_pen_reactive
     ))
   })
 }

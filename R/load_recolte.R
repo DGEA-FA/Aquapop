@@ -127,8 +127,6 @@ load_recolte <- function(path,
     ) |>
     select(-any_of("comments"))
   
-  # --- Suppression des doublons ---
-  recolte <- distinct(recolte)
-  
+
   return(recolte)
 }

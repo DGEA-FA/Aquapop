@@ -2,10 +2,10 @@
 #'
 #' Cette fonction ajuste cinq modèles (Poisson, NB1, NB2, CMP, GP) sur les données de CPUE.
 #' Elle retourne un tableau comparatif des ajustements, des aicc, de la moyenne de CPUE
-#' et des intervalles de confiance, tout en identifiant le meilleur modèle recommandé.
+#' et des intervalles de confiance, tout en identifiant le(s) meilleur(s) modèle(s) recommandé(s).
 #'
-#' @param cpue_data Un `data.frame` produit par `cpue_prepare()`, contenant au minimum
-#' la colonne `cpue` et les identifiants des stations (`no_station`).
+#' @param capture Un `data.frame` produit par `get_analysis_data()`, contenant au minimum
+#' la colonne `nb_capture` et les identifiants des stations (`no_station`).
 #'
 #' @return Une liste contenant :
 #' \describe{
@@ -17,13 +17,13 @@
 #' @importFrom flextable flextable set_caption set_header_labels colformat_double
 #'
 #' @export
-cpue_compare_modele <- function(cpue_data) {
+cpue_compare_modele <- function(capture) {
   # --- Ajustement des cinq modèles ---
-  result_poisson <- cpue_fit_modele_poisson(cpue_data)
-  result_nb1     <- cpue_fit_modele_nb1(cpue_data)
-  result_nb2     <- cpue_fit_modele_nb2(cpue_data)
-  result_cmp     <- cpue_fit_modele_cmp(cpue_data)
-  result_gp      <- cpue_fit_modele_gp(cpue_data)
+  result_poisson <- cpue_fit_modele_poisson(capture)
+  result_nb1     <- cpue_fit_modele_nb1(capture)
+  result_nb2     <- cpue_fit_modele_nb2(capture)
+  result_cmp     <- cpue_fit_modele_cmp(capture)
+  result_gp      <- cpue_fit_modele_gp(capture)
   
   # --- Fusion des résultats ---
   resultats_tous <- bind_rows(result_poisson, result_nb1, result_nb2, result_cmp, result_gp)
@@ -38,11 +38,7 @@ cpue_compare_modele <- function(cpue_data) {
     
     resultats_final <- resultats_tous |>
       mutate(
-        delta_aicc = if_else(
-          .data$ajustement_hnp < 10,
-          .data$aicc - min_aicc_reference,
-          NA_real_
-        )
+        delta_aicc = .data$aicc - min_aicc_reference
       ) |>
       arrange(.data$ajustement_hnp >= 10, .data$aicc)
     
@@ -57,17 +53,23 @@ cpue_compare_modele <- function(cpue_data) {
   # --- Mise à jour des commentaires pour le modèle recommandé ---
   if (nrow(resultats_bien_ajustes) > 0) {
     best_methodes <- resultats_final |>
-      filter(.data$delta_aicc == 0) |>
+       filter(.data$delta_aicc == 0) |>
       pull(.data$methode)
     
     resultats_final <- resultats_final |>
       mutate(
-        commentaire = if_else(
-          .data$methode %in% best_methodes,
-          paste0(.data$commentaire, " Ce modèle est recommandé car son aicc est le plus faible."),
-          .data$commentaire
-        )
+        commentaire = case_when(
+          .data$methode %in% best_methodes ~ paste0(
+            .data$commentaire, " Ce modèle est recommandé car son AICc est le plus faible."
+        ),
+        .data$delta_aicc < 2~ paste0(
+          .data$commentaire, " Il s'agit d'un modèle alternatif ayant un support statistique similaire au modèle recommandé."
+        ),
+        
+        TRUE ~ .data$commentaire
       )
+    )
+
   } else {
     best_methodes <- resultats_final |>
       filter(.data$delta_aicc == 0) |>
@@ -103,11 +105,9 @@ cpue_compare_modele <- function(cpue_data) {
     as.data.frame()
   
 
-  # --- Création du titre dynamique ---
+  # --- Création du titre  ---
   titre_caption <- "Comparaison des modèles : tous les spécimens"
-  if ("group" %in% names(cpue_data) && any(grepl("Femelles", cpue_data$group))) {
-    titre_caption <- "Comparaison des modèles : femelles reproductrices actives"
-  }
+
   
   # --- Création de la table formatée ---
   ft_final <- tableau_final |>
@@ -123,9 +123,24 @@ cpue_compare_modele <- function(cpue_data) {
       ic95 = "IC 95%",
       convergence = "Convergence",
       commentaires = "Commentaires"
-    ) |>
+   
+       ) |>
     style_flextable_aquapop() |>
-    colformat_double(j = c("aicc", "ajustement_hnp", "delta_aicc", "cpue"), digits = 2, decimal.mark = ",", na_str = "-", big.mark =  " ") 
+    colformat_double(j = c("aicc", "ajustement_hnp", "delta_aicc", "cpue"),
+                     digits = 2, decimal.mark = ",", na_str = "-", big.mark =  " "
+                     ) |>
+    flextable::color(
+      i = ~ convergence == "\u2713",
+      j = "convergence",
+      color = "#2E7D32"
+      ) |>
+    flextable::color(
+      i = ~ convergence == "\u2717",
+      j = "convergence",
+      color = "#D32F2F"
+      ) |>
+    flextable::bold(j = "convergence")
+  
   
   # --- Retour des résultats ---
   return(list(

@@ -13,7 +13,7 @@ app_server <- function(input, output, session) {
   # Variables à transmettre aux autres modules
   data_lac              <- telech$data_lac
   data_station          <- telech$data_station
-  station_valide       <- telech$station_valide
+  station_valide        <- telech$station_valide
   station_hasard_valide <- telech$station_hasard_valide
   specimen_tous              <- telech$specimen_tous
   specimen_valide        <- telech$specimen_valide
@@ -93,8 +93,10 @@ app_server <- function(input, output, session) {
   mod_mortalite_server(
     id = "mortalite_1",
     specimen = specimen_valide,
-    filename_suffix = filename_suffix
+    filename_suffix = filename_suffix,
+    info_pen = telech$info_pen
   )
+  
   # Maturite sexuelle ----
   ## Longueur a maturite ----
   

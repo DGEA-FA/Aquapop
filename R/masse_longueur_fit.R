@@ -204,7 +204,7 @@ masse_longueur_fit <- function(data) {
     geom_line(data = donnees_prediction, aes(x = .data$ltm, y = .data$upr), color = "red", linetype = 2) +
     theme_aquapop() +
     labs(
-      x = "Longueur totale maximale (mm)",
+      x = "Longueur maximale (mm)",
       y = "Masse (g)",
       caption = equation_label
     )

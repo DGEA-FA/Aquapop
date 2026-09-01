@@ -1,14 +1,13 @@
 # ==== Comparer les captures et les spécimens pour la CPUE ====
 
-#' Comparer le nombre de captures et de spécimens par station
+#' Comparer les captures et le nombre de spécimens des stations valides et au hasard
 #'
-#' Cette fonction compare, pour chaque station, le nombre de captures indiqué
-#' dans la table `capture` et le nombre d'individus présents dans la table
-#' `specimen`.
-#'
-#' @param capture Un `data.frame` contenant au moins les colonnes `no_station`
-#'   et `nb_capture`.
-#' @param specimen Un `data.frame` contenant au moins la colonne `no_station`.
+#' Cette fonction compare le nombre de captures indiqué dans la table `capture`
+#' et le nombre d'individus présents dans la table  `specimen` (stations valides et au hasard).
+#' 
+#' @param capture Un `data.frame` contenant au moins la colonnes `nb_capture`.
+#' @param specimen Un `data.frame` contenant tous les spécimens de l'espèce cible, filtré pour les 
+#' stations valides et au hasard seulement.
 #'
 #' @return Une liste contenant `success`, `message`, `data` et `flextable`.
 #'
@@ -21,53 +20,30 @@ cpue_compare_capture_specimen <- function(capture, specimen) {
   assert_data_frame(capture, min.rows = 1)
   assert_data_frame(specimen, min.cols = 1)
   
-  assert_names(names(capture), must.include = c("no_station", "nb_capture"))
-  assert_names(names(specimen), must.include = "no_station")
+  assert_names(names(capture), must.include = "nb_capture")
+
+  capture_total <- sum(capture$nb_capture, na.rm = TRUE)
+  nb_specimen_total <- nrow(specimen)
+  ecart <- nb_specimen_total - capture_total
   
-  capture_par_station <- capture |>
-    group_by(.data$no_station) |>
-    summarise(
-      nb_capture_recolte = sum(.data$nb_capture, na.rm = TRUE),
-      .groups = "drop"
-    )
+  data <- data.frame(
+    capture_total,
+    nb_specimen_total
+  )
   
-  specimen_par_station <- specimen |>
-    count(no_station = .data$no_station, name = "nb_specimens")
   
-  data <- capture_par_station |>
-    full_join(specimen_par_station, by = "no_station") |>
-    mutate(
-      nb_capture_recolte = replace_na(.data$nb_capture_recolte, 0),
-      nb_specimens = replace_na(.data$nb_specimens, 0L),
-      ecart = .data$nb_specimens - .data$nb_capture_recolte,
-      interpretation = case_when(
-        .data$ecart == 0 ~ "Aucun écart",
-        .data$ecart < 0 ~ "Capture supérieure aux spécimens",
-        .data$ecart > 0 ~ "Spécimens supérieurs à la capture"
-      )
-    ) |>
-    select(
-      "no_station",
-      "nb_capture_recolte",
-      "nb_specimens",
-      "ecart",
-      "interpretation"
-    )
-  
-  message <- if (any(data$ecart != 0)) {
+  message <- if (ecart != 0) {
     "Des écarts sont présents entre la table Récolte et la table Spécimens."
   } else {
     "Aucun écart détecté entre la table Récolte et la table Spécimens."
   }
   
+
   ft <- data |>
     flextable() |>
     set_header_labels(
-      no_station   = "No station",
-      nb_capture_recolte = "N récolte",
-      nb_specimens  = "N spécimens",
-      ecart     = "Écart",
-      interpretation   = "Interprétation"
+      capture_total   = "Récolte",
+      nb_specimen_total  = "Nb spécimens"
     ) |>
     style_flextable_aquapop()
   

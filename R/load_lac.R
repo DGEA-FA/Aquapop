@@ -159,5 +159,6 @@ load_lac <- function(path,
     mutate(ID = paste0(.data$nom_lac, " - ", .data$annee, " - ", .data$typ_pech)) |>
     distinct()
   
+ 
   return(lac)
 }

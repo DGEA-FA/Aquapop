@@ -7,6 +7,8 @@
 #'   \item `success` : indicateur logique de réussite
 #'   \item `message` : message d'interprétation ou d'erreur
 #'   \item `dispersion` : valeur numérique estimée de dispersion, ou `NULL`
+#'   \item `p_value` : p-value du test ou `NULL`
+#'   \item `z` : la statistique z du test ou `NULL`
 #'   \item `plot` : graphique des résidus de Pearson, ou `NULL`
 #' }
 #'
@@ -21,6 +23,8 @@
 #'   \item{success}{Un booléen indiquant si le test a pu être réalisé.}
 #'   \item{message}{Un message d'interprétation si le test a réussi, ou un message informatif sinon.}
 #'   \item{dispersion}{La valeur estimée de dispersion, ou `NULL` si le test n'a pas pu être réalisé.}
+#'   \item{z}{La statistique z du test, ou `NULL` si le test n'a pas pu être réalisé.}
+#'   \item{p_value}{La p-value du test de sur-dispersion, ou `NULL` si le test n'a pas pu être réalisé.}
 #'   \item{plot}{Un objet `ggplot` des résidus de Pearson, ou `NULL` si le modèle n'a pas pu être ajusté.}
 #' }
 #'
@@ -125,8 +129,14 @@ mortalite_test_surdispersion_poisson <- function(data) {
     ))
   }
   
-  dispersion_value <- unname(test_dispersion$estimate["dispersion"]) |>
+   dispersion_value <- unname(test_dispersion$estimate["dispersion"]) |>
     round(2)
+   
+   z_value <- unname(test_dispersion$statistic) |>
+     round(2)
+   
+   p_value <- test_dispersion$p.value |>
+     round(3)
   
   if (is.na(dispersion_value)) {
     return(list(
@@ -138,39 +148,42 @@ mortalite_test_surdispersion_poisson <- function(data) {
   }
   
   # Interprétation ====
-  message <- if (dispersion_value > 1.5) {
-    glue(
-      "Les données présentent une sur-dispersion (valeur = {dispersion_value}). ",
-      "Des modèles alternatifs comme NB1, NB2, CMP ou GP sont recommandés."
-    )
-  } else {
-    glue(
-      "Aucune sur-dispersion majeure détectée (valeur = {dispersion_value}). ",
-      "Le modèle de Poisson pourrait être acceptable."
-    )
-  }
+   message <- if (p_value < 0.05) {
+     glue(
+       "Le test met en évidence une sur-dispersion statistiquement significative ",
+       "(dispersion = {dispersion_value}, z = {z_value}, p = {p_value}). ",
+       "Des modèles alternatifs comme NB1, NB2, CMP ou GP devraiet être envisagés."
+     )
+   } else {
+     glue(
+       "Le test ne met pas en évidence de sur-dispersion statistiquement significative ",
+       "(dispersion = {dispersion_value}, z = {z_value}, p = {p_value}). "
+     )
+   }
   
   # Graphique des résidus ====
-  data_plot <- tibble(
-    fitted = fitted(modele_poisson),
-    residuals = residuals(modele_poisson, type = "pearson")
-  )
+#  data_plot <- tibble(
+#    fitted = fitted(modele_poisson),
+#    residuals = residuals(modele_poisson, type = "pearson")
+#  )
   
-  plot <- ggplot(data_plot, aes(x = fitted, y = residuals)) +
-    geom_point(color = "#0072B2", size = 2) +
-    geom_hline(yintercept = 0, linetype = "dashed") +
-    labs(
-      x = "Valeurs ajustées (Poisson)",
-      y = "Résidus de Pearson",
-      title = "Résidus vs valeurs ajustées (modèle Poisson)"
-    ) +
-    theme_aquapop()
+#  plot <- ggplot(data_plot, aes(x = fitted, y = residuals)) +
+#    geom_point(color = "#0072B2", size = 2) +
+#    geom_hline(yintercept = 0, linetype = "dashed") +
+#    labs(
+#      x = "Valeurs ajustées (Poisson)",
+#      y = "Résidus de Pearson",
+#      title = "Résidus vs valeurs ajustées (modèle Poisson)"
+#    ) +
+#    theme_aquapop()
   
   # Sortie ====
   list(
     success = TRUE,
     message = as.character(message),
     dispersion = dispersion_value,
+    z = unname(test_dispersion$statistic),
+    p_value = test_dispersion$p.value,
     plot = plot
   )
 }

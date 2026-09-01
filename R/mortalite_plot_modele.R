@@ -34,8 +34,21 @@
 #'   methode = "poisson", A = 38, ic95 = "[32-45]"
 #' )
 #' mortalite_plot_modele(data_exemple, modele_exemple, info_modele_exemple)
-mortalite_plot_modele <- function(specimen, modele, info_modele) {
+mortalite_plot_modele <- function(
+    specimen,
+    modele,
+    info_modele,
+    peak_plus
+    ) {
+  
   # Validation de base ====
+  if (is.null(peak_plus) ||
+      length(peak_plus) != 1 ||
+      is.na(peak_plus) ||
+      !is.numeric(peak_plus)) {
+    return(NULL)
+    
+  }
   if (is.null(specimen) || !is.data.frame(specimen) || nrow(specimen) == 0) {
     return(NULL)
   }
@@ -62,7 +75,6 @@ mortalite_plot_modele <- function(specimen, modele, info_modele) {
   }
   
   max_age <- max(donnees_age$age, na.rm = TRUE)
-  max_y <- ceiling(max(table(donnees_age$age)) * 1.1)
   
   info_pen <- tryCatch(
     get_info_pen(as.character(unique(donnees_age$sp))),
@@ -76,7 +88,9 @@ mortalite_plot_modele <- function(specimen, modele, info_modele) {
   }
   
   # Prédiction du modèle ====
-  donnees_prediction <- tibble(age = 0:(max_age + 2))
+  donnees_prediction <- tibble(
+    age = peak_plus:(max_age + 2)
+  )
   
   pred_link <- tryCatch(
     predict(modele, newdata = donnees_prediction, type = "link"),
@@ -88,6 +102,18 @@ mortalite_plot_modele <- function(specimen, modele, info_modele) {
   }
   
   donnees_prediction$pred <- as.numeric(exp(pred_link))
+  
+  # Limite Y du graphique ===============================================
+  
+  # Maximum de la structure d'âge
+  max_y_hist <- max( table(donnees_age$age), na.rm = TRUE )
+  
+  # Maximum de la courbe du modèle
+  max_y_modele <- max( donnees_prediction$pred, na.rm = TRUE )
+  
+  # On prend le plus grand des deux
+  max_y <- ceiling( max(max_y_hist, max_y_modele) * 1.1 )
+  
   
   # Détermination de la méthode du modèle ====
   methode_modele <- attr(modele, "methode")
@@ -124,6 +150,7 @@ mortalite_plot_modele <- function(specimen, modele, info_modele) {
       )
       
       sous_titre <- glue(
+        "Modèle {methode_modele}\n",
         "A = {a_formate} %, IC 95 % = {ligne_info_modele$ic95[1]}"
       ) |>
         as.character()
@@ -131,6 +158,7 @@ mortalite_plot_modele <- function(specimen, modele, info_modele) {
   }
   
   # Tracé final ====
+
   ggplot(donnees_age, aes(x = .data$age)) +
     geom_histogram(
       binwidth = 1,
@@ -153,6 +181,11 @@ mortalite_plot_modele <- function(specimen, modele, info_modele) {
       y = paste0("Nb. ", nom_espece, " échantillonnés")
     ) +
     theme_aquapop() +
+    theme(
+      plot.subtitle = element_text(
+        lineheight = 1.5
+      )
+    ) +
     scale_x_continuous(
       expand = c(0, 0),
       limits = c(0, max_age + 2),

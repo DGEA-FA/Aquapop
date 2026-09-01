@@ -5,9 +5,7 @@
 #' Si l'ajustement est marginal (entre 10 % et 15 % d'observations hors bande),
 #' trois simulations supplémentaires sont effectuées. Elle retourne un résumé synthétique.
 #'
-#' @param cpue_data Un `data.frame` produit par `cpue_prepare()` contenant au minimum :
-#'   - `no_station` : identifiant de la station,
-#'   - `cpue` : valeur de capture par unité d'effort.
+#' @param recolte Un `data.frame` contenant au minimum les colonnes `no_station` et `nb_capture`.
 #'
 #' @return Un `data.frame` d'une ligne contenant :
 #'   - `methode` : "nb1"
@@ -31,10 +29,10 @@
 #' @importFrom tibble tibble
 #' @importFrom MuMIn AICc
 #' @export
-cpue_fit_modele_nb1 <- function(cpue_data) {
+cpue_fit_modele_nb1 <- function(capture) {
   
   # --- Ajustement du modèle NB1 ---
-  model_nb1 <- glmmTMB(cpue ~ 1, family = nbinom1(), data = cpue_data)
+  model_nb1 <- glmmTMB(nb_capture ~ 1, family = nbinom1(), data = capture)
   
   convergence_flag <- model_nb1$fit$convergence == 0
   
@@ -55,8 +53,8 @@ cpue_fit_modele_nb1 <- function(cpue_data) {
   }
   
   # --- Si une seule station : HNP non applicable ---
-  if (n_distinct(cpue_data$no_station) < 2) {
-    pred_mean <- unname(round(mean(cpue_data$cpue, na.rm = TRUE), 2))
+  if (n_distinct(capture$no_station) < 2) {
+    pred_mean <- unname(round(mean(capture$nb_capture, na.rm = TRUE), 2))
     
     return(
       tibble(
@@ -82,7 +80,7 @@ cpue_fit_modele_nb1 <- function(cpue_data) {
       newclass = TRUE,
       diagfun = residuals,
       simfun = function(n, obj) simulate(obj)[[1]],
-      fitfun = function(y) try(glmmTMB(y ~ 1, family = nbinom1(), data = cpue_data)),
+      fitfun = function(y) try(glmmTMB(y ~ 1, family = nbinom1(), data = capture)),
       how.many.out = TRUE,
       plot.sim = FALSE
     ),
@@ -102,7 +100,7 @@ cpue_fit_modele_nb1 <- function(cpue_data) {
         newclass = TRUE,
         diagfun = residuals,
         simfun = function(n, obj) simulate(obj)[[1]],
-        fitfun = function(y) try(glmmTMB(y ~ 1, family = nbinom1(), data = cpue_data)),
+        fitfun = function(y) try(glmmTMB(y ~ 1, family = nbinom1(), data = capture)),
         how.many.out = TRUE,
         plot.sim = FALSE
       ),
@@ -114,7 +112,7 @@ cpue_fit_modele_nb1 <- function(cpue_data) {
   }
   
   # --- Prédictions et intervalle de confiance ---
-  if (all(cpue_data$cpue == 0)) {
+  if (all(capture$nb_capture == 0)) {
     pred_mean <- 0
     pred_ic95 <- "IC non calculable"
   } else {

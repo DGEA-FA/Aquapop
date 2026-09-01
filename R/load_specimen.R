@@ -192,6 +192,6 @@ load_specimen <- function(path,
     ) |>
     arrange(across("no_specimen")) |>
     distinct()
-  
-  return(specimen)
+
+   return(specimen)
 }

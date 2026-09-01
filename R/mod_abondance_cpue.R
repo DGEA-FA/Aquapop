@@ -15,12 +15,13 @@ mod_abondance_cpue_ui <- function(id) {
     h3("Validation des captures et des spécimens"),
     
     p(
-      "Le tableau ci-dessous présente le nombre de captures de l'espèce visée ",
-      "selon la table Récolte et le nombre d'individus dans la table Spécimens. ",
-      "Si la récolte est plus élevée que le nombre de spécimens, il peut s'agir ",
-      "d'un poisson échappé ou trop abîmé pour prendre des mesures. ",
-      "Si le nombre de spécimens est plus élevé que la récolte, il y a une erreur ",
-      "à corriger dans la base de données."
+      "Le tableau ci-dessous présente le nombre de spécimens  de l'espèce visée selon la table ",
+      "Récolte et selon la table Spécimens (stations valides et au hasard seulement). ",
+      "Si la récolte est plus élevée que le nombre de spécimens, il peut s'agir d'un poisson ",
+      "échappé ou trop abîmé pour prendre des mesures. Si le nombre de spécimens est plus ",
+      "élevé que la récolte, il y a une erreur à corriger dans la base de données.",
+      "Notez que les modèles de CPUE ont été appliqués sur les données provenant de la Récolte alors ",
+      "que le tableau d'abondance et les modèles BPUE ont été créés à partir des données de Spécimens."
     ),
     
     uiOutput(ns("capture_specimen_message")),
@@ -29,19 +30,11 @@ mod_abondance_cpue_ui <- function(id) {
     
     br(),
     
-    h3("Modèles de CPUE"),
+    h3("Modèles de CPUE - Tous les individus"),
     
     ## CPUE - Tous
-    h4("CPUE - Tous les individus"),
     withSpinner(uiOutput(ns("cpue_tous_table")), type = myspinner),
     download_button_ui(ns("cpue_tous_table_dl")),
-    
-    br(),
-    
-    ## CPUE - Femelles matures
-    h4("CPUE - Femelles matures"),
-    uiOutput(ns("cpue_femelles_table")),
-    download_button_ui(ns("cpue_femelles_table_dl")),
     
     br(),
     
@@ -61,13 +54,13 @@ mod_abondance_cpue_ui <- function(id) {
 #' @param filename_suffix Suffixe pour le nom de fichier (reactive)
 #'
 #' @noRd
-mod_abondance_cpue_server <- function(id, specimen, capture, filename_suffix) {
+mod_abondance_cpue_server <- function(id, capture, specimen, filename_suffix) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
     ## Validation - Récolte vs Spécimens
     capture_specimen_res <- reactive({
-      req(specimen(), capture())
+      req(capture(), specimen())
       
       cpue_compare_capture_specimen(
         capture = capture(),
@@ -95,15 +88,9 @@ mod_abondance_cpue_server <- function(id, specimen, capture, filename_suffix) {
       ))
     )
     
-    ## CPUE - Tous
-    cpue_table_tous <- reactive({
-      req(specimen(), capture())
-      cpue_prepare(capture = capture(), specimen = specimen(), group = "tous")
-    })
-    
     cpue_modele_tous <- reactive({
-      req(cpue_table_tous())
-      cpue_compare_modele(cpue_table_tous())
+      req(capture())
+      cpue_compare_modele(capture = capture())
     })
     
     render_table_flextable("cpue_tous_table", reactive(cpue_modele_tous()$flextable))
@@ -114,51 +101,24 @@ mod_abondance_cpue_server <- function(id, specimen, capture, filename_suffix) {
       filename = reactive(build_export_filename("cpue_tous", filename_suffix()))
     )
     
-    ## CPUE - Femelles matures
-    cpue_table_femelles <- reactive({
-      req(specimen(), capture())
-      cpue_prepare(capture = capture(), specimen = specimen(), group = "femelles")
-    })
-    
-    cpue_modele_femelles <- reactive({
-      req(cpue_table_femelles())
-      cpue_compare_modele(cpue_table_femelles())
-    })
-    
-    render_table_flextable("cpue_femelles_table", reactive(cpue_modele_femelles()$flextable))
-    
-    render_download_table(
-      "cpue_femelles_table_dl",
-      data = reactive(cpue_modele_femelles()$data),
-      filename = reactive(build_export_filename("cpue_femelles", filename_suffix()))
-    )
-    
+
     ## Tableau d'abondance
     best_model_tous <- reactive({
       req(cpue_modele_tous())
       cpue_select_best_modele(cpue_modele_tous()$data)
     })
     
-    best_model_femelles <- reactive({
-      req(cpue_modele_femelles())
-      cpue_select_best_modele(cpue_modele_femelles()$data)
-    })
-    
     abondance1 <- reactive({
       req(
         specimen(),
         cpue_modele_tous(),
-        cpue_modele_femelles(),
-        best_model_tous(),
-        best_model_femelles()
+        best_model_tous() #,
       )
       
       cpue_abondance_table(
         data = specimen(),
         cpue_table_tous = cpue_modele_tous()$data,
-        cpue_table_femelles = cpue_modele_femelles()$data,
-        best_model_tous = best_model_tous(),
-        best_model_femelles = best_model_femelles()
+        best_model_tous = best_model_tous() #,
       )
     })
     

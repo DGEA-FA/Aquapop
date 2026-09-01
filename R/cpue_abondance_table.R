@@ -6,9 +6,7 @@
 #'
 #' @param data Un `data.frame` de spécimens filtrés, contenant minimalement les colonnes `sexe` et `maturite`.
 #' @param cpue_table_tous Résultats des modèles CPUE pour tous les individus (format = "data.frame").
-#' @param cpue_table_femelles Résultats des modèles CPUE pour les femelles reproductrices.
 #' @param best_model_tous Nom du meilleur modèle CPUE pour le groupe "Tous".
-#' @param best_model_femelles Nom du meilleur modèle CPUE pour le groupe "Repro. actifs femelles".
 #'
 #' @return Une liste contenant :
 #' \describe{
@@ -25,9 +23,7 @@
 #' @export
 cpue_abondance_table <- function(data,
                                  cpue_table_tous,
-                                 cpue_table_femelles,
-                                 best_model_tous,
-                                 best_model_femelles) {
+                                 best_model_tous) {
   
   extract_best_cpue <- function(cpue_table, best_model) {
     if (is.na(best_model) || nrow(cpue_table) == 0) {
@@ -63,13 +59,10 @@ cpue_abondance_table <- function(data,
 
   # --- Extraction des CPUE et IC 95 % ---
   best_tous <- extract_best_cpue(cpue_table_tous, best_model_tous)
-  best_femelles <- extract_best_cpue(cpue_table_femelles, best_model_femelles)
-  
+
   cpue_tous <- best_tous$cpue[[1]]
   ic95_tous <- best_tous$ic95[[1]]
-  
-  cpue_femelles <- best_femelles$cpue[[1]]
-  ic95_femelles <- best_femelles$ic95[[1]]
+
 
   # --- Tableaux par groupe biologique ---
 
@@ -146,12 +139,10 @@ cpue_abondance_table <- function(data,
     mutate(
       cpue = case_when(
         .data$groupe == "Tous" ~ cpue_tous,
-        .data$groupe == "Repro. actifs femelles" ~ cpue_femelles,
         TRUE ~ NA_real_
       ),
       ic95 = case_when(
         .data$groupe == "Tous" ~ ic95_tous,
-        .data$groupe == "Repro. actifs femelles" ~ ic95_femelles,
         TRUE ~ NA_character_
       )
     ) |> select(-"sexe")

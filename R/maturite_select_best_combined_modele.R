@@ -30,25 +30,21 @@ maturite_select_best_combined_modele <- function(evaluation_df) {
   valid_models <- evaluation_df |>
     filter(
       .data$convergence == TRUE,
-      !grepl("rejeter|choisir un autre modèle", .data$commentaire)
+      .data$ajust == TRUE
+      #!grepl("rejeter|choisir un autre modèle", .data$commentaire)
     )
   
-  # --- Étape 2 : Aucun modèle valide ---
-  if (nrow(valid_models) == 0) {
-    return(list(
-      best_model = NULL,
-      message = "Aucun modèle combiné valide n'a convergé. Vérifiez les données."
-    ))
-  }
+  # --- Étape 2 : Sélection du meilleur modèle ---
+  best_model <- NULL
   
-  # --- Étape 3 : Sélection du meilleur AICc ---
-  best_model <- valid_models |>
+  if (nrow(valid_models) > 0) {
+    best_model <- valid_models |>
     filter(.data$aicc == min(.data$aicc, na.rm = TRUE)) |>
     pull(.data$modele_id) |>
     head(1)
+  }
   
-  return(list(
-    best_model = best_model,
-    message = paste0("Modèle combiné sélectionné : ", best_model)
-  ))
+  list(
+    best_model = best_model
+  )
 }

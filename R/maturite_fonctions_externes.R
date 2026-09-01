@@ -39,6 +39,27 @@ o.r.test <- function(obj) {
   return(p.value)
 }
 
+## Fonction pour le test goodness-of-link
+maturite_test_lien <- function(modele_glm) {
+  tryCatch({
+    df_mod <- modele_glm$model
+    df_mod$eta2 <- predict(modele_glm, type = "link")^2
+    modele_eta2 <- update(modele_glm, . ~ . + eta2, data = df_mod)
+
+    res_anova <- anova(modele_glm, modele_eta2, test = "Chisq")
+
+    p <- res_anova$`Pr(>Chi)`[2]
+
+    if (length(p) == 0) {
+      return(NA_real_)
+    }
+    
+    as.numeric(p)
+  }, error = function(e) {
+    NA_real_
+  })
+}
+
 ## Fonction IC
 confint_L <- function(object, p = 0.5, cf = 1:2, level = 0.95, nboot = 10000,
                       method = c("delta","fieller","proflik",
@@ -570,6 +591,7 @@ ld_montecarlo <- function(object, p = 0.5, cf = 1:2, level = 0.95, nboot = 1000,
                                    upper = bca_interval[,2])
                   return(list("eti" = perc, "hdi" = hdi_int, "bca" = bca_int))
                 })
+  print(res)
   return(res)
 }
 
@@ -578,9 +600,23 @@ get_bca <- function(object, p, cf, d_hat, original_d_hat, nboot, level) {
   n <- nrow(object$data)
   u <- rep(0, n)
   for(i in 1:n) {
-    u[i] <- as.numeric(dose.p(update(object, data = object$data[-i,]), p = p, cf = cf))
+
+  new_fit <- glm(
+    formula = formula(object),
+    family = object$family,
+    data = object$data[-i,]
+  )
+  
+  u[i] <- as.numeric(dose.p(new_fit, p = p, cf = cf))
   }
-  z0 <- stats::qnorm(sum(d_hat < original_d_hat)/nboot)
+  
+  prop <- sum(d_hat < original_d_hat) / nboot
+    prop <- max(
+    min(prop, 1 - 1/(2*nboot)),
+    1/(2*nboot)
+  )
+  
+  z0 <- stats::qnorm(prop)
   uu <- mean(u) - u
   acc <- sum(uu * uu * uu)/(6 * (sum(uu * uu))^1.5)
   zalpha <- stats::qnorm(alpha)

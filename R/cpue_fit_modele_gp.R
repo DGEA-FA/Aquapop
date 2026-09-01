@@ -4,9 +4,7 @@
 #' Elle applique également un test HNP (Half-Normal Plot) pour évaluer la qualité de l'ajustement.
 #' En cas d'ajustement marginal (entre 10 % et 15 % d'observations hors bande), des simulations supplémentaires sont effectuées.
 #'
-#' @param cpue_data Un `data.frame` produit par `cpue_prepare()`, contenant au minimum :
-#'   - `no_station` : identifiant de la station,
-#'   - `cpue` : valeur de capture par unité d'effort.
+#' @param recolte Un `data.frame` contenant au minimum les colonnes `no_station` et `nb_capture`.
 #'
 #' @return Un `data.frame` d'une ligne contenant :
 #'   - `methode` : "gp"
@@ -26,10 +24,10 @@
 #' @importFrom MuMIn AICc
 #'
 #' @export
-cpue_fit_modele_gp <- function(cpue_data) {
+cpue_fit_modele_gp <- function(capture) {
   
   # --- Ajustement du modèle GP ---
-  model_gp <- glmmTMB(cpue ~ 1, family = genpois(link = "log"), data = cpue_data)
+  model_gp <- glmmTMB(nb_capture ~ 1, family = genpois(link = "log"), data = capture)
   
   convergence_flag <- model_gp$fit$convergence == 0
   
@@ -50,8 +48,8 @@ cpue_fit_modele_gp <- function(cpue_data) {
   }
   
   # --- Si une seule station : HNP non applicable ---
-  if (n_distinct(cpue_data$no_station) < 2) {
-    pred_mean <- unname(round(mean(cpue_data$cpue, na.rm = TRUE), 2))
+  if (n_distinct(capture$no_station) < 2) {
+    pred_mean <- unname(round(mean(capture$nb_capture, na.rm = TRUE), 2))
     
     return(
       tibble(
@@ -69,10 +67,10 @@ cpue_fit_modele_gp <- function(cpue_data) {
   
   # --- Fonction interne : réessaie glmmTMB en cas d'échec ---
   safe_fit_gp <- function(y) {
-    fit <- try(glmmTMB(y ~ 1, family = genpois(link = "log"), data = cpue_data), silent = TRUE)
+    fit <- try(glmmTMB(y ~ 1, family = genpois(link = "log"), data = capture), silent = TRUE)
     while (inherits(fit, "try-error")) {
       y <- simulate(model_gp)[[1]]
-      fit <- try(glmmTMB(y ~ 1, family = genpois(link = "log"), data = cpue_data), silent = TRUE)
+      fit <- try(glmmTMB(y ~ 1, family = genpois(link = "log"), data = capture), silent = TRUE)
     }
     fit
   }
@@ -119,7 +117,7 @@ cpue_fit_modele_gp <- function(cpue_data) {
   }
   
   # --- Prédictions et intervalle de confiance ---
-  if (all(cpue_data$cpue == 0)) {
+  if (all(capture$nb_capture == 0)) {
     pred_mean <- 0
     pred_ic95 <- "IC non calculable"
   } else {

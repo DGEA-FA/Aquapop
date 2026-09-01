@@ -153,20 +153,9 @@ load_station <- function(path,
       h_pose     = ifelse(!is.na(.data$heure_pose) & !is.na(.data$min_pose), 
                           paste0(.data$heure_pose, ":", .data$min_pose, ":00"), NA),
       h_leve     = ifelse(!is.na(.data$heure_leve) & !is.na(.data$min_leve),
-                          paste0(.data$heure_leve, ":", .data$min_leve, ":00"), NA),
-      pose       = suppressWarnings(
-        as.POSIXct(
-          paste(.data$date_pose, .data$h_pose),
-          format = "%Y-%m-%d %H:%M:%S")),
-      leve       = suppressWarnings(
-        as.POSIXct(
-          paste(.data$date_leve, .data$h_leve),
-          format = "%Y-%m-%d %H:%M:%S")),
-      duree      = difftime(.data$leve, .data$pose, units = "hours")
+                          paste0(.data$heure_leve, ":", .data$min_leve, ":00"), NA)
+      
     )
-  
-  # --- Suppression des doublons ---
-  station <- distinct(station)
-  
+
   return(station)
 }

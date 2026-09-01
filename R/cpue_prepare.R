@@ -56,7 +56,8 @@ cpue_prepare <- function(capture, specimen, group = c("tous", "femelles")) {
     summarise(nb_specimens = n(),
               .groups = "drop")
   
-  # --- Joindre avec la table des captures (pour conserver toutes les stations) ---
+  # --- Joindre avec la table des captures (pour conserver toutes les stations valides et au hasard,
+  #                                         même celles sans spécimens) ---
   cpue_par_station <- capture |>
     select("no_station") |>
     left_join(nb_specimens, by = "no_station") |>

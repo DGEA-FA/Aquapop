@@ -9,16 +9,17 @@
 #' moins de 3 spécimens valides ou de moins de 3 âges distincts, la fonction
 #' retourne un résultat avec `success = FALSE` et un message explicatif.
 #'
-#' Si `vbStarts()` échoue à produire des valeurs initiales, une stratégie de
-#' rechange est utilisée avec :
+#' Les valeurs initiales de départ sont définies avec `findGrowthStarts()`Si possible,
+#' sinon avec `vbStarts()`. Dans le cas où des deux méthodes échoueraient, des valeurs
+#' initiales, fixe sont imposées : 
 #' \itemize{
 #'   \item `Linf` = longueur du plus grand spécimen de l'échantillon
 #'   \item `K = 0.3`
 #'   \item `t0 = 0`
 #' }
 #'
-#' Un message est alors inclus dans la sortie afin d’informer l’utilisateur que
-#' des valeurs initiales fixes ont été utilisées.
+#' Un message est  inclus dans la sortie afin d’informer l’utilisateur de la
+#' méthodes utilisées pour déterminer les valeurs initiales.
 #'
 #' Si un ou plusieurs modèles ne convergent pas, la fonction retourne quand même
 #' un tableau comparatif. Les valeurs numériques associées aux modèles non
@@ -167,13 +168,13 @@ croissance_compare_modele <- function(data) {
     composante_i <- modele_info$composante[[index_modele]]
     
     mod <- extract_growth_model(result, composante_i)
-    
+
     if (!is_growth_model_available(mod)) {
       return(build_growth_failure_row(methode_i))
     }
     
     convergence_message <- extract_growth_convergence(mod)
-    is_converged <- identical(convergence_message, "converged")
+    is_converged <- extract_growth_convergence(mod)
     
     if (!is_converged) {
       return(build_growth_failure_row(methode_i))
@@ -203,7 +204,7 @@ croissance_compare_modele <- function(data) {
       return(NULL)
     }
     
-    if (!identical(extract_growth_convergence(mod), "converged")) {
+    if (!extract_growth_convergence(mod)) {
       return(NULL)
     }
     
@@ -218,18 +219,16 @@ croissance_compare_modele <- function(data) {
     aic_tab <- tryCatch(
       aictab(modeles_valides, modnames = noms_modeles_valides) |>
         rename(
-          methode = .data$Modnames,
-          aicc = .data$AICc,
-          delta_aicc = .data$Delta_AICc,
-          aiccwt = .data$AICcWt
+          methode = Modnames,
+          aicc = AICc,
+          delta_aicc = Delta_AICc
         ) |>
-        select("methode", "aicc", "delta_aicc", "aiccwt"),
+        select("methode", "aicc", "delta_aicc"),
       error = function(e) {
         data.frame(
           methode = noms_modeles_valides,
           aicc = NA_real_,
           delta_aicc = NA_real_,
-          aiccwt = NA_real_,
           stringsAsFactors = FALSE
         )
       }
@@ -241,7 +240,6 @@ croissance_compare_modele <- function(data) {
       methode = modele_info$methode,
       aicc = NA_real_,
       delta_aicc = NA_real_,
-      aiccwt = NA_real_,
       stringsAsFactors = FALSE
     )
     
@@ -270,7 +268,6 @@ croissance_compare_modele <- function(data) {
       "t0", "t0_ic",
       "aicc",
       "delta_aicc",
-      "aiccwt",
       "convergence"
     )
   
@@ -312,7 +309,6 @@ croissance_compare_modele <- function(data) {
       t0_ic = "t\u2080 IC 95%",
       aicc = "AICc",
       delta_aicc = "Δ AICc",
-      aiccwt = "Poids d’Akaike",
       convergence = "Convergence"
     )) |>
     
@@ -320,7 +316,7 @@ croissance_compare_modele <- function(data) {
     colformat_double(j = "k", digits = 3, decimal.mark = ",", big.mark = " ", na_str = "-") |>
     colformat_double(j = "t0", digits = 3, decimal.mark = ",", big.mark = " ", na_str = "-") |>
     colformat_double(j = "l_inf", digits = 0, decimal.mark = ",", big.mark = " ", na_str = "-") |>
-    colformat_double(j = c("aicc", "delta_aicc", "aiccwt"), digits = 2, decimal.mark = ",", big.mark = " ", na_str = "-")
+  colformat_double(j = c("aicc", "delta_aicc"), digits = 2, decimal.mark = ",", big.mark = " ", na_str = "-")
   
   return(list(
     success = TRUE,
@@ -333,10 +329,11 @@ croissance_compare_modele <- function(data) {
 #' Déterminer les valeurs initiales à utiliser pour les modèles de croissance
 #'
 #' Cette fonction tente d’abord d’estimer automatiquement les valeurs initiales
-#' des paramètres de croissance (`Linf`, `K`, `t0`) à l’aide de `vbStarts()`.
+#' des paramètres de croissance (`Linf`, `K`, `t0`) à l’aide de `findGrowthStarts()`
+#' puis, si cela échoue, avec `vbStarts()`.
 #'
 #' Dans certains cas (ex. structure d’âge déséquilibrée ou peu informative),
-#' cette estimation peut échouer. Une stratégie de rechange est alors utilisée
+#' ces estimation peuvent échouer. Une stratégie de rechange est alors utilisée
 #' afin de permettre la modélisation :
 #' \itemize{
 #'   \item `Linf` : longueur maximale observée dans l’échantillon
@@ -359,38 +356,122 @@ croissance_compare_modele <- function(data) {
 #' @keywords internal
 get_growth_start_values <- function(df) {
   
-  pi_vbstarts <- tryCatch(
-    vbStarts(ltm ~ age, data = df),
-    error = function(e) NULL
-  )
-  
-  if (!is.null(pi_vbstarts)) {
-    return(list(
-      pi = list(
-        Linf = unname(pi_vbstarts$Linf),
-        K = unname(pi_vbstarts$K),
-        t0 = unname(pi_vbstarts$t0)
-      ),
-      message = NULL
-    ))
+  # Fonction interne de validation biologique des paramètres VB
+  is_valid_vb <- function(pi) {
+
+  if (is.null(pi$Linf) || is.null(pi$K) || is.null(pi$t0)) {
+    return(FALSE)
   }
   
+  if (!is.finite(pi$Linf) || !is.finite(pi$K) || !is.finite(pi$t0)) {
+    return(FALSE)
+  }
+  
+# L'infini et K doivent être positifs
+   if (pi$Linf <= 0) {
+    return(FALSE)
+  }
+  
+  if (pi$K <= 0) {
+    return(FALSE)
+  }
+  
+  TRUE
+}
+  
+  pi_find <- tryCatch(
+    findGrowthStarts(
+      ltm ~ age,
+      data = df,
+      type = "von Bertalanffy"
+      ),
+    error = function(e) NULL
+    )
+  
+  if (!is.null(pi_find)) {
+    
+    pi <- list(
+      Linf = unname(pi_find["Linf"]),
+      K = unname(pi_find["K"]),
+      t0 = unname(pi_find["t0"])
+    )
+    
+    if (is_valid_vb(pi)) {
+      
+      return(list(
+        pi = pi,
+        message = paste(
+          "Valeurs initiales obtenues avec findGrowthStarts().",
+          sprintf(
+            "Linf = %.3f, K = %.5f, t0 = %.3f",
+            pi$Linf,
+            pi$K,
+            pi$t0
+          ),
+          sep = "\n"
+        )
+      ))
+    }
+  }
+
+# --------------------------------------------------
+# 2) Tentative avec vbStarts()
+# --------------------------------------------------
+
+  pi_vbstarts <- tryCatch(
+    vbStarts(
+      ltm ~ age,
+      data = df
+    ),
+    error = function(e) NULL
+  )  
+  
+  if (!is.null(pi_vbstarts)) {
+    
+    pi <- list(
+      Linf = unname(pi_vbstarts$Linf),
+      K = unname(pi_vbstarts$K),
+      t0 = unname(pi_vbstarts$t0)
+    )
+    
+    if (is_valid_vb(pi)) {
+      
+      return(list(
+        pi = pi,
+        message = paste(
+          "Valeurs initiales obtenues avec vbStarts().",
+          sprintf(
+            "Linf = %.3f, K = %.5f, t0 = %.3f",
+            pi$Linf,
+            pi$K,
+            pi$t0
+          ),
+          sep = "\n"
+        )
+      ))
+    }
+  }
+
+
+# --------------------------------------------------
+# 3) Valeurs fixes de secours
+# --------------------------------------------------
+
   pi_fallback <- list(
     Linf = max(df$ltm, na.rm = TRUE),
     K = 0.3,
     t0 = 0
   )
   
-  message <- paste(
-    "Les valeurs des paramètres initiaux pi n’ont pas pu être estimées automatiquement à partir des données.",
-    "Elles ont été fixées à L∞ = longueur du plus grand spécimen de l’échantillon, K = 0.3 et t₀ = 0 (Ogle 2016).",
-    sep = "\n"
-  )
   
-  list(
+  return(list(
     pi = pi_fallback,
-    message = message
-  )
+    message = paste(
+      "Les valeurs des paramètres initiaux pi n’ont pas pu être estimées automatiquement à partir des données.",
+      "Elles ont été fixées à L∞ = longueur du plus grand spécimen de l’échantillon, K = 0.3 et t₀ = 0 (Ogle 2016).",
+      sep = "\n"
+    )
+  ))
 }
 
 #' Vérifier si un modèle de croissance retourné par `growth()` est disponible
@@ -409,9 +490,20 @@ is_growth_model_available <- function(mod) {
     return(FALSE)
   }
   
+  if (!inherits(mod, "nls")) {
+    return(FALSE)
+  }
+  
+  if (is.null(coef(mod))) {
+    return(FALSE)
+  }
+  
+  if (is.null(mod$convInfo)) {
+    return(FALSE)
+  }
+  
   TRUE
 }
-
 #' Extraire un modèle individuel depuis l'objet retourné par `growth()`
 #'
 #' @param result Objet retourné par `growth()`.
@@ -443,15 +535,9 @@ extract_growth_convergence <- function(mod) {
   
   tryCatch(
     {
-      stop_message <- mod$convInfo$stopMessage
-      
-      if (is.null(stop_message) || is.na(stop_message) || stop_message == "") {
-        "Inconnu"
-      } else {
-        stop_message
-      }
+      isTRUE(mod$convInfo$isConv)
     },
-    error = function(e) "Inconnu"
+    error = function(e) FALSE
   )
 }
 

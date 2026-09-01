@@ -29,7 +29,12 @@
 #' \describe{
 #'   \item{modele_id}{Identifiant du modèle (nom de la liste)}
 #'   \item{modele}{Formule du modèle}
+#'   \item{type}{TLO, ADD, COM ou INT}
 #'   \item{lien}{Fonction de lien utilisée}
+#'   \item{b0, b1, b2 et b3}{Coefficients des modèles}
+#'   \item{point50, point50_F et point50_M}{les valeurs de L50 ou A50 des modèles}
+#'   \item{point50_IC95_inf et point50_IC95_sup}{les intervalles de confiances,
+#'   pour les modèles sexes séparés ou TLO seulement}
 #'   \item{convergence}{Indique si le modèle a convergé}
 #'   \item{pearson_x2_pval}{p-valeur du test d’ajustement (résidus de Pearson)}
 #'   \item{goodness_of_link_pval}{p-valeur du test du lien}
@@ -45,104 +50,168 @@
 #' @importFrom dplyr bind_rows arrange desc
 #' @importFrom labelled var_label<-
 #' @importFrom tibble tibble
+
 maturite_eval_modele <- function(models) {
   
+  # Fonction interne : évaluer un modèle individuel
+  
+  build_individual_model_row <- function(mod, id) {
+   
+    if (is.null(mod)) {
+      return(data.frame(
+        modele_id = id,
+        type = NA_character_,
+        lien = NA_character_,
+        b0 = NA_real_,
+        b1 = NA_real_,
+        b2 = NA_real_,
+        b3 = NA_real_,
+        point50 = NA_real_,
+        point50_F = NA_real_,
+        point50_M = NA_real_,
+        point50_IC95_inf = NA_real_,
+        point50_IC95_sup = NA_real_,
+        convergence = FALSE,
+        pearson_x2_pval = NA_real_,
+        goodness_of_link_pval = NA_real_,
+        aicc = NA_real_
+      ))
+    }
+    
+    formule_str <- as.character(formula(mod))[3]
+    type <- sub("_.*$", "", id)
+    conv <- isTRUE(mod$converged)
+    lien <- as.character(mod$family$link)
+    
+    is_separated <- grepl("^[MF]_", id)
+    
+    stats_mod <- maturite_extract_resultats_modele(
+      mod = mod,
+      id = id
+    )
+    
+    b0 <- stats_mod$b0
+    b1 <- stats_mod$b1
+    
+    b2 <- stats_mod$b2
+    b3 <- stats_mod$b3
+    
+    point50 <- stats_mod$point50
+    point50_F <- stats_mod$point50_F
+    point50_M <- stats_mod$point50_M
+    
+    point50_IC95_inf <- stats_mod$point50_IC95_inf
+    point50_IC95_sup <- stats_mod$point50_IC95_sup
+    
+    # Application des fonctions d'ajustement et évaluation du modèle
+    evaluation <- maturite_evaluer_ajustement(mod)
+    
+    conv <- evaluation$convergence
+    
+    p_fit <- evaluation$pearson_x2_pval
+    
+    p_link <- evaluation$goodness_of_link_pval
+    
+    ajust <- evaluation$ajust
+    
+    aicc_val <- evaluation$aicc
+    
+    # Résultat du modèle individuel
+    
+    tibble(
+      modele_id = id,
+      type = type,
+      modele = formule_str,
+      lien = lien,
+      b0 = b0,
+      b1 = b1,
+      b2 = b2,
+      b3 = b3,
+      point50 = point50,
+      point50_F = point50_F,
+      point50_M = point50_M,
+      point50_IC95_inf = point50_IC95_inf,
+      point50_IC95_sup = point50_IC95_sup,
+      convergence = conv,
+      pearson_x2_pval = p_fit,
+      goodness_of_link_pval = p_link,
+      ajust = ajust,
+      aicc = aicc_val
+    )
+  }
+  
+  # Aucun modèle fourni
+
   if (length(models) == 0) {
+    
     results <- tibble(
       modele_id = character(),
+      type = character(),
       modele = character(),
       lien = character(),
+      b0 = numeric(),
+      b1 = numeric(),
+      b2 = b2,
+      b3 = b3,
+      point50 = numeric(),
+      point50_F = numeric(),
+      point50_M = numeric(),
+      point50_IC95_inf = numeric(),
+      point50_IC95_sup = numeric(),
       convergence = logical(),
       pearson_x2_pval = numeric(),
       goodness_of_link_pval = numeric(),
-      aicc = numeric(),
-      commentaire = character()
+      ajust = logical(),
+      aicc = numeric()
     )
+    
   } else {
-    results <- lapply(names(models), function(n) {
-      build_individual_model_row(models[[n]], n)
-    }) |>
-      bind_rows() |>
-      arrange(desc(.data$convergence), .data$aicc)
+    
+    # Évaluation de tous les modèles
+    results <- lapply(
+      names(models),
+      function(n) {
+        build_individual_model_row(
+          mod = models[[n]],
+          id = n
+        )
+      }
+    ) |>
+      dplyr::bind_rows()
+    
+    
+    # Ordre d'affichage :
+
+    results <- results |>
+      dplyr::arrange(
+        dplyr::desc(.data$convergence),
+        .data$aicc
+      )
   }
   
-  # Ajout de labels pour affichage clair dans l'application
-  var_label(results) <- list(
+  # Labels pour l'affichage
+
+  labelled::var_label(results) <- list(
     modele_id = "ID",
-    modele = "Modèle",
+    modele = "Formule",
+    type = 'Type',
     lien = "Lien",
+    b0 = "b0",
+    b1 = "b1",
+    b2 = "sexe",
+    b3 = "interaction",
+    point50 = "point50",
+    point50_F = "point50_F",
+    point50_M = "point50_M",
+    point50_IC95_inf = "IC95 inférieur",
+    point50_IC95_sup = "IC95 supérieur",
     convergence = "Convergence",
     pearson_x2_pval = "Goodness-of-fit (p-valeur)",
     goodness_of_link_pval = "Goodness-of-link (p-valeur)",
-    aicc = "AICc",
-    commentaire = "Commentaires"
+    ajust = "Ajustement",
+    aicc = "AICc"
   )
+  
   
   return(results)
 }
-
-#' Évaluer les critères d'un modèle individuel de maturité
-#'
-#' Fonction interne utilisée par `maturite_eval_modele()` pour extraire les indicateurs
-#' d'ajustement d'un modèle de type `glm` : convergence, p-valeurs, aicc, etc.
-#'
-#' @param mod Un objet `glm`, ou `NULL` si l'ajustement a échoué
-#' @param id  Identifiant du modèle (ex. : "ltm_logit", "age_cloglog")
-#'
-#' @return Un `data.frame` avec les critères d'ajustement du modèle
-#' @keywords internal
-#'
-#' @importFrom stats predict update anova formula
-#' @importFrom MuMIn AICc
-build_individual_model_row <- function(mod, id) {
-  
-  if (is.null(mod)) {
-    return(data.frame(
-      modele_id = id,
-      modele = NA,
-      lien = NA,
-      convergence = FALSE,
-      pearson_x2_pval = NA,
-      goodness_of_link_pval = NA,
-      aicc = NA,
-      commentaire = "Données insuffisantes",
-      stringsAsFactors = FALSE
-    ))
-  }
-  
-  formule_str <- as.character(formula(mod))[3]
-  conv <- mod$converged
-  
-  # Test d'ajustement basé sur les résidus de Pearson
-  p_fit <- tryCatch(o.r.test(mod), error = function(e) NA)
-  
-  # Test du lien (ajout du terme eta²)
-  df <- mod$model
-  df$eta2 <- predict(mod, type = "link")^2
-  mod_eta2 <- tryCatch(update(mod, . ~ . + eta2, data = df), error = function(e) NA)
-  p_link <- tryCatch(anova(mod, mod_eta2, test = "Chisq")$`Pr(>Chi)`[2], error = function(e) NA)
-  
-  # Critère AIC corrigé
-  aicc_val <- tryCatch(AICc(mod), error = function(e) NA)
-  
-  # Commentaire interprétatif
-  comm <- "Modèle valide."
-  if (!conv) {
-    comm <- "Ce modèle ne converge pas et devrait être rejeté."
-  } else if ((!is.na(p_fit) && p_fit < 0.05) || (!is.na(p_link) && p_link < 0.05)) {
-    comm <- "Ce modèle ne s'ajuste pas bien aux données. Il est préférable de choisir un autre modèle."
-  }
-  
-  data.frame(
-    modele_id = id,
-    modele = formule_str,
-    lien = as.character(mod$family$link),
-    convergence = conv,
-    pearson_x2_pval = p_fit,
-    goodness_of_link_pval = p_link,
-    aicc = aicc_val,
-    commentaire = comm,
-    stringsAsFactors = FALSE
-  )
-}
-

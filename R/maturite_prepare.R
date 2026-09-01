@@ -36,6 +36,7 @@
 #' )
 #'
 #' maturite_prepare(data_exemple, variable = "ltm")
+
 maturite_prepare <- function(specimen_data,
                              variable = c("ltm", "age"),
                              drop_levels = TRUE) {

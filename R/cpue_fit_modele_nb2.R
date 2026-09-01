@@ -5,9 +5,7 @@
 #' Si l'ajustement est marginal (entre 10 % et 15 % d'observations hors bande),
 #' trois simulations supplémentaires sont effectuées. Elle retourne un résumé synthétique.
 #'
-#' @param cpue_data Un `data.frame` produit par `cpue_prepare()` contenant au minimum :
-#'   - `no_station` : identifiant de la station,
-#'   - `cpue` : valeur de capture par unité d'effort.
+#' @param recolte Un `data.frame` contenant au minimum les colonnes `no_station` et `nb_capture`.
 #'
 #' @return Un `data.frame` d'une ligne contenant :
 #'   - `methode` : "nb2"
@@ -32,7 +30,7 @@
 #' @importFrom MuMIn AICc
 #'
 #' @export
-cpue_fit_modele_nb2 <- function(cpue_data) {
+cpue_fit_modele_nb2 <- function(capture) {
   
   # --- Fonction interne : test HNP NB2 ---
   simuler_hnp_nb2 <- function(model_nb2, n_iter = 2) {
@@ -49,7 +47,7 @@ cpue_fit_modele_nb2 <- function(cpue_data) {
   }
   
   # --- Ajustement du modèle NB2 ---
-  model_nb2 <- try(MASS::glm.nb(cpue ~ 1, data = cpue_data), silent = TRUE)
+  model_nb2 <- try(MASS::glm.nb(nb_capture ~ 1, data = capture), silent = TRUE)
   
   convergence_flag <- !inherits(model_nb2, "try-error")
   
@@ -70,8 +68,8 @@ cpue_fit_modele_nb2 <- function(cpue_data) {
   }
   
   # --- Si une seule station : HNP non applicable ---
-  if (n_distinct(cpue_data$no_station) < 2) {
-    pred_mean <- unname(round(mean(cpue_data$cpue, na.rm = TRUE), 2))
+  if (n_distinct(capture$no_station) < 2) {
+    pred_mean <- unname(round(mean(capture$nb_capture, na.rm = TRUE), 2))
     
     return(
       tibble(
@@ -104,7 +102,7 @@ cpue_fit_modele_nb2 <- function(cpue_data) {
   }
   
   # --- Prédictions et intervalle de confiance ---
-  if (all(cpue_data$cpue == 0)) {
+  if (all(capture$nb_capture == 0)) {
     pred_mean <- 0
     pred_ic95 <- "IC non calculable"
   } else {

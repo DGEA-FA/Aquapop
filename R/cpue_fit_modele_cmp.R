@@ -3,8 +3,7 @@
 #' Cette fonction ajuste un modèle CMP via `glmmTMB` sur les données de CPUE par station.
 #' Elle effectue également un test HNP pour évaluer la qualité de l'ajustement.
 #'
-#' @param cpue_data Un `data.frame` produit par `cpue_prepare()` contenant au minimum
-#'   les colonnes `no_station` et `cpue`.
+#' @param recolte Un `data.frame` contenant au minimum les colonnes `no_station` et `nb_capture`.
 #'
 #' @return Un `data.frame` d’une seule ligne résumant le modèle ajusté, avec les colonnes suivantes :
 #' \describe{
@@ -25,11 +24,11 @@
 #' @importFrom tibble tibble
 #' @importFrom MuMIn AICc
 #' @export
-cpue_fit_modele_cmp <- function(cpue_data) {
+cpue_fit_modele_cmp <- function(capture) {
   
   # --- Ajustement du modèle CMP ---
   model <- try(
-    glmmTMB(cpue ~ 1, family = compois(link = "log"), data = cpue_data),
+    glmmTMB(nb_capture ~ 1, family = compois(link = "log"), data = capture),
     silent = TRUE
   )
   
@@ -54,14 +53,14 @@ cpue_fit_modele_cmp <- function(cpue_data) {
   # --- Fonction interne sécurisée pour réajustement ---
   safe_fit_cmp <- function(y) {
     fit <- try(
-      glmmTMB(y ~ 1, family = compois(link = "log"), data = cpue_data),
+      glmmTMB(y ~ 1, family = compois(link = "log"), data = capture),
       silent = TRUE
     )
     
     while (inherits(fit, "try-error")) {
       y <- simulate(model)[[1]]
       fit <- try(
-        glmmTMB(y ~ 1, family = compois(link = "log"), data = cpue_data),
+        glmmTMB(y ~ 1, family = compois(link = "log"), data = capture),
         silent = TRUE
       )
     }
@@ -111,7 +110,7 @@ cpue_fit_modele_cmp <- function(cpue_data) {
   }
   
   # --- Prédiction et IC 95 % ---
-  if (all(cpue_data$cpue == 0)) {
+  if (all(capture$nb_capture == 0)) {
     fit_mean <- 0
     ic95 <- "IC non calculable"
   } else {

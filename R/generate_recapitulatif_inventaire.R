@@ -40,7 +40,7 @@ generate_recapitulatif_inventaire <- function(data_lac, data_station) {
   count_info <- tibble(
     `N stations aléatoires` = generate_recapitulatif_compter_valeurs(data_station, "st_hasard", "O"),
     `N stations dirigées`   = generate_recapitulatif_compter_valeurs(data_station, "st_hasard", "N"),
-    `N stations valides`    = generate_recapitulatif_compter_valeurs(data_station, "st_valide", "O"),
+    `N stations non valides`    = generate_recapitulatif_compter_valeurs(data_station, "st_valide", "O"),
     `N stations invalides`  = generate_recapitulatif_compter_valeurs(data_station, "st_valide", "N"),
     `N stations total`      = nrow(data_station)
   )

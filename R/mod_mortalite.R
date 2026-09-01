@@ -11,14 +11,29 @@ mod_mortalite_ui <- function(id) {
   tabPanel(
     title = "Mortalité",
     
-    uiOutput(ns("mortalite_message")),
-    uiOutput(ns("mortalite_param_section")),
+    layout_columns(
+      
+      div(
+        uiOutput(ns("mortalite_message")),
+        uiOutput(ns("mortalite_param_section"))
+      ),
+      
+      div(
+          plotOutput(ns("structure_age_mortalite_plot"), height = "500px"),
+          br(),
+          uiOutput(ns("download_plot_mortalite_ui"))
+      ),
+    
+    col_widths = c(4,8)
+    ),
+    
     withSpinner(
       uiOutput(ns("mortalite_results_section")),
       type = myspinner
     )
     )
 }
+
 
 #' mortalite Server Function
 #'
@@ -27,10 +42,11 @@ mod_mortalite_ui <- function(id) {
 #' @param filename_suffix Expression réactive pour suffixe des fichiers à exporter.
 #'
 #' @noRd
-mod_mortalite_server <- function(id, specimen, filename_suffix) {
+mod_mortalite_server <- function(id, specimen, filename_suffix, info_pen) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
+ 
     # Validation de base des données spécimens ====
     specimen_info <- reactive({
       data <- specimen()
@@ -87,6 +103,7 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
     peak_plus_auto_res <- reactive({
       info <- specimen_info()
       
+   
       if (isFALSE(info$success)) {
         return(list(
           success = FALSE,
@@ -95,7 +112,21 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
         ))
       }
       
-      mortalite_get_peak_plus(data = info$data)
+      info_pen_data <- info_pen()
+      
+      if (is.null(info_pen_data) ||
+          is.null(info_pen_data$code_sp)) {
+        return(list(
+          success = FALSE,
+          message = "Impossible de déterminer l'espèce associée au type de pêche.",
+          value = NULL
+        ))
+      }
+      
+      mortalite_get_peak_plus(
+        data = info$data,
+        sp = info_pen()$code_sp
+        )
     })
     
     # Message principal du module ====
@@ -113,6 +144,112 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
       
       NULL
     })
+    
+
+        # Ajustement du modèle sélectionné ====
+        modele_fit_mortalite <- reactive({
+          analyse <- analyse_mortalite_res()
+          
+          if (is.null(analyse)) {
+            return(NULL)
+          }
+          
+          methode <- selected_model_mortalite()
+          
+          if (isFALSE(analyse$has_converged_model)) {
+            return(NULL)
+          }
+          
+          if (is.null(analyse$df_etendue) || is.null(methode)) {
+            return(NULL)
+          }
+          
+          mortalite_fit_best_modele(
+            data = analyse$df_etendue,
+            methode = methode
+          )
+        })
+        
+        # Création du graphique du modèle sélectionné
+        
+        plot_selectedmodel_mortalite <- reactive({
+          analyse <- analyse_mortalite_res()
+          
+          if (is.null(analyse)) {
+            return(NULL)
+          }
+          
+          info_data <- specimen_info()
+          modele <- modele_fit_mortalite()
+          info_modele <- table_modeles_mortalite()
+          
+          if (isFALSE(analyse$has_converged_model)) {
+            return(NULL)
+          }
+          
+          if (isFALSE(info_data$success) || is.null(modele)) {
+            return(NULL)
+          }
+          
+          peak <- analyse$peak_plus
+          
+          mortalite_plot_modele(
+            specimen = info_data$data,
+            modele = modele,
+            info_modele = info_modele,
+            peak_plus = peak
+          )
+        })
+        
+        # Graphique affiché dans la colonne de droite
+        output$structure_age_mortalite_plot <- renderPlot({
+          
+          if (!analyse_lancee()) {
+            
+          # Avant le clic
+            
+            resultat <- structure_age(
+              data = specimen(),
+              groupement = "tous"
+            )
+            
+            validate(
+              need(
+                resultat$success,
+                resultat$message
+              )
+            )
+            
+            resultat$plot
+            
+          } else {
+            
+            # après le clic
+            
+            plot_selectedmodel_mortalite()
+            
+          }
+          
+        })
+        
+        # Bouton de téléchargement : affiché seulement après le lancement de l'analyse
+        output$download_plot_mortalite_ui <- renderUI({
+          
+          if (analyse_lancee()) {
+            downloadButton(
+              session$ns("download_plot_mortalite"),
+              "Téléchargement du graphique"
+            )
+          }
+        })
+        
+        
+        # Gestion du téléchargement
+        render_download_plot(
+          "download_plot_mortalite",
+          plot_selectedmodel_mortalite,
+          filename = "courbe_mortalite"
+        )    
     
     # Section paramètre : affichée seulement si les données minimales sont admissibles ====
     output$mortalite_param_section <- renderUI({
@@ -141,13 +278,13 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
       }
       
       help_text <- if (isTRUE(info_peak_plus$success)) {
-        "Une valeur automatique d'âge de départ a été proposée à partir des données. Vous pouvez la conserver ou la modifier avant de lancer l'analyse."
+        "Une valeur automatique d'âge de départ a été proposée à partir des données, soit le mode de la structure d'âge pour l'omble de fontaine ou le mode + 1 pour le touladi et le doré jaune. Vous pouvez conserver cette valeur ou la modifier avant de lancer l'analyse."
       } else {
         "La valeur automatique d'âge de départ n'a pas pu être déterminée. Veuillez en sélectionner une manuellement avant de lancer l'analyse."
       }
       
       tagList(
-        h4("Âge de départ (Peak Plus)"),
+        h4("Âge de départ"),
         p(help_text),
         numericInput(
           inputId = ns("peak_plus"),
@@ -166,7 +303,7 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
       )
     })
     
-    # Peak Plus choisi par l'utilisatrice ====
+    # Peak Plus choisi par l'utilisateur ====
     peak_plus_selected <- reactive({
       info_age_max <- age_max_res()
       
@@ -192,7 +329,13 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
     })
     
     # Analyse déclenchée uniquement au clic ====
-    analyse_mortalite_res <- eventReactive(input$lancer_mortalite, {
+        analyse_lancee <- reactiveVal(FALSE)
+        observeEvent(specimen(), {
+          analyse_lancee(FALSE)
+        })
+        
+        analyse_mortalite_res <- eventReactive(input$lancer_mortalite, {
+          analyse_lancee(TRUE)
       info_data <- specimen_info()
       info_age_max <- age_max_res()
       pp_selected <- peak_plus_selected()
@@ -204,11 +347,12 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
           peak_plus = NULL,
           df_corrigee = NULL,
           df_etendue = NULL,
-          surdisp = NULL,
+#          surdisp = NULL,
           comparaison = NULL,
           best_model = NULL,
           has_converged_model = FALSE,
-          chaprob = NULL
+          chaprob = NULL,
+          graph_hnp = NULL
         ))
       }
       
@@ -219,11 +363,12 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
           peak_plus = NULL,
           df_corrigee = NULL,
           df_etendue = NULL,
-          surdisp = NULL,
+#          surdisp = NULL,
           comparaison = NULL,
           best_model = NULL,
           has_converged_model = FALSE,
-          chaprob = NULL
+          chaprob = NULL,
+          graph_hnp = NULL
         ))
       }
       
@@ -234,11 +379,12 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
           peak_plus = NULL,
           df_corrigee = NULL,
           df_etendue = NULL,
-          surdisp = NULL,
+#          surdisp = NULL,
           comparaison = NULL,
           best_model = NULL,
           has_converged_model = FALSE,
-          chaprob = NULL
+          chaprob = NULL,
+          graph_hnp = NULL
         ))
       }
       
@@ -255,11 +401,12 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
           peak_plus = pp_selected,
           df_corrigee = NULL,
           df_etendue = NULL,
-          surdisp = NULL,
+#          surdisp = NULL,
           comparaison = NULL,
           best_model = NULL,
           has_converged_model = FALSE,
-          chaprob = NULL
+          chaprob = NULL,
+          graph_hnp = NULL
         ))
       }
       
@@ -275,16 +422,17 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
           peak_plus = pp_selected,
           df_corrigee = df_corrigee_res$data,
           df_etendue = NULL,
-          surdisp = NULL,
+#          surdisp = NULL,
           comparaison = NULL,
           best_model = NULL,
           has_converged_model = FALSE,
-          chaprob = NULL
+          chaprob = NULL,
+          graph_hnp = NULL
         ))
       }
       
       comparaison_res <- mortalite_compare_modele(data = df_etendue_res$data)
-      
+   
       if (isFALSE(comparaison_res$success) || is.null(comparaison_res$data)) {
         return(list(
           success = FALSE,
@@ -292,11 +440,12 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
           peak_plus = pp_selected,
           df_corrigee = df_corrigee_res$data,
           df_etendue = df_etendue_res$data,
-          surdisp = NULL,
+#          surdisp = NULL,
           comparaison = comparaison_res,
           best_model = NULL,
           has_converged_model = FALSE,
-          chaprob = NULL
+          chaprob = NULL,
+          graph_hnp = NULL
         ))
       }
       
@@ -313,12 +462,14 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
         NULL
       }
       
-      surdisp_res <- if (has_converged_model) {
-        mortalite_test_surdispersion_poisson(df_corrigee_res$data)
-      } else {
-        NULL
-      }
+      graph_hnp <- comparaison_res$graph_hnp
       
+#      surdisp_res <- if (has_converged_model) {
+#        mortalite_test_surdispersion_poisson(df_corrigee_res$data)
+#      } else {
+#        NULL
+#      }
+#      
       chaprob_res <- mortalite_chaprob(
         specimen = info_data$data,
         pp = pp_selected,
@@ -331,11 +482,12 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
         peak_plus = pp_selected,
         df_corrigee = df_corrigee_res$data,
         df_etendue = df_etendue_res$data,
-        surdisp = surdisp_res,
+#        surdisp = surdisp_res,
         comparaison = comparaison_res,
         best_model = best_model,
         has_converged_model = has_converged_model,
-        chaprob = chaprob_res
+        chaprob = chaprob_res,
+        graph_hnp = graph_hnp
       )
     })
     
@@ -395,35 +547,43 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
             as.character()
         ),
         
-        h3("Test de sur-dispersion du modèle Poisson"),
-        p("Ce test évalue si les données de mortalité par âge violent l'hypothèse d'équidispersion du modèle de Poisson."),
-        strong("Interprétation :"),
-        verbatimTextOutput(ns("dispersion_msg")),
-        br(),
-        div(
-          style = "max-width: 900px; margin: auto;",
-          withSpinner(plotOutput(ns("plot_dispersion_poisson"), height = "500px"), type = myspinner),
-          br(),
-          downloadButton(ns("download_plot_dispersion_poisson"), "Téléchargement du graphique")
-        ),
-        br(),
+#        h3("Test de sur-dispersion du modèle Poisson"),
+#        p("Ce test évalue si les données de mortalité par âge violent l'hypothèse d'équidispersion du modèle de Poisson."),
+#        strong("Interprétation :"),
+#        verbatimTextOutput(ns("dispersion_msg")),
+#        br(),
+#        
+        #        div(
+        #          style = "max-width: 900px; margin: auto;",
+        #          withSpinner(plotOutput(ns("plot_dispersion_poisson"), height = "500px"), type = myspinner),
+        #          br(),
+        #          downloadButton(ns("download_plot_dispersion_poisson"), "Téléchargement du graphique")
+        #        ),
+        #        br(),
+        
         
         h3("Table de sélection du modèle de mortalité"),
         p("Le tableau suivant présente les résultats pour l'ensemble des modèles testés."),
         withSpinner(reactableOutput(ns("comparaison_mortalite_table")), type = myspinner),
         download_button_ui(ns("download_comparaison_mortalite_table")),
-        textOutput(ns("phrase_mortalite")),
+#        textOutput(ns("phrase_mortalite")),
         br(),
         
-        h3("Distribution d'âge et modèle de mortalité retenu"),
+        
+  
+        
+        h3("Graphique des résultats du test hnp du modèle sélectionné"),
+        p("Ce test évalue l'adéquation du modèle à partir de ses résidus. Lorsque tous les résidus sont à l'intérieur de ",
+          "l'enveloppe simulée, cela témoigne d'un bon ajustement. Si les points sont à l'intérieur de l'enveloppe mais ",
+          "qu'ils sont systématiquement près d'une des bandes extérieures, le modèle devrait être rejeté."),
         div(
           style = "max-width: 900px; margin: auto;",
-          withSpinner(plotOutput(ns("plot_mortalite"), height = "500px"), type = myspinner),
-          br(),
-          downloadButton(ns("download_plot_mortalite"), "Téléchargement du graphique")
+          withSpinner(plotOutput(ns("graph_hnp"), height = "500px"), type = myspinner)
         ),
         br(),
         
+        
+      
         h3("Chapman-Robson"),
         p("La mortalité estimée selon la méthode de Chapman-Robson est présentée à titre comparatif seulement."),
         uiOutput(ns("table_chaprobson")),
@@ -519,8 +679,12 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
             format = colFormat(digits = 1, locales = "fr-CA")
           ),
           ic95 = colDef(
-            name = "A IC 95% (%)",
+            name = "IC 95% (%)",
             format = colFormat(digits = 1, locales = "fr-CA")
+          ),
+          aiccwt = colDef(
+            name = "Poids d'Akaike",
+            format = colFormat(digits = 3, locales = "fr-CA")
           ),
           convergence = colDef(
             name = "Convergence",
@@ -570,106 +734,133 @@ mod_mortalite_server <- function(id, specimen, filename_suffix) {
       table[selected, "methode", drop = TRUE]
     })
     
-    output$phrase_mortalite <- renderText({
-      analyse <- analyse_mortalite_res()
-      
-      if (isFALSE(analyse$has_converged_model)) {
-        return(NULL)
-      }
-      
-      mortalite_phrase_resume(
-        data_comparaison = table_modeles_mortalite(),
-        modele_nom = analyse$best_model
-      )
-    })
+#    output$phrase_mortalite <- renderText({
+#      analyse <- analyse_mortalite_res()
+#      
+#      if (isFALSE(analyse$has_converged_model)) {
+#        return(NULL)
+#      }
+#      
+#      mortalite_phrase_resume(
+#        data_comparaison = table_modeles_mortalite(),
+#        modele_nom = analyse$best_model
+#      )
+#    })
     
     # Test de surdispersion ====
-    output$dispersion_msg <- renderText({
-      analyse <- analyse_mortalite_res()
-      
-      req(isTRUE(analyse$has_converged_model))
-      req(!is.null(analyse$surdisp))
-      
-      analyse$surdisp$message
-    })
+#    output$dispersion_msg <- renderText({
+#      analyse <- analyse_mortalite_res()
+#      
+#      req(isTRUE(analyse$has_converged_model))
+#      req(!is.null(analyse$surdisp))
+#      
+#      analyse$surdisp$message
+#    })
     
-    render_plot_ggplot(
-      "plot_dispersion_poisson",
-      reactive({
-        analyse <- analyse_mortalite_res()
-        
-        if (isFALSE(analyse$has_converged_model) || is.null(analyse$surdisp)) {
-          return(NULL)
-        }
-        
-        analyse$surdisp$plot
-      })
-    )
-    
-    render_download_plot(
-      "download_plot_dispersion_poisson",
-      reactive({
-        analyse <- analyse_mortalite_res()
-        
-        if (isFALSE(analyse$has_converged_model) || is.null(analyse$surdisp)) {
-          return(NULL)
-        }
-        
-        analyse$surdisp$plot
-      }),
-      filename = "dispersion_poisson"
-    )
+#    render_plot_ggplot(
+#      "plot_dispersion_poisson",
+#      reactive({
+#        analyse <- analyse_mortalite_res()
+#        
+#        if (isFALSE(analyse$has_converged_model) || is.null(analyse$surdisp)) {
+#          return(NULL)
+#       }
+#        
+#        analyse$surdisp$plot
+#      })
+#    )
+#    
+#    render_download_plot(
+#      "download_plot_dispersion_poisson",
+#      reactive({
+#        analyse <- analyse_mortalite_res()
+#        
+#        if (isFALSE(analyse$has_converged_model) || is.null(analyse$surdisp)) {
+#          return(NULL)
+#        }
+#       
+#        analyse$surdisp$plot
+#      }),
+#      filename = "dispersion_poisson"
+#    )
     
     # Ajustement du modèle sélectionné ====
-    modele_fit_mortalite <- reactive({
+#    modele_fit_mortalite <- reactive({
+#      analyse <- analyse_mortalite_res()
+#      methode <- selected_model_mortalite()
+#      
+#      if (isFALSE(analyse$has_converged_model)) {
+#        return(NULL)
+#      }
+#      
+#      if (is.null(analyse$df_etendue) || is.null(methode)) {
+#        return(NULL)
+#      }
+#      
+#      mortalite_fit_best_modele(
+#        data = analyse$df_etendue,
+#        methode = methode
+#      )
+#    })
+#    
+#    plot_selectedmodel_mortalite <- reactive({
+#      analyse <- analyse_mortalite_res()
+#      info_data <- specimen_info()
+#      modele <- modele_fit_mortalite()
+#      info_modele <- table_modeles_mortalite()
+#      
+#      if (isFALSE(analyse$has_converged_model)) {
+#        return(NULL)
+#      }
+#      
+#     if (isFALSE(info_data$success) || is.null(modele)) {
+#        return(NULL)
+#      }
+#      
+#      mortalite_plot_modele(
+#        specimen = info_data$data,
+#        modele = modele,
+#        info_modele = info_modele
+#      )
+#    })
+#    
+#    render_plot_ggplot(
+#      "plot_mortalite",
+#      reactive(plot_selectedmodel_mortalite())
+#    )
+#    
+#    render_download_plot(
+#      "download_plot_mortalite",
+#      plot_selectedmodel_mortalite,
+#      filename = "courbe_mortalite"
+#    )
+    
+    # Graphique HNP du modèle sélectionné ====
+    output$graph_hnp <- renderPlot({
+      
       analyse <- analyse_mortalite_res()
       methode <- selected_model_mortalite()
       
-      if (isFALSE(analyse$has_converged_model)) {
-        return(NULL)
-      }
+      req(isTRUE(analyse$success))
+      req(isTRUE(analyse$has_converged_model))
+      req(!is.null(methode))
+      req(!is.null(analyse$comparaison))
+      req(!is.null(analyse$comparaison$graph_hnp_par_modele))
       
-      if (is.null(analyse$df_etendue) || is.null(methode)) {
-        return(NULL)
-      }
+      graph_hnp <- analyse$comparaison$graph_hnp_par_modele[[methode]]
       
-      mortalite_fit_best_modele(
-        data = analyse$df_etendue,
-        methode = methode
+      req(!is.null(graph_hnp))
+      req(!is.null(graph_hnp$initial))
+      
+      hnp_obj <- graph_hnp$initial[[1]]
+      
+      plot(hnp_obj)
+      
+      title(
+        main = paste("Test HNP\nModèle", methode)
       )
     })
-    
-    plot_selectedmodel_mortalite <- reactive({
-      analyse <- analyse_mortalite_res()
-      info_data <- specimen_info()
-      modele <- modele_fit_mortalite()
-      info_modele <- table_modeles_mortalite()
-      
-      if (isFALSE(analyse$has_converged_model)) {
-        return(NULL)
-      }
-      
-      if (isFALSE(info_data$success) || is.null(modele)) {
-        return(NULL)
-      }
-      
-      mortalite_plot_modele(
-        specimen = info_data$data,
-        modele = modele,
-        info_modele = info_modele
-      )
-    })
-    
-    render_plot_ggplot(
-      "plot_mortalite",
-      reactive(plot_selectedmodel_mortalite())
-    )
-    
-    render_download_plot(
-      "download_plot_mortalite",
-      plot_selectedmodel_mortalite,
-      filename = "courbe_mortalite"
-    )
+
     
     # Chapman-Robson ====
     render_table_flextable(

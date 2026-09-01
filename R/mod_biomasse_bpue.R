@@ -55,8 +55,8 @@ mod_biomasse_bpue_server <- function(id, specimen, station, filename_suffix) {
       }
       
       result <- bpue_generate_biomasse(
-        data_specimen = specimen(),
-        data_station = station()
+        specimen = specimen(),
+        station = station()
       )
       
       list(

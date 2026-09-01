@@ -50,8 +50,9 @@
 #' # Données vides ou toutes manquantes
 #' mortalite_get_peak_plus(data.frame(age = numeric(0)))
 #' mortalite_get_peak_plus(data.frame(age = c(NA, NA)))
-mortalite_get_peak_plus <- function(data) {
-  # Validation de base ====
+mortalite_get_peak_plus <- function(data, sp) {
+
+    # Validation des données ====
   if (is.null(data) || !is.data.frame(data)) {
     return(list(
       success = FALSE,
@@ -76,6 +77,37 @@ mortalite_get_peak_plus <- function(data) {
     ))
   }
   
+  # Validation de l'espèce
+  if (is.null(sp) ||
+      !is.character(sp) ||
+      length(sp) != 1 ||
+      is.na(sp) ||
+      sp == "") {
+    
+    return(list(
+      success = FALSE,
+      message = "Le code d'espèce n'est pas valide.",
+      value = NULL
+    ))
+  }
+  
+  # Déterminer l'ajustement selon l'espèce
+  if (sp == "SAFO") {
+    increment <- 0L
+  } else if (sp %in% c("SANA", "SAVI")) {
+    increment <- 1L
+  } else {
+    return(list(
+      success = FALSE,
+      message = paste0(
+        "Aucune règle Peak Plus n'est définie pour l'espèce `",
+        sp,
+        "`."
+      ),
+      value = NULL
+    ))
+  }
+  
   # Nettoyage des âges ====
   ages_clean <- na.omit(data$age)
   
@@ -90,12 +122,15 @@ mortalite_get_peak_plus <- function(data) {
   # Calcul du mode et du peak plus ====
   age_table <- table(ages_clean)
   mode_age <- as.integer(names(age_table)[age_table == max(age_table)]) |> min()
-  peak_plus <- mode_age + 1L
+  
+  peak_plus <- mode_age + increment
   
   # Sortie ====
   list(
     success = TRUE,
     message = NULL,
-    value = peak_plus
+    value = peak_plus,
+    sp = sp,
+    mode_age = mode_age
   )
 }

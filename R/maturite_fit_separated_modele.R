@@ -48,31 +48,62 @@ maturite_fit_separated_modele <- function(df, variable = c("ltm", "age")) {
   }
   
   # --- Vérification de la présence des deux sexes ---
-  if (!all(c("M", "F") %in% df$sexe)) {
-    warning("Un seul sexe observé. L'ajustement des modèles séparés est impossible.")
-    return(NULL)
+#  if (!all(c("M", "F") %in% df$sexe)) {
+#    warning("Un seul sexe observé. L'ajustement des modèles séparés est impossible.")
+#    return(NULL)
+#  }
+  
+  
+  # Ajustement sécurisé
+  form <- as.formula(
+    paste("maturite ~", variable)
+  )
+  
+  fit_one <- function(data, link) {
+    tryCatch(
+      glm(
+        formula = form,
+        family = binomial(link = link),
+        data = data
+      ),
+      error = function(e) NULL
+    )
   }
   
-  # --- Ajustement des modèles séparés par sexe ---
-  if (variable == "ltm") {
-    list(
-      M_logit   = glm(maturite ~ ltm, family = binomial(link = "logit"),   data = df[df$sexe == "M", ]),
-      M_probit  = glm(maturite ~ ltm, family = binomial(link = "probit"),  data = df[df$sexe == "M", ]),
-      M_cloglog = glm(maturite ~ ltm, family = binomial(link = "cloglog"), data = df[df$sexe == "M", ]),
-      
-      F_logit   = glm(maturite ~ ltm, family = binomial(link = "logit"),   data = df[df$sexe == "F", ]),
-      F_probit  = glm(maturite ~ ltm, family = binomial(link = "probit"),  data = df[df$sexe == "F", ]),
-      F_cloglog = glm(maturite ~ ltm, family = binomial(link = "cloglog"), data = df[df$sexe == "F", ])
-    )
-  } else {
-    list(
-      M_logit   = glm(maturite ~ age, family = binomial(link = "logit"),   data = df[df$sexe == "M", ]),
-      M_probit  = glm(maturite ~ age, family = binomial(link = "probit"),  data = df[df$sexe == "M", ]),
-      M_cloglog = glm(maturite ~ age, family = binomial(link = "cloglog"), data = df[df$sexe == "M", ]),
-      
-      F_logit   = glm(maturite ~ age, family = binomial(link = "logit"),   data = df[df$sexe == "F", ]),
-      F_probit  = glm(maturite ~ age, family = binomial(link = "probit"),  data = df[df$sexe == "F", ]),
-      F_cloglog = glm(maturite ~ age, family = binomial(link = "cloglog"), data = df[df$sexe == "F", ])
-    )
-  }
+  df_M <- df |> dplyr::filter(.data$sexe == "M")
+  df_F <- df |> dplyr::filter(.data$sexe == "F")
+  
+  list(
+    M_logit = fit_one(df_M, "logit"),
+    M_probit = fit_one(df_M, "probit"),
+    M_cloglog = fit_one(df_M, "cloglog"),
+    
+    F_logit = fit_one(df_F, "logit"),
+    F_probit = fit_one(df_F, "probit"),
+    F_cloglog = fit_one(df_F, "cloglog")
+  )
 }
+  
+  # --- Ajustement des modèles séparés par sexe ---
+#  if (variable == "ltm") {
+#    list(
+#      M_logit   = glm(maturite ~ ltm, family = binomial(link = "logit"),   data = df[df$sexe == "M", ]),
+#      M_probit  = glm(maturite ~ ltm, family = binomial(link = "probit"),  data = df[df$sexe == "M", ]),
+#      M_cloglog = glm(maturite ~ ltm, family = binomial(link = "cloglog"), data = df[df$sexe == "M", ]),
+#      
+#      F_logit   = glm(maturite ~ ltm, family = binomial(link = "logit"),   data = df[df$sexe == "F", ]),
+#      F_probit  = glm(maturite ~ ltm, family = binomial(link = "probit"),  data = df[df$sexe == "F", ]),
+#      F_cloglog = glm(maturite ~ ltm, family = binomial(link = "cloglog"), data = df[df$sexe == "F", ])
+#    )
+#  } else {
+#    list(
+#      M_logit   = glm(maturite ~ age, family = binomial(link = "logit"),   data = df[df$sexe == "M", ]),
+#      M_probit  = glm(maturite ~ age, family = binomial(link = "probit"),  data = df[df$sexe == "M", ]),
+#      M_cloglog = glm(maturite ~ age, family = binomial(link = "cloglog"), data = df[df$sexe == "M", ]),
+#      
+#      F_logit   = glm(maturite ~ age, family = binomial(link = "logit"),   data = df[df$sexe == "F", ]),
+#      F_probit  = glm(maturite ~ age, family = binomial(link = "probit"),  data = df[df$sexe == "F", ]),
+#      F_cloglog = glm(maturite ~ age, family = binomial(link = "cloglog"), data = df[df$sexe == "F", ])
+#    )
+# }
+#}

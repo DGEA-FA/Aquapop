@@ -22,58 +22,67 @@
 #'
 #' @export
 #' @importFrom stats glm binomial
+
+maturite_get_formule <- function(modele = c("TLO", "ADD", "COM", "INT"),
+                                 variable = c("ltm", "age")) {
+  
+  modele <- match.arg(modele)
+  variable <- match.arg(variable)
+  
+  switch(
+    modele,
+    
+    TLO = as.formula(paste("maturite ~", variable)),
+    ADD = as.formula(paste("maturite ~", variable, "+ sexe")),
+    COM = as.formula(paste("maturite ~", variable, ":sexe")),
+    INT = as.formula(paste("maturite ~", variable, "* sexe"))
+  )
+}
+
 maturite_fit_combined_modele <- function(df, variable = c("ltm", "age")) {
   variable <- match.arg(variable)
   
-  # --- Étape 1 : Vérification des colonnes requises ---
   required_cols <- c("maturite", "sexe", variable)
   missing_cols <- setdiff(required_cols, colnames(df))
   if (length(missing_cols) > 0) {
     stop("Le dataframe doit contenir les colonnes : ", paste(missing_cols, collapse = ", "))
   }
   
-  # --- Étape 2 : Vérification de la présence des deux sexes ---
-  if (!all(c("M", "F") %in% df$sexe)) {
-    warning("Les données ne contiennent qu'un seul sexe. Modèles combinés non ajustés.")
-    return(list())
+  formules <- list(
+    TLO = maturite_get_formule("TLO", variable),
+    ADD = maturite_get_formule("ADD", variable),
+    COM = maturite_get_formule("COM", variable),
+    INT = maturite_get_formule("INT", variable)
+  )
+  
+  liens <- c("logit", "probit", "cloglog")
+  
+  fit_one <- function(formule, lien) {
+    
+    tryCatch(
+      glm(
+        formula = formule,
+        family = binomial(link = lien),
+        data = df
+      ),
+      error = function(e) NULL
+    )
   }
   
-  # --- Étape 3 : Ajustement des 12 modèles combinés ---
-  if (variable == "ltm") {
-    list(
-      TLO_logit   = glm(maturite ~ ltm, family = binomial(link = "logit"), data = df),
-      TLO_probit  = glm(maturite ~ ltm, family = binomial(link = "probit"), data = df),
-      TLO_cloglog = glm(maturite ~ ltm, family = binomial(link = "cloglog"), data = df),
+  models <- list()
+  
+  for (modele in names(formules)) {
+    
+    for (lien in liens) {
       
-      ADD_logit   = glm(maturite ~ ltm + sexe, family = binomial(link = "logit"), data = df),
-      ADD_probit  = glm(maturite ~ ltm + sexe, family = binomial(link = "probit"), data = df),
-      ADD_cloglog = glm(maturite ~ ltm + sexe, family = binomial(link = "cloglog"), data = df),
+      id <- paste0(modele, "_", lien)
       
-      INT_logit   = glm(maturite ~ ltm * sexe, family = binomial(link = "logit"), data = df),
-      INT_probit  = glm(maturite ~ ltm * sexe, family = binomial(link = "probit"), data = df),
-      INT_cloglog = glm(maturite ~ ltm * sexe, family = binomial(link = "cloglog"), data = df),
-      
-      COM_logit   = glm(maturite ~ ltm + sexe + ltm:sexe, family = binomial(link = "logit"), data = df),
-      COM_probit  = glm(maturite ~ ltm + sexe + ltm:sexe, family = binomial(link = "probit"), data = df),
-      COM_cloglog = glm(maturite ~ ltm + sexe + ltm:sexe, family = binomial(link = "cloglog"), data = df)
-    )
-  } else {
-    list(
-      TLO_logit   = glm(maturite ~ age, family = binomial(link = "logit"), data = df),
-      TLO_probit  = glm(maturite ~ age, family = binomial(link = "probit"), data = df),
-      TLO_cloglog = glm(maturite ~ age, family = binomial(link = "cloglog"), data = df),
-      
-      ADD_logit   = glm(maturite ~ age + sexe, family = binomial(link = "logit"), data = df),
-      ADD_probit  = glm(maturite ~ age + sexe, family = binomial(link = "probit"), data = df),
-      ADD_cloglog = glm(maturite ~ age + sexe, family = binomial(link = "cloglog"), data = df),
-      
-      INT_logit   = glm(maturite ~ age * sexe, family = binomial(link = "logit"), data = df),
-      INT_probit  = glm(maturite ~ age * sexe, family = binomial(link = "probit"), data = df),
-      INT_cloglog = glm(maturite ~ age * sexe, family = binomial(link = "cloglog"), data = df),
-      
-      COM_logit   = glm(maturite ~ age + sexe + age:sexe, family = binomial(link = "logit"), data = df),
-      COM_probit  = glm(maturite ~ age + sexe + age:sexe, family = binomial(link = "probit"), data = df),
-      COM_cloglog = glm(maturite ~ age + sexe + age:sexe, family = binomial(link = "cloglog"), data = df)
-    )
+      models[[id]] <- fit_one(
+        formules[[modele]],
+        lien
+      )
+    }
   }
+  
+  models
 }

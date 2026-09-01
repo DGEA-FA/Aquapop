@@ -5,9 +5,7 @@
 #' pour évaluer la qualité de l'ajustement. En cas d'ajustement marginal (entre 10 % et 15 % d'observations hors bande),
 #' trois simulations supplémentaires sont effectuées.
 #'
-#' @param cpue_data Un `data.frame` produit par `cpue_prepare()` contenant au minimum :
-#'   - `no_station` : identifiant de la station,
-#'   - `cpue` : valeur de capture par unité d'effort.
+#' @param recolte Un `data.frame` contenant au minimum les colonnes `no_station` et `nb_capture`.
 #'
 #' @return Un `data.frame` d'une ligne contenant :
 #'   - `methode` : "poisson"
@@ -31,11 +29,11 @@
 #' @importFrom MuMIn AICc
 #'
 #' @export
-cpue_fit_modele_poisson <- function(cpue_data) {
+cpue_fit_modele_poisson <- function(capture) {
   
   # --- Ajustement du modèle Poisson ---
   model_poisson <- try(
-    glm(cpue ~ 1, family = poisson, data = cpue_data),
+    glm(nb_capture ~ 1, family = poisson, data = capture),
     silent = TRUE
   )
   
@@ -59,8 +57,8 @@ cpue_fit_modele_poisson <- function(cpue_data) {
   }
   
   # --- Si une seule station : HNP non applicable ---
-  if (n_distinct(cpue_data$no_station) < 2) {
-    pred_mean <- unname(round(mean(cpue_data$cpue, na.rm = TRUE), 2))
+  if (n_distinct(capture$no_station) < 2) {
+    pred_mean <- unname(round(mean(capture$nb_capture, na.rm = TRUE), 2))
     
     return(
       tibble(
@@ -106,7 +104,7 @@ cpue_fit_modele_poisson <- function(cpue_data) {
   pred <- predict(model_poisson, type = "link", se.fit = TRUE)
   pred_mean <- unname(round(exp(pred$fit[1]), 2))
   
-  if (all(cpue_data$cpue == 0)) {
+  if (all(capture$nb_capture == 0)) {
     pred_ic95 <- "IC non calculable"
   } else {
     lower_num <- exp(pred$fit[1] - 1.96 * pred$se.fit[1])

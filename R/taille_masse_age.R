@@ -2,7 +2,8 @@
 #'
 #' Calcule des statistiques descriptives (effectif, moyenne, écart-type, minimum,
 #' maximum) pour la longueur totale (`ltm`), la masse et l'âge des spécimens,
-#' selon différents groupes biologiques (sexe et statut reproducteur).
+#' selon différents groupes biologiques (sexe et statut reproducteur), 
+#' pour les spécimens valides
 #'
 #' Retourne à la fois un tableau brut (`data.frame`) et une version formatée
 #' avec `flextable`. Si aucune donnée exploitable n'est disponible, la fonction

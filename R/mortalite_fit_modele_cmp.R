@@ -6,6 +6,11 @@
 #' mortalité : 2 simulations initiales, puis 3 simulations additionnelles si
 #' l'ajustement est marginal (entre 10 et 15 % d'observations hors bande).
 #'
+#' La fonction retourne toujours un `data.frame` d'une ligne. Si le modèle ne
+#' peut pas être ajusté ou si certaines statistiques ne peuvent pas être
+#' calculées, les valeurs correspondantes sont retournées à `NA` et
+#' `convergence = FALSE`.
+#'
 #' @param model Objet modèle ajusté avec `glmmTMB`.
 #' @param df_age_etendue Un `data.frame` contenant les colonnes `age` et `number`.
 #' @param max_refit_attempts Nombre maximal d'essais permis dans la fonction
@@ -13,8 +18,19 @@
 #'
 #' @return Une liste contenant :
 #' \describe{
-#'   \item{ajustement_hnp}{Pourcentage moyen d'observations hors bande, ou `NA_real_`.}
-#'   \item{nb_iterations_hnp}{Nombre total d'itérations HNP réalisées, ou `NA_real_`.}
+#'  Un `data.frame` d'une ligne contenant :
+#' \describe{
+#'   \item{methode}{Modèle utilisé (`"gp"`).}
+#'   \item{ajustement_hnp}{Pourcentage moyen d'observations hors bande (HNP).}
+#'   \item{aicc}{Critère d'information corrigé (AICc).}
+#'   \item{Z}{Coefficient d'âge (valeur absolue).}
+#'   \item{SE}{Erreur standard de `Z`.}
+#'   \item{A}{Taux de mortalité annuel estimé en pourcentage.}
+#'   \item{ic95}{Intervalle de confiance approximatif de `A`.}
+#'   \item{commentaire}{Appréciation qualitative de l'ajustement ou message d'échec.}
+#'   \item{convergence}{Booléen indiquant si le modèle a convergé.}
+#'   \item{nb_iterations_hnp}{Nombre d'itérations HNP effectuées.}
+#'   Un `plot` : graphique des résidus du test hnp, ou `NULL`
 #' }
 #'
 #' @importFrom glmmTMB glmmTMB nbinom1
@@ -22,28 +38,35 @@
 #' @importFrom stats residuals simulate
 #' @noRd
 #' @keywords internal
-run_hnp_cmp <- function(model, df_age_etendue, max_refit_attempts = 10L) {
-  diagfun_cmp <- function(obj) {
-    residuals(obj, type = "pearson")
-  }
+
+
+   # Fonctions de base pour CMP  ====
+diagfun_cmp <- function(obj) {
+  residuals(obj, type = "pearson")
+}
+
+simfun_cmp <- function(n, obj) {
+  simulate(obj)[[1]]
+}
+
+make_fitfun_cmp <- function(df_age_etendue, model, max_refit_attempts = 10L) {
   
-  simfun_cmp <- function(n, obj) {
-    simulate(obj)[[1]]
-  }
-  
-  fitfun_cmp <- function(y) {
+  function(y) {
+    
     attempt <- 1L
     
     fit <- try(
       glmmTMB(
         y ~ age,
-        family = nbinom1(link = "log"),
+        family = compois(link = "log"),
         data = df_age_etendue
       ),
       silent = TRUE
     )
     
-    while (inherits(fit, "try-error") && attempt < max_refit_attempts) {
+    while (inherits(fit, "try-error") &&
+           attempt < max_refit_attempts) {
+      
       y_retry <- try(simulate(model)[[1]], silent = TRUE)
       
       if (inherits(y_retry, "try-error")) {
@@ -53,7 +76,7 @@ run_hnp_cmp <- function(model, df_age_etendue, max_refit_attempts = 10L) {
       fit <- try(
         glmmTMB(
           y_retry ~ age,
-          family = nbinom1(link = "log"),
+          family = compois(link = "log"),
           data = df_age_etendue
         ),
         silent = TRUE
@@ -68,71 +91,53 @@ run_hnp_cmp <- function(model, df_age_etendue, max_refit_attempts = 10L) {
     
     fit
   }
+}
+
+# Test HNP  ====
+simuler_hnp_cmp <- function(model, df_age_etendue, n_iter){
   
-  hnp_valeurs <- tryCatch(
-    {
-      set.seed(2023)
-      replicate(
-        2,
-        hnp(
-          model,
-          newclass = TRUE,
-          diagfun = diagfun_cmp,
-          simfun = simfun_cmp,
-          fitfun = fitfun_cmp,
-          how.many.out = TRUE,
-          plot.sim = FALSE
-        ),
-        simplify = FALSE
-      ) |>
-        sapply(function(result_hnp) result_hnp$out / result_hnp$total * 100)
-    },
-    error = function(e) NULL
+  fitfun_cmp <- make_fitfun_cmp(
+    df_age_etendue = df_age_etendue,
+    model = model
   )
   
-  if (is.null(hnp_valeurs)) {
-    return(list(
-      ajustement_hnp = NA_real_,
-      nb_iterations_hnp = NA_real_
-    ))
-  }
+  set.seed(2023)
   
-  ajustement_hnp <- round(mean(hnp_valeurs), 2)
-  nb_iterations_hnp <- 2
-  
-  if (!is.na(ajustement_hnp) && ajustement_hnp >= 10 && ajustement_hnp < 15) {
-    hnp_suppl <- tryCatch(
-      {
-        replicate(
-          3,
-          hnp(
-            model,
-            newclass = TRUE,
-            diagfun = diagfun_cmp,
-            simfun = simfun_cmp,
-            fitfun = fitfun_cmp,
-            how.many.out = TRUE,
-            plot.sim = FALSE
-          ),
-          simplify = FALSE
-        ) |>
-          sapply(function(result_hnp) result_hnp$out / result_hnp$total * 100)
-      },
-      error = function(e) NULL
-    )
-    
-    if (!is.null(hnp_suppl)) {
-      hnp_valeurs <- c(hnp_valeurs, hnp_suppl)
-      ajustement_hnp <- round(mean(hnp_valeurs), 2)
-      nb_iterations_hnp <- 5
-    }
-  }
+  resultats_hnp <- replicate(
+    n_iter,
+    hnp(
+      model,
+      newclass = TRUE,
+      diagfun = diagfun_cmp,
+      simfun = simfun_cmp,
+      fitfun = fitfun_cmp,
+      how.many.out = TRUE,
+      plot.sim = FALSE
+    ),
+    simplify = FALSE
+  )
   
   list(
-    ajustement_hnp = ajustement_hnp,
-    nb_iterations_hnp = nb_iterations_hnp
+    hnp = resultats_hnp,
+    pct = sapply(
+      resultats_hnp,
+      function(x) x$out / x$total * 100
+    )
   )
 }
+
+run_hnp_cmp <- function(model, df_age_etendue){
+  
+  test_hnp(
+    simuler = simuler_hnp_cmp,
+    model = model,
+    df_age_etendue = df_age_etendue
+  )
+  
+}
+
+
+  
 
 # ==== modèle mortalité CMP ====================================================
 
@@ -185,23 +190,56 @@ run_hnp_cmp <- function(model, df_age_etendue, max_refit_attempts = 10L) {
 mortalite_fit_modele_cmp <- function(df_age_etendue) {
   # Validation de base ====
   if (is.null(df_age_etendue) || !is.data.frame(df_age_etendue) || nrow(df_age_etendue) == 0) {
-    return(build_failed_mortalite_row(
-      methode = "cmp",
-      commentaire = "Aucune donnée disponible pour ajuster le modèle."
+    return(list(
+      tableau = tibble(
+        methode = "cmp",
+        ajustement_hnp = NA_real_,
+        aicc = NA_real_,
+        Z = NA_real_,
+        SE = NA_real_,
+        A = NA_real_,
+        ic95 = NA_character_,
+        commentaire = "Aucune donnée disponible pour ajuster le modèle.",
+        convergence = FALSE,
+        nb_iterations_hnp = NA_real_
+      ),
+      graph_hnp = NULL
     ))
   }
   
   if (!all(c("age", "number") %in% names(df_age_etendue))) {
-    return(build_failed_mortalite_row(
-      methode = "cmp",
-      commentaire = "Les colonnes `age` et `number` sont requises."
+    return(list(
+      tableau = tibble(
+        methode = "cmp",
+        ajustement_hnp = NA_real_,
+        aicc = NA_real_,
+        Z = NA_real_,
+        SE = NA_real_,
+        A = NA_real_,
+        ic95 = NA_character_,
+        commentaire = "Les colonnes `age` et `number` sont requises.",
+        convergence = FALSE,
+        nb_iterations_hnp = NA_real_
+      ),
+      graph_hnp = NULL
     ))
   }
   
   if (nrow(df_age_etendue) < 2 || length(unique(df_age_etendue$age)) < 2) {
-    return(build_failed_mortalite_row(
-      methode = "cmp",
-      commentaire = "Le modèle requiert au moins deux âges distincts."
+    return(list(
+      tableau = tibble(
+        methode = "cmp",
+        ajustement_hnp = NA_real_,
+        aicc = NA_real_,
+        Z = NA_real_,
+        SE = NA_real_,
+        A = NA_real_,
+        ic95 = NA_character_,
+        commentaire = "Le modèle requiert au moins deux âges distincts.",
+        convergence = FALSE,
+        nb_iterations_hnp = NA_real_
+      ),
+      graph_hnp = NULL
     ))
   }
   
@@ -216,9 +254,20 @@ mortalite_fit_modele_cmp <- function(df_age_etendue) {
   )
   
   if (is.null(model)) {
-    return(build_failed_mortalite_row(
-      methode = "cmp",
-      commentaire = "Le modèle n'a pas pu être ajusté."
+    return(list(
+      tableau = tibble(
+        methode = "cmp",
+        ajustement_hnp = NA_real_,
+        aicc = NA_real_,
+        Z = NA_real_,
+        SE = NA_real_,
+        A = NA_real_,
+        ic95 = NA_character_,
+        commentaire = "Le modèle n'a pas pu être ajusté.",
+        convergence = FALSE,
+        nb_iterations_hnp = NA_real_
+      ),
+      graph_hnp = NULL
     ))
   }
   
@@ -229,13 +278,16 @@ mortalite_fit_modele_cmp <- function(df_age_etendue) {
     df_age_etendue = df_age_etendue
   )
   
+  graph_hnp <- hnp_res$graph_hnp
+  
   coef_table <- tryCatch(
     summary(model)$coefficients$cond,
     error = function(e) NULL
   )
   
   if (is.null(coef_table) || !("age" %in% rownames(coef_table))) {
-    return(tibble(
+    return(list(
+      tableau = tibble(
       methode = "cmp",
       ajustement_hnp = hnp_res$ajustement_hnp,
       aicc = tryCatch(AICc(model), error = function(e) NA_real_),
@@ -246,7 +298,9 @@ mortalite_fit_modele_cmp <- function(df_age_etendue) {
       commentaire = "Le modèle a été ajusté, mais les paramètres n'ont pas pu être extraits.",
       convergence = FALSE,
       nb_iterations_hnp = hnp_res$nb_iterations_hnp
-    ))
+      ),
+      graph_hnp = graph_hnp
+      ))
   }
   
   Z <- abs(coef_table["age", "Estimate"])
@@ -267,7 +321,7 @@ mortalite_fit_modele_cmp <- function(df_age_etendue) {
     TRUE ~ "Mauvais ajustement"
   )
   
-  tibble(
+  resultat <- tibble(
     methode = "cmp",
     ajustement_hnp = hnp_res$ajustement_hnp,
     aicc = tryCatch(AICc(model), error = function(e) NA_real_),
@@ -278,5 +332,10 @@ mortalite_fit_modele_cmp <- function(df_age_etendue) {
     commentaire = commentaire,
     convergence = convergence_modele,
     nb_iterations_hnp = hnp_res$nb_iterations_hnp
+    )
+  
+  list(
+    tableau = resultat,
+    graph_hnp = graph_hnp
   )
 }

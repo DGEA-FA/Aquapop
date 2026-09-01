@@ -34,266 +34,491 @@
 #' @importFrom flextable flextable set_header_labels
 #' @importFrom stringr str_extract
 #' @importFrom tibble tibble
+
 maturite_compare_modele <- function(specimen_data,
-                                    prefer_combined = FALSE,
                                     variable = c("ltm", "age")) {
   variable <- match.arg(variable)
   
-  # ==== Tableau vide par défaut ----
-  
-  empty_eval <- tibble(
-    modele_id = character(),
-    modele = character(),
-    lien = character(),
-    convergence = logical(),
-    pearson_x2_pval = numeric(),
-    goodness_of_link_pval = numeric(),
-    aicc = numeric(),
-    commentaire = character(),
-    type = character(),
-    recommande = logical()
-  )
-  
-  empty_ft <- flextable(empty_eval) |>
-    set_header_labels(
-      modele_id = "Modèle",
-      modele = "Type",
-      lien = "Lien",
-      convergence = "Convergence",
-      pearson_x2_pval = "p (χ² de Pearson)",
-      goodness_of_link_pval = "p (test du lien)",
-      aicc = "AICc",
-      commentaire = "Commentaire",
-      type = "Type de modèle",
-      recommande = "✔ Recommandé"
-    ) |>
-    style_flextable_aquapop()
-  
-  empty_dual <- list(
-    df = empty_eval,
-    flextable = empty_ft
-  )
-  
-  # ==== Validation des données ----
-  
   validation_res <- maturite_validate_data(
-    specimen_data = specimen_data,
-    variable = variable
-  )
-  
-  if (!isTRUE(validation_res$success)) {
-    return(list(
-      success = FALSE,
-      table = empty_dual,
-      best_model = list(
-        best_model_M = NULL,
-        best_model_F = NULL,
-        best_model_combined = NULL
-      ),
-      message = validation_res$message,
-      table_sep = empty_dual,
-      table_comb = empty_dual
-    ))
-  }
-  
-  df <- validation_res$data
-  
-  # ==== Modèles séparés ----
-  
-  models_sep <- maturite_fit_separated_modele(df, variable = variable)
-  eval_sep <- maturite_eval_modele(models_sep)
-  best_sep <- maturite_select_best_separated_modele(eval_sep)
-  
-  eval_sep$type <- ifelse(
-    grepl("^M_", eval_sep$modele_id),
-    "séparé_M",
-    "séparé_F"
-  )
-  
-  # ==== Modèles combinés ----
-  
-  models_comb <- maturite_fit_combined_modele(df, variable = variable)
-  eval_comb <- maturite_eval_modele(models_comb)
-  best_comb <- maturite_select_best_combined_modele(eval_comb)
-  
-  eval_comb$type <- "combiné"
-  eval_comb$recommande <- rep(FALSE, nrow(eval_comb))
-  
-  if (!is.null(best_comb$best_model) && length(best_comb$best_model) > 0) {
-    eval_comb$recommande <- eval_comb$modele_id %in% best_comb$best_model
-  }
+  specimen_data = specimen_data,
+  variable = variable
+)
 
-  # ==== Message final ----
+if (!isTRUE(validation_res$success)) {
   
-  message <- paste0(best_sep$message, "\n", best_comb$message)
-  
-  if (is.null(best_comb$best_model) &&
-      is.null(best_sep$best_model_M) &&
-      is.null(best_sep$best_model_F)) {
-    message <- paste0(
-      message,
-      "\nAucun modèle utilisable n'a pu être sélectionné."
+  return(
+    list(
+      success = FALSE,
+      message = validation_res$message,
+      table_sep_M = NULL,
+      table_sep_F = NULL,
+      table_comb = NULL,
+      table = NULL,
+      best_model = NULL
     )
-  }
+  )
+}
+
+df <- validation_res$data
+
+
+#----------------------------------------------------
+# MODÈLES SÉPARÉS
+#----------------------------------------------------
+
+models_sep <- maturite_fit_separated_modele(df,variable = variable)
+eval_sep <- maturite_eval_modele(models_sep)
+
+eval_sep <- eval_sep |>
+  dplyr::mutate(
+    sexe = dplyr::case_when(
+      grepl("^M_", .data$modele_id) ~ "M",
+      grepl("^F_", .data$modele_id) ~ "F",
+      TRUE ~ NA_character_
+    )
+  )
+
+# Delta AICc PAR SEXE
+
+eval_sep <- eval_sep |>
+  group_by(.data$sexe) |>
   
-  # ==== Meilleurs modèles disponibles ----
+  mutate(
+    min_aicc = if (any(is.finite(.data$aicc) & .data$convergence))
+      {
+      
+      min(.data$aicc[is.finite(.data$aicc) & .data$convergence],na.rm = TRUE)
+      
+    } else {
+      NA_real_
+    },
+    
+    delta_aicc = ifelse(is.finite(.data$aicc), .data$aicc - min_aicc, NA_real_)
+    
+  ) |>
+  ungroup() |>
+  select(-min_aicc)
+
+
+# Recommandation par sexe séparés
+best_sep <- maturite_select_best_separated_modele(eval_sep)
+
+best_M <- best_sep$best_model_M
+best_F <- best_sep$best_model_F
+
+eval_sep <- eval_sep |>
+  dplyr::mutate(
+    recommande = .data$modele_id %in% c(best_M, best_F),
+    
+    commentaire = dplyr::case_when(
+      
+      is.na(.data$type) ~
+        "Données insuffisantes",
+      
+      .data$convergence == FALSE ~
+        "Ce modèle ne converge pas.",
+      
+      .data$ajust == FALSE ~
+        "Ce modèle ne s'ajuste pas bien aux données.",
+      
+      .data$modele_id %in% c(best_M, best_F) ~
+        "Ce modèle est recommandé car son AICc est le plus faible.",
+      
+      is.finite(.data$delta_aicc) &
+        .data$delta_aicc > 0 &
+        .data$delta_aicc < 2 ~
+        "Modèle alternatif ayant un support statistique similaire au modèle recommandé.",
+      
+      TRUE ~ "Modèle valide."
+    )
+  )
+
+
+#----------------------------------------------------
+# MODÈLES COMBINÉS
+#----------------------------------------------------
+
+models_comb <- maturite_fit_combined_modele(df,variable = variable)
+eval_comb <- maturite_eval_modele(models_comb)
+
+
+# Delta AICc pour les modèles combinés
+aicc_valides <- eval_comb |>
+  filter(
+    .data$convergence,
+    is.finite(.data$aicc)
+  )
+
+if (nrow(aicc_valides) > 0) {
   
-  best_model <- list(
-    best_model_M = if (!is.null(best_sep$best_model_M)) {
-      list(
-        modele = "TLO",
-        lien = str_extract(best_sep$best_model_M, "logit|probit|cloglog"),
-        variable = variable
+  min_comb_aicc <- min(
+    aicc_valides$aicc,
+    na.rm = TRUE
+  )
+  
+  eval_comb <- eval_comb |>
+    mutate(
+      delta_aicc = ifelse(
+        is.finite(.data$aicc),
+        .data$aicc - min_comb_aicc,
+        NA_real_
       )
-    } else {
-      NULL
-    },
-    best_model_F = if (!is.null(best_sep$best_model_F)) {
-      list(
-        modele = "TLO",
-        lien = str_extract(best_sep$best_model_F, "logit|probit|cloglog"),
-        variable = variable
+    )
+  
+} else {
+  
+  eval_comb$delta_aicc <- NA_real_
+}
+
+
+# Meilleur modèle combiné
+
+best_comb <- maturite_select_best_combined_modele(eval_comb)
+
+best_comb_ids <- best_comb$best_model
+
+eval_comb <- eval_comb |>
+  mutate(
+    recommande = .data$modele_id %in% best_comb_ids,
+    
+    commentaire = case_when(
+      
+      is.na(.data$type) ~
+        "Données insuffisantes",
+      
+      .data$convergence == FALSE ~
+        "Ce modèle ne converge pas.",
+      
+      .data$ajust == FALSE ~
+        "Ce modèle ne s'ajuste pas bien aux données.",
+      
+      .data$modele_id %in% best_comb_ids ~
+        "Ce modèle est recommandé car son AICc est le plus faible.",
+      
+      is.finite(.data$delta_aicc) &
+        .data$delta_aicc > 0 &
+        .data$delta_aicc < 2 ~
+        "Modèle alternatif ayant un support statistique similaire au modèle recommandé.",
+      
+      TRUE ~ "Modèle valide."
+    )
+  )
+
+
+# ===========================================================================
+# TABLEAU SÉPARÉ
+# ===========================================================================
+
+make_sep_table <- function(data_sex) {
+
+  # Formatage des valeurs
+  
+  digits_ic <- if (variable == "age") 1 else 0
+  
+  tab <- data_sex |>
+    dplyr::mutate(
+      
+      point50 = if (variable == "age") {
+        format(round(.data$point50, 1), decimal.mark = ",", nsmall = 1)
+        
+        } else {
+          
+          format(round(.data$point50, 0), decimal.mark = ",", nsmall = 0)
+          },
+      
+      IC95_inf = .data$point50_IC95_inf,
+      IC95_sup = .data$point50_IC95_sup,
+      
+      b0 = ifelse(is.na(.data$b0), "-",
+                  formatC(.data$b0, format = "f", digits = 3, decimal.mark = ",")),
+      
+      b1 = ifelse(is.na(.data$b1),  "-",
+                  formatC(.data$b1, format = "f", digits = 3, decimal.mark = ",")),
+      
+      AICc = ifelse(is.na(.data$aicc), "-",
+                    formatC(.data$aicc, format = "f", digits = 2, decimal.mark = ",")),
+      
+      delta_AICc = ifelse(is.na(.data$delta_aicc), "-",
+                          formatC(.data$delta_aicc, format = "f", digits = 2, decimal.mark = ",")),
+      
+      IC95 = ifelse(is.na(IC95_inf) | is.na(IC95_sup), "-",
+                    paste0("[", format(round(IC95_inf, digits_ic), decimal.mark = "," ),
+                           " - ", format(round(IC95_sup, digits_ic), decimal.mark = ","),
+                           "]")
+                    ),
+      
+      across(everything(), ~ ifelse(is.na(.x), "-", .x)
+             )
       )
+    
+    # Correction du label point50 selon la variable
+    point50_label <- if (variable == "ltm") {
+      "L50"
     } else {
-      NULL
-    },
-    best_model_combined = if (!is.null(best_comb$best_model)) {
-      list(
-        modele = str_extract(best_comb$best_model, "TLO|ADD|INT|COM"),
-        lien = str_extract(best_comb$best_model, "logit|probit|cloglog"),
-        variable = variable
-      )
-    } else {
-      NULL
+      "A50"
     }
-  )
+    
+    names(tab)[names(tab) == "point50"] <- point50_label
   
-  # ==== Valeurs par défaut sûres ----
-  
-  if (!"recommande" %in% names(eval_sep)) {
-    eval_sep$recommande <- FALSE
-  }
-  
-  if (!"recommande" %in% names(eval_comb)) {
-    eval_comb$recommande <- FALSE
-  }
-  
-  # ==== Détermination des modèles recommandés séparés ----
-  
-  modele_ids_valides_sep <- c(best_sep$best_model_M, best_sep$best_model_F)
-  
-  eval_sep$recommande <- rep(FALSE, nrow(eval_sep))
-  
-  if (length(modele_ids_valides_sep) > 0) {
-    eval_sep$recommande <- eval_sep$modele_id %in% modele_ids_valides_sep
-  }
-  
-  # ==== Tableau affichage séparé ----
-  
-  ft_sep <- eval_sep |>
-    mutate(
-      convergence = if_else(.data$convergence, "Convergé", "Non convergé"),
-      pearson_x2_pval = format_pval(.data$pearson_x2_pval),
-      goodness_of_link_pval = format_pval(.data$goodness_of_link_pval),
-      aicc = if_else(
-        is.na(.data$aicc),
-        "-",
-        format(round(.data$aicc, 2), decimal.mark = ",", nsmall = 2)
-      ),
-      recommande = if_else(.data$recommande, "✔", "")
-    ) |>
-    select(
+
+# Sélection des colonnes et modification des titres pour affichage 
+    tab <- tab |>
+      select(-IC95_inf, -IC95_sup) |>
+      select(
+        modele_id,
+        all_of(point50_label),
+        IC95,
+        b0,
+        b1,
+        AICc,
+        delta_AICc,
+        convergence,
+        ajust,
+        commentaire
+      )
+    
+    names(tab) <- c(
       "modele_id",
-      "lien",
-      "convergence",
-      "pearson_x2_pval",
-      "goodness_of_link_pval",
-      "aicc",
-      "commentaire",
-      "type",
-      "recommande"
-    ) |>
-    flextable() |>
-    set_header_labels(
-      modele_id = "Modèle",
-      lien = "Lien",
-      convergence = "Convergence",
-      pearson_x2_pval = "p (χ² de Pearson)",
-      goodness_of_link_pval = "p (test du lien)",
-      aicc = "AICc",
-      commentaire = "Commentaire",
-      type = "Type de modèle",
-      recommande = "✔ Recommandé"
-    ) |>
-    style_flextable_aquapop()
+      point50_label,
+      "IC 95 %",
+      "b0",
+      "b1",
+      "AICc",
+      "Δ AICc",
+      "Convergence",
+      "Ajustement",
+      "Commentaire"
+    )
+    
   
-  table_sep <- list(
-    df = eval_sep,
-    flextable = ft_sep
-  )
-  
-  # ==== Tableau affichage combiné ----
-  
-  ft_comb <- eval_comb |>
-    mutate(
-      convergence = if_else(.data$convergence, "Convergé", "Non convergé"),
-      pearson_x2_pval = format_pval(.data$pearson_x2_pval),
-      goodness_of_link_pval = format_pval(.data$goodness_of_link_pval),
-      aicc = if_else(
-        is.na(.data$aicc),
-        "-",
-        format(round(.data$aicc, 2), decimal.mark = ",", nsmall = 2)
-      ),
-      recommande = if_else(.data$recommande, "✔", "")
-    ) |>
-    select(
-      "modele_id",
-      "modele",
-      "lien",
-      "convergence",
-      "pearson_x2_pval",
-      "goodness_of_link_pval",
-      "aicc",
-      "commentaire",
-      "type",
-      "recommande"
-    ) |>
-    flextable() |>
-    set_header_labels(
-      modele_id = "Modèle",
-      modele = "Type",
-      lien = "Lien",
-      convergence = "Convergence",
-      pearson_x2_pval = "p (χ² de Pearson)",
-      goodness_of_link_pval = "p (test du lien)",
-      aicc = "AICc",
-      commentaire = "Commentaire",
-      type = "Type de modèle",
-      recommande = "✔ Recommandé"
-    ) |>
-    style_flextable_aquapop()
-  
-  table_comb <- list(
-    df = eval_comb,
-    flextable = ft_comb
-  )
-  
-  # ==== Tableau principal ----
-  
-  if (prefer_combined || isTRUE(best_sep$use_combined)) {
-    table_main <- table_comb
-  } else {
-    table_main <- table_sep
-  }
-  
-  # ==== Retour ----
+  ft <- flextable::flextable(tab) |>
+      style_flextable_aquapop()
   
   list(
-    success = TRUE,
-    table = table_main,
-    best_model = best_model,
-    message = message,
-    table_sep = table_sep,
-    table_comb = table_comb
+    df = tab,
+    flextable = ft
   )
+}
+
+table_sep_M <- make_sep_table(
+  eval_sep |>
+    dplyr::filter(.data$sexe == "M")
+)
+
+table_sep_F <- make_sep_table(
+  eval_sep |>
+    dplyr::filter(.data$sexe == "F")
+)
+
+
+
+# ===========================================================================
+# TABLEAU SEXES COMBINÉS
+# ===========================================================================
+
+# Formatage du point50 selon variable et selon type de modèle
+
+eval_comb <- eval_comb |>
+  mutate(type_modele = sub("_.*$", "", modele_id))
+
+digits_point50 <- if (variable == "age") 1 else 0
+
+eval_comb <- eval_comb |>
+  mutate(point50_F = ifelse(type_modele == "TLO", point50, point50_F),
+         point50_M = ifelse(type_modele == "TLO", point50, point50_M))
+
+eval_comb <- eval_comb |>
+  mutate(point50_M = case_when(
+    
+    type_modele == "TLO" & is.finite(.data$point50_M) ~
+      
+      paste0(format(round(.data$point50_M, digits_point50), decimal.mark = ",", nsmall = digits_point50),
+             " [",
+             format(round(.data$point50_IC95_inf, digits_point50),decimal.mark = ",", nsmall = digits_point50),
+             " - ",
+             format(round(.data$point50_IC95_sup, digits_point50), decimal.mark = ",", nsmall = digits_point50),
+             "]"),
+    
+    type_modele %in% c("ADD", "INT", "COM") ~
+      
+      format(round(.data$point50_M, digits_point50),decimal.mark = ",",nsmall = digits_point50),
+    
+    TRUE ~ "-"
+  ),
+  
+  point50_F = case_when(
+    
+    type_modele == "TLO" & is.finite(.data$point50_F) ~
+      
+      paste0(format(round(.data$point50_F, digits_point50), decimal.mark = ",", nsmall = digits_point50),
+             " [",
+             format(round(.data$point50_IC95_inf, digits_point50),decimal.mark = ",",nsmall = digits_point50),
+             " - ",
+             format(round(.data$point50_IC95_sup, digits_point50), decimal.mark = ",", nsmall = digits_point50),
+             "]"),
+    
+    type_modele %in% c("ADD", "INT", "COM") ~
+      
+      format(round(.data$point50_F, digits_point50), decimal.mark = ",", nsmall = digits_point50),
+    
+    TRUE ~ "-"
+    
+  )
+  )
+
+
+# Formatage des valeurs
+
+tab_comb <- eval_comb |>
+  mutate(
+    
+    b0 = ifelse(is.na(.data$b0), "-",
+                formatC(.data$b0,format = "f", digits = 3, decimal.mark = ",")
+                ),
+    
+    b1 = ifelse(is.na(.data$b1),  "-",
+                formatC(.data$b1, format = "f", digits = 3, decimal.mark = ",")
+                ),
+    
+    b2 = ifelse(is.na(.data$b2), "-",
+                formatC(.data$b2, format = "f", digits = 3, decimal.mark = ",")
+                ),
+    
+    b3 = ifelse(is.na(.data$b3), "-",
+                formatC(.data$b3, format = "f", digits = 3, decimal.mark = ",")
+                ),
+    
+    AICc = ifelse(is.na(.data$aicc), "-",
+                  formatC(.data$aicc, format = "f", digits = 2, decimal.mark = ",")
+                  ),
+    
+    delta_AICc = ifelse(is.na(.data$delta_aicc), "-",
+                        formatC(.data$delta_aicc, format = "f", digits = 2, decimal.mark = ",")
+                        ),
+    
+    across(everything(), ~ ifelse(is.na(.x), "-", .x))
+    )
+
+
+# Sélection des colonnes et modification des titres pour affichage 
+
+tab_comb <- tab_comb |>
+  dplyr::select(
+    modele_id,
+    modele,
+    lien,
+    point50_F,
+    point50_M,
+    b0,
+    b1,
+    b2,
+    b3,
+    AICc,
+    delta_AICc,
+    convergence,
+    ajust,
+    commentaire
+  )
+
+point50_label <- if (variable == "ltm") {
+  "L50"
+} else {
+  "A50"
+}
+
+names(tab_comb) <- c(
+  "modele_id",
+  "Type",
+  "Lien",
+  paste0(point50_label, "_F"),
+  paste0(point50_label, "_M"),
+  "b0",
+  "b1",
+  "Coeff_sexe",
+  "Coeff_interaction",
+  "AICc",
+  "Δ AICc",
+  "Convergence",
+  "Ajustement",
+  "Commentaire"
+  )
+  
+ft_comb <- flextable::flextable(tab_comb) |>
+  style_flextable_aquapop()
+
+
+table_comb <- list(
+  df = tab_comb,
+  flextable = ft_comb
+)
+
+
+# ===========================================================================
+# MEILLEURS MODÈLES
+# ===========================================================================
+
+best_model <- list(
+  
+  best_model_M = if (!is.null(best_M) && length(best_M) > 0)
+    {
+    
+    list(modele = sub( "_.*$", "", best_M),
+      lien = sub("^.*_", "", best_M),
+      variable = variable)
+    
+    } else {
+      NULL
+      },
+  
+  best_model_F = if (!is.null(best_F) && length(best_F) > 0)
+    {
+    list(
+      modele = sub("_.*$", "", best_F),
+      lien = sub("^.*_", "", best_F),
+      variable = variable)
+    
+    } else {
+      NULL
+      },
+  
+  best_model_combined = if (!is.null(best_comb_ids) && length(best_comb_ids) > 0)
+    {
+    list(modele = sub("_.*$", "", best_comb_ids),
+      lien = sub("^.*_",  "", best_comb_ids),
+      variable = variable)
+    
+    } else {
+      NULL
+      }
+  )
+
+
+# ===========================================================================
+# MESSAGE
+# ===========================================================================
+
+message <- paste0(
+  best_sep$message,
+  "\n",
+  best_comb$message
+)
+
+
+# ===========================================================================
+# RETOUR
+# ===========================================================================
+
+list(
+  
+  success = TRUE,
+  message = message,
+  table_sep_M = table_sep_M,
+  table_sep_F = table_sep_F,
+  table_comb = table_comb,
+  best_model = best_model,
+  eval_sep = eval_sep,
+  eval_comb = eval_comb,
+  models_sep = models_sep,
+  models_comb = models_comb
+)
 }
