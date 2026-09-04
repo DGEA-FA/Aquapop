@@ -122,10 +122,10 @@ get_analysis_data <- function(path, typ_pech, no_lac, annee,
     filter(.data$sp == code_sp) |>
     group_by(no_station, st_hasard, st_valide) |>
     summarise(
-      no_lac = first(no_lac),
-      annee = first(annee),
-      typ_pech = first(typ_pech),
-      sp = first(sp),
+      no_lac = dplyr::first(no_lac),
+      annee = dplyr::first(annee),
+      typ_pech = dplyr::first(typ_pech),
+      sp = dplyr::first(sp),
       nb_capture = sum(nb_capture, na.rm = TRUE),
       nb_pese = sum(nb_pese, na.rm = TRUE),
       .groups = "drop"
