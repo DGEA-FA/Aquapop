@@ -96,7 +96,7 @@ eval_sep <- eval_sep |>
     delta_aicc = ifelse(is.finite(.data$aicc), .data$aicc - min_aicc, NA_real_)
     
   ) |>
-  ungroup() |>
+  dplyr::ungroup() |>
   select(-min_aicc)
 
 
