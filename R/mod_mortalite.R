@@ -11,7 +11,7 @@ mod_mortalite_ui <- function(id) {
   tabPanel(
     title = "Mortalité",
     
-    layout_columns(
+    bslib::layout_columns(
       
       div(
         uiOutput(ns("mortalite_message")),

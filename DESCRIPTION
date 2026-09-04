@@ -11,6 +11,7 @@ RoxygenNote: 7.3.3
 Imports:
     AER (>= 1.2.12),
     AICcmodavg (>= 2.3.3),
+    bslib,
     checkmate,
     dplyr (>= 1.1.4),
     DT (>= 0.32),
