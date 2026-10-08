@@ -1,6 +1,6 @@
-#' Calculer l'indice de condition relatif (Wr) pour une espèce
+#' Calculer l'indice de masse relative (Wr) pour une espèce
 #'
-#' Cette fonction calcule l'indice de condition relatif (Wr) à partir des
+#' Cette fonction calcule l'indice de masse relative (Wr) à partir des
 #' longueurs et masses des spécimens d'une espèce donnée. Elle retourne un
 #' tableau de synthèse, une version formatée avec `flextable`, ainsi que deux
 #' graphiques illustrant les résultats : l'un selon la longueur individuelle,
@@ -48,6 +48,7 @@
 #' @importFrom officer fp_border
 #'
 #' @export
+
 wri <- function(data) {
   
   # Validation des données ----
@@ -64,7 +65,9 @@ wri <- function(data) {
       flextable = NULL,
       plot_tous = NULL,
       plot_byclass = NULL,
-      message = "Aucun spécimen valide disponible pour produire l'indice de condition."
+      data_plot_tous = NULL,
+      data_plot_byclass = NULL,
+      message = "Aucun spécimen valide disponible pour produire l'indice de masse relative"
     ))
   }
   
@@ -78,6 +81,10 @@ wri <- function(data) {
   info_pen <- get_info_pen(espece)
   constantes_wr <- get_wr_constants(espece)
   
+  nomsp <- info_pen$nom_sp
+  couleur_default <- info_pen$couleur_default
+  group_colors <- info_pen$group_colors
+
   if (is.null(info_pen) || is.null(constantes_wr)) {
     stop("Espèce non supportée.")
   }
@@ -102,9 +109,11 @@ wri <- function(data) {
       flextable = NULL,
       plot_tous = NULL,
       plot_byclass = NULL,
+      data_plot_tous = NULL,
+      data_plot_byclass = NULL,
       message = paste(
         "Aucun spécimen ne possède les mesures nécessaires de longueur et de masse",
-        "pour calculer l'indice de condition, ou n'atteint la taille minimale requise",
+        "pour calculer l'indice de masse relative, ou n'atteint la taille minimale requise",
         "pour cette espèce."
       )
     ))
@@ -125,7 +134,8 @@ wri <- function(data) {
       by = "sexe"
     )
   
-  moyenne_totale <- mean(data_wr$wr, na.rm = TRUE)
+  moyenne_par_sexe <- moyenne_par_sexe |>
+    filter(.data$sexe %in% c("F", "M"))
   
   plot_tous <- ggplot(data_wr, aes(x = .data$ltm, y = .data$wr, color = .data$sexe)) +
     geom_point(alpha = 0.8) +
@@ -136,40 +146,14 @@ wri <- function(data) {
       drop = FALSE
     ) +
     labs(
-      x = "Longueur totale maximale (mm)",
-      y = "Indice de condition (%)"
-    ) +
-    annotate(
-      "segment",
-      x = -Inf,
-      xend = Inf,
-      y = 100,
-      yend = 100,
-      color = "grey34",
-      linewidth = 1.2,
-      linetype = 1
+      x = "Longueur maximale (mm)",
+      y = "Indice de masse relative (%)"
     ) +
     geom_hline(
       data = moyenne_par_sexe,
       aes(yintercept = .data$moyenne, color = .data$sexe),
       linetype = 2,
-      linewidth = 0.5
-    ) +
-    geom_hline(
-      aes(yintercept = moyenne_totale, linetype = "Tous"),
-      color = "red",
-      linewidth = 0.5
-    ) +
-    scale_linetype_manual(
-      name = "",
-      values = c("Tous" = 2)
-    ) +
-    guides(
-      color = guide_legend(order = 1),
-      linetype = guide_legend(
-        order = 2,
-        override.aes = list(color = "red")
-      )
+      linewidth = 0.8
     ) +
     theme_aquapop()
   
@@ -218,6 +202,21 @@ wri <- function(data) {
       bind_cols(grille_classe) |>
       left_join(sommaire_classe, by = "classe_brute")
     
+    data_plot_byclass <- prediction_classe |>
+      select(
+        classe,
+        intervalle,
+        n,
+        fit,
+        lwr,
+        upr
+      ) |>
+      rename(
+        wr_moyen = fit,
+        ic95_inf = lwr,
+        ic95_sup = upr
+      )
+    
     plot_byclass <- ggplot(prediction_classe, aes(x = .data$classe, y = .data$fit)) +
       geom_point() +
       geom_point(
@@ -231,22 +230,13 @@ wri <- function(data) {
       ) +
       geom_errorbar(aes(ymin = .data$lwr, ymax = .data$upr), width = 0.1) +
       xlab("Classe de taille") +
-      ylab("Indice de condition (%)") +
+      ylab("Indice de masse relative (%)") +
       scale_x_discrete(limits = psd_classnames, drop = FALSE) +
-      annotate(
-        "segment",
-        x = -Inf,
-        xend = Inf,
-        y = 100,
-        yend = 100,
-        linewidth = 0.5,
-        color = "black",
-        linetype = 2
-      ) +
       theme_aquapop()
     
   } else {
     plot_byclass <- NULL
+    data_plot_byclass <- NULL
   }
   
   # Tableau de synthèse : Tous ----
@@ -321,7 +311,7 @@ wri <- function(data) {
   
   table_flextable <- table_sommaire |>
     flextable() |>
-    set_caption("Indice de condition (Wᵣ)") |>
+    set_caption("Indice de masse relative (Wᵣ)") |>
     set_header_labels(
       groupe = "Groupe",
       wr = "Wᵣ (%)",
@@ -331,10 +321,19 @@ wri <- function(data) {
     style_flextable_aquapop() |>
     hline(i = 3, border = fp_border(color = "black", width = 0.5))  
   
+  data_plot_tous <- data_wr |>
+    select(
+      sexe,
+      ltm,
+      wr
+    )
+  
   # Retour ----
   return(list(
     success = TRUE,
     data = table_sommaire,
+    data_plot_tous = data_plot_tous,
+    data_plot_byclass = data_plot_byclass,
     flextable = table_flextable,
     plot_tous = plot_tous,
     plot_byclass = plot_byclass,
@@ -383,7 +382,7 @@ resumer_wr_par_groupe <- function(mod, var) {
 #' Récupérer les constantes Wr pour une espèce donnée
 #'
 #' Cette fonction retourne les coefficients de référence pour le calcul de
-#' l'indice de condition relatif (Wr) pour une espèce supportée.
+#' l'indice de masse relative (Wr) pour une espèce supportée.
 #'
 #' @param espece Code d'espèce, par exemple `"SANA"`, `"SAFO"` ou `"SAVI"`.
 #'

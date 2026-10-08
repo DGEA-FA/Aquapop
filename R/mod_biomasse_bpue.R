@@ -10,6 +10,9 @@ mod_biomasse_bpue_ui <- function(id) {
   
   tabPanel(
     title = "BPUE",
+    
+    uiOutput(ns("analysis_label")),
+    
     p(
       "Le tableau ci-dessous présente ",
       "la biomasse par unité d’effort (BPUE) par groupe biologique."
@@ -30,8 +33,19 @@ mod_biomasse_bpue_ui <- function(id) {
 #'
 #' @noRd
 #' @importFrom shiny moduleServer req renderUI div
-mod_biomasse_bpue_server <- function(id, specimen, station, filename_suffix) {
+mod_biomasse_bpue_server <- function(id, specimen, station, filename_suffix, analysis_label) {
   moduleServer(id, function(input, output, session) {
+    
+    output$analysis_label <- renderUI({
+      req(analysis_label())
+      
+      div(
+        analysis_label(),
+        style = "
+        margin-bottom: 15px;
+        color: #555;"
+      )
+    })
     
     res <- reactive({
       req(specimen(), station())

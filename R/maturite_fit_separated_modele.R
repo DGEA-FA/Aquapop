@@ -47,13 +47,6 @@ maturite_fit_separated_modele <- function(df, variable = c("ltm", "age")) {
     stop("Le dataframe doit contenir les colonnes : ", paste(missing_cols, collapse = ", "))
   }
   
-  # --- Vérification de la présence des deux sexes ---
-#  if (!all(c("M", "F") %in% df$sexe)) {
-#    warning("Un seul sexe observé. L'ajustement des modèles séparés est impossible.")
-#    return(NULL)
-#  }
-  
-  
   # Ajustement sécurisé
   form <- as.formula(
     paste("maturite ~", variable)
@@ -84,26 +77,4 @@ maturite_fit_separated_modele <- function(df, variable = c("ltm", "age")) {
   )
 }
   
-  # --- Ajustement des modèles séparés par sexe ---
-#  if (variable == "ltm") {
-#    list(
-#      M_logit   = glm(maturite ~ ltm, family = binomial(link = "logit"),   data = df[df$sexe == "M", ]),
-#      M_probit  = glm(maturite ~ ltm, family = binomial(link = "probit"),  data = df[df$sexe == "M", ]),
-#      M_cloglog = glm(maturite ~ ltm, family = binomial(link = "cloglog"), data = df[df$sexe == "M", ]),
-#      
-#      F_logit   = glm(maturite ~ ltm, family = binomial(link = "logit"),   data = df[df$sexe == "F", ]),
-#      F_probit  = glm(maturite ~ ltm, family = binomial(link = "probit"),  data = df[df$sexe == "F", ]),
-#      F_cloglog = glm(maturite ~ ltm, family = binomial(link = "cloglog"), data = df[df$sexe == "F", ])
-#    )
-#  } else {
-#    list(
-#      M_logit   = glm(maturite ~ age, family = binomial(link = "logit"),   data = df[df$sexe == "M", ]),
-#      M_probit  = glm(maturite ~ age, family = binomial(link = "probit"),  data = df[df$sexe == "M", ]),
-#      M_cloglog = glm(maturite ~ age, family = binomial(link = "cloglog"), data = df[df$sexe == "M", ]),
-#      
-#      F_logit   = glm(maturite ~ age, family = binomial(link = "logit"),   data = df[df$sexe == "F", ]),
-#      F_probit  = glm(maturite ~ age, family = binomial(link = "probit"),  data = df[df$sexe == "F", ]),
-#      F_cloglog = glm(maturite ~ age, family = binomial(link = "cloglog"), data = df[df$sexe == "F", ])
-#    )
-# }
-#}
+

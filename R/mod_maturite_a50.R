@@ -12,6 +12,7 @@ mod_maturite_a50_ui <- function(id) {
   
   tabPanel(
     title = "Âge à maturité",
+    uiOutput(ns("analysis_label")),
     uiOutput(ns("message_a50")),
     
     withSpinner(
@@ -30,9 +31,20 @@ mod_maturite_a50_ui <- function(id) {
 #' @param filename_suffix Expression réactive pour suffixe des fichiers à exporter.
 #'
 #' @noRd
-mod_maturite_a50_server <- function(id, specimen, filename_suffix) {
+mod_maturite_a50_server <- function(id, specimen, filename_suffix, analysis_label) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
+    
+    output$analysis_label <- renderUI({
+      req(analysis_label())
+      
+      div(
+        analysis_label(),
+        style = "
+        margin-bottom: 15px;
+        color: #555;"
+      )
+    })
     
     # ==== Résultat global ----
     table_modeles_a50_resultats <- reactive({
@@ -48,33 +60,24 @@ mod_maturite_a50_server <- function(id, specimen, filename_suffix) {
     
     has_model_a50_f <- reactive({
       res <- table_modeles_a50_resultats()
-      
       if (is.null(res$best_model)) {
         return(FALSE)
       }
-      
-      !is.null(res$best_model$best_model_F)
-    })
+      !is.null(res$best_model$best_model_F)})
     
     has_model_a50_m <- reactive({
       res <- table_modeles_a50_resultats()
-      
       if (is.null(res$best_model)) {
         return(FALSE)
       }
-      
-      !is.null(res$best_model$best_model_M)
-    })
+      !is.null(res$best_model$best_model_M)})
     
     has_model_a50_comb <- reactive({
       res <- table_modeles_a50_resultats()
-      
       if (is.null(res$best_model)) {
         return(FALSE)
       }
-      
-      !is.null(res$best_model$best_model_comb)
-    })
+      !is.null(res$best_model$best_model_comb)})
 
         # ==== Affichage des modèles combinés ----
     
@@ -90,11 +93,7 @@ mod_maturite_a50_server <- function(id, specimen, filename_suffix) {
       
       best_model <- res$best_model
       
-      has_F <- !is.null(best_model$best_model_F)
-      has_M <- !is.null(best_model$best_model_M)
-      has_comb <- !is.null(best_model$best_model_combined)
-      
-      if (!has_F && !has_M && !has_comb) {
+      if (!has_model_a50_f() && !has_model_a50_m() && !has_model_a50_comb()) {
         return(
           HTML(
             "Les données disponibles ne permettent pas d'ajuster des modèles de maturité."
@@ -102,65 +101,20 @@ mod_maturite_a50_server <- function(id, specimen, filename_suffix) {
         )
       }
       
-      if (has_F && has_M && has_comb) {
+      if (has_model_a50_f() && has_model_a50_m() && has_model_a50_comb()) {
         return(
           HTML(
-            "Des modèles séparés ont été retenus pour les femelles et les mâles. Les modèles pour les sexes combinés sont également présentés à titre comparatif."
+            "Les résultats d'ajustement de différents modèles pour les femelles et les mâles séparés sont présentés ci-dessous. ",
+            "<br>",
+            "Les résultats des modèles pour les sexes combinés sont également présentés pour déterminer si du support statistique ",
+            "est trouvé pour une différence.",
+            "<br>",
+            "Pour les dorés jaunes, un an a été ajouté à l'âge estimé des spécimens lors de la PENDJ pour bien représenter l'âge de reproduction ",
+            "qui a lieu au printemps suivant."
           )
         )
       }
-      
-      if (has_F && has_M && !has_comb) {
-        return(
-          HTML(
-            "Des modèles séparés ont été retenus pour les femelles et les mâles. Aucun modèle pour les sexes combinés valide n'est disponible."
-          )
-        )
-      }
-      
-      if (has_F && !has_M && has_comb) {
-        return(
-          HTML(
-            "Un modèle séparé a été retenu pour les femelles. Aucun modèle valide n'a pu être retenu pour les mâles. Les modèles pour les sexes combinés sont également présentés."
-          )
-        )
-      }
-      
-      if (!has_F && has_M && has_comb) {
-        return(
-          HTML(
-            "Un modèle séparé a été retenu pour les mâles. Aucun modèle valide n'a pu être retenu pour les femelles. Les modèles pour les sexes combinés sont également présentés."
-          )
-        )
-      }
-      
-      if (!has_F && !has_M && has_comb) {
-        return(
-          HTML(
-            "Aucun modèle séparé valide n'a pu être retenu. Les modèles pour les sexes combinés sont présentés."
-          )
-        )
-      }
-      
-      if (has_F && !has_M && !has_comb) {
-        return(
-          HTML(
-            "Un modèle séparé a été retenu pour les femelles. Aucun modèle valide n'a pu être retenu pour les mâles et aucun modèle pour les sexes combinés valide n'est disponible."
-          )
-        )
-      }
-      
-      if (!has_F && has_M && !has_comb) {
-        return(
-          HTML(
-            "Un modèle séparé a été retenu pour les mâles. Aucun modèle valide n'a pu être retenu pour les femelles et aucun modèle pour les sexes combinés valide n'est disponible."
-          )
-        )
-      }
-      
-      HTML(
-        "Les données disponibles ne permettent pas d'ajuster suffisamment de modèles de maturité."
-      )
+      NULL
     })
     
     # ==== Message UI ----
@@ -189,7 +143,7 @@ mod_maturite_a50_server <- function(id, specimen, filename_suffix) {
         tags$p(message_complementaire_a50())
       )
     })
-    
+      
     # ==== Tables de sélection ----
     table_a50_f <- reactive({
       table_modeles_a50_resultats()$table_sep_F$df
@@ -348,7 +302,7 @@ mod_maturite_a50_server <- function(id, specimen, filename_suffix) {
       
       tagList(
         
-        tags$h3("Modèles séparés"),
+        tags$h3("Tableau de sélection des modèles - sexes séparés"),
         
         tags$p(
           "Comparaison des modèles ajustés séparément pour les femelles et les mâles."
@@ -421,6 +375,8 @@ mod_maturite_a50_server <- function(id, specimen, filename_suffix) {
         # ==========================================================
         # GRAPHIQUES F / M EN DEUX COLONNES
         # ==========================================================
+        
+        tags$h3("Ogives de reproduction - Sexes séparés"),
         
         fluidRow(
           
@@ -545,7 +501,7 @@ mod_maturite_a50_server <- function(id, specimen, filename_suffix) {
           
           modele_id = colDef(name = "Modèle"),
           
-          Convergence = colDef(
+           Convergence = colDef(
             cell = function(value) {
               if (isTRUE(value)) "\u2713" else "\u2717"
             },
@@ -612,7 +568,7 @@ mod_maturite_a50_server <- function(id, specimen, filename_suffix) {
           
           modele_id = colDef(name = "Modèle"),
           
-          Convergence = colDef(
+           Convergence = colDef(
             cell = function(value) {
               if (isTRUE(value)) "\u2713" else "\u2717"
             },
@@ -655,13 +611,15 @@ mod_maturite_a50_server <- function(id, specimen, filename_suffix) {
       }
       
       tagList(
-        tags$h3("Modèles combinés"),
+        tags$h3("Tableau de sélection des modèles - sexes combinés"),
         tags$p("Modèles ajustés sur l'ensemble des données"),
         
         reactableOutput(ns("table_a50_comb")),
         div(style = "margin: 10px 0 20px 0;", download_button_ui(ns("dl_a50_comb"))),
         
         tags$hr(),
+        
+        tags$h3("Ogives de reproduction - Sexes combinés"),
         
         plotOutput(ns("plot_a50_comb"), height = "500px"),
         div(style = "margin-top: 10px;", downloadButton(ns("dl_plot_a50_comb"), "Télécharger")),
@@ -695,7 +653,7 @@ mod_maturite_a50_server <- function(id, specimen, filename_suffix) {
           
           modele_id = colDef(name = "Modèle"),
           
-          Convergence = colDef(
+           Convergence = colDef(
             cell = function(value) {
               if (isTRUE(value)) "\u2713" else "\u2717"
             },
@@ -768,7 +726,13 @@ mod_maturite_a50_server <- function(id, specimen, filename_suffix) {
         
         res_f()$graphique
       }),
-      filename_suffix = filename_suffix()
+      filename = reactive(
+        build_export_filename(
+          "a50_modeles_femelles",
+          filename_suffix(),
+          ext = "png"
+        )
+      )
     )
     
     render_download_plot(
@@ -780,7 +744,13 @@ mod_maturite_a50_server <- function(id, specimen, filename_suffix) {
         
         res_m()$graphique
       }),
-      filename_suffix = filename_suffix()
+      filename = reactive(
+        build_export_filename(
+          "a50_modeles_males",
+          filename_suffix(),
+          ext = "png"
+        )
+      )
     )
     
     render_download_plot(
@@ -791,7 +761,13 @@ mod_maturite_a50_server <- function(id, specimen, filename_suffix) {
         req(!is.null(res_comb()$graphique))
         res_comb()$graphique
       }),
-      filename_suffix = filename_suffix()
+      filename = reactive(
+        build_export_filename(
+          "a50_modeles_combines",
+          filename_suffix(),
+          ext = "png"
+        )
+      )
     )
     
     # ==== Téléchargement des tableaux de sélection ----

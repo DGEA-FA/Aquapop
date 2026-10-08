@@ -12,6 +12,8 @@ mod_croissance_ui <- function(id) {
   tabPanel(
     title = "Croissance",
     
+    uiOutput(ns("analysis_label")),
+    
     uiOutput(ns("croissance_intro")),
     uiOutput(ns("croissance_message")),
     uiOutput(ns("croissance_table_section")),
@@ -28,12 +30,22 @@ mod_croissance_ui <- function(id) {
 #' @param filename_suffix Expression réactive pour suffixe des fichiers à exporter.
 #'
 #' @noRd
-mod_croissance_server <- function(id, specimen, filename_suffix) {
+mod_croissance_server <- function(id, specimen, filename_suffix, analysis_label) {
   
   moduleServer(id, function(input, output, session) {
     
     ns <- session$ns
     
+    output$analysis_label <- renderUI({
+      req(analysis_label())
+      
+      div(
+        analysis_label(),
+        style = "
+        margin-bottom: 15px;
+        color: #555;"
+      )
+    })
     
     # Résultat du module croissance ----
     
@@ -62,10 +74,13 @@ mod_croissance_server <- function(id, specimen, filename_suffix) {
       }
       
       p(
-        "Si les trois modèles convergent, sélectionnez celui ayant le plus petit AICc. ",
-        "Prenez note également que le modèle de von Bertalanffy utilise la méthode pondérée ",
-        "avec t₀ variable. Attention : les IC95 % des prédictions ne peuvent pas être calculés ",
-        "à partir des IC95 % des estimations des paramètres L, K et t₀."
+        "Prenez note que :",
+        br(),
+        "- Le modèle de von Bertalanffy utilise la méthode pondérée avec t₀ variable.",
+        br(),
+        "- Les paramètres K et t₀ ont des significations différentes selon les modèles et ne peuvent donc pas être comparés.",
+        br(),
+        "- Les IC 95 % des prédictions ne peuvent pas être calculés à partir des IC 95 % des estimations des paramètres L, K et t₀."
       )
     })
     
@@ -405,7 +420,13 @@ mod_croissance_server <- function(id, specimen, filename_suffix) {
     render_download_plot(
       id = "download_selectedmodelcroissanceplot",
       plot = plot_selectedmodelcroissance,
-      filename = "courbe_croissance"
+      filename = reactive(
+        build_export_filename(
+          "croissance",
+          filename_suffix(),
+          ext = "png"
+        )
+      )
     )
     
   })

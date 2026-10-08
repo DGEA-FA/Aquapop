@@ -169,8 +169,11 @@ psd_byclass <- function(data) {
     colformat_double(j = "freq", digits = 0, decimal.mark = ",", na_str = "-", big.mark = " ")
   
   # Graphique ----
+  info <- get_info_pen(espece)
+  couleur_default <- info$couleur_default
+  
   fig <- ggplot(table_finale, aes(x = .data$classe, y = .data$freq)) +
-    geom_bar(stat = "identity") +
+    geom_bar(stat = "identity", fill = couleur_default, color = NA) +
     geom_text_aquapop(aes(label = paste0("n = ", .data$n)), nudge_y = 4) +
     xlab("Classe de taille") +
     ylab("Fréquence relative (%)") +

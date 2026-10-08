@@ -11,6 +11,8 @@ mod_mortalite_ui <- function(id) {
   tabPanel(
     title = "Mortalité",
     
+    uiOutput(ns("analysis_label")),
+    
     bslib::layout_columns(
       
       div(
@@ -42,11 +44,21 @@ mod_mortalite_ui <- function(id) {
 #' @param filename_suffix Expression réactive pour suffixe des fichiers à exporter.
 #'
 #' @noRd
-mod_mortalite_server <- function(id, specimen, filename_suffix, info_pen) {
+mod_mortalite_server <- function(id, specimen, filename_suffix, analysis_label, info_pen) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
- 
+    output$analysis_label <- renderUI({
+      req(analysis_label())
+      
+      div(
+        analysis_label(),
+        style = "
+        margin-bottom: 15px;
+        color: #555;"
+      )
+    })
+    
     # Validation de base des données spécimens ====
     specimen_info <- reactive({
       data <- specimen()
@@ -103,7 +115,6 @@ mod_mortalite_server <- function(id, specimen, filename_suffix, info_pen) {
     peak_plus_auto_res <- reactive({
       info <- specimen_info()
       
-   
       if (isFALSE(info$success)) {
         return(list(
           success = FALSE,
@@ -431,7 +442,9 @@ mod_mortalite_server <- function(id, specimen, filename_suffix, info_pen) {
         ))
       }
       
-      comparaison_res <- mortalite_compare_modele(data = df_etendue_res$data)
+      comparaison_res <- mortalite_compare_modele(
+        data = df_etendue_res$data,
+        pp_selected = pp_selected)
    
       if (isFALSE(comparaison_res$success) || is.null(comparaison_res$data)) {
         return(list(
@@ -734,106 +747,7 @@ mod_mortalite_server <- function(id, specimen, filename_suffix, info_pen) {
       table[selected, "methode", drop = TRUE]
     })
     
-#    output$phrase_mortalite <- renderText({
-#      analyse <- analyse_mortalite_res()
-#      
-#      if (isFALSE(analyse$has_converged_model)) {
-#        return(NULL)
-#      }
-#      
-#      mortalite_phrase_resume(
-#        data_comparaison = table_modeles_mortalite(),
-#        modele_nom = analyse$best_model
-#      )
-#    })
-    
-    # Test de surdispersion ====
-#    output$dispersion_msg <- renderText({
-#      analyse <- analyse_mortalite_res()
-#      
-#      req(isTRUE(analyse$has_converged_model))
-#      req(!is.null(analyse$surdisp))
-#      
-#      analyse$surdisp$message
-#    })
-    
-#    render_plot_ggplot(
-#      "plot_dispersion_poisson",
-#      reactive({
-#        analyse <- analyse_mortalite_res()
-#        
-#        if (isFALSE(analyse$has_converged_model) || is.null(analyse$surdisp)) {
-#          return(NULL)
-#       }
-#        
-#        analyse$surdisp$plot
-#      })
-#    )
-#    
-#    render_download_plot(
-#      "download_plot_dispersion_poisson",
-#      reactive({
-#        analyse <- analyse_mortalite_res()
-#        
-#        if (isFALSE(analyse$has_converged_model) || is.null(analyse$surdisp)) {
-#          return(NULL)
-#        }
-#       
-#        analyse$surdisp$plot
-#      }),
-#      filename = "dispersion_poisson"
-#    )
-    
-    # Ajustement du modèle sélectionné ====
-#    modele_fit_mortalite <- reactive({
-#      analyse <- analyse_mortalite_res()
-#      methode <- selected_model_mortalite()
-#      
-#      if (isFALSE(analyse$has_converged_model)) {
-#        return(NULL)
-#      }
-#      
-#      if (is.null(analyse$df_etendue) || is.null(methode)) {
-#        return(NULL)
-#      }
-#      
-#      mortalite_fit_best_modele(
-#        data = analyse$df_etendue,
-#        methode = methode
-#      )
-#    })
-#    
-#    plot_selectedmodel_mortalite <- reactive({
-#      analyse <- analyse_mortalite_res()
-#      info_data <- specimen_info()
-#      modele <- modele_fit_mortalite()
-#      info_modele <- table_modeles_mortalite()
-#      
-#      if (isFALSE(analyse$has_converged_model)) {
-#        return(NULL)
-#      }
-#      
-#     if (isFALSE(info_data$success) || is.null(modele)) {
-#        return(NULL)
-#      }
-#      
-#      mortalite_plot_modele(
-#        specimen = info_data$data,
-#        modele = modele,
-#        info_modele = info_modele
-#      )
-#    })
-#    
-#    render_plot_ggplot(
-#      "plot_mortalite",
-#      reactive(plot_selectedmodel_mortalite())
-#    )
-#    
-#    render_download_plot(
-#      "download_plot_mortalite",
-#      plot_selectedmodel_mortalite,
-#      filename = "courbe_mortalite"
-#    )
+
     
     # Graphique HNP du modèle sélectionné ====
     output$graph_hnp <- renderPlot({

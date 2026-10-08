@@ -141,13 +141,13 @@ mortalite_chaprob <- function(specimen, pp, age_max) {
           ic_95 = {
             
             lower <- format(
-              round((1 - exp(-(.data$z - .data$se))) * 100, 1),
+              round((1 - exp(-(.data$z - 1.96 * .data$se))) * 100, 1),
               nsmall = 1,
               decimal.mark = ","
             )
             
             upper <- format(
-              round((1 - exp(-(.data$z + .data$se))) * 100, 1),
+              round((1 - exp(-(.data$z + 1.96 * .data$se))) * 100, 1),
               nsmall = 1,
               decimal.mark = ","
             )

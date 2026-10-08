@@ -20,6 +20,7 @@ app_server <- function(input, output, session) {
   specimen_hasard_valide        <- telech$specimen_hasard_valide
   capture               <- telech$capture
   filename_suffix       <- telech$filename_suffix
+  analysis_label       <- telech$analysis_label
   nom_lac               <- telech$nom_lac
   
   
@@ -29,7 +30,8 @@ app_server <- function(input, output, session) {
     id = "cpue",
     specimen = specimen_hasard_valide,
     capture = capture,
-    filename_suffix = filename_suffix
+    filename_suffix = filename_suffix,
+    analysis_label = analysis_label
   )
   
   # BPUE - Biomasse ----
@@ -38,7 +40,8 @@ app_server <- function(input, output, session) {
     id = "biomasse",
     specimen = specimen_hasard_valide,
     station = station_hasard_valide,
-    filename_suffix = filename_suffix
+    filename_suffix = filename_suffix,
+    analysis_label = analysis_label
   )
   
   
@@ -47,26 +50,30 @@ app_server <- function(input, output, session) {
   mod_taille_masse_age_server(
     id = "taille_masse_age_1",
     specimen = specimen_valide,
-    filename_suffix = filename_suffix
+    filename_suffix = filename_suffix,
+    analysis_label = analysis_label
   )
   
   # Structure de taille ----
   
   mod_structure_taille_server("structure_taille_1",
                               specimen = specimen_valide,
-                              filename_suffix = filename_suffix)
+                              filename_suffix = filename_suffix,
+                              analysis_label = analysis_label)
   
   # Structure d'age ----
   
   mod_structure_age_server("structure_age_1",
                            specimen = specimen_valide,
-                           filename_suffix = filename_suffix)
+                           filename_suffix = filename_suffix,
+                           analysis_label = analysis_label)
   
   # PSD ----
   mod_psd_server(
     id = "psd_1",
     specimen = specimen_valide,             
-    filename_suffix = filename_suffix      
+    filename_suffix = filename_suffix,
+    analysis_label = analysis_label      
   )
   
   # Relation masse-longueur ----
@@ -74,19 +81,22 @@ app_server <- function(input, output, session) {
   mod_masse_longueur_server(
     id = "masselongueur_1",
     specimen = specimen_tous,
-    filename_suffix = filename_suffix
+    filename_suffix = filename_suffix,
+    analysis_label = analysis_label
   )
   
   # Indice de condition ----
   mod_wri_server("wri_1",
                  specimen = specimen_tous,
-                 filename_suffix = filename_suffix)
+                 filename_suffix = filename_suffix,
+                 analysis_label = analysis_label)
   
   # Croissance ----
 
   mod_croissance_server("croissance_1",
                         specimen = specimen_tous,
-                        filename_suffix = filename_suffix)
+                        filename_suffix = filename_suffix,
+                        analysis_label = analysis_label)
   
   # # Mortalite ----
 
@@ -94,6 +104,7 @@ app_server <- function(input, output, session) {
     id = "mortalite_1",
     specimen = specimen_valide,
     filename_suffix = filename_suffix,
+    analysis_label = analysis_label,
     info_pen = telech$info_pen
   )
   
@@ -102,12 +113,14 @@ app_server <- function(input, output, session) {
   
   mod_maturite_l50_server("maturite_l50_1",
                           specimen = specimen_tous,
-                          filename_suffix = filename_suffix)
+                          filename_suffix = filename_suffix,
+                          analysis_label = analysis_label)
   
   ## Age a maturite ----
   mod_maturite_a50_server("maturite_a50_1",
                           specimen = specimen_tous,
-                          filename_suffix = filename_suffix)
+                          filename_suffix = filename_suffix,
+                          analysis_label = analysis_label)
   
   
   

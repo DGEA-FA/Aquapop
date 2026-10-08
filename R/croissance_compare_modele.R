@@ -60,6 +60,7 @@
 #' @importFrom fishmethods growth
 #' @importFrom FSA vbStarts
 #' @importFrom flextable flextable set_caption set_header_labels
+
 croissance_compare_modele <- function(data) {
   
   df <- data |>
@@ -259,7 +260,23 @@ croissance_compare_modele <- function(data) {
       t0 = if_else(.data$convergence, .data$t0, NA_real_),
       l_inf_ic = if_else(.data$convergence, .data$l_inf_ic, NA_character_),
       k_ic = if_else(.data$convergence, .data$k_ic, NA_character_),
-      t0_ic = if_else(.data$convergence, .data$t0_ic, NA_character_)
+      t0_ic = if_else(.data$convergence, .data$t0_ic, NA_character_),
+      
+      commentaire = case_when(
+        !.data$convergence ~ "Le modèle n'a pas convergé.",
+        
+        is.na(.data$delta_aicc) ~
+          "Le soutien empirique du modèle n'a pas pu être évalué.",
+        
+        .data$delta_aicc < 2 ~
+          "Soutien élevé.",
+        
+        .data$delta_aicc < 7~ 
+          "Soutien moyen.",
+        
+        TRUE ~
+          "Soutien faible."
+      )
     ) |>
     select(
       "methode",
@@ -268,7 +285,8 @@ croissance_compare_modele <- function(data) {
       "t0", "t0_ic",
       "aicc",
       "delta_aicc",
-      "convergence"
+      "convergence",
+      "commentaire"
     )
   
   # Message global ----
@@ -309,7 +327,8 @@ croissance_compare_modele <- function(data) {
       t0_ic = "t\u2080 IC 95%",
       aicc = "AICc",
       delta_aicc = "Δ AICc",
-      convergence = "Convergence"
+      convergence = "Convergence",
+      commentaire = "Commentaires"
     )) |>
     
     # Ajustement spécifique
@@ -588,7 +607,7 @@ format_growth_ic <- function(res, index, digits = 3) {
       decimal.mark = ","
     )
     
-    return(paste0("[", lower, "-", upper, "]"))
+    return(paste0("[", lower, " - ", upper, "]"))
   }
   
   "IC non calculable"

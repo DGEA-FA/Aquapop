@@ -60,11 +60,17 @@ masse_longueur_fit <- function(data) {
   }
   
   # Validation espèce unique ----
-  espece <- unique(stats::na.omit(data$sp))
+  espece <- unique(stats::na.omit(as.character(data$sp)))
   
   if (length(espece) != 1) {
     stop("Les données doivent contenir une seule espèce (sp).")
   }
+  
+  info_espece <- get_info_pen(espece)
+  if (is.null(info_espece)) stop("Espèce non reconnue.")
+
+  couleur_default <- info_espece$couleur_default
+  couleur_compl <- info_espece$couleur_compl
   
   # Prétraitement ----
   donnees_filtrees <- data |>
@@ -160,9 +166,6 @@ masse_longueur_fit <- function(data) {
   
   # Données de prédiction ----
   
-  
-  
-  
   sequence_log_longueur <- seq(
     min(donnees_filtrees$log_longueur),
     max(donnees_filtrees$log_longueur),
@@ -185,6 +188,7 @@ masse_longueur_fit <- function(data) {
   )
   
   # Graphique ----
+
   log10_a <- table_resultats$estimation[table_resultats$coefficient == "log10_a"]
   b <- table_resultats$estimation[table_resultats$coefficient == "b"]
   
@@ -193,16 +197,24 @@ masse_longueur_fit <- function(data) {
     format_num_fr(log10_a, digits = 3),
     " + ",
     format_num_fr(b, digits = 3),
-    " × log10(L))"
+    " × log10(LM))"
   )
   
-  
   graphique_relation <- ggplot() +
-    geom_point(data = donnees_filtrees, aes(x = .data$ltm, y = .data$masse)) +
-    geom_line(data = donnees_prediction, aes(x = .data$ltm, y = .data$fit), color = "blue") +
-    geom_line(data = donnees_prediction, aes(x = .data$ltm, y = .data$lwr), color = "red", linetype = 2) +
-    geom_line(data = donnees_prediction, aes(x = .data$ltm, y = .data$upr), color = "red", linetype = 2) +
+    geom_point(data = donnees_filtrees, aes(x = .data$ltm, y = .data$masse), color = couleur_default) +
+    geom_line(data = donnees_prediction, aes(x = .data$ltm, y = .data$fit), color = couleur_default) +
+    geom_line(data = donnees_prediction, aes(x = .data$ltm, y = .data$lwr,
+                                             linetype = "Intervalle de prédiction à 95 %"), color = couleur_compl) +
+    geom_line(data = donnees_prediction, aes(x = .data$ltm, y = .data$upr,
+                                             linetype = "Intervalle de prédiction à 95 %"), color = couleur_compl) +
+    scale_linetype_manual(
+      values = c("Intervalle de prédiction à 95 %" = 2),
+      name = NULL
+    ) +
     theme_aquapop() +
+    theme(
+      legend.position = "bottom"
+    ) +
     labs(
       x = "Longueur maximale (mm)",
       y = "Masse (g)",

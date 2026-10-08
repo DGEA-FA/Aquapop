@@ -13,6 +13,8 @@ mod_psd_ui <- function(id) {
   tabPanel(
     title = "PSD",
     
+    uiOutput(ns("analysis_label")),
+    
     uiOutput(ns("psd_message")),
     uiOutput(ns("psd_content"))
   )
@@ -25,9 +27,20 @@ mod_psd_ui <- function(id) {
 #' @param filename_suffix Expression réactive pour suffixe des fichiers à exporter.
 #'
 #' @noRd
-mod_psd_server <- function(id, specimen, filename_suffix) {
+mod_psd_server <- function(id, specimen, filename_suffix, analysis_label) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
+    
+    output$analysis_label <- renderUI({
+      req(analysis_label())
+      
+      div(
+        analysis_label(),
+        style = "
+        margin-bottom: 15px;
+        color: #555;"
+      )
+    })
     
     # Résultats PSD ----
     
@@ -212,7 +225,13 @@ mod_psd_server <- function(id, specimen, filename_suffix) {
         
         res$plot
       }),
-      filename_suffix = filename_suffix()
+      filename = reactive(
+        build_export_filename(
+          "psd_byclass",
+          filename_suffix(),
+          ext = "png"
+        )
+      )
     )
   })
 }

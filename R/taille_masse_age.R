@@ -1,7 +1,7 @@
 #' Tableau des statistiques morphologiques (taille, masse, âge)
 #'
 #' Calcule des statistiques descriptives (effectif, moyenne, écart-type, minimum,
-#' maximum) pour la longueur totale (`ltm`), la masse et l'âge des spécimens,
+#' maximum) pour la longueur maximale (`ltm`), la masse et l'âge des spécimens,
 #' selon différents groupes biologiques (sexe et statut reproducteur), 
 #' pour les spécimens valides
 #'
@@ -78,26 +78,26 @@ taille_masse_age <- function(data) {
   
   # Calcul des statistiques morphologiques ----
   table_ltm <- regrouper_stats_morpho(data, "ltm") |>
-    rename_with(~ paste0("ltm_", .), -"sexe")
+    rename_with(~ paste0("ltm_", .), -"groupe")
   
   table_masse <- regrouper_stats_morpho(data, "masse") |>
-    rename_with(~ paste0("masse_", .), -"sexe")
+    rename_with(~ paste0("masse_", .), -"groupe")
   
   table_age <- regrouper_stats_morpho(data, "age") |>
-    rename_with(~ paste0("age_", .), -"sexe")
+    rename_with(~ paste0("age_", .), -"groupe")
   
   # Fusion des tableaux ----
   table_resultats <- table_ltm |>
-    inner_join(table_masse, by = "sexe") |>
-    inner_join(table_age, by = "sexe") |>
-    rename(Sexe = "sexe") 
+    inner_join(table_masse, by = "groupe") |>
+    inner_join(table_age, by = "groupe") |>
+    rename(Groupe = "groupe") 
   
   # Création du tableau flextable ----
   bordure_normale <- fp_border(width = 1)
   
   en_tete <- tibble(
     col_keys = names(table_resultats),
-    Niveau1 = c("Groupe", rep("LTMax (mm)", 5), rep("Masse (g)", 5), rep("Âge", 5)),
+    Niveau1 = c("Groupe", rep("Longueur maximale (mm)", 5), rep("Masse (g)", 5), rep("Âge", 5)),
     Niveau2 = c("", rep(c("N", "Moyenne", "ÉT", "Min", "Max"), 3))
   )
   
@@ -129,7 +129,7 @@ taille_masse_age <- function(data) {
       border(j = col, border.right = bordure_normale, part = "body")
   }
   
-  ligne_bloc_repro <- which(table_resultats$Sexe == "Reprod. actifs femelles")
+  ligne_bloc_repro <- which(table_resultats$Groupe == "Reprod. actifs femelles")
   
   if (length(ligne_bloc_repro) == 1) {
     table_flextable <- table_flextable |>
@@ -157,38 +157,38 @@ taille_masse_age <- function(data) {
 #' @param data Un `data.frame` contenant les variables morphologiques.
 #' @param var Chaîne de caractères correspondant à la variable numérique à résumer (`"ltm"`, `"masse"`, `"age"`).
 #'
-#' @return Un `data.frame` avec une colonne `sexe` (libellé du groupe) et les statistiques correspondantes.
+#' @return Un `data.frame` avec une colonne `groupe` (libellé du groupe) et les statistiques correspondantes.
 #'
 #' @keywords internal
 regrouper_stats_morpho <- function(data, var) {
   
   # --- Calcul des statistiques pour chaque sous-groupe ---
   table_groupes <- bind_rows(
-    stats_morpho(data, var, "sexe"),
-    stats_morpho(data, var) |> mutate(sexe = NA),
-    stats_morpho(filter(data, .data$maturite == "O" & .data$sexe == "M"), var) |> mutate(sexe = "Reprod. actifs mâles"),
-    stats_morpho(filter(data, .data$maturite == "N"), var) |> mutate(sexe = "Imm. ou reprod. inactifs"),
-    stats_morpho(filter(data, .data$maturite == "O" & .data$sexe == "F"), var) |> mutate(sexe = "Reprod. actifs femelles"),
-    stats_morpho(filter(data, .data$maturite == "IND"), var) |> mutate(sexe = "Statut reprod. inconnu")
+    stats_morpho(data, var, "sexe") |> rename(groupe = sexe),
+    stats_morpho(data, var) |> mutate(groupe = NA),
+    stats_morpho(filter(data, .data$maturite == "O" & .data$sexe == "M"), var) |> mutate(groupe = "Reprod. actifs mâles"),
+    stats_morpho(filter(data, .data$maturite == "N"), var) |> mutate(groupe = "Imm. ou reprod. inactifs"),
+    stats_morpho(filter(data, .data$maturite == "O" & .data$sexe == "F"), var) |> mutate(groupe = "Reprod. actifs femelles"),
+    stats_morpho(filter(data, .data$maturite == "IND"), var) |> mutate(groupe = "Statut reprod. inconnu")
   )
   
   # --- Nettoyage et harmonisation des libellés de groupes ---
   table_groupes <- table_groupes |>
     mutate(
-      sexe = as.character(.data$sexe),
-      sexe = ifelse(is.na(.data$sexe), "Tous", .data$sexe),
-      sexe = recode(.data$sexe,
+      groupe = as.character(.data$groupe),
+      groupe = ifelse(is.na(.data$groupe), "Tous", .data$groupe),
+      groupe = recode(.data$groupe,
                     "M"   = "Mâle",
                     "F"   = "Femelle",
                     "IND" = "Sexe inconnu",
-                    .default = .data$sexe),
-      sexe = factor(.data$sexe, levels = c(
+                    .default = .data$groupe),
+      groupe = factor(.data$groupe, levels = c(
         "Tous", "Femelle", "Mâle", "Sexe inconnu",
         "Reprod. actifs femelles", "Reprod. actifs mâles",
         "Imm. ou reprod. inactifs", "Statut reprod. inconnu"
       ))
     ) |>
-    arrange(.data$sexe)
+    arrange(.data$groupe)
   
   return(table_groupes)
 }

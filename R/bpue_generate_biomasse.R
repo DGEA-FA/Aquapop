@@ -58,19 +58,37 @@ bpue_generate_biomasse <- function(specimen, station) {
   
   # ---- Fonction interne : ajustement NB2 securise ----
   safe_nb_fit <- function(y) {
-   if (length(unique(y)) <= 1 || all(y == 0, na.rm = TRUE)) {
+    
+    y <- y[!is.na(y)]
+    
+    if (length(y) == 0) {
+      return(list(bpue = NA_real_, ic95 = NA_character_))
+    }
+    
+    if (all(y == 0)) {
       return(list(bpue = 0, ic95 = "[0,00 – 0,00]"))
     }
     
     suppressWarnings({
-      model <- try(glm.nb(biomasse_g ~ 1, data = data.frame(biomasse_g = y)), silent = TRUE)
+      model <- try(
+        MASS::glm.nb(
+          biomasse_g ~ 1,
+          data = data.frame(biomasse_g = y)
+        ),
+        silent = TRUE
+      )
     })
     
     if (inherits(model, "try-error")) {
       return(list(bpue = NA_real_, ic95 = NA_character_))
     }
     
-    pred <- predict(model, se.fit = TRUE, type = "link", newdata = data.frame(biomasse_g = 0))
+    pred <- predict(
+      model,
+      se.fit = TRUE,
+      type = "link"
+    )
+    
     fit_val <- as.numeric(pred$fit[1])
     se_val <- as.numeric(pred$se.fit[1])
     
@@ -103,6 +121,7 @@ bpue_generate_biomasse <- function(specimen, station) {
   
   ligne_tous <- tibble(
     groupe = "Tous",
+    n = sum(!is.na(specimen$masse)),
     biomasse = biomasse_totale_kg,
     percent = 100,
     bpue = fit_tous$bpue,
@@ -110,6 +129,10 @@ bpue_generate_biomasse <- function(specimen, station) {
   )
   
   # ---- Groupe par sexe ----
+  n_par_sexe <- specimen |>
+    filter(!is.na(.data$masse)) |>
+    count(.data$sexe, name = "n")
+  
   biomasse_par_sexe <- specimen |>
     group_by(.data$no_station, .data$sexe) |>
     summarise(biomasse = sum(.data$masse, na.rm = TRUE), .groups = "drop") |>
@@ -121,15 +144,17 @@ bpue_generate_biomasse <- function(specimen, station) {
     group_by(.data$sexe) |>
     summarise(
       biomasse = sum(.data$biomasse) / 1000,
-      bpue = .data$biomasse / n_stations,
+      bpue = NA_real_,
       percent = .data$biomasse * 100 / biomasse_totale_kg,
-      ic95 = NA_character_
+      ic95 = NA_character_,
+      .groups = "drop"
     ) |>
+    left_join(n_par_sexe, by = "sexe") |>
     mutate(groupe = recode(.data$sexe,
                            "F" = "Femelle",
                            "M" = "Mâle",
                            "IND" = "Sexe inconnu")) |>
-    select("groupe", "biomasse", "percent", "bpue", "ic95")
+    select("groupe", "n", "biomasse", "percent", "bpue", "ic95")
   
   # ---- Repro. actifs males ----
   data_males_matures <- specimen |>
@@ -141,9 +166,10 @@ bpue_generate_biomasse <- function(specimen, station) {
   
   ligne_males_matures <- tibble(
     groupe = "Repro. actifs mâles",
+    n = sum(specimen$sexe == "M" & specimen$maturite == "O" & !is.na(specimen$masse), na.rm = TRUE),
     biomasse = sum(data_males_matures$biomasse) / 1000,
     percent = biomasse * 100 / biomasse_totale_kg,
-    bpue = biomasse / n_stations,
+    bpue = NA_real_,
     ic95 = NA_character_
   )
   
@@ -151,7 +177,7 @@ bpue_generate_biomasse <- function(specimen, station) {
   data_femelles_matures <- specimen |>
     filter(.data$sexe == "F", .data$maturite == "O") |>
     group_by(.data$no_station) |>
-    summarise(biomasse_g = sum(.data$masse), .groups = "drop") |>
+    summarise(biomasse_g = sum(.data$masse, na.rm = TRUE), .groups = "drop") |>
     right_join(station |> select(.data$no_station), by = "no_station") |>
     mutate(biomasse_g = replace_na(.data$biomasse_g, 0))
   
@@ -160,6 +186,7 @@ bpue_generate_biomasse <- function(specimen, station) {
   
   ligne_femelles_matures <- tibble(
     groupe = "Repro. actifs femelles",
+    n = sum(specimen$sexe == "F" & specimen$maturite == "O" & !is.na(specimen$masse), na.rm = TRUE),
     biomasse = biomasse_femelles_matures / 1000,
     percent = biomasse * 100 / biomasse_totale_kg,
     bpue = fit_femelles$bpue,
@@ -176,9 +203,10 @@ bpue_generate_biomasse <- function(specimen, station) {
   
   ligne_immatures <- tibble(
     groupe = "Imm. ou reprod. inactifs",
+    n = sum(specimen$maturite == "N" & !is.na(specimen$masse), na.rm = TRUE),
     biomasse = sum(data_immatures$biomasse) / 1000,
     percent = biomasse * 100 / biomasse_totale_kg,
-    bpue = biomasse / n_stations,
+    bpue = NA_real_,
     ic95 = NA_character_
   )
   
@@ -192,9 +220,10 @@ bpue_generate_biomasse <- function(specimen, station) {
   
   ligne_inconnu <- tibble(
     groupe = "Statut reprod. inconnu",
+    n = sum(specimen$maturite == "IND" & !is.na(specimen$masse), na.rm = TRUE),
     biomasse = sum(data_inconnu$biomasse) / 1000,
     percent = biomasse * 100 / biomasse_totale_kg,
-    bpue = biomasse / n_stations,
+    bpue = NA_real_,
     ic95 = NA_character_
   )
   
@@ -208,21 +237,43 @@ bpue_generate_biomasse <- function(specimen, station) {
     ligne_inconnu
   )
   
+  table_biomasse <- table_biomasse %>%
+    rename(
+      bpue_estimee = bpue,
+      proportion = percent) %>%
+    mutate(
+      ic95 = replace_na(ic95, "-")
+    )
+  
   table_flex <- table_biomasse |>
     flextable() |>
     set_caption("Tableau de biomasse") |>
     set_header_labels(
       groupe   = "Groupe",
+      n = "Nombre",
       biomasse = "Biomasse totale (kg)",
-      percent  = "Proportion (%)",
-      bpue     = "BPUE (kg/station)",
+      proportion  = "Proportion (%)",
+      bpue_estimee     = "BPUE estimée (kg/station)",
       ic95     = "IC 95%"
     ) |>
     style_flextable_aquapop() |>
-    colformat_double(j = c("biomasse", "bpue"), digits = 2, decimal.mark = ",", big.mark = " ", na_str = "-") |>
-    colformat_double(j = "percent", digits = 1, decimal.mark = ",", big.mark = " ", na_str = "-") |>
-    hline(i = 3, border = fp_border(color = "black", width = 0.5))
+    colformat_int(j = "n", big.mark = "") |>
+    colformat_double(j = c("biomasse", "bpue_estimee"), digits = 2, decimal.mark = ",", big.mark = " ", na_str = "-") |>
+    colformat_double(j = "proportion", digits = 1, decimal.mark = ",", big.mark = " ", na_str = "-")
   
+  ligne_bloc_repro <- which(
+    table_biomasse$groupe == "Repro. actifs femelles"
+  )
+  
+  if (length(ligne_bloc_repro) == 1 && ligne_bloc_repro > 1) {
+    table_flex <- table_flex |>
+      border(
+        i = ligne_bloc_repro - 1,
+        border.bottom = fp_border(color = "black", width = 0.5),
+        part = "body"
+      )
+  }
+
   return(list(
     data = table_biomasse,
     flextable = table_flex

@@ -52,6 +52,9 @@ get_info_pen <- function(input) {
     nom_sp       = info_sp$nom_sp,
     binwidth     = info_sp$binwidth,
     breaks       = info_sp$breaks[[1]],
-    break_labels = info_sp$break_labels[[1]]
+    break_labels = info_sp$break_labels[[1]],
+    couleur_default = info_sp$couleur_default,
+    couleur_compl = info_sp$couleur_compl,
+    group_colors = info_sp$group_colors[[1]]
   ))
 }

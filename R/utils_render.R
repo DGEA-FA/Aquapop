@@ -143,32 +143,33 @@ render_download_table <- function(id,
 render_download_plot <- function(id,
                                  plot,
                                  filename = NULL,
-                                 filename_suffix = NULL,
-                                 width = 7, height = 5, dpi = 300,
-                                 label = "Télécharger le graphique") {
+                                 width = 7,
+                                 height = 5,
+                                 dpi = 300) {
+  
   output <- get("output", envir = parent.frame())
+  
   get_plot <- as_reactive(plot)
   
-  get_filename <- reactive({
-    if (!is.null(filename)) {
-      filename
-    } else if (!is.null(filename_suffix)) {
-      suffix <- if (inherits(filename_suffix, "reactive")) filename_suffix() else filename_suffix
-      paste0("figure_", suffix)
-    } else {
-      id
-    }
-  })
+  get_filename <- if (inherits(filename, "reactive")) {
+    filename
+  } else {
+    reactive(filename)
+  }
   
   output[[id]] <- downloadHandler(
-    filename = function() paste0(get_filename(), ".png"),
+    filename = function() {
+      get_filename()
+    },
     content = function(file) {
-      ggsave(file,
-             plot = get_plot(),
-             width = width,
-             height = height,
-             dpi = dpi,
-             device = "png")
+      ggsave(
+        filename = file,
+        plot = get_plot(),
+        width = width,
+        height = height,
+        dpi = dpi,
+        device = "png"
+      )
     }
   )
 }

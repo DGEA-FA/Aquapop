@@ -7,12 +7,12 @@
 #' @noRd
 #'
 #' @importFrom shiny NS uiOutput tabPanel
-
 mod_maturite_l50_ui <- function(id) {
   ns <- NS(id)
   
   tabPanel(
     title = "Longueur à maturité",
+    uiOutput(ns("analysis_label")),
     uiOutput(ns("message_l50")),
     
     withSpinner(
@@ -31,9 +31,20 @@ mod_maturite_l50_ui <- function(id) {
 #' @param filename_suffix Expression réactive pour suffixe des fichiers à exporter.
 #'
 #' @noRd
-mod_maturite_l50_server <- function(id, specimen, filename_suffix) {
+mod_maturite_l50_server <- function(id, specimen, filename_suffix, analysis_label) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
+    
+    output$analysis_label <- renderUI({
+      req(analysis_label())
+      
+      div(
+        analysis_label(),
+        style = "
+        margin-bottom: 15px;
+        color: #555;"
+      )
+    })
     
     # ==== Résultat global ----
     table_modeles_l50_resultats <- reactive({
@@ -50,23 +61,17 @@ mod_maturite_l50_server <- function(id, specimen, filename_suffix) {
     has_model_l50_f <- reactive({
       res <- table_modeles_l50_resultats()
       req(!is.null(res))
-      
-      !is.null(res$best_model$best_model_F)
-    })
+      !is.null(res$best_model$best_model_F)})
     
     has_model_l50_m <- reactive({
       res <- table_modeles_l50_resultats()
       req(!is.null(res))
-      
-      !is.null(res$best_model$best_model_M)
-    })
+      !is.null(res$best_model$best_model_M)})
     
     has_model_l50_comb <- reactive({
       res <- table_modeles_l50_resultats()
       req(!is.null(res))
-      
-      !is.null(res$best_model$best_model_combined)
-    })
+      !is.null(res$best_model$best_model_combined)})
     
     # ==== Affichage des modèles combinés ----
     
@@ -82,11 +87,7 @@ mod_maturite_l50_server <- function(id, specimen, filename_suffix) {
       
       best_model <- res$best_model
       
-      has_F <- !is.null(best_model$best_model_F)
-      has_M <- !is.null(best_model$best_model_M)
-      has_comb <- !is.null(best_model$best_model_combined)
-      
-      if (!has_F && !has_M && !has_comb) {
+      if (!has_model_l50_f() && !has_model_l50_m() && !has_model_l50_comb()) {
         return(
           HTML(
             "Les données disponibles ne permettent pas d'ajuster des modèles de maturité."
@@ -94,67 +95,18 @@ mod_maturite_l50_server <- function(id, specimen, filename_suffix) {
         )
       }
       
-      if (has_F && has_M && has_comb) {
+      if (has_model_l50_f() && has_model_l50_m() && has_model_l50_comb()) {
         return(
           HTML(
-            "Des modèles séparés ont été retenus pour les femelles et les mâles. Les modèles pour les sexes combinés sont également présentés à titre comparatif."
-          )
+            "Les résultats d'ajustement de différents modèles pour les femelles et les mâles séparés sont présentés ci-dessous. ",
+            "<br>",
+            "Les résultats des modèles pour les sexes combinés sont également présentés pour déterminer si du support statistique ",
+            "est trouvé pour une différence.")
         )
       }
-      
-      if (has_F && has_M && !has_comb) {
-        return(
-          HTML(
-            "Des modèles séparés ont été retenus pour les femelles et les mâles. Aucun modèle pour les sexes combinés valide n'est disponible."
-          )
-        )
-      }
-      
-      if (has_F && !has_M && has_comb) {
-        return(
-          HTML(
-            "Un modèle séparé a été retenu pour les femelles. Aucun modèle valide n'a pu être retenu pour les mâles. Les modèles pour les sexes combinés sont également présentés."
-          )
-        )
-      }
-      
-      if (!has_F && has_M && has_comb) {
-        return(
-          HTML(
-            "Un modèle séparé a été retenu pour les mâles. Aucun modèle valide n'a pu être retenu pour les femelles. Les modèles pour les sexes combinés sont également présentés."
-          )
-        )
-      }
-      
-      if (!has_F && !has_M && has_comb) {
-        return(
-          HTML(
-            "Aucun modèle séparé valide n'a pu être retenu. Les modèles pour les sexes combinés sont présentés."
-          )
-        )
-      }
-      
-      if (has_F && !has_M && !has_comb) {
-        return(
-          HTML(
-            "Un modèle séparé a été retenu pour les femelles. Aucun modèle valide n'a pu être retenu pour les mâles et aucun modèle pour les sexes combinés valide n'est disponible."
-          )
-        )
-      }
-      
-      if (!has_F && has_M && !has_comb) {
-        return(
-          HTML(
-            "Un modèle séparé a été retenu pour les mâles. Aucun modèle valide n'a pu être retenu pour les femelles et aucun modèle pour les sexes combinés valide n'est disponible."
-          )
-        )
-      }
-      
-      HTML(
-        "Les données disponibles ne permettent pas d'ajuster suffisamment de modèles de maturité."
-      )
+      NULL
     })
-    
+
     # ==== Message UI ----
     output$message_l50 <- renderUI({
       res <- table_modeles_l50_resultats()
@@ -319,8 +271,7 @@ mod_maturite_l50_server <- function(id, specimen, filename_suffix) {
       )
     })
     
-    
-    # ==== Section modèles séparés ----
+     # ==== Section modèles séparés ----
     output$section_l50_separes <- renderUI({
       
       # ------------------------------------------------------------
@@ -332,7 +283,7 @@ mod_maturite_l50_server <- function(id, specimen, filename_suffix) {
       
       tagList(
         
-        tags$h3("Modèles séparés"),
+        tags$h3("Tableau de sélection des modèles - sexes séparés"),
         
         tags$p(
           "Comparaison des modèles ajustés séparément pour les femelles et les mâles."
@@ -363,7 +314,7 @@ mod_maturite_l50_server <- function(id, specimen, filename_suffix) {
               "border-left: 4px solid #c0392b;",
               "background-color: #fdf2f2;"
             ),
-            "Aucun modèle valide n'est disponible pour les femelles."
+            "Aucun modèle n'a convergé pour les femelles."
           )
         },
         
@@ -395,7 +346,7 @@ mod_maturite_l50_server <- function(id, specimen, filename_suffix) {
               "border-left: 4px solid #c0392b;",
               "background-color: #fdf2f2;"
             ),
-            "Aucun modèle valide n'est disponible pour les mâles."
+            "Aucun modèle n'a convergé pour les mâles."
           )
         },
         
@@ -406,7 +357,10 @@ mod_maturite_l50_server <- function(id, specimen, filename_suffix) {
         # GRAPHIQUES F / M EN DEUX COLONNES
         # ==========================================================
         
-        fluidRow(
+          tags$h3("Ogives de reproduction - Sexes séparés"),
+          
+       
+          fluidRow(
           
           # --------------------------------------------------------
           # Femelles
@@ -635,13 +589,15 @@ mod_maturite_l50_server <- function(id, specimen, filename_suffix) {
       if (nrow(table) == 0) return(NULL)
       
       tagList(
-        tags$h3("Modèles combinés"),
+        tags$h3("Tableau de sélection des modèles - sexes combinés"),
         tags$p("Modèles ajustés sur l'ensemble des données"),
         
         reactableOutput(ns("table_l50_comb")),
         div(style = "margin: 10px 0 20px 0;", download_button_ui(ns("dl_l50_comb"))),
         
         tags$hr(),
+        
+        tags$h3("Ogives de reproduction - Sexes combinés"),
         
         plotOutput(ns("plot_l50_comb"), height = "500px"),
         div(style = "margin-top: 10px;", downloadButton(ns("dl_plot_l50_comb"), "Télécharger")),
@@ -670,6 +626,7 @@ mod_maturite_l50_server <- function(id, specimen, filename_suffix) {
           headerStyle = list(textAlign = "center"),
           na = "-"
         ),
+        
         columns = list(
           
           modele_id = colDef(name = "Modèle"),
@@ -704,6 +661,8 @@ mod_maturite_l50_server <- function(id, specimen, filename_suffix) {
     })
     
     # ==== Affichage des graphiques ----
+    
+
     render_plot_ggplot(
       output_id = "plot_l50_f",
       plot = reactive({
@@ -746,7 +705,13 @@ mod_maturite_l50_server <- function(id, specimen, filename_suffix) {
         
         res_f()$graphique
       }),
-      filename_suffix = filename_suffix()
+      filename = reactive(
+        build_export_filename(
+          "l50_modeles_femelles",
+          filename_suffix(),
+          ext = "png"
+        )
+      )
     )
     
     render_download_plot(
@@ -758,7 +723,13 @@ mod_maturite_l50_server <- function(id, specimen, filename_suffix) {
         
         res_m()$graphique
       }),
-      filename_suffix = filename_suffix()
+      filename = reactive(
+        build_export_filename(
+          "l50_modeles_males",
+          filename_suffix(),
+          ext = "png"
+        )
+      )
     )
     
     render_download_plot(
@@ -769,8 +740,14 @@ mod_maturite_l50_server <- function(id, specimen, filename_suffix) {
         req(!is.null(res_comb()$graphique))
         res_comb()$graphique
       }),
-      filename_suffix = filename_suffix()
-    )
+      filename = reactive(
+        build_export_filename(
+          "l50_modeles_combines",
+          filename_suffix(),
+          ext = "png"
+        )
+      )
+      )
     
     # ==== Téléchargement des tableaux de sélection ----
     render_download_table(

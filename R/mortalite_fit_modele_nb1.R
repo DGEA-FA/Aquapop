@@ -220,8 +220,9 @@ mortalite_fit_modele_nb1 <- function(df_age_etendue) {
   
   # Conversion en taux de mortalité annuel ====
   A <- (1 - exp(-Z)) * 100
-  lowerZ <- Z - SE
-  upperZ <- Z + SE
+  IC <- confint(model)["age", ] 
+  lowerZ <- -IC[2]
+  upperZ <- -IC[1]
   lowerA <- round((1 - exp(-lowerZ)) * 100, 1)
   upperA <- round((1 - exp(-upperZ)) * 100, 1)
   ic_95 <- glue("[{lowerA} – {upperA}]") |>

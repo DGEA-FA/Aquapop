@@ -29,8 +29,7 @@ maturite_select_best_combined_modele <- function(evaluation_df) {
   # --- Étape 1 : Filtrer les modèles valides (convergence + commentaire positif) ---
   valid_models <- evaluation_df |>
     filter(
-      .data$convergence == TRUE,
-      .data$ajust == TRUE
+      .data$convergence == TRUE
       #!grepl("rejeter|choisir un autre modèle", .data$commentaire)
     )
   

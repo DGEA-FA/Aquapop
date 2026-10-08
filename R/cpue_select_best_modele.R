@@ -8,14 +8,14 @@
 #'
 #' @param tablemodele Un `data.frame` retourné par
 #'   `cpue_compare_modele(..., format = "data.frame")`, contenant au minimum
-#'   les colonnes `methode`, `aicc` et `ajustement_hnp`.
+#'   les colonnes `modele`, `aicc` et `ajustement_hnp`.
 #'
 #' @return Une chaîne de caractères correspondant à la méthode du meilleur modèle sélectionné.
 #'   Retourne `NA` avec un avertissement si aucun modèle ne peut être sélectionné.
 #'
 #' @examples
 #' df <- tibble::tibble(
-#'   methode = c("poisson", "nb1", "nb2"),
+#'   modele = c("poisson", "nb1", "nb2"),
 #'   ajustement_hnp = c(5, 12, 9),
 #'   aicc = c(110, 105, 100)
 #' )
@@ -25,7 +25,7 @@
 #' @importFrom dplyr filter pull
 #' @importFrom rlang .data
 cpue_select_best_modele <- function(tablemodele) {
-  if (!"methode" %in% names(tablemodele) || !"aicc" %in% names(tablemodele)) {
+  if (!"modele" %in% names(tablemodele) || !"aicc" %in% names(tablemodele)) {
     stop("Le tableau fourni n'est pas valide. Assurez-vous qu’il provient de `cpue_compare_modele()`.")
   }
   
@@ -35,11 +35,11 @@ cpue_select_best_modele <- function(tablemodele) {
   if (nrow(bien_ajuste) > 0) {
     best <- bien_ajuste |>
       filter(.data$aicc == min(.data$aicc, na.rm = TRUE)) |>
-      pull(.data$methode)
+      pull(.data$modele)
   } else {
     best <- tablemodele |>
       filter(.data$aicc == min(.data$aicc, na.rm = TRUE)) |>
-      pull(.data$methode)
+      pull(.data$modele)
   }
   
   if (length(best) == 0) {

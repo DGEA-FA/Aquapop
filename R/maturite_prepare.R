@@ -66,7 +66,10 @@ maturite_prepare <- function(specimen_data,
     mutate(
       maturite = factor(.data$maturite, levels = c("N", "O"), ordered = TRUE),
       sexe = factor(.data$sexe, levels = c("F", "M"))
-    )
+    ) |>
+    mutate(
+      age = age + if_else(sp == "SAVI", 1, 0)
+           )
   
   if (isTRUE(drop_levels)) {
     data_preparee <- droplevels(data_preparee)

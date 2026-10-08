@@ -108,6 +108,9 @@ maturite_validate_data <- function(specimen_data,
       maturite = factor(.data$maturite, levels = c("N", "O"), ordered = TRUE),
       sexe = factor(.data$sexe, levels = c("F", "M"))
     ) |>
+    mutate(
+      age = age + if_else(sp == "SAVI", 1, 0)
+    ) |>
     droplevels()
   
   # Cas sans donnée exploitable après nettoyage ----

@@ -28,11 +28,12 @@
 #' @importFrom tidyr replace_na
 #' @importFrom dplyr full_join mutate distinct left_join filter inner_join if_else
 #' @export
-get_analysis_data <- function(path, typ_pech, no_lac, annee,
-                              sheet_station = "Stations",
-                              sheet_specimen = "Specimens",
-                              sheet_recolte = "Recolte",
-                              verbose = TRUE) {
+get_analysis_data <- function(data_station,
+                              data_specimen,
+                              data_recolte,
+                              typ_pech,
+                              no_lac,
+                              annee) {
   
   # Identification ----
   ## Espèce cible à partir du type de pêche ----
@@ -43,8 +44,12 @@ get_analysis_data <- function(path, typ_pech, no_lac, annee,
   # Chargement des données ----
   
   ## Feuille des stations ----
-  data_station <- load_station(path, sheet_station, verbose = verbose) |>
-    filter_by_pen_lac_annee(typ_pech = typ_pech, no_lac = no_lac, annee = annee)
+  data_station <- data_station |>
+    filter_by_pen_lac_annee(
+      typ_pech = typ_pech,
+      no_lac = no_lac,
+      annee = annee
+    )
   
   # --- Réorganisation pour visualisation ---
     data_station <- data_station |>
@@ -77,9 +82,13 @@ get_analysis_data <- function(path, typ_pech, no_lac, annee,
     
     
   ## Feuille des spécimens ----
-  data_specimen <- load_specimen(path, sheet_specimen, verbose = verbose) |>
-    filter_by_pen_lac_annee(typ_pech = typ_pech, no_lac = no_lac, annee = annee) |>
-    filter(.data$sp == code_sp)
+    data_specimen <- data_specimen |>
+      filter_by_pen_lac_annee(
+        typ_pech = typ_pech,
+        no_lac = no_lac,
+        annee = annee
+      ) |>
+      filter(.data$sp == code_sp)
 
   # --- Réorganisation pour visualisation ---
     data_specimen <- data_specimen |>
@@ -117,8 +126,12 @@ get_analysis_data <- function(path, typ_pech, no_lac, annee,
     
   ## Feuille de la récolte ----
   # Somme des captures par stations (si panneau ou commentaire)
-  data_recolte <- load_recolte(path, sheet_recolte, verbose = verbose) |>
-    filter_by_pen_lac_annee(typ_pech = typ_pech, no_lac = no_lac, annee = annee) |>
+    data_recolte <- data_recolte |>
+      filter_by_pen_lac_annee(
+        typ_pech = typ_pech,
+        no_lac = no_lac,
+        annee = annee
+      ) |>
     filter(.data$sp == code_sp) |>
     group_by(no_station, st_hasard, st_valide) |>
     summarise(

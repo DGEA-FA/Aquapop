@@ -1,6 +1,6 @@
 #' wri UI Function
 #'
-#' @description Un module Shiny pour afficher l'indice de condition (Wr).
+#' @description Un module Shiny pour afficher l'indice de masse relative (Wr).
 #'
 #' @param id Identifiant du module.
 #'
@@ -12,7 +12,8 @@ mod_wri_ui <- function(id) {
   ns <- NS(id)
   
   tabPanel(
-    title = "Indice de condition",
+    title = "Indice de masse relative",
+    uiOutput(ns("analysis_label")),
     uiOutput(ns("wri_message")),
     uiOutput(ns("wri_table_section")),
     uiOutput(ns("wri_plot_tous_section")),
@@ -27,12 +28,22 @@ mod_wri_ui <- function(id) {
 #' @param filename_suffix Expression réactive pour suffixe des fichiers à exporter.
 #'
 #' @noRd
-mod_wri_server <- function(id, specimen, filename_suffix) {
+mod_wri_server <- function(id, specimen, filename_suffix, analysis_label) {
   
   moduleServer(id, function(input, output, session) {
     
     ns <- session$ns
     
+    output$analysis_label <- renderUI({
+      req(analysis_label())
+      
+      div(
+        analysis_label(),
+        style = "
+        margin-bottom: 15px;
+        color: #555;"
+      )
+    })
     
     # Résultat du module ----
     
@@ -178,14 +189,12 @@ mod_wri_server <- function(id, specimen, filename_suffix) {
       tagList(
         br(),
         
-        h3("Indice de condition (Wᵣ) selon la longueur et le sexe"),
+        h3("Indice de masse relative (Wᵣ) selon la longueur et le sexe"),
         
         p(
-          "Le graphique suivant illustre, pour chaque spécimen capturé, l'indice de condition en ",
-          "fonction de la longueur totale maximale et du sexe. La valeur moyenne est indiquée par une ",
-          "ligne pointillée en rouge (tous), en bleu foncé (femelles) et en bleu pâle (mâles). ",
-          "La ligne grise représente la référence standard pour l'espèce selon Hyatt et Hubert 2011 (SAFO), ",
-          "Murphy et al. 1990 (SAVI) et Piccolo et al. 1993 (SANA)."
+          "Le graphique suivant illustre, pour chaque spécimen capturé, l'indice de masse relative en ",
+          "fonction de la longueur maximale et du sexe. Les valeurs moyennes sont indiquées par une ",
+          "ligne pointillée. La ligne pleine représente la référence standard pour l'espèce."
         ),
         
         div(
@@ -199,6 +208,13 @@ mod_wri_server <- function(id, specimen, filename_suffix) {
             ns("download_wri_plot_tous"),
             "Téléchargement du graphique"
           )
+        ),
+        
+        br(),
+        
+        download_button_ui(
+          ns("download_wri_data_tous"),
+          label = "Téléchargement des données du graphique"
         )
       )
     })
@@ -231,9 +247,30 @@ mod_wri_server <- function(id, specimen, filename_suffix) {
         
         res$plot_tous
       }),
-      filename_suffix = filename_suffix()
+      filename = reactive(
+        build_export_filename(
+          "wri_tous",
+          filename_suffix(),
+          ext = "png"
+        )
+      )
     )
     
+    # Téléchargement des données ____
+    render_download_table(
+      "download_wri_data_tous",
+      data = reactive({
+        res <- wri_res()
+        
+        req(isTRUE(res$success))
+        req(!is.null(res$data_plot_tous))
+        
+        res$data_plot_tous
+      }),
+      filename = reactive(
+        build_export_filename("wri_data_tous", filename_suffix())
+      )
+    )     
     
     # Section graphique Wr par classe de taille ----
     
@@ -250,10 +287,10 @@ mod_wri_server <- function(id, specimen, filename_suffix) {
       tagList(
         br(),
         
-        h3("Indice de condition (Wᵣ) moyen par classe de taille"),
+        h3("Indice de masse relative (Wᵣ) moyen par classe de taille"),
         
         p(
-          "Ce graphique présente la variation de l'indice de condition selon les classes de PSD. ",
+          "Ce graphique présente la variation de l'indice de masse relative selon les classes de PSD. ",
           "Les valeurs moyennes et les intervalles de confiance sont illustrés."
         ),
         
@@ -268,6 +305,13 @@ mod_wri_server <- function(id, specimen, filename_suffix) {
             ns("download_wri_plot_byclass"),
             "Téléchargement du graphique"
           )
+        ),
+        
+        br(),
+        
+        download_button_ui(
+          ns("download_wri_data_byclass"),
+          label = "Téléchargement des données du graphique"
         )
       )
     })
@@ -300,8 +344,29 @@ mod_wri_server <- function(id, specimen, filename_suffix) {
         
         res$plot_byclass
       }),
-      filename_suffix = filename_suffix()
+      filename = reactive(
+        build_export_filename(
+          "wri_byclass",
+          filename_suffix(),
+          ext = "png"
+        )
+      )
     )
     
+    # Téléchargement des données ____
+    render_download_table(
+      "download_wri_data_byclass",
+      data = reactive({
+        res <- wri_res()
+        
+        req(isTRUE(res$success))
+        req(!is.null(res$data_plot_byclass))
+        
+        res$data_plot_byclass
+      }),
+      filename = reactive(
+        build_export_filename("wri_data_byclass", filename_suffix())
+      )
+    ) 
   })
 }

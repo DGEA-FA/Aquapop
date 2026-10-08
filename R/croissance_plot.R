@@ -206,6 +206,18 @@ croissance_plot <- function(dfspecimen, tablemodele, modele) {
   )
   
   # --- Construction du graphique ----
+  espece <- unique(stats::na.omit(as.character(dfspecimen$sp)))
+  
+  if (length(espece) != 1) {
+    stop("Les données doivent contenir une seule espèce (sp).")
+  }
+  
+  info_espece <- get_info_pen(espece)
+  if (is.null(info_espece)) stop("Espèce non reconnue.")
+  
+  couleur_default <- info_espece$couleur_default
+  couleur_compl <- info_espece$couleur_compl
+  
   ggplot() +
     geom_ribbon(
       data = predictions,
@@ -215,12 +227,14 @@ croissance_plot <- function(dfspecimen, tablemodele, modele) {
     geom_point(
       data = data_clean,
       aes(x = .data$age, y = .data$ltm),
+      color = couleur_default,
       size = 2,
       alpha = 0.1
     ) +
     geom_line(
       data = predictions,
       aes(x = .data$age, y = .data$fit),
+      color = couleur_default,
       linewidth = 1,
       linetype = "dashed"
     ) +
@@ -231,15 +245,20 @@ croissance_plot <- function(dfspecimen, tablemodele, modele) {
         .data$age <= age_max
       ),
       aes(x = .data$age, y = .data$fit),
+      color = couleur_default,
       linewidth = 1
     ) +
-    annotate(
-      "segment",
-      x = -Inf, xend = Inf,
-      y = start_values$linf, yend = start_values$linf,
-      linewidth = 0.5,
-      color = "red",
-      linetype = 2
+    geom_hline(
+      aes(
+        yintercept = start_values$linf,
+        linetype = "Longueur asymptotique (L∞)",
+        ),
+      linewidth = 0.8,
+      color = couleur_compl
+    ) +
+    scale_linetype_manual(
+      values = c("Longueur asymptotique (L∞)" = 2),
+      name = NULL
     ) +
     scale_x_continuous(
       name = "Âge (année)",
@@ -248,10 +267,13 @@ croissance_plot <- function(dfspecimen, tablemodele, modele) {
       expand = c(0, 0)
     ) +
     scale_y_continuous(
-      name = "Longueur totale maximale (mm)",
+      name = "Longueur maximale (mm)",
       expand = c(0, 0)
     ) +
     theme_aquapop() +
+    theme(
+      legend.position = "bottom"
+    ) +
     labs(
       caption = paste0(
         "Modèle : ", modele, "\n",

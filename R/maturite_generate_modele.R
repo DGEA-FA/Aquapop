@@ -48,9 +48,19 @@ maturite_generate_modele <- function(data,
   modele <- match.arg(modele)
   lien <- match.arg(lien)
   
-  if (!all(c(variable, "maturite", "sexe") %in% names(data))) {
-    stop(glue("❌ Le jeu de données doit contenir les colonnes `{variable}`, `maturite` et `sexe`."))
+  if (!all(c(variable, "maturite", "sexe", "sp") %in% names(data))) {
+    stop(glue("❌ Le jeu de données doit contenir les colonnes `{variable}`, `sp`, `maturite` et `sexe`."))
   }
+  
+  espece <- unique(stats::na.omit(as.character(data$sp)))
+  if (length(espece) != 1) {
+    stop("Les données doivent contenir une seule espèce (sp).")
+  }
+  
+  info_espece <- get_info_pen(espece)
+  
+  couleur_default <- info_espece$couleur_default
+  group_colors    <- info_espece$group_colors
   
   # Validation minimale des cas limites ----
   validation_res <- maturite_validate_data(
@@ -156,14 +166,15 @@ maturite_generate_modele <- function(data,
   
 
   # Graphique -------------------------------------------------------------------
+  
   couleur_ogive <- couleur_default
   
   if (!is.null(sexe)) {
     
     couleur_ogive <- switch(
       sexe,
-      "F" = group_colors$sexe["F"],
-      "M" = group_colors$sexe["M"],
+      "F" = unname(group_colors$sexe["F"]),
+      "M" = unname(group_colors$sexe["M"]),
       couleur_default
     )
     
@@ -183,8 +194,21 @@ maturite_generate_modele <- function(data,
     
 
   graphique <- ggplot(data = donnees_ogive, aes(x = .data[[variable]], y = .data$maturite)) +
-    { if (color_by_sex) geom_line(aes(color = .data$sexe)) else geom_line(color = couleur_ogive) } +
-    geom_ribbon(aes(ymin = .data$lim_inf, ymax = .data$lim_sup), alpha = 0.1, fill = couleur_default) +
+    
+    { if (color_by_sex) {
+    geom_ribbon(aes(ymin = .data$lim_inf, ymax = .data$lim_sup, group = .data$sexe), alpha = 0.4, fill = "grey60")
+    
+      } else  {
+        geom_ribbon(aes(ymin = .data$lim_inf, ymax = .data$lim_sup), alpha = 0.4, fill = "grey75")
+
+      }
+    } +
+    { if (color_by_sex) {
+      geom_line(aes(color = .data$sexe))
+    } else {
+        geom_line(color = couleur_ogive) }
+    } +
+    
     { 
       if (color_by_sex) scale_color_manual(
         values = group_colors$sexe,

@@ -17,6 +17,13 @@ AquaPop est une application conçue pour soutenir les professionnels du MELCCFP 
 
 Caroline Brûlé
 
+# Collaboration
+
+Stéphanie Gagné<br> 
+Geneviève Ouellet-Cauchon<br>
+Martin Bélanger<br>
+Marc Pépino
+
 # Aide, question et soutien
 
 Pour toute question ou besoin de soutien, veuillez contacter :

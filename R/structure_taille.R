@@ -68,6 +68,8 @@ structure_taille <- function(data,
   
   nomsp <- info$nom_sp
   binwidth <- info$binwidth
+  couleur_default <- info$couleur_default
+  group_colors <- info$group_colors
   
   data <- data |>
     mutate(ltm = as.numeric(.data$ltm)) |>
@@ -108,8 +110,8 @@ structure_taille <- function(data,
   # Préparation du graphique
   if (groupement == "tous") {
     plt <- ggplot(data, aes(x = .data$ltm_interval)) +
-      geom_bar(fill = couleur_default, color = "white", alpha = 1, na.rm = TRUE) +
-      labs(x = "Longueur totale maximale (mm)", y = paste0("Nb. ", nomsp, " échantillonnés")) +
+      geom_bar(fill = unname(group_colors$tous["TOUS"]), color = NA, alpha = 1, na.rm = TRUE) +
+      labs(x = "Longueur maximale (mm)", y = paste0("Nb. ", nomsp, " échantillonnés")) +
       theme_aquapop() +
       scale_x_discrete(drop = FALSE, limits = labels) +
       scale_y_continuous(expand = c(0, 0), limits = c(0, max_y))
@@ -127,10 +129,10 @@ structure_taille <- function(data,
     )
     
     plt <- ggplot(data, aes(x = .data$ltm_interval, fill = !!sym(groupement))) +
-      geom_bar(position = position_stack(reverse = TRUE), color = "white", na.rm = TRUE) +
+      geom_bar(position = position_stack(reverse = TRUE), color = NA, na.rm = TRUE) +
       geom_bar(data = df_legende, aes(x = .data$categorie, fill = .data$categorie),
                alpha = 1, width = 0, show.legend = TRUE, na.rm = TRUE) +
-      labs(x = "Longueur totale maximale (mm)", y = paste0("Nb. ", nomsp, " échantillonnés")) +
+      labs(x = "Longueur maximale (mm)", y = paste0("Nb. ", nomsp, " échantillonnés")) +
       theme_aquapop() +
       scale_x_discrete(drop = FALSE, limits = labels) +
       scale_y_continuous(expand = c(0, 0), limits = c(0, max_y)) +
@@ -143,7 +145,8 @@ structure_taille <- function(data,
   }
   
   # Tableau associé
-  df <- structure_taille_extraire_donnees(plt, groupement)
+  df <- structure_taille_extraire_donnees(data, groupement)
+  
   ft <- flextable(df) |>
     set_caption("Structure de taille") |>
     style_flextable_aquapop()
@@ -169,21 +172,46 @@ structure_taille <- function(data,
 #' @return Un `data.frame` avec les colonnes `categorie`, `count`, et `x` (classe de taille)
 #'
 #' @keywords internal
-structure_taille_extraire_donnees <- function(plot, groupement) {
+structure_taille_extraire_donnees <- function(data, groupement) {
   # Vérification
-  if (!groupement %in% names(group_colors)) {
+  if (!groupement %in% c("tous", "marquage", "sexe", "maturite")) {
     stop("Groupement invalide : choisir parmi 'tous', 'marquage', 'sexe', 'maturite'")
   }
   
-  # Inverser le dictionnaire de couleurs pour faire : couleur → nom court
-  color_map <- group_colors[[groupement]]
-  fill_to_category <- setNames(names(color_map), color_map)
+  if (groupement == "tous") {
+    
+    return(
+      data |>
+        count(
+          ltm_interval,
+          .drop = FALSE,
+          name = "nombre"
+        ) |>
+        mutate(
+          categorie = "TOUS",
+          classe_taille = as.character(ltm_interval)
+        ) |>
+        select(categorie, nombre, classe_taille)
+    )
+    
+  }
   
-  # Extraire les données du graphique
-  temp <- ggplot_build(plot)$data[[1]] |>
-    select("fill", "count", "x") |>
-    mutate(categorie = fill_to_category[.data$fill])
+  data[[groupement]] <- factor(
+    data[[groupement]],
+    levels = names(group_labels[[groupement]]),
+    ordered = TRUE
+  )
   
-  # Résultat final
-  temp |> select("categorie", "count", "x")
+  data |>
+    count(
+      ltm_interval,
+      .data[[groupement]],
+      .drop = FALSE,
+      name = "nombre"
+    ) |>
+    rename(categorie = !!groupement) |>
+    mutate(
+      classe_taille = as.character(ltm_interval)
+    ) |>
+    select(categorie, nombre, classe_taille)
 }

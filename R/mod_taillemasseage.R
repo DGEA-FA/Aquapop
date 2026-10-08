@@ -13,6 +13,9 @@ mod_taille_masse_age_ui <- function(id) {
   
   tabPanel(
     title = "Taille, masse et âge moyens",
+    
+    uiOutput(ns("analysis_label")),
+    
     uiOutput(ns("taille_masse_age_message")),
     uiOutput(ns("taille_masse_age_table_section"))
   )
@@ -25,11 +28,22 @@ mod_taille_masse_age_ui <- function(id) {
 #' @param filename_suffix Expression réactive pour suffixe des fichiers à exporter.
 #'
 #' @noRd
-mod_taille_masse_age_server <- function(id, specimen, filename_suffix) {
+mod_taille_masse_age_server <- function(id, specimen, filename_suffix, analysis_label) {
   
   moduleServer(id, function(input, output, session) {
     
     ns <- session$ns
+    
+    output$analysis_label <- renderUI({
+      req(analysis_label())
+      
+      div(
+        analysis_label(),
+        style = "
+        margin-bottom: 15px;
+        color: #555;"
+      )
+    })
     
     
     # Résultat du module ----
@@ -122,7 +136,7 @@ mod_taille_masse_age_server <- function(id, specimen, filename_suffix) {
         p(
           "Ce tableau présente, par groupe biologique, le nombre de spécimens mesurés (N), ",
           "la moyenne, l'écart-type (ÉT), ainsi que les valeurs minimale et maximale de ",
-          "la longueur totale (LTMax), de la masse et de l'âge."
+          "la longueur totale maximale (LTMax), de la masse et de l'âge."
         ),
         
         withSpinner(

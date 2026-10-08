@@ -78,6 +78,18 @@ eval_sep <- eval_sep |>
     )
   )
 
+# --- Sélection des modèles bien ajustés selon le test HNP (< 10 %) ---
+nb_ajust_m <- sum(
+  eval_sep$sexe == "M" & eval_sep$ajust == TRUE,
+  na.rm = TRUE
+)
+
+nb_ajust_f <- sum(
+  eval_sep$sexe == "F" & eval_sep$ajust == TRUE,
+  na.rm = TRUE
+)
+
+
 # Delta AICc PAR SEXE
 
 eval_sep <- eval_sep |>
@@ -108,31 +120,105 @@ best_F <- best_sep$best_model_F
 
 eval_sep <- eval_sep |>
   dplyr::mutate(
-    recommande = .data$modele_id %in% c(best_M, best_F),
-    
     commentaire = dplyr::case_when(
-      
       is.na(.data$type) ~
         "Données insuffisantes",
       
       .data$convergence == FALSE ~
         "Ce modèle ne converge pas.",
       
-      .data$ajust == FALSE ~
-        "Ce modèle ne s'ajuste pas bien aux données.",
+      is.na(.data$convergence) | is.na(.data$ajust) ~
+        "Évaluation du modèle impossible.",
       
-      .data$modele_id %in% c(best_M, best_F) ~
-        "Ce modèle est recommandé car son AICc est le plus faible.",
+      is.na(.data$delta_aicc) ~
+        "Comparaison des modèles impossible.",
       
-      is.finite(.data$delta_aicc) &
-        .data$delta_aicc > 0 &
-        .data$delta_aicc < 2 ~
-        "Modèle alternatif ayant un support statistique similaire au modèle recommandé.",
-      
-      TRUE ~ "Modèle valide."
-    )
+      TRUE ~ NA)
   )
 
+if (nb_ajust_m > 0) {
+eval_sep <- eval_sep |>
+  dplyr::mutate(
+
+    commentaire = dplyr::case_when(
+      
+      !is.na(.data$commentaire) ~ .data$commentaire,
+      
+      .data$sexe == "M" & .data$ajust == TRUE & .data$delta_aicc < 2 ~
+        "Bon ajustement. Soutien élevé.",
+              
+      .data$sexe == "M" & .data$ajust == TRUE & .data$delta_aicc < 7 ~ 
+        "Bon ajustement. Soutien moyen.",
+              
+      .data$sexe == "M" & .data$ajust == TRUE ~
+        "Bon ajustement. Soutien faible.",
+              
+      .data$sexe == "M" ~
+        "Mauvais ajustement." ,
+        
+        TRUE ~ .data$commentaire
+            )
+          )
+
+} else {
+  
+  eval_sep <- eval_sep |>
+          mutate(
+            commentaire = case_when(
+              
+              .data$sexe == "M" & .data$delta_aicc < 2 ~
+              "Mauvais ajustement. Il fait toutefois partie des meilleurs modèles disponibles.",
+            
+              .data$sexe == "M" ~
+                "Mauvais ajustement." ,
+              
+              TRUE ~ .data$commentaire
+            )
+          )
+}
+
+if (nb_ajust_f > 0) {
+  eval_sep <- eval_sep |>
+    dplyr::mutate(
+      
+      commentaire = dplyr::case_when(
+        
+        !is.na(.data$commentaire) ~ .data$commentaire,
+        
+        .data$sexe == "F" & .data$ajust == TRUE & .data$delta_aicc < 2 ~
+          "Bon ajustement. Soutien élevé.",
+        
+        .data$sexe == "F" & .data$ajust == TRUE & .data$delta_aicc < 7 ~ 
+          "Bon ajustement. Soutien moyen.",
+        
+        .data$sexe == "F" & .data$ajust == TRUE ~
+          "Bon ajustement. Soutien faible.",
+        
+        .data$sexe == "F" ~
+          "Mauvais ajustement." ,
+        
+        TRUE ~ .data$commentaire
+      )
+    )
+  
+} else {
+  
+  eval_sep <- eval_sep |>
+    mutate(
+      commentaire = case_when(
+        
+        .data$sexe == "F" & .data$delta_aicc < 2 ~
+        "Mauvais ajustement. Il fait toutefois partie des meilleurs modèles disponibles.",
+        
+        .data$sexe == "F" ~
+          "Mauvais ajustement." ,
+        
+        TRUE ~ .data$commentaire
+      )
+    )
+}    
+
+      
 
 #----------------------------------------------------
 # MODÈLES COMBINÉS
@@ -141,6 +227,8 @@ eval_sep <- eval_sep |>
 models_comb <- maturite_fit_combined_modele(df,variable = variable)
 eval_comb <- maturite_eval_modele(models_comb)
 
+resultats_bien_ajustes <- eval_comb |>
+  filter(.data$ajust == TRUE)
 
 # Delta AICc pour les modèles combinés
 aicc_valides <- eval_comb |>
@@ -177,7 +265,8 @@ best_comb <- maturite_select_best_combined_modele(eval_comb)
 
 best_comb_ids <- best_comb$best_model
 
-eval_comb <- eval_comb |>
+if (nrow(resultats_bien_ajustes) > 0) {
+  eval_comb <- eval_comb |>
   mutate(
     recommande = .data$modele_id %in% best_comb_ids,
     
@@ -189,20 +278,36 @@ eval_comb <- eval_comb |>
       .data$convergence == FALSE ~
         "Ce modèle ne converge pas.",
       
-      .data$ajust == FALSE ~
-        "Ce modèle ne s'ajuste pas bien aux données.",
+      is.na(.data$convergence) | is.na(.data$ajust) ~
+        "Évaluation du modèle impossible.",
       
-      .data$modele_id %in% best_comb_ids ~
-        "Ce modèle est recommandé car son AICc est le plus faible.",
+      is.na(.data$delta_aicc) ~
+        "Comparaison des modèles impossible.",
       
-      is.finite(.data$delta_aicc) &
-        .data$delta_aicc > 0 &
-        .data$delta_aicc < 2 ~
-        "Modèle alternatif ayant un support statistique similaire au modèle recommandé.",
+      .data$ajust == TRUE & .data$delta_aicc < 2 ~ 
+        "Bon ajustement. Soutien élevé.",
       
-      TRUE ~ "Modèle valide."
+      .data$ajust == TRUE & .data$delta_aicc < 7 ~ 
+      "Bon ajustement. Soutien moyen.",
+  
+      .data$ajust == TRUE ~
+        " Soutien faible.",
+      
+      TRUE ~ "Mauvais ajustement."
     )
   )
+  
+} else {
+  
+  eval_comb <- eval_comb |>
+    mutate(
+      commentaire = if_else(
+        .data$delta_aicc < 2,
+        "Mauvais ajustement. Il fait toutefois partie des meilleurs modèles disponibles."),
+        "Mauvais ajustement."
+      )
+}
+
 
 
 # ===========================================================================
@@ -218,13 +323,11 @@ make_sep_table <- function(data_sex) {
   tab <- data_sex |>
     dplyr::mutate(
       
-      point50 = if (variable == "age") {
-        format(round(.data$point50, 1), decimal.mark = ",", nsmall = 1)
-        
-        } else {
-          
-          format(round(.data$point50, 0), decimal.mark = ",", nsmall = 0)
-          },
+      point50 = case_when(
+        is.na(.data$point50) ~ "-",
+        variable == "age" ~ format(round(.data$point50, 1), decimal.mark = ",", nsmall = 1),
+        TRUE  ~ format(round(.data$point50, 0), decimal.mark = ",", nsmall = 0)
+        ),
       
       IC95_inf = .data$point50_IC95_inf,
       IC95_sup = .data$point50_IC95_sup,
@@ -333,13 +436,13 @@ eval_comb <- eval_comb |>
     type_modele == "TLO" & is.finite(.data$point50_M) ~
       
       paste0(format(round(.data$point50_M, digits_point50), decimal.mark = ",", nsmall = digits_point50),
-             " [",
+             "\n[",
              format(round(.data$point50_IC95_inf, digits_point50),decimal.mark = ",", nsmall = digits_point50),
              " - ",
              format(round(.data$point50_IC95_sup, digits_point50), decimal.mark = ",", nsmall = digits_point50),
              "]"),
     
-    type_modele %in% c("ADD", "INT", "COM") ~
+    type_modele %in% c("ADD", "INT", "COM") & is.finite(.data$point50_M) ~
       
       format(round(.data$point50_M, digits_point50),decimal.mark = ",",nsmall = digits_point50),
     
@@ -351,13 +454,13 @@ eval_comb <- eval_comb |>
     type_modele == "TLO" & is.finite(.data$point50_F) ~
       
       paste0(format(round(.data$point50_F, digits_point50), decimal.mark = ",", nsmall = digits_point50),
-             " [",
+             "\n[",
              format(round(.data$point50_IC95_inf, digits_point50),decimal.mark = ",",nsmall = digits_point50),
              " - ",
              format(round(.data$point50_IC95_sup, digits_point50), decimal.mark = ",", nsmall = digits_point50),
              "]"),
     
-    type_modele %in% c("ADD", "INT", "COM") ~
+    type_modele %in% c("ADD", "INT", "COM") & is.finite(.data$point50_F) ~
       
       format(round(.data$point50_F, digits_point50), decimal.mark = ",", nsmall = digits_point50),
     
@@ -406,7 +509,6 @@ tab_comb <- tab_comb |>
   dplyr::select(
     modele_id,
     modele,
-    lien,
     point50_F,
     point50_M,
     b0,
@@ -429,13 +531,12 @@ point50_label <- if (variable == "ltm") {
 names(tab_comb) <- c(
   "modele_id",
   "Type",
-  "Lien",
   paste0(point50_label, "_F"),
   paste0(point50_label, "_M"),
   "b0",
   "b1",
-  "Coeff_sexe",
-  "Coeff_interaction",
+  "b2",
+  "b3",
   "AICc",
   "Δ AICc",
   "Convergence",

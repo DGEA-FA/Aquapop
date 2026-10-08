@@ -52,38 +52,44 @@ cpue_compare_modele <- function(capture) {
   
   # --- Mise à jour des commentaires pour le modèle recommandé ---
   if (nrow(resultats_bien_ajustes) > 0) {
-    best_methodes <- resultats_final |>
-       filter(.data$delta_aicc == 0) |>
-      pull(.data$methode)
+#    best_methodes <- resultats_final |>
+#       filter(.data$delta_aicc == 0) |>
+#      pull(.data$methode)
     
     resultats_final <- resultats_final |>
       mutate(
         commentaire = case_when(
-          .data$methode %in% best_methodes ~ paste0(
-            .data$commentaire, " Ce modèle est recommandé car son AICc est le plus faible."
+          
+          .data$ajustement_hnp < 10 & .data$delta_aicc < 2 ~ paste0(
+            .data$commentaire, " Soutien élevé."
+          ),
+          
+          .data$ajustement_hnp < 10 & .data$delta_aicc < 7 ~ paste0(
+            .data$commentaire, " Soutien moyen."
         ),
-        .data$delta_aicc < 2~ paste0(
-          .data$commentaire, " Il s'agit d'un modèle alternatif ayant un support statistique similaire au modèle recommandé."
+        .data$ajustement_hnp < 10 ~ paste0(
+          .data$commentaire, " Soutien faible."
         ),
         
         TRUE ~ .data$commentaire
       )
     )
 
-  } else {
-    best_methodes <- resultats_final |>
-      filter(.data$delta_aicc == 0) |>
-      pull(.data$methode)
-    
+ } else {
+#    best_methodes <- resultats_final |>
+#      filter(.data$delta_aicc == 0) |>
+#      pull(.data$methode)
+#    
     resultats_final <- resultats_final |>
       mutate(
         commentaire = if_else(
-          .data$methode %in% best_methodes,
-          paste0(.data$commentaire, " Il s'agit toutefois du meilleur modèle parmi les options disponibles."),
+         # .data$methode %in% best_methodes,
+          .data$delta_aicc < 2,
+          paste0(.data$commentaire, " Il fait toutefois partie des meilleurs modèles disponibles."),
           .data$commentaire
-        )
-      )
-  }
+       )
+     )
+ }
   
   # --- Sélection et renommage des colonnes finales ---
   tableau_final <- resultats_final |>
@@ -98,7 +104,8 @@ cpue_compare_modele <- function(capture) {
       "commentaire"
     ) |>
     rename(
-      cpue = "cpue_moyenne",
+      modele = "methode",
+      cpue_estimee = "cpue_moyenne",
       ic95 = "ic_95",
       commentaires = "commentaire"
     ) |>
@@ -115,18 +122,18 @@ cpue_compare_modele <- function(capture) {
     flextable() |>
     set_caption(titre_caption) |>
     set_header_labels(
-      methode = "Modèle",
+      modele = "Modèle",
       ajustement_hnp = "Ajustement HNP",
       aicc = "AICc",
       delta_aicc = "Δ AICc",
-      cpue = "CPUE moyenne",
+      cpue_estimee = "CPUE estimée",
       ic95 = "IC 95%",
       convergence = "Convergence",
       commentaires = "Commentaires"
    
        ) |>
     style_flextable_aquapop() |>
-    colformat_double(j = c("aicc", "ajustement_hnp", "delta_aicc", "cpue"),
+    colformat_double(j = c("aicc", "ajustement_hnp", "delta_aicc", "cpue_estimee"),
                      digits = 2, decimal.mark = ",", na_str = "-", big.mark =  " "
                      ) |>
     flextable::color(

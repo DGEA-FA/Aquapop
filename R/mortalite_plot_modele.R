@@ -34,6 +34,7 @@
 #'   methode = "poisson", A = 38, ic95 = "[32-45]"
 #' )
 #' mortalite_plot_modele(data_exemple, modele_exemple, info_modele_exemple)
+
 mortalite_plot_modele <- function(
     specimen,
     modele,
@@ -76,16 +77,25 @@ mortalite_plot_modele <- function(
   
   max_age <- max(donnees_age$age, na.rm = TRUE)
   
+  # Identification de l'espèce ====
+  espece <- unique(stats::na.omit(as.character(donnees_age$sp)))
+  
+  if (length(espece) != 1) {
+    return(NULL)
+  }
+  
   info_pen <- tryCatch(
-    get_info_pen(as.character(unique(donnees_age$sp))),
+    get_info_pen(espece),
     error = function(e) NULL
   )
   
-  nom_espece <- if (!is.null(info_pen) && "nom_sp" %in% names(info_pen)) {
-    info_pen$nom_sp
-  } else {
-    "poissons"
+  if (is.null(info_pen)) {
+    return(NULL)
   }
+  
+  nom_espece <- info_pen$nom_sp
+  couleur_default <- info_pen$couleur_default  
+  
   
   # Prédiction du modèle ====
   donnees_prediction <- tibble(
@@ -158,24 +168,26 @@ mortalite_plot_modele <- function(
   }
   
   # Tracé final ====
-
-  ggplot(donnees_age, aes(x = .data$age)) +
-    geom_histogram(
-      binwidth = 1,
-      closed = "right",
+  
+  age_counts <- donnees_age |>
+    count(age, name = "nombre")
+  
+ggplot(age_counts, aes(x = .data$age, y = .data$nombre)) +
+  ggplot2::geom_col(
+    width = 0.9,
       fill = couleur_default,
-      color = "white",
+      color = NA,
       na.rm = TRUE
     ) +
     geom_line(
       data = donnees_prediction,
       aes(x = .data$age, y = .data$pred),
-      color = "red",
+      color = "black",
       linewidth = 1.2,
       inherit.aes = FALSE
     ) +
     labs(
-      title = "Distribution d'âge et modèle de mortalité",
+      title = "Distribution d'âge et courbe de mortalité du modèle sélectionné",
       subtitle = sous_titre,
       x = "Âge",
       y = paste0("Nb. ", nom_espece, " échantillonnés")

@@ -20,8 +20,35 @@ pen_constants <- tibble::tibble(
     c("<300", "300-499", "500-649", "650-799", "800-999", ">=1000"),
     c("<150", "150-249", "250-324", "325-399", "400-499", ">=500"),
     c("<250", "250-379", "380-509", "510-629", "630-759", ">=760")
+  ),
+  
+  couleur_default = c("#1F4E79","#920046","#375623"),
+  
+  couleur_compl = c("#C65911", "#007086", "#C65911"),
+  
+  group_colors = list(
+        # SANA - Touladi
+        list(
+          sexe     = c("F" = "#82AFD8", "M" = "#1F4E79", "IND" = "#C65911"),
+          maturite = c("O" = "#1F4E79", "N" = "#82AFD8", "IND" = "#C65911"),
+          marquage = c("MA" = "#82AFD8", "NMA" = "#1F4E79"),
+          tous     = c("TOUS" = "#1F4E79")),
+        
+        # SAFO - Omble de fontaine
+        list(
+          sexe     = c("F" = "#F09A86", "M" = "#920046", "IND" = "#007086"),
+          maturite = c("O" = "#920046", "N" = "#F09A86", "IND" = "#007086"),
+          marquage = c("MA" = "#F09A86", "NMA" = "#920046"),
+          tous     = c("TOUS" = "#920046")),
+        
+        # SAVI - Doré jaune
+        list(
+          sexe     = c("F" = "#F2D978", "M" = "#FFC000", "IND" = "#375623"),
+          maturite = c("O" = "#FFC000", "N" = "#F2D978", "IND" = "#375623"),
+          marquage = c("MA" = "#375623", "NMA" = "#FFC000"),
+          tous     = c("TOUS" = "#FFC000"))
+      )
   )
-)
 
 #' Noms standardises des classes PSD
 #'
@@ -30,7 +57,7 @@ pen_constants <- tibble::tibble(
 #' @export
 psd_classnames <- c("Sous-stock", "Stock", "Qualité", "Préférée", "Mémorable", "Trophée")
 
-#' Constantes pour le calcul de l'indice de condition (Wr)
+#' Constantes pour le calcul de l'indice de masse relative (Wr)
 #'
 #' Source : `wsVal()` pour touladi, omble de fontaine, dore jaune
 #'
@@ -57,20 +84,21 @@ wr_constants <-  tibble::tibble(
 )
 
 #' @keywords internal
-couleur_default <- "#084594"
+#couleur_default <- "#084594"
 
 #' @keywords internal
 group_labels <- list(
   "sexe"     = c("F" = "Femelle", "M" = "Mâle", "IND" = "Indéterminé"),
-  "maturite" = c("O" = "Mature", "N" = "Immature", "IND" = "Indéterminé"),
+  "maturite" = c("O" = "Reproducteur actif", "N" = "Reproducteur inactif", "IND" = "Indéterminé"),
   "marquage" = c("MA" = "Marqué", "NMA" = "Non marqué"),
   "tous"     = c("TOUS" = "Tous")
 )
 
 #' @keywords internal
-group_colors <- list(
-  "sexe"     = c("F" = couleur_default, "M" = "#99CCFF", "IND" = "#4d4d4d"),
-  "maturite" = c("O" = couleur_default, "N" = "#99CCFF", "IND" = "#4d4d4d"),
-  "marquage" = c("MA" = couleur_default, "NMA" = "#99CCFF"),
-  "tous"     = c("TOUS" = couleur_default)
-)
+
+#group_colors <- list(
+#  "sexe"     = c("F" = "#CC3399", "M" = couleur_default, "IND" = "#4d4d4d"),
+#  "maturite" = c("O" = couleur_default, "N" = "#99CCFF", "IND" = "#4d4d4d"),
+#  "marquage" = c("MA" = couleur_default, "NMA" = "#99CCFF"),
+#  "tous"     = c("TOUS" = couleur_default)
+#)

@@ -89,7 +89,7 @@ maturite_extract_resultats_modele <- function(mod, id = NULL) {
       ci_L <- tryCatch(
         confint_L(
           object = mod,
-          method = "montecarlo",
+          method = "delta", # mieux pour A50 
           interval_type = "bca"
         ),
         error = function(e) {

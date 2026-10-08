@@ -93,7 +93,7 @@ generate_filename_suffix <- function(typ_pech, annee, no_lac, nom_lac = NULL) {
     ""
   }
   
-  paste0(typ_pech, "_", annee, "_", lac_name_clean, "no", no_lac)
+  paste0(typ_pech, "_", no_lac, "_", lac_name_clean, annee)
 }
 
 #' Construit un nom de fichier standardisé pour les exports
@@ -179,4 +179,22 @@ format_num_fr <- function(x, digits = 2, na = "-") {
   )
   
   return(out)
+}
+
+#' Génère un titre pour l'objet de l'analyse
+
+generate_analysis_label <- function(typ_pech, annee, no_lac, nom_lac = NULL) {
+  
+  stopifnot(!missing(typ_pech), !missing(annee), !missing(no_lac))
+  
+  elements <- c(
+    as.character(typ_pech),
+    as.character(no_lac),
+    if (!is.null(nom_lac) && nzchar(as.character(nom_lac))) {
+      as.character(nom_lac)
+    },
+    paste(annee, collapse = ", ")
+  )
+  
+  paste(elements, collapse = " - ")
 }

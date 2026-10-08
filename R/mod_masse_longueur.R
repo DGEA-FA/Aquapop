@@ -13,6 +13,7 @@ mod_masse_longueur_ui <- function(id) {
   
   tabPanel(
     title = "Relation masse-longueur",
+    uiOutput(ns("analysis_label")),
     uiOutput(ns("masse_longueur_message")),
     uiOutput(ns("masse_longueur_plot_section")),
     uiOutput(ns("masse_longueur_table_section"))
@@ -26,11 +27,22 @@ mod_masse_longueur_ui <- function(id) {
 #' @param filename_suffix Expression réactive pour suffixe des fichiers à exporter.
 #'
 #' @noRd
-mod_masse_longueur_server <- function(id, specimen, filename_suffix) {
+mod_masse_longueur_server <- function(id, specimen, filename_suffix, analysis_label) {
   
   moduleServer(id, function(input, output, session) {
     
     ns <- session$ns
+    
+    output$analysis_label <- renderUI({
+      req(analysis_label())
+      
+      div(
+        analysis_label(),
+        style = "
+        margin-bottom: 15px;
+        color: #555;"
+      )
+    })
     
     # Résultat du module ----
     masse_longueur_res <- reactive({
@@ -107,12 +119,14 @@ mod_masse_longueur_server <- function(id, specimen, filename_suffix) {
       }
       
       tagList(
-        p(
-          "La figure suivante représente la relation allométrique entre la longueur totale ",
-          "maximale (mm) et la masse (g). L'équation et les paramètres estimés sont indiqués ",
-          "sur le graphique."
-        ),
+        br(),
+        
         h3("Relation masse-longueur"),
+        
+        p(
+          "La figure suivante représente la relation allométrique entre la longueur maximale (mm) ",
+          "et la masse (g). L'équation et les paramètres estimés sont indiqués sur le graphique.",
+        ),
         div(
           style = "max-width: 900px; margin: auto;",
           withSpinner(
@@ -168,8 +182,14 @@ mod_masse_longueur_server <- function(id, specimen, filename_suffix) {
         
         res$plot
       }),
-      filename_suffix = filename_suffix()
-    )
+      filename = reactive(
+        build_export_filename(
+          "masselongueur",
+          filename_suffix(),
+          ext = "png"
+        )
+      )
+      )
     
     # Affichage du tableau ----
     render_table_flextable(

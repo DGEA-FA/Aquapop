@@ -36,7 +36,7 @@ cpue_abondance_table <- function(data,
     }
     
     best_row <- cpue_table |>
-      filter(.data$methode == best_model)
+      filter(.data$modele == best_model)
     
     if (nrow(best_row) == 0) {
       return(
@@ -145,7 +145,10 @@ cpue_abondance_table <- function(data,
         .data$groupe == "Tous" ~ ic95_tous,
         TRUE ~ NA_character_
       )
-    ) |> select(-"sexe")
+    ) |> select(-"sexe") |>
+    
+    rename(cpue_estimee = "cpue")
+  
 
   # --- Création flextable ---
 
@@ -155,14 +158,26 @@ cpue_abondance_table <- function(data,
       groupe = "Groupe",
       abondance = "Nombre",
       proportion = "Proportion (%)",
-      cpue = "CPUE",
-      ic95 = "IC 95%",
+      cpue_estimee = "CPUE estimée",
+      ic95 = "IC 95 %",
       mf_ratio = "Ratio M:F"
     ) |>
     style_flextable_aquapop() |>
-    hline(i = 3, border = fp_border(color = "black", width = 0.5))  |>
     colformat_double(j = "proportion", digits = 1, decimal.mark = ",", na_str = "-", big.mark = " ") |> 
-    colformat_double(j = "cpue", digits = 2, decimal.mark = ",", na_str = "-", big.mark = " ")
+    colformat_double(j = "cpue_estimee", digits = 2, decimal.mark = ",", na_str = "-", big.mark = " ")
+  
+  ligne_bloc_repro <- which(
+    table_finale$groupe == "Repro. actifs femelles"
+  )
+  
+  if (length(ligne_bloc_repro) == 1 && ligne_bloc_repro > 1) {
+    ft <- ft |>
+      border(
+        i = ligne_bloc_repro - 1,
+        border.bottom = fp_border(color = "black", width = 0.5),
+        part = "body"
+      )
+  }
 
   list(
     data = table_finale,

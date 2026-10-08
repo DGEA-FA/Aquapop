@@ -64,7 +64,7 @@ load_specimen <- function(path,
     "poiss1", "poiss2", "comments_specimen"
   )
   toutes_colonnes <- c(colonnes_obligatoires, colonnes_optionnelles)
-  colonnes_num <- c("ltm", "lf", "masse", "age", "ind_insec", "ind_benth", "ind_planc", "ind_chyme", "ind_vide", "ind_poiss")
+  colonnes_num <- c("ltm", "lf", "masse", "age")
   
   # --- Table de correspondance des noms ---
   synonymes_clean <- list(
@@ -159,8 +159,8 @@ load_specimen <- function(path,
   # --- Nettoyage et conversion des colonnes ---
   specimen <- specimen |>
     mutate(
+      sexe = case_when(is.na(.data$sexe)  | .data$sexe %in% c("NON_EXA") ~ "IND", TRUE ~ .data$sexe),
       maturite = replace_na(.data$maturite, "IND"),
-      sexe     = replace_na(.data$sexe, "IND"),
       marquage = replace_na(.data$marquage, "NMA"),
       
       annee = case_when(
@@ -173,14 +173,14 @@ load_specimen <- function(path,
       marquage = factor(.data$marquage, levels = c("MA", "NMA")),
       
       across(
-        intersect(c("no_lac", "typ_pech", "no_station", "st_hasard", "st_valide", "no_specimen", "sp", 
+        intersect(c("no_lac", "typ_pech", "no_station", "st_hasard", "st_valide", "sp", 
                     "ind_insec", "ind_benth", "ind_planc", "ind_chyme", "ind_vide", "ind_poiss",
                     "poiss1", "poiss2"), names(specimen)),
         as.factor
       ),
       
       across(
-        intersect(c("ltm", "lf", "masse", "age"), names(specimen)),
+        intersect(c("no_specimen", "ltm", "lf", "masse", "age"), names(specimen)),
         as.numeric
       ),
       

@@ -29,7 +29,7 @@
 #' @importFrom flextable flextable set_caption set_header_labels colformat_double
 #'
 #' @export
-mortalite_compare_modele <- function(data) {
+mortalite_compare_modele <- function(data, pp_selected) {
   # Validation de base ====
   if (is.null(data) || !is.data.frame(data) || nrow(data) == 0) {
     return(list(
@@ -70,7 +70,8 @@ mortalite_compare_modele <- function(data) {
     result_nb2$tableau,
     result_cmp$tableau,
     result_gp$tableau
-  )
+  )|>
+    mutate(age_depart = pp_selected)
   
   if (nrow(resultats) == 0) {
     return(list(
@@ -80,6 +81,10 @@ mortalite_compare_modele <- function(data) {
       flextable = NULL
     ))
   }
+  
+  # --- Sélection des modèles bien ajustés selon le test HNP (< 10 %) ---
+  resultats_bien_ajustes <- resultats |>
+    filter(.data$ajustement_hnp < 10)
   
   # Calcul du delta AIC et poids d'Akaike ====
   if (all(is.na(resultats$aicc))) {
@@ -118,25 +123,49 @@ mortalite_compare_modele <- function(data) {
   
   
   # Commentaires interprétatifs ====
-  resultats <- resultats |>
+  if (nrow(resultats_bien_ajustes) > 0) {
+    
+    resultats <- resultats |>
     mutate(
       commentaire = case_when(
-        .data$convergence %in% FALSE ~ .data$commentaire,
-        !is.na(.data$ajustement_hnp) & !is.na(.data$delta_aic) & .data$ajustement_hnp < 10 & .data$delta_aic == 0 ~
-          "Bon ajustement. Ce modèle est recommandé car son AICc est le plus faible.",
-        !is.na(.data$ajustement_hnp) & !is.na(.data$delta_aic) & .data$ajustement_hnp < 10 & .data$delta_aic > 0 & .data$delta_aic < 2 ~
-          "Bon ajustement. Il s'agit d'un modèle alternatif ayant un support statistique similaire au modèle recommandé.",
-        !is.na(.data$ajustement_hnp) & !is.na(.data$delta_aic) & .data$ajustement_hnp >= 10 & .data$delta_aic == 0 ~
-          "Le modèle ne s'ajuste pas bien à vos données. Il s'agit toutefois du meilleur modèle parmi les options disponibles.",
+        
+        .data$ajustement_hnp < 10 & .data$delta_aic < 2 ~ paste0(
+          .data$commentaire, " Soutien élevé."
+        ),
+        
+        .data$ajustement_hnp < 10 & .data$delta_aic < 7 ~ paste0(
+          .data$commentaire, " Soutien moyen."
+        ),
+        .data$ajustement_hnp < 10 ~ paste0(
+          .data$commentaire, " Soutien faible."
+        ),
+        
         TRUE ~ .data$commentaire
+        
       )
     )
+    
+  } else {
+        
+    resultats <- resultats |>
+      mutate(
+        commentaire = if_else(
+          .data$delta_aicc < 2,
+          paste0(.data$commentaire, " Il fait toutefois partie des meilleurs modèles disponibles."),
+          .data$commentaire
+        )
+      )
+  }    
+    
+ 
+  
   
   # Colonnes finales ====
   df_final <- resultats |>
     arrange(.data$aicc) |>
     select(
       "methode",
+      "age_depart",
       "ajustement_hnp",
       "aicc",
       "delta_aic",
@@ -154,6 +183,7 @@ mortalite_compare_modele <- function(data) {
     set_caption("Comparaison des modèles de mortalité") |>
     set_header_labels(
       methode   = "Modèle",
+      age_depart = "Âge de départ",
       ajustement_hnp = "Ajustement HNP",
       aicc  = "AICc",
       delta_aic     = "Δ AICc",

@@ -12,22 +12,23 @@ mod_abondance_cpue_ui <- function(id) {
   tabPanel(
     title = "CPUE",
     
+    uiOutput(ns("analysis_label")),
+    
     h3("Validation des captures et des spécimens"),
     
     p(
-      "Le tableau ci-dessous présente le nombre de spécimens  de l'espèce visée selon la table ",
-      "Récolte et selon la table Spécimens (stations valides et au hasard seulement). ",
-      "Si la récolte est plus élevée que le nombre de spécimens, il peut s'agir d'un poisson ",
+      "Le tableau ci-dessous présente le nombre de spécimens de l'espèce visée selon la table ",
+      "Captures et selon la table Spécimens (stations valides et au hasard seulement). ",
+      "Si le nombre de captures est plus élevée que le nombre de spécimens, il peut s'agir d'un poisson ",
       "échappé ou trop abîmé pour prendre des mesures. Si le nombre de spécimens est plus ",
-      "élevé que la récolte, il y a une erreur à corriger dans la base de données.",
-      "Notez que les modèles de CPUE ont été appliqués sur les données provenant de la Récolte alors ",
+      "élevé que le nombre de captures, il y a une erreur à corriger dans la base de données.",
+      "Notez que les modèles de CPUE ont été appliqués sur les données provenant de la table Captures alors ",
       "que le tableau d'abondance et les modèles BPUE ont été créés à partir des données de Spécimens."
     ),
     
     uiOutput(ns("capture_specimen_message")),
     withSpinner(uiOutput(ns("capture_specimen_table")), type = myspinner),
-    download_button_ui(ns("capture_specimen_table_dl")),
-    
+
     br(),
     
     h3("Modèles de CPUE - Tous les individus"),
@@ -54,10 +55,22 @@ mod_abondance_cpue_ui <- function(id) {
 #' @param filename_suffix Suffixe pour le nom de fichier (reactive)
 #'
 #' @noRd
-mod_abondance_cpue_server <- function(id, capture, specimen, filename_suffix) {
+mod_abondance_cpue_server <- function(id, capture, specimen, filename_suffix, analysis_label) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
+    output$analysis_label <- renderUI({
+      req(analysis_label())
+      
+      div(
+        analysis_label(),
+        style = "
+        margin-bottom: 15px;
+        color: #555;"
+      )
+    })
+      
+
     ## Validation - Récolte vs Spécimens
     capture_specimen_res <- reactive({
       req(capture(), specimen())
@@ -77,15 +90,6 @@ mod_abondance_cpue_server <- function(id, capture, specimen, filename_suffix) {
     render_table_flextable(
       "capture_specimen_table",
       reactive(capture_specimen_res()$flextable)
-    )
-    
-    render_download_table(
-      "capture_specimen_table_dl",
-      data = reactive(capture_specimen_res()$data),
-      filename = reactive(build_export_filename(
-        "validation_capture_specimen",
-        filename_suffix()
-      ))
     )
     
     cpue_modele_tous <- reactive({

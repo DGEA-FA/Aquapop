@@ -98,6 +98,8 @@ structure_age <- function(data, groupement = "tous") {
   
   # Nettoyage des données ----
   nom_espece <- info_espece$nom_sp
+  couleur_default <- info_espece$couleur_default
+  group_colors <- info_espece$group_colors
   
   data_clean <- data |>
     mutate(age = as.numeric(.data$age)) |>
@@ -119,9 +121,45 @@ structure_age <- function(data, groupement = "tous") {
   frequence_max <- ceiling(max(table(data_clean$age), na.rm = TRUE) * 1.1)
   
   # Tableau brut ----
-  age_counts <- data_clean |>
-    count(.data$age, name = "n") |>
-    mutate(age = as.integer(.data$age))
+  
+  if (groupement == "tous") {
+    
+    age_counts <- tibble(Age = 0:age_max) |>
+      left_join(
+        data_clean |>
+          count(age, name = "Nombre") |>
+          rename(Age = age),
+        by = "Age"
+      ) |>
+      mutate(
+        Nombre = replace_na(Nombre, 0),
+        categorie = "TOUS"
+      ) |>
+      select(categorie, Nombre, Age)
+    
+  } else {
+    
+    niveaux_groupement <- names(group_labels[[groupement]])
+    
+    age_counts <- tidyr::expand_grid(
+      Age = 0:age_max,
+      categorie = niveaux_groupement
+    ) |>
+      left_join(
+        data_clean |>
+          mutate(
+            categorie = .data[[groupement]],
+            Age = as.integer(age)
+          ) |>
+          count(Age, categorie, name = "Nombre"),
+        by = c("Age", "categorie")
+      ) |>
+      mutate(
+        Nombre = replace_na(Nombre, 0)
+      ) |>
+      arrange(Age, categorie)
+    
+  }
   
   tableau_age <- flextable(age_counts) |>
     set_caption("Structure d'âge") |>
@@ -129,12 +167,11 @@ structure_age <- function(data, groupement = "tous") {
   
   # Graphique ----
   graphique_structure_age <- if (groupement == "tous") {
-    ggplot(data_clean, aes(x = .data$age)) +
-      geom_histogram(
-        binwidth = 1,
-        closed = "right",
-        fill = couleur_default,
-        color = "white",
+    ggplot(age_counts, aes(x = .data$Age, y = .data$Nombre)) +
+      ggplot2::geom_col(
+        width = 0.9,
+        fill = unname(group_colors$tous["TOUS"]),
+        color = NA,
         na.rm = TRUE
       ) +
       labs(
@@ -153,30 +190,15 @@ structure_age <- function(data, groupement = "tous") {
       )
   } else {
     niveaux_groupement <- names(group_labels[[groupement]])
-    data_clean$groupe <- factor(
-      data_clean[[groupement]],
+    age_counts$categorie <- factor(
+      age_counts$categorie,
       levels = niveaux_groupement
     )
     
-    niveaux_absents <- setdiff(
-      niveaux_groupement,
-      unique(as.character(data_clean$groupe))
-    )
-    
-    if (length(niveaux_absents) > 0) {
-      faux_niveaux <- tibble(
-        age = 0,
-        groupe = factor(niveaux_absents, levels = niveaux_groupement)
-      )
-      
-      data_clean <- bind_rows(data_clean, faux_niveaux)
-    }
-    
-    ggplot(data_clean, aes(x = .data$age, fill = .data$groupe)) +
-      geom_histogram(
-        binwidth = 1,
-        closed = "right",
-        color = "white",
+    ggplot(age_counts, aes(x = .data$Age, y = .data$Nombre, fill = .data$categorie)) +
+      ggplot2::geom_col(
+        width = 0.9,
+        color = NA,
         position = position_stack(reverse = TRUE),
         na.rm = TRUE
       ) +

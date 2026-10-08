@@ -13,13 +13,15 @@ mod_structure_taille_ui <- function(id) {
   tabPanel(
     title = "Structure de taille",
     
+    uiOutput(ns("analysis_label")),
+    
     sidebarPanel(
       radioButtons(
         inputId = ns("groupetailleplot"),
         label = "Grouper des poissons",
         choices = c(
           "Tous" = "tous",
-          "Origine (marqué ou non-marqué)" = "marquage",
+          "Origine (marqué ou non marqué)" = "marquage",
           "Sexe" = "sexe",
           "Statut reproducteur" = "maturite"
         )
@@ -40,9 +42,20 @@ mod_structure_taille_ui <- function(id) {
 #' @param filename_suffix Expression réactive pour suffixe des fichiers à exporter.
 #'
 #' @noRd
-mod_structure_taille_server <- function(id, specimen, filename_suffix) {
+mod_structure_taille_server <- function(id, specimen, filename_suffix, analysis_label) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
+    
+    output$analysis_label <- renderUI({
+      req(analysis_label())
+      
+      div(
+        analysis_label(),
+        style = "
+        margin-bottom: 15px;
+        color: #555;"
+      )
+    })
     
     # Résultat combiné ----
     res_structure_taille <- reactive({
@@ -180,9 +193,14 @@ mod_structure_taille_server <- function(id, specimen, filename_suffix) {
         
         res$plot
       }),
-      filename_suffix = filename_suffix()
-    )
-    
+      filename = reactive(
+        build_export_filename(
+          "structure_taille",
+          filename_suffix(),
+          ext = "png"
+        )
+      )
+    )    
     # Téléchargement des données ----
     render_download_table(
       "download_data4plot_taille",

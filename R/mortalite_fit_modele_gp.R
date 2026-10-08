@@ -231,88 +231,6 @@ mortalite_fit_modele_gp <- function(df_age_etendue) {
   nb_iterations_hnp <- res_hnp$nb_iterations_hnp
   graph_hnp         <- res_hnp$graph_hnp
   
-  # Test HNP initial ====
-#  res_hnp <- tryCatch(
-#    {
-#      set.seed(2023)
-#      replicate(
-#        2,
-#        hnp(
-#          model,
-#          newclass = TRUE,
-#          diagfun = diagfun_gp,
-#          simfun = simfun_gp,
-#          fitfun = fitfun_gp,
-#          how.many.out = TRUE,
-#          plot.sim = FALSE
-#        ),
-#        simplify = FALSE
-#      )
-#      
-#      list(
-#        hnp <- resultats_hnp,
-#        pct = sapply(
-#          resultats_hnp,
-#          function(result_hnp) result_hnp$out / result_hnp$total * 100
-#        )
-#      )
-#    },
-#    error = function(e) NULL
-#  )
-#  
-#  if (is.null(res_hnp)) {
-#    ajustement_hnp <- NA_real_
-#    nb_iterations_hnp <- NA_real_
-#    hnp_graph <- NULL
-#    
-#  } else {
-#    
-#    hnp_valeurs <- res_hnp$pct
-#    hnp_graph <- res_hnp$hnp
-#    
-#    ajustement_hnp <- round(mean(hnp_valeurs), 2)
-#    nb_iterations_hnp <- 2
-#    
-#    if (!is.na(ajustement_hnp) && ajustement_hnp >= 10 && ajustement_hnp < 15) {
-#      res_hnp_suppl <- tryCatch(
-#        {
-#          replicate(
-#            3,
-#            hnp(
-#              model,
-#              newclass = TRUE,
-#              diagfun = diagfun_gp,
-#              simfun = simfun_gp,
-#              fitfun = fitfun_gp,
-#              how.many.out = TRUE,
-#              plot.sim = FALSE
-#            ),
-#            simplify = FALSE
-#          )
-#          
-#          list(
-#            hnp = resultats_hnp,
-#            pct = sapply(
-#              resultats_hnp,
-#              function(result_hnp) result_hnp$out / result_hnp$total * 100
-#            )
-#          )
-#        },
-#        error = function(e) NULL
-#      )
-#      
-#      if (!is.null(res_hnp_suppl)) {
-#        hnp_valeurs <- c(hnp_valeurs, res_hnp_suppl$pct)
-#        hnp_graph <- c(
-#          hnp_graph,
-#          res_hnp_suppl$hnp
-#        )
-#        ajustement_hnp <- round(mean(hnp_valeurs), 2)
-#        nb_iterations_hnp <- 5
-#      }
-#    }
-#  }
-#  
   # Extraction des coefficients ====
   coef_table <- tryCatch(
     summary(model)$coefficients$cond,
@@ -342,8 +260,9 @@ mortalite_fit_modele_gp <- function(df_age_etendue) {
   
   # Conversion en taux de mortalité annuel ====
   A <- (1 - exp(-Z)) * 100
-  lowerZ <- Z - SE
-  upperZ <- Z + SE
+  IC <- confint(model)["age", ] 
+  lowerZ <- -IC[2]
+  upperZ <- -IC[1]
   lowerA <- round((1 - exp(-lowerZ)) * 100, 1)
   upperA <- round((1 - exp(-upperZ)) * 100, 1)
   ic_95 <- glue("[{lowerA} – {upperA}]") |>
