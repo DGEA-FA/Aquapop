@@ -50,10 +50,11 @@ mod_maturite_a50_server <- function(id, specimen, filename_suffix, analysis_labe
     table_modeles_a50_resultats <- reactive({
       req(specimen())
       
-      maturite_compare_modele(
+       maturite_compare_modele(
         specimen_data = specimen(),
         variable = "age"
       )
+
     })
     
     # ==== Disponibilité des modèles ----
@@ -77,7 +78,7 @@ mod_maturite_a50_server <- function(id, specimen, filename_suffix, analysis_labe
       if (is.null(res$best_model)) {
         return(FALSE)
       }
-      !is.null(res$best_model$best_model_comb)})
+      !is.null(res$best_model$best_model_combined)})
 
         # ==== Affichage des modèles combinés ----
     
@@ -101,7 +102,7 @@ mod_maturite_a50_server <- function(id, specimen, filename_suffix, analysis_labe
         )
       }
       
-      if (has_model_a50_f() && has_model_a50_m() && has_model_a50_comb()) {
+      if (has_model_a50_f() || has_model_a50_m() || has_model_a50_comb()) {
         return(
           HTML(
             "Les résultats d'ajustement de différents modèles pour les femelles et les mâles séparés sont présentés ci-dessous. ",
@@ -109,8 +110,8 @@ mod_maturite_a50_server <- function(id, specimen, filename_suffix, analysis_labe
             "Les résultats des modèles pour les sexes combinés sont également présentés pour déterminer si du support statistique ",
             "est trouvé pour une différence.",
             "<br>",
-            "Pour les dorés jaunes, un an a été ajouté à l'âge estimé des spécimens lors de la PENDJ pour bien représenter l'âge de reproduction ",
-            "qui a lieu au printemps suivant."
+            "Pour les dorés jaunes, un an a été ajouté à l'âge estimé des spécimens lors de la PENDJ pour bien représenter ",
+            "l'âge de reproduction qui a lieu au printemps suivant."
           )
         )
       }
@@ -600,16 +601,29 @@ mod_maturite_a50_server <- function(id, specimen, filename_suffix, analysis_labe
     # ==== Section combinée ----
     output$section_a50_combine <- renderUI({
       
-      if (!has_model_a50_comb()) {
-        return(NULL)
+      if (!afficher_modeles_combines_a50()) {
+        return(
+          tagList(
+            tags$h3("Tableau de sélection des modèles - sexes combinés"),
+            
+            div(
+              style = paste(
+                "margin: 10px 0 20px 0;",
+                "padding: 12px 16px;",
+                "border-left: 4px solid #c0392b;",
+                "background-color: #fdf2f2;"
+              ),
+              "Aucun modèle n'a convergé pour les sexes combinés."
+            )
+          )
+        )
       }
       
       table <- table_a50_comb()
-      
       if (nrow(table) == 0) {
         return(NULL)
       }
-      
+
       tagList(
         tags$h3("Tableau de sélection des modèles - sexes combinés"),
         tags$p("Modèles ajustés sur l'ensemble des données"),

@@ -31,6 +31,7 @@ mod_maturite_l50_ui <- function(id) {
 #' @param filename_suffix Expression réactive pour suffixe des fichiers à exporter.
 #'
 #' @noRd
+
 mod_maturite_l50_server <- function(id, specimen, filename_suffix, analysis_label) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
@@ -60,18 +61,26 @@ mod_maturite_l50_server <- function(id, specimen, filename_suffix, analysis_labe
     
     has_model_l50_f <- reactive({
       res <- table_modeles_l50_resultats()
-      req(!is.null(res))
+      if (is.null(res$best_model)) {
+        return(FALSE)
+      }
       !is.null(res$best_model$best_model_F)})
-    
+
     has_model_l50_m <- reactive({
       res <- table_modeles_l50_resultats()
-      req(!is.null(res))
+      if (is.null(res$best_model)) {
+        return(FALSE)
+      }
       !is.null(res$best_model$best_model_M)})
     
     has_model_l50_comb <- reactive({
       res <- table_modeles_l50_resultats()
-      req(!is.null(res))
+      if (is.null(res$best_model)) {
+        return(FALSE)
+      }
       !is.null(res$best_model$best_model_combined)})
+    
+     # !is.null(res$best_model$best_model_combined)})
     
     # ==== Affichage des modèles combinés ----
     
@@ -95,7 +104,7 @@ mod_maturite_l50_server <- function(id, specimen, filename_suffix, analysis_labe
         )
       }
       
-      if (has_model_l50_f() && has_model_l50_m() && has_model_l50_comb()) {
+      if (has_model_l50_f() || has_model_l50_m() || has_model_l50_comb()) {
         return(
           HTML(
             "Les résultats d'ajustement de différents modèles pour les femelles et les mâles séparés sont présentés ci-dessous. ",
@@ -145,6 +154,7 @@ mod_maturite_l50_server <- function(id, specimen, filename_suffix, analysis_labe
     
     table_l50_comb <- reactive({
       table_modeles_l50_resultats()$table_comb$df
+
     })
     
     # ==== Sélection des modèles ----
@@ -582,15 +592,31 @@ mod_maturite_l50_server <- function(id, specimen, filename_suffix, analysis_labe
     # ==== Section combinée ----
     output$section_l50_combine <- renderUI({
       if (!afficher_modeles_combines_l50()) {
+        
+        return(
+      tagList(
+        tags$h3("Tableau de sélection des modèles - sexes combinés"),
+        
+        div(
+          style = paste(
+            "margin: 10px 0 20px 0;",
+            "padding: 12px 16px;",
+            "border-left: 4px solid #c0392b;",
+            "background-color: #fdf2f2;"
+          ),
+          "Aucun modèle n'a convergé pour les sexes combinés."
+        )
+      )
+        )
+        }
+      
+      table <- table_l50_comb()
+      if (nrow(table) == 0) {
         return(NULL)
       }
       
-      table <- table_l50_comb()
-      if (nrow(table) == 0) return(NULL)
-      
       tagList(
         tags$h3("Tableau de sélection des modèles - sexes combinés"),
-        tags$p("Modèles ajustés sur l'ensemble des données"),
         
         reactableOutput(ns("table_l50_comb")),
         div(style = "margin: 10px 0 20px 0;", download_button_ui(ns("dl_l50_comb"))),

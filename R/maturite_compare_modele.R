@@ -218,7 +218,15 @@ if (nb_ajust_f > 0) {
     )
 }    
 
-      
+eval_sep <- eval_sep |>
+  mutate(
+    commentaire = case_when(
+      .data$IC_relative > 2 ~
+        paste0(.data$commentaire,
+               " Attention, estimation très imprécise."),
+      TRUE ~ .data$commentaire
+    )
+  )  
 
 #----------------------------------------------------
 # MODÈLES COMBINÉS
@@ -303,11 +311,20 @@ if (nrow(resultats_bien_ajustes) > 0) {
     mutate(
       commentaire = if_else(
         .data$delta_aicc < 2,
-        "Mauvais ajustement. Il fait toutefois partie des meilleurs modèles disponibles."),
+        "Mauvais ajustement. Il fait toutefois partie des meilleurs modèles disponibles.",
         "Mauvais ajustement."
-      )
+      ))
 }
 
+eval_comb <- eval_comb |>
+  mutate(
+    commentaire = case_when(
+      .data$IC_relative > 2 ~
+        paste0(.data$commentaire,
+               " Attention, estimation très imprécise."),
+      TRUE ~ .data$commentaire
+    )
+  )
 
 
 # ===========================================================================
@@ -326,7 +343,7 @@ make_sep_table <- function(data_sex) {
       point50 = case_when(
         is.na(.data$point50) ~ "-",
         variable == "age" ~ format(round(.data$point50, 1), decimal.mark = ",", nsmall = 1),
-        TRUE  ~ format(round(.data$point50, 0), decimal.mark = ",", nsmall = 0)
+        TRUE  ~ formatC(.data$point50, format = "f", digits = 0, decimal.mark = ",")
         ),
       
       IC95_inf = .data$point50_IC95_inf,
@@ -346,7 +363,7 @@ make_sep_table <- function(data_sex) {
       
       IC95 = ifelse(is.na(IC95_inf) | is.na(IC95_sup), "-",
                     paste0("[", format(round(IC95_inf, digits_ic), decimal.mark = "," ),
-                           " - ", format(round(IC95_sup, digits_ic), decimal.mark = ","),
+                           " ; ", format(round(IC95_sup, digits_ic), decimal.mark = ","),
                            "]")
                     ),
       
@@ -435,16 +452,16 @@ eval_comb <- eval_comb |>
     
     type_modele == "TLO" & is.finite(.data$point50_M) ~
       
-      paste0(format(round(.data$point50_M, digits_point50), decimal.mark = ",", nsmall = digits_point50),
+      paste0(formatC(.data$point50_M, format = "f", digits_point50, decimal.mark = ","),
              "\n[",
              format(round(.data$point50_IC95_inf, digits_point50),decimal.mark = ",", nsmall = digits_point50),
-             " - ",
+             " ; ",
              format(round(.data$point50_IC95_sup, digits_point50), decimal.mark = ",", nsmall = digits_point50),
              "]"),
     
     type_modele %in% c("ADD", "INT", "COM") & is.finite(.data$point50_M) ~
       
-      format(round(.data$point50_M, digits_point50),decimal.mark = ",",nsmall = digits_point50),
+      formatC(.data$point50_M, format = "f", digits_point50, decimal.mark = ","),
     
     TRUE ~ "-"
   ),
@@ -453,16 +470,16 @@ eval_comb <- eval_comb |>
     
     type_modele == "TLO" & is.finite(.data$point50_F) ~
       
-      paste0(format(round(.data$point50_F, digits_point50), decimal.mark = ",", nsmall = digits_point50),
+      paste0(formatC(.data$point50_F, format = "f", digits_point50, decimal.mark = ","),
              "\n[",
              format(round(.data$point50_IC95_inf, digits_point50),decimal.mark = ",",nsmall = digits_point50),
-             " - ",
+             " ; ",
              format(round(.data$point50_IC95_sup, digits_point50), decimal.mark = ",", nsmall = digits_point50),
              "]"),
     
     type_modele %in% c("ADD", "INT", "COM") & is.finite(.data$point50_F) ~
       
-      format(round(.data$point50_F, digits_point50), decimal.mark = ",", nsmall = digits_point50),
+      formatC(.data$point50_M, format = "f", digits_point50, decimal.mark = ","),
     
     TRUE ~ "-"
     
@@ -608,6 +625,7 @@ message <- paste0(
 # ===========================================================================
 # RETOUR
 # ===========================================================================
+
 
 list(
   

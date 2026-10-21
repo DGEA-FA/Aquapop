@@ -71,6 +71,9 @@ maturite_eval_modele <- function(models) {
         point50_M = NA_real_,
         point50_IC95_inf = NA_real_,
         point50_IC95_sup = NA_real_,
+        IC_relative = NA_real_,
+        IC_relative_F = NA_real_,
+        IC_relative_M = NA_real_,
         convergence = FALSE,
         pearson_x2_pval = NA_real_,
         goodness_of_link_pval = NA_real_,
@@ -103,6 +106,10 @@ maturite_eval_modele <- function(models) {
     point50_IC95_inf <- stats_mod$point50_IC95_inf
     point50_IC95_sup <- stats_mod$point50_IC95_sup
     
+    IC_relative <- (point50_IC95_sup - point50_IC95_inf) / point50
+    IC_relative_F <- (point50_IC95_sup - point50_IC95_inf) / point50_F
+    IC_relative_M <- (point50_IC95_sup - point50_IC95_inf) / point50_M
+    
     # Application des fonctions d'ajustement et évaluation du modèle
     evaluation <- maturite_evaluer_ajustement(mod)
     
@@ -132,6 +139,9 @@ maturite_eval_modele <- function(models) {
       point50_M = point50_M,
       point50_IC95_inf = point50_IC95_inf,
       point50_IC95_sup = point50_IC95_sup,
+      IC_relative = IC_relative,
+      IC_relative_F = IC_relative_F,
+      IC_relative_M = IC_relative_M,
       convergence = conv,
       pearson_x2_pval = p_fit,
       goodness_of_link_pval = p_link,
@@ -158,6 +168,9 @@ maturite_eval_modele <- function(models) {
       point50_M = numeric(),
       point50_IC95_inf = numeric(),
       point50_IC95_sup = numeric(),
+      IC_relative = numeric(),
+      IC_relative_F = numeric(),
+      IC_relative_M = numeric(),
       convergence = logical(),
       pearson_x2_pval = numeric(),
       goodness_of_link_pval = numeric(),
@@ -205,6 +218,9 @@ maturite_eval_modele <- function(models) {
     point50_M = "point50_M",
     point50_IC95_inf = "IC95 inférieur",
     point50_IC95_sup = "IC95 supérieur",
+    IC_relative = "IC_relative",
+    IC_relative_F = "IC_relative_F",
+    IC_relative_M = "IC_relative_M",
     convergence = "Convergence",
     pearson_x2_pval = "Goodness-of-fit (p-valeur)",
     goodness_of_link_pval = "Goodness-of-link (p-valeur)",
