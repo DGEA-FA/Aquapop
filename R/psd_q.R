@@ -147,7 +147,7 @@ psd_q <- function(data) {
     flextable() |>
     set_header_labels(
       Q = "Q",
-      ic95 = "IC 95%"
+      ic95 = "IC 95 %"
     ) |>
     style_flextable_aquapop() |>
     colformat_double(

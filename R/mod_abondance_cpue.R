@@ -23,7 +23,7 @@ mod_abondance_cpue_ui <- function(id) {
       "échappé ou trop abîmé pour prendre des mesures. Si le nombre de spécimens est plus ",
       "élevé que le nombre de captures, il y a une erreur à corriger dans la base de données.",
       "Notez que les modèles de CPUE ont été appliqués sur les données provenant de la table Captures alors ",
-      "que le tableau d'abondance et les modèles BPUE ont été créés à partir des données de Spécimens."
+      "que les tableaux d'abondance (CPUE et BPUE) ont été créés à partir des données de Spécimens."
     ),
     
     uiOutput(ns("capture_specimen_message")),

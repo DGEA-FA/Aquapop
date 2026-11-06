@@ -31,4 +31,6 @@ Pour toute question ou besoin de soutien, veuillez contacter :
 
 # Pour en savoir plus
 Pour des explications détaillées sur chaque analyse, les méthodes statistiques utilisées et les bonnes pratiques d'interprétation, veuillez consulter le **guide d'utilisation complet** :
-📄 `aquapop_guide_utilisation_v2025.docx`  
+📄 <a href="AquaPop_guide_utilisation_Section 1.pdf" target="_blank">
+Guide d'utilisation (PDF)
+</a>

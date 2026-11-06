@@ -93,14 +93,14 @@ cpue_abondance_table <- function(data,
     count(.data$sexe, name = "abondance") |>
     mutate(
       groupe = recode(.data$sexe,
-                      "F" = "Repro. actifs femelles",
-                      "M" = "Repro. actifs mâles"
+                      "F" = "Femelles repro. actives",
+                      "M" = "Mâles repro. actifs"
       ),
       proportion = .data$abondance / total_individus * 100,
       mf_ratio = NA_character_
     ) |>
     complete(
-      groupe = c("Repro. actifs femelles", "Repro. actifs mâles"),
+      groupe = c("Femelles repro. actives", "Mâles repro. actifs"),
       fill = list(abondance = 0, proportion = 0, mf_ratio = NA_character_)
     )
 
@@ -131,7 +131,7 @@ cpue_abondance_table <- function(data,
     mutate(
       groupe = factor(.data$groupe, levels = c(
         "Tous", "Femelles", "Mâles", "Sexe inconnu",
-        "Repro. actifs femelles", "Repro. actifs mâles",
+        "Femelles repro. actives", "Mâles repro. actifs",
         "Immatures ou reprod. inactifs", "Statut reprod. inconnu"
       ))
     ) |>
@@ -167,7 +167,7 @@ cpue_abondance_table <- function(data,
     colformat_double(j = "cpue_estimee", digits = 2, decimal.mark = ",", na_str = "-", big.mark = " ")
   
   ligne_bloc_repro <- which(
-    table_finale$groupe == "Repro. actifs femelles"
+    table_finale$groupe == "Femelles repro. actives"
   )
   
   if (length(ligne_bloc_repro) == 1 && ligne_bloc_repro > 1) {

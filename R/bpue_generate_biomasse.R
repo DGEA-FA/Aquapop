@@ -156,7 +156,7 @@ bpue_generate_biomasse <- function(specimen, station) {
                            "IND" = "Sexe inconnu")) |>
     select("groupe", "n", "biomasse", "percent", "bpue", "ic95")
   
-  # ---- Repro. actifs males ----
+  # ---- Males repro. actifs  ----
   data_males_matures <- specimen |>
     filter(.data$sexe == "M", .data$maturite == "O") |>
     group_by(.data$no_station) |>
@@ -165,7 +165,7 @@ bpue_generate_biomasse <- function(specimen, station) {
     mutate(biomasse = replace_na(.data$biomasse, 0))
   
   ligne_males_matures <- tibble(
-    groupe = "Repro. actifs mâles",
+    groupe = "Mâles repro. actifs",
     n = sum(specimen$sexe == "M" & specimen$maturite == "O" & !is.na(specimen$masse), na.rm = TRUE),
     biomasse = sum(data_males_matures$biomasse) / 1000,
     percent = biomasse * 100 / biomasse_totale_kg,
@@ -173,7 +173,7 @@ bpue_generate_biomasse <- function(specimen, station) {
     ic95 = NA_character_
   )
   
-  # ---- Repro. actifs femelles ----
+  # ---- Femelles repro. actives ----
   data_femelles_matures <- specimen |>
     filter(.data$sexe == "F", .data$maturite == "O") |>
     group_by(.data$no_station) |>
@@ -185,7 +185,7 @@ bpue_generate_biomasse <- function(specimen, station) {
   fit_femelles <- safe_nb_fit(data_femelles_matures$biomasse_g)
   
   ligne_femelles_matures <- tibble(
-    groupe = "Repro. actifs femelles",
+    groupe = "Femelles repro. actives",
     n = sum(specimen$sexe == "F" & specimen$maturite == "O" & !is.na(specimen$masse), na.rm = TRUE),
     biomasse = biomasse_femelles_matures / 1000,
     percent = biomasse * 100 / biomasse_totale_kg,
@@ -262,7 +262,7 @@ bpue_generate_biomasse <- function(specimen, station) {
     colformat_double(j = "proportion", digits = 1, decimal.mark = ",", big.mark = " ", na_str = "-")
   
   ligne_bloc_repro <- which(
-    table_biomasse$groupe == "Repro. actifs femelles"
+    table_biomasse$groupe == "Femelles repro. actives"
   )
   
   if (length(ligne_bloc_repro) == 1 && ligne_bloc_repro > 1) {

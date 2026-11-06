@@ -261,7 +261,7 @@ croissance_plot <- function(dfspecimen, tablemodele, modele) {
       name = NULL
     ) +
     scale_x_continuous(
-      name = "Âge (année)",
+      name = "Âge",
       breaks = age_ticks,
       limits = age_range_plot,
       expand = c(0, 0)

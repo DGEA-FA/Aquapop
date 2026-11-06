@@ -315,7 +315,7 @@ wri <- function(data) {
     set_header_labels(
       groupe = "Groupe",
       wr = "Wᵣ (%)",
-      ic95 = "IC 95%",
+      ic95 = "IC 95 %",
       n = "N"
     ) |>
     style_flextable_aquapop() |>

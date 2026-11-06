@@ -190,7 +190,7 @@ mortalite_compare_modele <- function(data, pp_selected) {
       Z   = "Z",
       SE = "SE",
       A  = "A (%)",
-      ic95   = "IC 95%",
+      ic95   = "IC 95 %",
       aiccwt = "Poids d’Akaike",
       convergence = "Convergence",
       commentaire  = "Commentaires"

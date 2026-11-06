@@ -176,8 +176,8 @@ mortalite_chaprob <- function(specimen, pp, age_max) {
         set_header_labels(
           z = "Coefficient de mortalité (Z)",
           se = "Erreur standard",
-          a = "Taux de mortalité (A%)",
-          ic_95 = "IC 95% (%)"
+          a = "Taux de mortalité (A %)",
+          ic_95 = "IC 95 % (%)"
         ) |>
         style_flextable_aquapop()|>
         colformat_double(j = "z", digits = 3, decimal.mark = ",", big.mark =  " ") |>

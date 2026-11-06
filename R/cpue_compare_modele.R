@@ -127,7 +127,7 @@ cpue_compare_modele <- function(capture) {
       aicc = "AICc",
       delta_aicc = "Δ AICc",
       cpue_estimee = "CPUE estimée",
-      ic95 = "IC 95%",
+      ic95 = "IC 95 %",
       convergence = "Convergence",
       commentaires = "Commentaires"
    

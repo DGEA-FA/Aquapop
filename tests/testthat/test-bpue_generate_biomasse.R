@@ -59,7 +59,7 @@ test_that("la fonction gère bien l'absence de groupes, par exemple aucune femel
   )
   
   expect_s3_class(res$data, "data.frame")
-  expect_true("Repro. actifs femelles" %in% res$data$groupe)
+  expect_true("Femelles repro. actives" %in% res$data$groupe)
   expect_true(all(!is.na(res$data$biomasse)))
   expect_true(all(res$data$biomasse >= 0))
 })
@@ -77,13 +77,13 @@ test_that("les IC sont calculés seulement pour Tous et Femelles matures", {
   
   groupes_ic <- res$groupe[!is.na(res$ic95)]
   
-  expect_setequal(groupes_ic, c("Tous", "Repro. actifs femelles"))
+  expect_setequal(groupes_ic, c("Tous", "Femelles repro. actives"))
 })
 
 test_that("les IC absents sont représentés par NA et non par une chaîne vide", {
   res <- bpue_generate_biomasse(data_specimen_nominal, data_station_nominal)$data
   
-  groupes_sans_ic <- setdiff(res$groupe, c("Tous", "Repro. actifs femelles"))
+  groupes_sans_ic <- setdiff(res$groupe, c("Tous", "Femelles repro. actives"))
   
   expect_true(all(is.na(res$ic95[res$groupe %in% groupes_sans_ic])))
   expect_false(any(res$ic95 == "", na.rm = TRUE))

@@ -153,7 +153,7 @@ masse_longueur_fit <- function(data) {
       coefficient = "Coefficient",
       estimation = "Estimation",
       erreur_standard = "Erreur standard",
-      ic95 = "IC 95%"
+      ic95 = "IC 95 %"
     ) |>
     style_flextable_aquapop() |>
     colformat_double(

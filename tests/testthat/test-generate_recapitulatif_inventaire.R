@@ -32,7 +32,7 @@ test_that("generate_recapitulatif_inventaire() retourne un tableau conforme", {
     "Année(s) de l'inventaire (aaaa)",
     "Date de début de l'inventaire (aaaa-mm-jj)",
     "Date de fin de l'inventaire (aaaa-mm-jj)",
-    "N stations aléatoires", "N stations dirigées",
+    "N stations au hasard", "N stations dirigées",
     "N stations valides", "N stations invalides",
     "N stations total"
   )

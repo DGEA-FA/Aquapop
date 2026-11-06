@@ -34,8 +34,8 @@ test_that("taille_masse_age() gère les cas normaux", {
       "Femelle",
       "Mâle",
       "Sexe inconnu",
-      "Reprod. actifs femelles",
-      "Reprod. actifs mâles",
+      "Femelles repro. actives",
+      "Mâles reprod. actifs",
       "Imm. ou reprod. inactifs",
       "Statut reprod. inconnu"
     )

@@ -38,7 +38,7 @@ test_that("cpue_abondance_table() retourne un tableau structuré avec CPUE numé
   expect_type(tab$ic95, "character")
   
   ligne_tous <- tab[tab$groupe == "Tous", ]
-  ligne_f <- tab[tab$groupe == "Repro. actifs femelles", ]
+  ligne_f <- tab[tab$groupe == "Femelles repro. actives", ]
   
   expect_equal(ligne_tous$cpue[[1]], 15.8)
   expect_equal(ligne_tous$ic95[[1]], "13.2–18.4")
@@ -47,7 +47,7 @@ test_that("cpue_abondance_table() retourne un tableau structuré avec CPUE numé
   expect_equal(ligne_f$ic95[[1]], "6.1–8.7")
   
   groupes_sans_cpue <- tab |>
-    dplyr::filter(!groupe %in% c("Tous", "Repro. actifs femelles"))
+    dplyr::filter(!groupe %in% c("Tous", "Femelles repro. actives"))
   
   expect_true(all(is.na(groupes_sans_cpue$cpue)))
   expect_true(all(is.na(groupes_sans_cpue$ic95)))

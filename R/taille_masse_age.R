@@ -129,7 +129,7 @@ taille_masse_age <- function(data) {
       border(j = col, border.right = bordure_normale, part = "body")
   }
   
-  ligne_bloc_repro <- which(table_resultats$Groupe == "Reprod. actifs femelles")
+  ligne_bloc_repro <- which(table_resultats$Groupe == "Femelles reprod. actives")
   
   if (length(ligne_bloc_repro) == 1) {
     table_flextable <- table_flextable |>
@@ -166,9 +166,9 @@ regrouper_stats_morpho <- function(data, var) {
   table_groupes <- bind_rows(
     stats_morpho(data, var, "sexe") |> rename(groupe = sexe),
     stats_morpho(data, var) |> mutate(groupe = NA),
-    stats_morpho(filter(data, .data$maturite == "O" & .data$sexe == "M"), var) |> mutate(groupe = "Reprod. actifs mâles"),
+    stats_morpho(filter(data, .data$maturite == "O" & .data$sexe == "M"), var) |> mutate(groupe = "Mâles reprod. actifs"),
     stats_morpho(filter(data, .data$maturite == "N"), var) |> mutate(groupe = "Imm. ou reprod. inactifs"),
-    stats_morpho(filter(data, .data$maturite == "O" & .data$sexe == "F"), var) |> mutate(groupe = "Reprod. actifs femelles"),
+    stats_morpho(filter(data, .data$maturite == "O" & .data$sexe == "F"), var) |> mutate(groupe = "Femelles reprod. actives"),
     stats_morpho(filter(data, .data$maturite == "IND"), var) |> mutate(groupe = "Statut reprod. inconnu")
   )
   
@@ -184,7 +184,7 @@ regrouper_stats_morpho <- function(data, var) {
                     .default = .data$groupe),
       groupe = factor(.data$groupe, levels = c(
         "Tous", "Femelle", "Mâle", "Sexe inconnu",
-        "Reprod. actifs femelles", "Reprod. actifs mâles",
+        "Femelles reprod. actives", "Mâles reprod. actifs",
         "Imm. ou reprod. inactifs", "Statut reprod. inconnu"
       ))
     ) |>

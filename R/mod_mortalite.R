@@ -289,7 +289,7 @@ mod_mortalite_server <- function(id, specimen, filename_suffix, analysis_label, 
       }
       
       help_text <- if (isTRUE(info_peak_plus$success)) {
-        "Une valeur automatique d'âge de départ a été proposée à partir des données, soit le mode de la structure d'âge pour l'omble de fontaine ou le mode + 1 pour le touladi et le doré jaune. Vous pouvez conserver cette valeur ou la modifier avant de lancer l'analyse."
+        "Une valeur automatique d'âge de départ a été proposée à partir des données, soit le mode de la structure d'âge pour l'omble de fontaine ou le mode + 1 (Peak Plus) pour le touladi et le doré jaune. Vous pouvez conserver cette valeur ou la modifier avant de lancer l'analyse."
       } else {
         "La valeur automatique d'âge de départ n'a pas pu être déterminée. Veuillez en sélectionner une manuellement avant de lancer l'analyse."
       }

@@ -136,7 +136,7 @@ mod_taille_masse_age_server <- function(id, specimen, filename_suffix, analysis_
         p(
           "Ce tableau présente, par groupe biologique, le nombre de spécimens mesurés (N), ",
           "la moyenne, l'écart-type (ÉT), ainsi que les valeurs minimale et maximale de ",
-          "la longueur totale maximale (LTMax), de la masse et de l'âge."
+          "la longueur totale maximale, de la masse et de l'âge."
         ),
         
         withSpinner(

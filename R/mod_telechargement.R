@@ -26,7 +26,7 @@ mod_telechargement_ui <- function(id) {
             }
           "))
         ),
-        fileInput(ns("upload"), "Téléchargez vos données (*.xlsx)",
+        fileInput(ns("upload"), "Télécharger vos données (*.xlsx)",
                   buttonLabel = "Téléchargement...", multiple = FALSE, accept = ".xlsx"),
         uiOutput(ns("message_upload")),
         uiOutput(ns("ui_typ_pech")),

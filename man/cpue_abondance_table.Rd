@@ -21,7 +21,7 @@ cpue_abondance_table(
 
 \item{best_model_tous}{Nom du meilleur modèle CPUE pour le groupe "Tous".}
 
-\item{best_model_femelles}{Nom du meilleur modèle CPUE pour le groupe "Repro. actifs femelles".}
+\item{best_model_femelles}{Nom du meilleur modèle CPUE pour le groupe "Femelles repro. actives".}
 }
 \value{
 Une liste contenant :
